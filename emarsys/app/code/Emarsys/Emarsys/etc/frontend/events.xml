@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="newsletter_subscriber_save_after">
+        <observer name="emarsys_newsletter_subscribers" instance="Emarsys\Emarsys\Model\Observer\RealTimeSubscriber"
+                  shared="false"/>
+    </event>
+    <event name="customer_save_after">
+        <observer name="frontend_edit_customer" instance="Emarsys\Emarsys\Model\Observer\RealTimeCustomer"/>
+    </event>
+    <event name="sales_order_save_after">
+        <observer name="order_save_after_frontend" instance="Emarsys\Emarsys\Model\Observer\OrderSave"/>
+    </event>
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="order_save_after_frontend" instance="Emarsys\Emarsys\Model\Observer\OrderSaveFrontend"/>
+    </event>
+</config>

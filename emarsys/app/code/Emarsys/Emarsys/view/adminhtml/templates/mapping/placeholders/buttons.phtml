@@ -1,0 +1,14 @@
+<?php
+$objectManager   = \Magento\Framework\App\ObjectManager::getInstance();
+$backendHelper         = $objectManager->create('\Magento\Backend\Helper\Data');
+$storeId               = $this->getRequest()->getParam('store');
+$backBtn               = "'".$backendHelper->getUrl("emarsys_emarsys/mapping_event/index", array('store' => $storeId))."'";
+$refreshButton             = "'".$backendHelper->getUrl('*/*/refreshplaceholders/mapping_id/' . $this->getRequest()->getParam('mapping_id'))."'";
+?>
+<div>
+    <span class="scalable">
+<input type="button" class="action-default scalable" value="Back"  onclick="window.location.href=<?php echo $backBtn; ?>" />
+<input type="button" class="action-default scalable" value="Save Mapping"  onclick="placeHolderValidation()" />
+<input type="button" class="action-default scalable" value="Refresh Placeholders"  onclick="window.location.href=<?php echo $refreshButton; ?>"/>
+ </span>
+</div>

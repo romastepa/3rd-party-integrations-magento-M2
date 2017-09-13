@@ -1,0 +1,38 @@
+<?php
+
+$magentoEvent = '';
+$TemplateName = '';
+$mappingId = $this->getRequest()->getParam("mapping_id");
+$storeId = $this->getRequest()->getParam("store_id");
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$emarsysEventmappingCollection= $objectManager->create('\Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping\Collection');
+$eventMapping = $emarsysEventmappingCollection->addFieldToFilter("id", $mappingId)->getFirstItem();
+if ($eventMapping->getId()) {
+    $meventId = $eventMapping->getMagentoEventId();
+    $emarsysEventId = $eventMapping->getEmarsysEventId();
+    $emarsysEvent = $objectManager->create('\Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\Collection')
+        ->addFieldToFilter("id", $emarsysEventId)
+        ->getFirstItem()->getEmarsysEvent();
+}
+$result = $objectManager->create('\Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\Collection')->addFieldToFilter("id", $meventId)
+    ->getFirstItem();
+if ($result && $result->getId()) {
+    $magentoEvent = $result->getMagentoEvent();
+    //print_r($result->getConfigPath());exit;
+    $templateId = $objectManager->get('\Magento\Framework\App\Config\ScopeConfigInterface')->getValue($result->getConfigPath());
+
+if (is_numeric($templateId)) {
+    $result = $objectManager->create('\Magento\Email\Model\Template')->getCollection()->addFieldToFilter('template_id', $templateId)->getFirstItem();
+    $TemplateName = $result->getTemplateCode();
+    //$opt = $this->edit->_getDefaultTemplatesAsOptionsArray();
+} else {
+    $TemplateName = $block->getMagentoDefaultTemplate($result->getConfigPath());
+}
+}
+?>
+<table>
+<tr><td><b>Magento Event:</b></td><td><td>&nbsp;<?php echo $magentoEvent;?></td></tr>
+<tr><td><b>Emarsys Event: </b></td><td><td>&nbsp;<?php echo $emarsysEvent;?></td></tr>
+<tr><td><b>Magento Template:</b></td><td><td>&nbsp;<?php echo $TemplateName; ?></td></tr>
+</table>
+

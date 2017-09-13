@@ -1,0 +1,76 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$helper = $objectManager->create('\Magento\Backend\Helper\Data');
+$saveUrl = $helper->getUrl('emarsys_emarsys/mapping_order/save');
+?>
+<?php echo $block->getGridHtml(); ?>
+
+<form method="POST" action="<?php echo $saveUrl; ?>" id="idformorder">
+    <input type="hidden" id="idjsonstringdata" name="jsonstringdata" value=""/>
+    <input type="hidden" name="form_key"
+           value="<?php echo $objectManager->get('Magento\Framework\Data\Form\FormKey')->getFormKey(); ?>"/>
+</form>
+<script>
+    function changeValue(url, attribute, coulmnAttr, value, entityTypeId) {
+        var url = url + '?attribute=' + attribute + '&entityTypeId=' + entityTypeId + '&attributeValue=' + value + '&coulmnAttr=' + coulmnAttr;
+        new Ajax.Request(url, {
+            method: 'get',
+            asynchronous: false
+        });
+
+    }
+    function updateSchema(redirectUrl, count) {
+        if (count > 0) {
+            var isGood = confirm('Do you want to update schema?');
+            if (isGood) {
+                jQuery('#loading-mask').show();
+                setTimeout(function () {
+                    setLocation(redirectUrl);
+                }, 1000);
+            } else {
+                return false;
+            }
+        } else {
+            setLocation(redirectUrl);
+        }
+
+    }
+    function checkMapping(url, count) {
+        if (count > 0) {
+            var isGood = confirm('Do you want to change the current mapping to recommended mapping?');
+            if (isGood) {
+                setLocation(url);
+            } else {
+                return false;
+            }
+        } else {
+            setLocation(url);
+        }
+    }
+
+
+    require(['jquery', 'jquery/ui'], function ($) {
+        $('.orderSaveBtn').on('click', function () {
+            jsondata = {};
+            $('.emarsysatts').each(function () {
+                jsondata[$(this).attr('name')] = $(this).val();
+            });
+            stringJsonData = JSON.stringify(jsondata);
+            $('#idjsonstringdata').val(stringJsonData);
+            $('#idformorder').submit();
+        });
+        $('.updateSchema').on('click', function () {
+            var confirm = window.confirm("Do you want to update schema.");
+            if (confirm)
+                window.location.href = "<?php echo $helper->getUrl('emarsys_emarsys/mapping_order/saveschema'); ?>";
+        });
+
+
+    });
+
+</script>

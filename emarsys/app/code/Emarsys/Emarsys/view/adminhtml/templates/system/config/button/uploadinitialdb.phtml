@@ -1,0 +1,51 @@
+<script>
+
+    require(['prototype'], function () {
+        function uploadInitialDb() {
+
+            var status = confirm("Data uploaded previously will be overwritten. Do you want to continue?");
+            if (status == true) {
+                var initial_load = '';
+                if (document.getElementById('contacts_synchronization_initial_db_load_initial_db_load1').checked) {
+                    initial_load = document.getElementById('contacts_synchronization_initial_db_load_initial_db_load1').value;
+                } else if (document.getElementById('contacts_synchronization_initial_db_load_initial_db_load2').checked) {
+                    initial_load = document.getElementById('contacts_synchronization_initial_db_load_initial_db_load2').value;
+                } else if (document.getElementById('contacts_synchronization_initial_db_load_initial_db_load3').checked) {
+                    initial_load = document.getElementById('contacts_synchronization_initial_db_load_initial_db_load3').value;
+                }
+                var attribute = document.getElementById('contacts_synchronization_initial_db_load_initial_db_load_attribute').value;
+                if (document.getElementById('contacts_synchronization_initial_db_load_initial_db_load3').checked)
+                {
+                    var attributevalue = document.getElementById('contacts_synchronization_initial_db_load_initial_db_load_attribute_value').value;
+                }
+                else
+                {
+                    var attributevalue = '';
+                }
+                
+
+
+                params = {
+                    'initial_load': initial_load,
+                    'attribute': attribute,
+                    'attributevalue': attributevalue
+                };
+                new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                    parameters: params,
+                    onSuccess: function (response) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+        window.uploadInitialDb = uploadInitialDb;
+    });
+
+</script>
+
+<div class="pp-buttons-container">
+    <button id="<?php echo $block->getHtmlId(); ?>" onclick="javascript:uploadInitialDb(); return false;">
+        <span><span><span><?php echo $block->escapeHtml($block->getButtonLabel()) ?></span></span></span>
+    </button>
+</div>

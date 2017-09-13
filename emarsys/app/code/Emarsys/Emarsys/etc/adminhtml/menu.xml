@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2016 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Emarsys_Emarsys::parent" title="Emarsys" translate="title" module="Emarsys_Emarsys" sortOrder="20"
+             dependsOnModule="Emarsys_Emarsys" resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::settings" title="Settings" translate="title" module="Emarsys_Emarsys" sortOrder="10"
+             parent="Emarsys_Emarsys::parent" resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_setting_connection" title="Connection" module="Emarsys_Emarsys" sortOrder="20"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/emarsys_settings/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys__setting_synchronization" title="Contact Synchronization"
+             module="Emarsys_Emarsys" sortOrder="20"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/contacts_synchronization/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys__setting_opt_in" title="Opt-In" module="Emarsys_Emarsys" sortOrder="30"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/opt_in/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_transactionmail" title="Transaction Email" module="Emarsys_Emarsys"
+             sortOrder="40"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/transaction_mail/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_smartinsight" title="Smart Insight" module="Emarsys_Emarsys" sortOrder="50"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/smart_insight/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_predict" title="Predict" module="Emarsys_Emarsys" sortOrder="60"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/emarsys_predict/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_web_extend" title="Web Extend" module="Emarsys_Emarsys" sortOrder="70"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/web_extend/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex4" title="Logs" module="Emarsys_Emarsys" sortOrder="80"
+             parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/logs/"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::mapping" title="Mappings" translate="title" module="Emarsys_Emarsys" sortOrder="30"
+             parent="Emarsys_Emarsys::parent" resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_customer_mapping" title="Customer" module="Emarsys_Emarsys" sortOrder="31"
+             parent="Emarsys_Emarsys::mapping" action="emarsys_emarsys/mapping_customer/index"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_field_mapping" title="Customer-Field" module="Emarsys_Emarsys" sortOrder="32"
+             parent="Emarsys_Emarsys::mapping" action="emarsys_emarsys/mapping_field/index"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex5" title="Product" module="Emarsys_Emarsys" sortOrder="33"
+             parent="Emarsys_Emarsys::mapping" action="emarsys_emarsys/mapping_product/index"
+             resource="Emarsys_Emarsys::support"/>
+        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex7" title="Event" module="Emarsys_Emarsys" sortOrder="34"
+             parent="Emarsys_Emarsys::mapping" action="emarsys_emarsys/mapping_event/index"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_order_mapping" title="Order" module="Emarsys_Emarsys" sortOrder="35"
+             parent="Emarsys_Emarsys::mapping" action="emarsys_emarsys/mapping_order/index"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::operations" title="Operations" translate="title" module="Emarsys_Log" sortOrder="40"
+             parent="Emarsys_Emarsys::parent" resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_check_list" title="Installation Checklist" module="Emarsys_Log" sortOrder="10"
+             parent="Emarsys_Emarsys::operations" action="emarsys_emarsys/installation/checklist"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex9" title="Bulk Export" module="Emarsys_Emarsys"
+             sortOrder="20"
+             parent="Emarsys_Emarsys::operations" action="emarsys_emarsys/customerexport/index"
+             resource="Emarsys_Emarsys::emarsys"/>
+        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex10" title="Logs" module="Emarsys_Log" sortOrder="30"
+             parent="Emarsys_Emarsys::operations" action="schedulers/scheduler/index"
+             resource="Emarsys_Emarsys::operations"/>
+        <!-- <add id="Emarsys_Emarsys::emarsys_emarsysadminindex11" title="Scheduler" module="Emarsys_Emarsys" sortOrder="40"
+             parent="Emarsys_Emarsys::operations" action="schedulers/cron/grid"
+             resource="Emarsys_Emarsys::emarsys"/> -->
+    </menu>
+</config>

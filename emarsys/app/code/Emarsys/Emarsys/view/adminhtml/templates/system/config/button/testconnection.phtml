@@ -1,0 +1,55 @@
+<script>
+
+    require(['prototype'], function () {
+        function testConnection() {
+
+            var username = document.getElementById('emarsys_settings_emarsys_setting_emarsys_api_username').value;
+            var password = document.getElementById('emarsys_settings_emarsys_setting_emarsys_api_password').value;
+            var endpoint = document.getElementById('emarsys_settings_emarsys_setting_emarsys_api_endpoint').value;
+            if (endpoint == 'custom') {
+                url = document.getElementById('emarsys_settings_emarsys_setting_emarsys_custom_url').value;
+            } else {
+                url = '';
+            }
+
+            params = {
+                'username': username,
+                'password': password,
+                'endpoint': endpoint,
+                'url': url
+            };
+            new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                parameters: params,
+                onSuccess: function (response) {
+                    location.reload();
+                }
+            });
+        }
+
+        window.testConnection = testConnection;
+    });
+
+    /**
+     *  Compare password and confirm password
+     *  If both are not equal then it will display error
+     */
+    function confirmPassword() {
+        document.getElementById('emarsys_settings_emarsys_setting_testapiconnection').setAttribute('disabled', 'disabled');
+        document.getElementById('errorConfirmPassword').innerHTML = "";
+        var password = document.getElementById('emarsys_settings_emarsys_setting_emarsys_api_password').value;
+        var confirmPassword = document.getElementById('emarsys_settings_emarsys_setting_confirm_password').value;
+        if (password != confirmPassword) {
+            document.getElementById('errorConfirmPassword').innerHTML = "Please enter the same value again.";
+        } else {
+            document.getElementById('emarsys_settings_emarsys_setting_testapiconnection').removeAttribute('disabled');
+            document.getElementById('errorConfirmPassword').innerHTML = "";
+        }
+    }
+</script>
+
+<div class="pp-buttons-container">
+    <div id="connection_status" class="message-validation hidden"></div>
+    <button id="<?php echo $block->getHtmlId(); ?>" onclick="javascript:testConnection(); return false;">
+        <span><span><span><?php echo $block->escapeHtml($block->getButtonLabel()) ?></span></span></span>
+    </button>
+</div>

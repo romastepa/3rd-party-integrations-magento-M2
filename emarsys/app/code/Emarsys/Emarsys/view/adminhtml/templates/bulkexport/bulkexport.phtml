@@ -1,0 +1,119 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ */
+?>
+
+<?php $storeId = $block->getStoreId(); ?>
+
+<script>
+    function bulkExportData(url) {
+        var status = confirm("Data uploaded previously will be overwritten. Do you want to continue?");
+        if (status == true) {
+            var entityType = document.getElementById("entitytype").value;
+            var fromDate = document.getElementById("fromdate").value.trim();
+            var toDate = document.getElementById("todate").value.trim();
+            var exportType = document.getElementById("file_format").value;
+            error = 0;
+            if (fromDate != '' && toDate == '') {
+                message = "Please enter 'to date' also.";
+                error = 1;
+            }
+            if (fromDate == '' && toDate != '') {
+                message = "Please enter 'from date' also.";
+                error = 1;
+            }
+            if (fromDate != '' && toDate != '') {
+                var from = new Date(fromDate);
+                var to = new Date(toDate);
+                if (to < from) {
+                    message = 'From date cannot be greater than To Date.';
+                    error = 1;
+                }
+            }
+            if (error == 1) {
+                alert(message);
+            }
+            if (error == 0) {
+                var url = url + '?entityType=' + entityType + '&fromDate=' + fromDate + '&toDate=' + toDate + '&exportType=' + exportType;
+                location.href = url;
+            }
+        }
+    }
+
+    function bulkSubscriberExportData(url) {
+        var entityType = document.getElementById("entitytype").value;
+        var exportType = document.getElementById("file_format").value;
+
+        var url = url + '?entityType=' + entityType + '&exportType=' + exportType;
+        location.href = url;
+    }
+
+    function bulkOrderExportData(url) {
+        var entityType = document.getElementById("entitytype").value;
+        var fromDate = document.getElementById("fromdate").value.trim();
+        var toDate = document.getElementById("todate").value.trim();
+        var exportType = document.getElementById("file_format").value;
+
+        error = 0;
+        if (fromDate != '' && toDate == '') {
+            message = "Please enter 'to date' also.";
+            error = 1;
+        }
+        if (fromDate == '' && toDate != '') {
+            message = "Please enter 'from date' also.";
+            error = 1;
+        }
+        if (fromDate != '' && toDate != '') {
+            var from = new Date(fromDate);
+            var to = new Date(toDate);
+            if (to < from) {
+                message = 'From date cannot be greater than To Date.';
+                error = 1;
+            }
+        }
+        if (error == 1) {
+            alert(message);
+        }
+        if (error == 0) {
+            var url = url + '?entityType=' + entityType + '&fromDate=' + fromDate + '&toDate=' + toDate + '&exportType=' + exportType;
+            location.href = url;
+        }
+    }
+
+    function bulkProductExportData(url) {
+        var entityType = document.getElementById("entitytype").value;
+        var exportType = document.getElementById("file_format").value;
+        var includeBundle = document.getElementById("include_bundle").value;
+        var TotalCheckBoxes = document.getElementsByName("checkbox");
+        var checkboxesChecked = [];
+        for (var i = 0; i < TotalCheckBoxes.length; i++) {
+            // And stick the checked ones onto an array...
+            if (TotalCheckBoxes[i].checked) {
+                // alert(TotalCheckBoxes[i].value);
+                checkboxesChecked.push(TotalCheckBoxes[i].value);
+            }
+        }
+        var excludeCategories = '';
+        excludeCategories = checkboxesChecked.toString();
+        var url = url + '?entityType=' + entityType + '&exportType=' + exportType + '&includeBundle=' + includeBundle + '&excludeCategories=' + excludeCategories;
+        location.href = url;
+    }
+
+    function bulkExport(entity) {
+        var url = '';
+        if (entity == 'customer') {
+            url = '<?php echo $this->getUrl("emarsys_emarsys/customerexport/index/store/$storeId") ?>';
+        } else if (entity == 'subscriber') {
+            url = '<?php echo $this->getUrl("emarsys_emarsys/subscriberexport/index/store/$storeId") ?>';
+        } else if (entity == 'order') {
+            url = '<?php echo $this->getUrl("emarsys_emarsys/orderexport/index/store/$storeId") ?>';
+        } else if (entity == 'product') {
+            url = '<?php echo $this->getUrl("emarsys_emarsys/productexport/index/store/$storeId") ?>';
+        }
+
+        window.location.assign(url);
+    }
+</script>

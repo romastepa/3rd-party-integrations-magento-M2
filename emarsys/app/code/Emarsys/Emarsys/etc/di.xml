@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--     <type name="Magento\Framework\Console\CommandList">
+            <arguments>
+                <argument name="commands" xsi:type="array">
+                    <item name="emarsys_emarsys" xsi:type="object">Emarsys\Emarsys\Console\Command\EmarsysCommand</item>
+                </argument>
+            </arguments>
+        </type> -->
+    <type name="Magento\Checkout\Model\ShippingInformationManagement">
+        <plugin name="save-in-quote" type="Emarsys\Emarsys\Model\Checkout\ShippingInformationManagement"
+                sortOrder="10"/>
+    </type>
+
+    <preference for="\Magento\Framework\Mail\Transport" type="Emarsys\Emarsys\Model\Transport"/>
+    <preference for="\Magento\Framework\Mail\Message" type="Emarsys\Emarsys\Model\Message"/>
+    <preference for="\Magento\Framework\Mail\Template\TransportBuilder"
+                type="Emarsys\Emarsys\Model\Template\TransportBuilder"/>
+
+    <preference for="Magento\Email\Model\Template" type="Emarsys\Emarsys\Model\Template"/>
+    <preference for="Magento\Newsletter\Model\Subscriber" type="Emarsys\Emarsys\Model\Subscriber"/>
+</config>

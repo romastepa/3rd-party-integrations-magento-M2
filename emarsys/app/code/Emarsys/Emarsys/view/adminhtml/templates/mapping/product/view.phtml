@@ -1,0 +1,41 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ */
+?>
+<?php echo $block->getGridHtml(); ?>
+<script>
+
+    function updateSchema(redirectUrl, count) {
+
+        if (count > 0) {
+            var isGood = confirm('Do you want to update schema?');
+            if (isGood) {
+                jQuery('#loading-mask').show();
+                setTimeout(function () {
+                    setLocation(redirectUrl);
+                }, 1000);
+            } else {
+                return false;
+            }
+        } else {
+            setLocation(redirectUrl);
+        }
+
+    }
+
+    function checkMapping(url, count) {
+        if (count > 0) {
+            var isGood = confirm('Do you want to change the current mapping to recommended mapping?');
+            if (isGood) {
+                setLocation(url);
+            } else {
+                return false;
+            }
+        } else {
+            setLocation(url);
+        }
+    }
+</script>

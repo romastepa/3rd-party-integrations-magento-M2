@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <!-- <job name="emarsys_customer_sync" instance="Emarsys\Emarsys\CronSync" method="cronCustomerSync">
+            <config_path>crontab/default/jobs/emarsys_sync/schedule/cron_expr</config_path>
+        </job> -->
+        <job name="emarsys_smartinsight_sync" instance="Emarsys\Emarsys\CronSync" method="cronOrderSyncQueue">
+            <config_path>crontab/default/jobs/emarsys_smartinsight_sync/schedule/cron_expr</config_path>
+        </job>
+        <job name="emarsys_product_sync" instance="Emarsys\Emarsys\CronSync" method="cronProductSync">
+            <config_path>crontab/default/jobs/emarsys_productexport_sync/schedule/cron_expr</config_path>
+        </job>
+        <job name="cronCustomerSyncQueue" instance="Emarsys\Emarsys\CronSync" method="cronCustomerSyncQueue">
+            <config_path>crontab/default/jobs/emarsys_sync/schedule/cron_expr</config_path>
+        </job>
+        <job name="cronEmarsysSchemaCheck" instance="Emarsys\Emarsys\CronSync" method="cronEmarsysSchemaCheck">
+            <config_path>crontab/default/jobs/schema_check/schedule/cron_expr</config_path>
+        </job>
+        <job name="cleanLog" instance="Emarsys\Emarsys\Observer" method="cleanLog">
+            <schedule>0 1 * * *</schedule>
+        </job>
+    </group>
+</config>

@@ -1,0 +1,96 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ */
+
+namespace Emarsys\Emarsys\Block\Adminhtml\Subscriberexport\Edit\Tab;
+
+use Magento\Backend\Block\Widget\Grid\Extended;
+
+class Form extends \Magento\Backend\Block\Widget\Form\Generic
+{
+    /**
+     * @var \Magento\ImportExport\Model\Source\Export\FormatFactory
+     */
+    protected $_formatFactory;
+
+    /**
+     * @param \Magento\Backend\Block\Widget\Context $context
+     * @param \Magento\Backend\Model\Auth\Session $session
+     * @param \Magento\Framework\Data\FormFactory $formFactory
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\ImportExport\Model\Source\Export\FormatFactory $formatFactory
+     * @param \Magento\Framework\App\Request\Http $request
+     * @param Extended $extended
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Widget\Context $context,
+        \Magento\Backend\Model\Auth\Session $session,
+        \Magento\Framework\Data\FormFactory $formFactory,
+        \Magento\Framework\Registry $registry,
+        \Magento\ImportExport\Model\Source\Export\FormatFactory $formatFactory,
+        \Magento\Framework\App\Request\Http $request,
+        Extended $extended,
+        array $data = []
+    ) {
+    
+        parent::__construct($context, $registry, $formFactory, $data);
+        $this->session = $session;
+        $this->admin = $context->getBackendSession();
+        $this->storeManager = $context->getStoreManager();
+        $this->_formFactory = $formFactory;
+        $this->_registry = $registry;
+        $this->extended = $extended;
+        $this->getRequest = $request;
+        $this->scopeConfigInterface = $context->getScopeConfig();
+        $this->_formatFactory = $formatFactory;
+    }
+
+    /**
+     * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function _prepareForm()
+    {
+        $form = $this->_formFactory->create();
+        $this->setForm($form);
+        $fieldset = $form->addFieldset("support_form", ["legend" => '']);
+        $values = [];
+        $values['customer'] = 'Customer';
+        $values['subscriber'] = 'Subscriber';
+        $smartInsightEnable = $this->scopeConfigInterface->getValue('smart_insight/smart_insight/smartinsight_enabled');
+        if ($smartInsightEnable == 1) {
+            $values['order'] = 'Order';
+        }
+        $productExportStatus = $this->scopeConfigInterface->getValue('emarsys_predict/feed_export/enable_nightly_product_feed');
+        if ($productExportStatus == 1 || $smartInsightEnable == 1) {
+            $values['product'] = 'Product';
+        }
+        $fieldset->addField("entitytype", "select", [
+            'label' => 'Export Entity Type',
+            'name' => 'entity_type',
+            'values' => $values,
+            'style' => 'width:200px',
+            'value' => 'subscriber',
+            'onchange' => "bulkExport(this.value)",
+        ]);
+
+        $fieldset->addField(
+            'file_format',
+            'select',
+            [
+                'name' => 'file_format',
+                'style' => 'width:200px',
+                'title' => __('Export To'),
+                'label' => __('Export To'),
+                'required' => false,
+                'values' => $this->_formatFactory->create()->toOptionArray()
+            ]
+        );
+        return parent::_prepareForm();
+    }
+}

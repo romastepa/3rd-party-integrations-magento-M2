@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="page.main.actions">
+            <block class="Magento\Backend\Block\Store\Switcher" name="emarsys.store.switcher"
+                   template="Emarsys_Emarsys::emarsys/switcher.phtml"/>
+        </referenceContainer>
+        <referenceContainer name="content">
+            <block class="Emarsys\Emarsys\Block\Adminhtml\Orderexport\Form" name="emarsys_emarsys_order_export_form"/>
+            <block class="Emarsys\Emarsys\Block\Adminhtml\Orderexport\Edit" name="emarsys_emarsys_order_export_edit"/>
+            <block class="Emarsys\Emarsys\Block\Adminhtml\Orderexport\Edit\Tab\Form"
+                   name="emarsys_emarsys_order_export_edit_tab_form"/>
+        </referenceContainer>
+    </body>
+</page>

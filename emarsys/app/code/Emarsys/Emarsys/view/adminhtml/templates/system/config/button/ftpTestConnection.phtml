@@ -1,0 +1,36 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ */
+?>
+<script>
+    require(['prototype'], function () {
+        function ftpTestConnection() {
+            params = {
+                'hostname': document.getElementById('emarsys_settings_ftp_settings_hostname').value,
+                'port': document.getElementById('emarsys_settings_ftp_settings_port').value,
+                'username': document.getElementById('emarsys_settings_ftp_settings_username').value,
+                'password': document.getElementById('emarsys_settings_ftp_settings_ftp_password').value,
+                'bulkexpdir': document.getElementById('emarsys_settings_ftp_settings_ftp_bulk_export_dir').value,
+                'ftpssl': document.getElementById('emarsys_settings_ftp_settings_useftp_overssl').value,
+                'passivemode': document.getElementById('emarsys_settings_ftp_settings_usepassive_mode').value
+            };
+            new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                parameters: params,
+                onSuccess: function (response) {
+                    location.reload();
+                }
+            });
+        }
+
+        window.ftpTestConnection = ftpTestConnection;
+    });
+</script>
+<div class="pp-buttons-container">
+    <div id="connection_status" class="message-validation hidden"></div>
+    <button id="<?php echo $block->getHtmlId(); ?>" onclick="javascript:ftpTestConnection(); return false;">
+        <span><span><span><?php echo $block->escapeHtml($block->getButtonLabel()) ?></span></span></span>
+    </button>
+</div>
