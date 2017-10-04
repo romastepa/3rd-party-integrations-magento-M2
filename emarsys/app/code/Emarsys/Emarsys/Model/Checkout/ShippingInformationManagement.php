@@ -1,51 +1,81 @@
 <?php
-
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ */
 namespace Emarsys\Emarsys\Model\Checkout;
 
-use Psr\Log\LoggerInterface;
+use Magento\Checkout\Model\Session;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\Logs;
+use Magento\Checkout\Model\ShippingInformationManagement as CheckoutShippingInformationManagement;
+use Magento\Checkout\Api\Data\ShippingInformationInterface;
 
+/**
+ * Class ShippingInformationManagement
+ * @package Emarsys\Emarsys\Model\Checkout
+ */
 class ShippingInformationManagement
 {
-    protected $quoteRepository;
+    /**
+     * @var Session
+     */
+    protected $checkoutSession;
 
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var Logs
+     */
+    protected $emarsysLogs;
+
+    /**
+     * ShippingInformationManagement constructor.
+     *
+     * @param Session $checkoutSession
+     * @param StoreManagerInterface $storeManager
+     * @param Logs $emarsysLogs
+     */
     public function __construct(
-        \Magento\Quote\Model\QuoteRepository $quoteRepository,
-        LoggerInterface $logger,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-
-        \Magento\Framework\App\Request\Http $request,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
-        \Magento\Newsletter\Model\SubscriberFactory $subscriberFactory,
-        \Emarsys\Emarsys\Model\Api\Subscriber $subscriberModel
-    )
-    {
-        $this->quoteRepository = $quoteRepository;
-        $this->logger = $logger;
+        Session $checkoutSession,
+        StoreManagerInterface $storeManager,
+        Logs $emarsysLogs
+    ) {
         $this->checkoutSession = $checkoutSession;
-        $this->_request = $request;
-        $this->customerResourceModel = $customerResourceModel;
-        $this->_subscriberFactory = $subscriberFactory;
-        $this->_storeManager = $storeManager;
-        $this->subscriberModel = $subscriberModel;
+        $this->storeManager = $storeManager;
+        $this->emarsysLogs = $emarsysLogs;
     }
 
+    /**
+     * @param CheckoutShippingInformationManagement $subject
+     * @param $cartId
+     * @param ShippingInformationInterface $addressInformation
+     */
     public function beforeSaveAddressInformation(
-        \Magento\Checkout\Model\ShippingInformationManagement $subject,
+        CheckoutShippingInformationManagement $subject,
         $cartId,
-        \Magento\Checkout\Api\Data\ShippingInformationInterface $addressInformation
-    )
-    {
-        $extAttributes = $addressInformation->getExtensionAttributes()->getSubscribe();
-        $attributeData = explode("||", $extAttributes);
+        ShippingInformationInterface $addressInformation
+    ) {
+        try {
+            $extAttributes = $addressInformation->getExtensionAttributes();
+            $storeId = $this->storeManager->getStore()->getStoreId();
 
-        $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-        $storeId = $this->_storeManager->getStore()->getStoreId();
+            if ($extAttributes && is_object($extAttributes)) {
+                $isCustomerSubscribed = $extAttributes->getSubscribe();
+                $attributeData = explode("||", $isCustomerSubscribed);
 
-        if ($attributeData[0] == 1) {
-            $this->checkoutSession->setNewsletterSubCheckout(1);
-        } else {
-            $this->checkoutSession->setNewsletterSubCheckout(0);
+                if ($attributeData[0] == 1) {
+                    $this->checkoutSession->setNewsletterSubCheckout(1);
+                } else {
+                    $this->checkoutSession->setNewsletterSubCheckout(0);
+                }
+            }
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'beforeSaveAddressInformation');
         }
     }
 }

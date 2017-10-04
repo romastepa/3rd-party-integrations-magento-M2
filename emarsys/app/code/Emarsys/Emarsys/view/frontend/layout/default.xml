@@ -1,16 +1,18 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-1column"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <head>
-        <!-- for css file -->
-        <!-- <link src="Emarsys_Emarsys/css/emarsys.css"/>
-        <link src="requirejs/require.js"/>
-        <link src="Emarsys_Emarsys/js/emarsys.js"/> -->
-    </head>
     <body>
-        <referenceBlock name="content.bottom">
-            <block class="Emarsys\Emarsys\Block\JavascriptTracking"
-                   template="Emarsys_Emarsys::emarsys/javascripttracking.phtml"
-                   name="javascript_tracking_code"/>
-        </referenceBlock>
+        <referenceContainer name="content.bottom">
+            <container name="emarsys.wrapper" htmlTag="div" htmlClass="emarsys-wrapper" after="-" >
+                <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/webextend.phtml" name="webextend" after="-" cacheable="false" >
+                    <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/javascripttracking.phtml" name="webextend.script" >
+                        <action method="setCacheLifetime"><lifetime>1</lifetime></action>
+                    </block>
+                </block>
+                <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/recommendations.phtml" name="recommendations.script" after="webextend"  >
+                    <action method="setCacheLifetime"><lifetime>1</lifetime></action>
+                </block>
+            </container>
+        </referenceContainer>
+        <!--<move element="emarsys.wrapper" destination="page.bottom.container" after="-" />-->
     </body>
 </page>

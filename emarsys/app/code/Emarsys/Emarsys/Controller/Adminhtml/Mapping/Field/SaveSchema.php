@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
@@ -45,7 +45,7 @@ class SaveSchema extends \Magento\Backend\App\Action
      * @param \Emarsys\Emarsys\Helper\Field $fieldHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Field $fieldResourceModel
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      */
     public function __construct(
@@ -53,9 +53,9 @@ class SaveSchema extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Helper\Field $fieldHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Field $fieldResourceModel,
         PageFactory $resultPageFactory,
-        \Emarsys\Log\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
     

@@ -37,7 +37,7 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent
      * @param Context $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param \Magento\AdminNotification\Model\InboxFactory $adminNotification
      * @param \Emarsys\Emarsys\Model\EmarsyseventsFactory $emarsysEvents
      */
@@ -46,7 +46,7 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
         \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent,
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Magento\AdminNotification\Model\InboxFactory $adminNotification,
         \Emarsys\Emarsys\Model\EmarsyseventsFactory $emarsysEvents
     ) {
@@ -119,11 +119,12 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
      * 
      * @return boolean
      */
-    public function getLocalEmarsysEvents()
+    public function getLocalEmarsysEvents($websiteId)
     {
         try {
             $emarsysLocalIds = [];
-            $emarsysContactFields = $this->resourceModelEvent->getEmarsysEvents(1);
+            $defaultStore = $this->storeManager->getWebsite($websiteId)->getDefaultStore()->getId();
+            $emarsysContactFields = $this->resourceModelEvent->getEmarsysEvents($defaultStore);
 
             foreach ($emarsysContactFields as $_emarsysContactField) {
                 $emarsysLocalIds[] = $_emarsysContactField['event_id'];

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
@@ -52,8 +52,8 @@ class Save extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Model\CustomerFactory $customerFactory,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
         \Emarsys\Emarsys\Helper\Data $emsrsysHelper,
-        \Emarsys\Log\Helper\Logs $logHelper,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         PageFactory $resultPageFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -102,6 +102,7 @@ class Save extends \Magento\Backend\App\Action
             foreach ($stringArrayData as $key=>$value)
             {
                 $customId = $this->resourceModelCustomer->getCustAttIdByCode($key,$storeId);
+                $magentoAttributeId = $this->resourceModelCustomer->getCustomerAttributeId($key);
                 $attData = $this->customerFactory->create()->getCollection()->addFieldToFilter('store_id', array('eq'=>$storeId))->addFieldToFilter('magento_custom_attribute_id',array('eq'=>$customId['id']));
                 if (is_array($attData->getData()) && !empty($attData->getData()) )
                 {
@@ -115,6 +116,7 @@ class Save extends \Magento\Backend\App\Action
                          $attModel->setData('emarsys_contact_field', $value);
                      }
                     $attModel->setData('magento_custom_attribute_id',$customId['id']);
+                    $attModel->setData('magento_attribute_id',$magentoAttributeId);
                     $attModel->setData('store_id',$storeId);
                     $attModel->save();
                 }
@@ -130,6 +132,7 @@ class Save extends \Magento\Backend\App\Action
                          $attModel->setData('emarsys_contact_field', $value);
                      }
                     $attModel->setData('magento_custom_attribute_id',$customId['id']);
+                    $attModel->setData('magento_attribute_id',$magentoAttributeId);
                     $attModel->setData('store_id',$storeId);
                     $attModel->save();
                 }

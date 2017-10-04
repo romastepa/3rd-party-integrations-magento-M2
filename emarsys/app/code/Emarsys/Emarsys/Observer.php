@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys;
 
@@ -183,7 +183,7 @@ class Observer implements ObserverInterface
                 try {
                     if ($archive == 'archive') {
                         $command = "mysqldump -u$username -p$password -h$hostname $database $logTable > $backupFile";
-                        system($command, $result);
+                        system(escapeshellarg($command), $result);
                     }
 
                     /* Delete record from log_details tables */
@@ -194,6 +194,8 @@ class Observer implements ObserverInterface
                         $row = $queryRead->fetchAll();
                         if (count($row)) {
                             foreach ($row as $result) {
+                                $logTable = $sqlConnection->quote($logTable);
+                                $result['id'] = $sqlConnection->quote($result['id']);
                                 $sqlConnection->query("DELETE FROM " . $this->resourceConfig->getTable($logTable) . "  WHERE id = " . $result['id']);
                             }
                         }

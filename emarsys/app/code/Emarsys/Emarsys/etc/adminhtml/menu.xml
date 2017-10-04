@@ -1,10 +1,4 @@
 <?xml version="1.0"?>
-<!--
-/**
- * Copyright © 2016 Magento. All rights reserved.
- * See COPYING.txt for license details.
- */
--->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
@@ -29,7 +23,7 @@
         <add id="Emarsys_Emarsys::emarsys_smartinsight" title="Smart Insight" module="Emarsys_Emarsys" sortOrder="50"
              parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/smart_insight/"
              resource="Emarsys_Emarsys::emarsys"/>
-        <add id="Emarsys_Emarsys::emarsys_predict" title="Predict" module="Emarsys_Emarsys" sortOrder="60"
+        <add id="Emarsys_Emarsys::emarsys_predict" title="Product Catalog" module="Emarsys_Emarsys" sortOrder="60"
              parent="Emarsys_Emarsys::settings" action="adminhtml/system_config/edit/section/emarsys_predict/"
              resource="Emarsys_Emarsys::emarsys"/>
         <add id="Emarsys_Emarsys::emarsys_web_extend" title="Web Extend" module="Emarsys_Emarsys" sortOrder="70"
@@ -55,20 +49,19 @@
         <add id="Emarsys_Emarsys::emarsys_order_mapping" title="Order" module="Emarsys_Emarsys" sortOrder="35"
              parent="Emarsys_Emarsys::mapping" action="emarsys_emarsys/mapping_order/index"
              resource="Emarsys_Emarsys::emarsys"/>
-        <add id="Emarsys_Emarsys::operations" title="Operations" translate="title" module="Emarsys_Log" sortOrder="40"
+        <add id="Emarsys_Emarsys::operations" title="Operations" translate="title" module="Emarsys_Emarsys" sortOrder="40"
              parent="Emarsys_Emarsys::parent" resource="Emarsys_Emarsys::emarsys"/>
-        <add id="Emarsys_Emarsys::emarsys_check_list" title="Installation Checklist" module="Emarsys_Log" sortOrder="10"
+        <add id="Emarsys_Emarsys::emarsys_check_list" title="Installation Checklist" module="Emarsys_Emarsys" sortOrder="10"
              parent="Emarsys_Emarsys::operations" action="emarsys_emarsys/installation/checklist"
              resource="Emarsys_Emarsys::emarsys"/>
         <add id="Emarsys_Emarsys::emarsys_emarsysadminindex9" title="Bulk Export" module="Emarsys_Emarsys"
              sortOrder="20"
              parent="Emarsys_Emarsys::operations" action="emarsys_emarsys/customerexport/index"
              resource="Emarsys_Emarsys::emarsys"/>
-        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex10" title="Logs" module="Emarsys_Log" sortOrder="30"
+        <add id="Emarsys_Emarsys::emarsys_emarsysadminindex10" title="Logs" module="Emarsys_Emarsys" sortOrder="30"
              parent="Emarsys_Emarsys::operations" action="schedulers/scheduler/index"
              resource="Emarsys_Emarsys::operations"/>
-        <!-- <add id="Emarsys_Emarsys::emarsys_emarsysadminindex11" title="Scheduler" module="Emarsys_Emarsys" sortOrder="40"
-             parent="Emarsys_Emarsys::operations" action="schedulers/cron/grid"
-             resource="Emarsys_Emarsys::emarsys"/> -->
+        <add id="Emarsys_Emarsys::help"  title="Help" translate="title" module="Emarsys_Emarsys" sortOrder="40" parent="Emarsys_Emarsys::parent"  resource="Emarsys_Emarsys::support"/>
+        <add id="Emarsys_Emarsys::support" title="Support" translate="title" module="Emarsys_Emarsys" sortOrder="41" parent="Emarsys_Emarsys::help" action="emarsys_emarsys/support" resource="Emarsys_Emarsys::support"/>
     </menu>
 </config>

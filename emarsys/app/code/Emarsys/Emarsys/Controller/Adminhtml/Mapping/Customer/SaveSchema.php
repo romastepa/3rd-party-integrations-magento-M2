@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
@@ -51,7 +51,7 @@ class SaveSchema extends \Magento\Backend\App\Action
      * @param \Emarsys\Emarsys\Helper\Customer $emarsysCustomerHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
      */
@@ -60,8 +60,8 @@ class SaveSchema extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Helper\Customer $emarsysCustomerHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
         PageFactory $resultPageFactory,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
-        \Emarsys\Log\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
          \Magento\Eav\Model\Entity\Attribute $attribute

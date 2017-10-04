@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
@@ -88,7 +88,8 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         $this->getConnection()->query("DELETE FROM " . $this->getTable('emarsys_events') . " WHERE store_id = '" . $storeId . "' ");
         if (isset($events['data'])) {
             foreach ($events['data'] as $field) {
-                $this->getConnection()->query("INSERT INTO " . $this->getTable("emarsys_events") . "(`id`,`event_id`,`emarsys_event`,`store_id`) VALUES('','" . $field['id'] . "','" . $field['name'] . "','$storeId')");
+                $field['name'] = $this->getConnection()->quote($field['name']);
+                $this->getConnection()->query("INSERT INTO " . $this->getTable("emarsys_events") . "(`id`,`event_id`,`emarsys_event`,`store_id`) VALUES('','" . $field['id'] . "'," . $field['name'] . ",'$storeId')");
             }
             return true;
         } else {
@@ -132,7 +133,8 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     public function getEmailAllVariables($attributeCode, $storeId)
     {
-        $query = "SELECT * FROM " . $this->getTable('emarsys_variable_mapping') . " WHERE magento_event_template = '" . $attributeCode . "' AND store_id = " . $storeId;
+        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $query = "SELECT * FROM " . $this->getTable('emarsys_variable_mapping') . " WHERE magento_event_template = " . $attributeCode . " AND store_id = " . $storeId;
         $result = $this->getConnection()->fetchAll($query);
         return $result;
     }

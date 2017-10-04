@@ -2,60 +2,112 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model\Observer;
 
-use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\Api\Subscriber;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Magento\Framework\App\Request\Http;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Customer\Model\Session;
 
+/**
+ * Class RealTimeSubscriber
+ * @package Emarsys\Emarsys\Model\Observer
+ */
 class RealTimeSubscriber implements ObserverInterface
 {
-    private $logger;
+    /**
+     * @var Subscriber
+     */
+    protected $subscriberModel;
 
-    protected $customerFactory;
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
 
+    /**
+     * @var Customer
+     */
     protected $customerResourceModel;
 
-    protected $_responseFactory;
+    /**
+     * @var Http
+     */
+    protected $request;
 
-    protected $_url;
+    /**
+     * @var Data
+     */
+    protected $dataHelper;
 
+    /**
+     * @var Session
+     */
+    protected $customerSession;
+
+    /**
+     * RealTimeSubscriber constructor.
+     *
+     * @param StoreManagerInterface $storeManager
+     * @param Subscriber $subscriberModel
+     * @param Customer $customerResourceModel
+     * @param Http $request
+     * @param Data $dataHelper
+     * @param Session $customerSession
+     */
     public function __construct(
-        LoggerInterface $logger,
-        \Magento\Customer\Model\CustomerFactory $customerFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\Api\Subscriber $subscriberModel,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
-        \Magento\Framework\App\Request\Http $request,
-        \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Emarsys\Emarsys\Helper\Data $dataHelper,
-        \Magento\Framework\UrlInterface $url
+        StoreManagerInterface $storeManager,
+        Subscriber $subscriberModel,
+        Customer $customerResourceModel,
+        Http $request,
+        Data $dataHelper,
+        Session $customerSession
     ) {
-    
-        $this->logger = $logger;
         $this->subscriberModel = $subscriberModel;
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->customerResourceModel = $customerResourceModel;
-        $this->customerFactory = $customerFactory;
-        $this->_responseFactory = $responseFactory;
-        $this->_request = $request;
-        $this->_url = $url;
+        $this->request = $request;
         $this->dataHelper = $dataHelper;
+        $this->customerSession = $customerSession;
     }
 
+    /**
+     * @param \Magento\Framework\Event\Observer $observer
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $pageHandle = $this->_request->getFullActionName();
-        $subscriberId = $observer->getEvent()->getSubscriber()->getId();
-        $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-        $storeId = $this->_storeManager->getStore()->getStoreId();
-        $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-        $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync');
+        $event = $observer->getEvent();
+        $subscriber = $event->getSubscriber();
+        $subscriberId = $subscriber->getId();
+        $store = $this->storeManager->getStore();
+        $storeId = $store->getStoreId();
+        $websiteId = $store->getWebsiteId();
+        $pageHandle = $this->request->getFullActionName();
+
+        $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig(
+            'contacts_synchronization/emarsys_emarsys/realtime_sync',
+            \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
+            $websiteId
+        );
+
+        $this->customerSession->setWebExtendCustomerEmail($subscriber->getSubscriberEmail());
+
         if ($realtimeStatus == 1) {
             $frontendFlag = 1;
-            $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag, $pageHandle, $websiteId);
+            $this->dataHelper->realtimeTimeBasedOptinSync($subscriber);
+            $result = $this->subscriberModel->syncSubscriber(
+                $subscriberId,
+                $storeId,
+                $frontendFlag,
+                $pageHandle,
+                $websiteId
+            );
+
             if ($result['optInStatus'] == 'singleOptIn' && $result['apiResponseStatus'] == '200') {
                 return;
             }
@@ -64,3 +116,5 @@ class RealTimeSubscriber implements ObserverInterface
         }
     }
 }
+
+

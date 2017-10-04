@@ -15,8 +15,8 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
         $selectedCats = '';
         $html = "";
         $storeId = $session->getStore();
-        $rootCategoryId = 0;
-        $rootCategoryId = $storeManager->getStore($storeId)->getRootCategoryId();
+        $rootCategoryId = 1;
+        //$rootCategoryId = $storeManager->getStore($storeId)->getRootCategoryId();
         list($catTree, $selectedCats) = $this->getTreeCategories($rootCategoryId);
         $html = "
         <div class=\"emarsys-search\">
@@ -30,78 +30,6 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
         <div class= 'catg-sub-'><input type= 'checkbox' disabled = 'disabled'name= 'dummy-checkbox'/>Root Category</div>" .
 
             $catTree;
-        //echo "<pre>"; echo $html; exit;
-        $html .= "
-<script>
-
-function Unchecked(value) {
-  document.getElementById('catCheckBox_'+value).click();
-}
-
-function categoryClick(value,catName) {
-  if(document.getElementById('catCheckBox_'+value).checked == true)
-      {
-          document.getElementById('selectedCategories').innerHTML += '<span id=\''+value+'\' onclick=\'Unchecked('+value+')\' class=\"admin__action-multiselect-crumb\">'+catName+'<button class=\"action-close\" type=\"button\"><span class=\"action-close-text\"></span></button></span>';
-      }
-      else {
-          document.getElementById(value).remove();
-
-      }
-}
-
-</script>
-<style>
-        .category-multi-select ul{
-            list-style: none;
-            position: relative;
-        }
-        .category-multi-select ul li{
-            position: relative;
-        }
-        .category-multi-select ul li ul{
-            padding-left: 30px;
-        }
-        .category-multi-select ul li:after{
-            border-top: 1px dashed #a79d95;
-            height: 1px;
-            top: 20px;
-            width: 22px;
-            content: '';
-            left: -25px;
-            position: absolute;
-            }
-        .category-multi-select>ul>li:after{
-            border: none;
-        }
-        .category-multi-select ul li>div:before{
-            border-left: 1px dashed #a79d95;
-            bottom: 0;
-            content: '';
-            left: -25px;
-            position: absolute;
-            top: -10px;
-            width: 1px;
-
-        }
-        .category-multi-select>ul>li>div:before{
-            left: 5px;
-            top: 25px;
-        }
-        .category-multi-select ul ul li>div:before{
-                height: 30px;
-        }
-        .category-multi-select ul li>div{
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-        .category-multi-select ul li>div input{
-            position: relative;
-            top:3px;
-            margin-right: 10px;
-        }
-
-
-    </style>";
         return $html;
     }
 

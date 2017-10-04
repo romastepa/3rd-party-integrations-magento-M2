@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
@@ -57,7 +57,7 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * @param \Emarsys\Emarsys\Model\ResourceModel\Sync $resourceModelSync
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param TimeZone $timezone
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param Data $emarsysHelper
      * @param \Magento\Catalog\Model\ProductFactory $productFactory
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
@@ -72,7 +72,7 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         \Emarsys\Emarsys\Model\ResourceModel\Sync $resourceModelSync,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         TimeZone $timezone,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Magento\Catalog\Model\ProductFactory $productFactory,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
@@ -191,15 +191,48 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      *
      * @return array
      */
-    public function getProductAttributeLabelId()
+    public function getProductAttributeLabelId($storeId)
     {
         $emarsysCodes = ['Item', 'Title', 'Link', 'Image', 'Category', 'Price'];
         $result = [];
         foreach ($emarsysCodes as $code) {
-            $query = "SELECT id FROM " . $this->getTable("emarsys_emarsys_product_attributes") . " WHERE code = '" . $code . "' ";
+            $query = "SELECT id FROM " . $this->getTable("emarsys_emarsys_product_attributes") . " WHERE code = '" . $code . "' ".'AND store_id ='.$storeId;
             $result[] = $this->getConnection()->fetchOne($query);
         }
         return $result;
+    }
+
+    public function getRequiredProductAttributesForExport($storeId)
+    {
+        $requiredMapping = [];
+        $requiredMapping['sku'] = 'Item'; // Mage_Attr_Code = Emarsys_Attr_Code
+        $requiredMapping['name'] = 'Title';
+        $requiredMapping['quantity_and_stock_status'] = 'Available';
+        $requiredMapping['url_key'] = 'Link';
+        $requiredMapping['image'] = 'Image';
+        $requiredMapping['category_ids'] = 'Category';
+        $requiredMapping['price'] = 'Price';
+        $returnArray = [];
+        foreach($requiredMapping as $key => $value)
+        {
+            $attrData = [];
+            $attrData['emarsys_contact_field'] = '';
+            $attrData['magento_attr_code'] = $key;
+            $attrData['emarsys_attr_code'] = $this->getEmarsysAttributeIdByCode($value, $storeId);
+            $attrData['sync_direction'] = '';
+            $attrData['store_id'] = $storeId;
+            $returnArray[] = $attrData;
+        }
+
+        return $returnArray;
+    }
+
+    public function getEmarsysAttributeIdByCode($attrCode, $storeId)
+    {
+        $attrCode = $this->getConnection()->quote($attrCode);
+        $emarsysAttributeId = '';
+        $emarsysAttributeId = $this->getConnection()->fetchOne("SELECT id FROM " . $this->getTable('emarsys_emarsys_product_attributes') . " WHERE code = ".$attrCode." AND store_id =" . $storeId); // Get this value from Emarsys Attributes Table based Code & Store ID
+        return $emarsysAttributeId;
     }
 
     /**
@@ -211,6 +244,19 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         try {
             $productAttributes = $this->getConnection()->fetchAll("SELECT * FROM " . $this->getTable('emarsys_product_mapping') . " WHERE store_id =" . $storeId);
+            $emarsysAttributeId = [];
+            foreach ($productAttributes as $mapAttribute) {
+                $emarsysAttributeId[] = $mapAttribute['emarsys_attr_code'];
+            }
+
+            $requiredMapping = $this->getRequiredProductAttributesForExport($storeId);
+            foreach($requiredMapping as $_requiredMapping)
+            {
+                if(!in_array($_requiredMapping['emarsys_attr_code'], $emarsysAttributeId))
+                {
+                    $productAttributes[] = $_requiredMapping;
+                }
+            }
             return $productAttributes;
         } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'getMappedProductAttribute');
@@ -240,8 +286,9 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getAttributeName($attributeId)
     {
+        $attributeId = $this->getConnection()->quote($attributeId);
         try {
-            $query = "SELECT entity_type_id,attribute_code FROM " . $this->getTable('eav_attribute') . "  WHERE entity_type_id = 4 AND attribute_code = '" . $attributeId . "'";
+            $query = "SELECT entity_type_id,attribute_code FROM " . $this->getTable('eav_attribute') . "  WHERE entity_type_id = 4 AND attribute_code = " . $attributeId;
             $emarsysFieldName = $this->getConnection()->fetchAll($query);
             return $emarsysFieldName;
         } catch (Exception $e) {

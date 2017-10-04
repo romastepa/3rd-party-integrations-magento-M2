@@ -8,8 +8,19 @@
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
 
 use Magento\Framework\DataObject;
+use Magento\Backend\Model\Session;
+use Magento\Backend\Helper\Data as BackendHelper;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\UrlInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsysEventsCollectionFactory;
+use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
-class EmarsysEvent extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
+/**
+ * Class EmarsysEvent
+ * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer
+ */
+class EmarsysEvent extends AbstractRenderer
 {
     /**
      * @var \Magento\Backend\Model\Session
@@ -17,58 +28,56 @@ class EmarsysEvent extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Ab
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer\Collection
+     * @var
      */
     protected $collectionFactory;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var BackendHelper
      */
     protected $backendHelper;
 
-    /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Sync
-     */
-    protected $syncResourceModel;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Event
-     */
-    protected $resourceModelEvent;
-
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelEvent
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var EmarsysEventsCollectionFactory
+     */
+    protected $emarsysEventCollection;
+
+    /**
+     * EmarsysEvent constructor.
+     *
+     * @param Session $session
+     * @param BackendHelper $backendHelper
+     * @param StoreManagerInterface $storeManager
+     * @param UrlInterface $urlInterface
+     * @param EmarsysHelper $EmarsysHelper
+     * @param EmarsysEventsCollectionFactory $EmarsyseventCollection
      */
     public function __construct(
-        \Magento\Backend\Model\Session $session,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory,
-        \Magento\Backend\Helper\Data $backendHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\UrlInterface $urlInterface,
-        \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection
+        Session $session,
+        BackendHelper $backendHelper,
+        StoreManagerInterface $storeManager,
+        UrlInterface $urlInterface,
+        EmarsysHelper $EmarsysHelper,
+        EmarsysEventsCollectionFactory $EmarsyseventCollection
     ) {
-    
         $this->session = $session;
-        $this->collectionFactory = $collectionFactory;
         $this->backendHelper = $backendHelper;
-        $this->resourceModelEvent = $resourceModelEvent;
         $this->_storeManager = $storeManager;
-        $this->EmarsyseventCollection = $EmarsyseventCollection;
-        $this->EmarsysHelper = $EmarsysHelper;
+        $this->emarsysEventCollection = $EmarsyseventCollection;
+        $this->emarsysHelper = $EmarsysHelper;
         $this->_urlInterface = $urlInterface;
     }
-
 
     /**
      * @param DataObject $row
@@ -79,23 +88,27 @@ class EmarsysEvent extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Ab
         $storeId = $this->session->getData('store');
         $url = $this->_urlInterface->getUrl('*/*/changeValue');
         $row->getData('id');
-        $params = ['mapping_id' => $row->getData('id'), 'store_id' => $storeId];
+        $params = ['mapping_id' => $row->getData('id'), 'store' => $storeId];
         $placeHolderUrl = $this->backendHelper->getUrl("*/*/placeholders", $params);
-        $placeholderJsonRequestUrl = $this->backendHelper->getUrl("*/*/placeholderjson/mapping_id/" . $row->getData('id') . "/store_id/" . $storeId);
+        $placeholderJsonRequestUrl = $this->backendHelper->getUrl("*/*/placeholderjson/mapping_id/" .
+            $row->getData('id') . "/store_id/" . $storeId);
 
-        $jsonRequestUrl = $this->backendHelper->getUrl("adminhtml/suite2email_placeholders/jsonrequest/", $params);
-        $emarsysEvents = $this->EmarsyseventCollection->create()->addFieldToFilter('store_id', ['eq'=>$storeId]);
+        $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id', ['eq'=>$storeId]);
         $ronly = '';
         $buttonClass = '';
-        if ($this->EmarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
+
+        if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
             $ronly .= ' disabled = disabled';
             $buttonClass = ' disabled';
         }
-        $html = '<select class="admin__control-select mapping-select" ' . $ronly . ' name="directions"  style="width:200px;" onchange="changeEmarsysValue(\'' . $url . '\',this.value, \'' . $row->getData('magento_event_id') . '\', \'' . $row->getData('id') . '\')";>
+
+        $html = '<select class="admin__control-select mapping-select" ' . $ronly .
+            ' name="directions"  style="width:200px;" onchange="changeEmarsysValue(\'' . $url .
+            '\',this.value, \'' . $row->getData('magento_event_id') . '\', \'' . $row->getData('id') . '\')";>
 			<option value="0">Please Select</option>';
+
         foreach ($emarsysEvents as $emarsysEvent) {
             $sel = '';
-            //echo $row->getData("emarsys_event_id")."---->".$emarsysEvent->getId()."--->".$emarsysEvent->getEmarsysEvent()."<br>";
             if ($row->getData("emarsys_event_id") == $emarsysEvent->getId()) {
                 $sel .= 'selected = selected';
             }
@@ -103,8 +116,12 @@ class EmarsysEvent extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Ab
         }
 
         $html .= '</select>';
-        $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button ' . $buttonClass . '" name="json" id="json"  onclick="openMyPopup(\'' . $placeholderJsonRequestUrl . '\');" >JSON Request</button>';
-        $html .= '&nbsp;&nbsp;<button class="scalable task form-button" name="placeholders" id="placeholders"  onclick="placeholderRedirect(\'' . $placeHolderUrl . '\');" >Placeholders</button>';
+        $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button ' .
+            $buttonClass . '" name="json" id="json"  onclick="openMyPopup(\'' . $placeholderJsonRequestUrl .
+            '\');" >JSON Request</button>';
+        $html .= '&nbsp;&nbsp;<button class="scalable task form-button" name="placeholders" id="placeholders"  onclick="placeholderRedirect(\'' .
+            $placeHolderUrl . '\');" >Placeholders</button>';
+
         return $html;
     }
 }

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\Api;
 
@@ -12,7 +12,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
 use Emarsys\Emarsys\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use \Emarsys\Log\Helper\Logs;
+use \Emarsys\Emarsys\Helper\Logs;
 use \Psr\Log\LoggerInterface;
 
 /**
@@ -127,33 +127,6 @@ class Subscriber
 
         // Query to get opt-in Id in emarsys from magento table
         $optInEmarsysId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $storeId);
-        /*
-        if ($pageHandle == 'newsletter_subscriber_new') {
-            $optInMagentoStatus = $this->customerResourceModel->getDataFromCoreConfig('opt_in/subscription_newsletter_everypage/opt_in_strategy', $scope, $websiteId);  // return single / double opt-in
-            if ($optInMagentoStatus == '' && $websiteId == 1) {
-                $optInMagentoStatus = $this->customerResourceModel->getDataFromCoreConfig('opt_in/subscription_newsletter_everypage/opt_in_strategy');
-            }
-        } elseif ($pageHandle == 'customer_account_createpost' || $pageHandle == 'newsletter_manage_save' || $pageHandle == 'customer_index_save') {
-            $optInMagentoStatus = $this->customerResourceModel->getDataFromCoreConfig('opt_in/subscription_customer_homepage/opt_in_strategy', $scope, $websiteId);  // return single / double opt-in
-            if ($optInMagentoStatus == '' && $websiteId == 1) {
-                $optInMagentoStatus = $this->customerResourceModel->getDataFromCoreConfig('opt_in/subscription_customer_homepage/opt_in_strategy');
-            }
-        } elseif ($pageHandle == 'checkout_onepage_success') {
-            $optInMagentoStatus = $this->customerResourceModel->getDataFromCoreConfig('opt_in/subscription_checkout_process/opt_in_strategy', $scope, $websiteId);  // return single / double opt-in
-            if ($optInMagentoStatus == '' && $websiteId == 1) {
-                $optInMagentoStatus = $this->customerResourceModel->getDataFromCoreConfig('opt_in/subscription_checkout_process/opt_in_strategy');
-            }
-        }
-
-        // If single opt-in then pass opt-in id value "true" = 1
-        // If double opt-in then pass opt-in id value "null" = ''
-
-        if ($optInMagentoStatus == 'singleOptIn') {
-            $buildRequest[$optInEmarsysId] = 1;
-        } else if ($optInMagentoStatus == 'doubleOptIn') {
-            $buildRequest[$optInEmarsysId] = '';
-        }
-        */
 
         $buildRequest[$optInEmarsysId] =  $objCustomer->getSubscriberStatus();
         if ($buildRequest[$optInEmarsysId] != 1) {
@@ -258,7 +231,6 @@ class Subscriber
         /**
          * Logs for Sync completed with / without Error
          */
-
         $logsArray['id'] = $logId;
         $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());

@@ -54,7 +54,7 @@ class EmarsysPlaceholders extends \Magento\Backend\Block\Widget\Grid\Column\Rend
         \Magento\Backend\Helper\Data $backendHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents $Emarsysmagentoevents,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $CollectionFactory
     ) {
     

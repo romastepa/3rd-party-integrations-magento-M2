@@ -11,5 +11,11 @@
         <route id="emarsys_emarsys" frontName="emarsys_emarsys">
             <module name="Emarsys_Emarsys"/>
         </route>
+        <route id="logs" frontName="logs">
+            <module name="Emarsys_Emarsys" before="Magento_Backend"/>
+        </route>
+        <route id="schedulers" frontName="schedulers">
+            <module name="Emarsys_Emarsys" before="Magento_Backend" />
+        </route>
     </router>
 </config>

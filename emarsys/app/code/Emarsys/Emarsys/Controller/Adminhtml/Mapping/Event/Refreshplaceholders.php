@@ -2,38 +2,33 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Data;
 
-class Refreshplaceholders extends \Magento\Backend\App\Action
+class Refreshplaceholders extends Action
 {
-
     /**
-     * @var PageFactory
+     * @var Data
      */
-    protected $resultPageFactory;
+    protected $emarsysHelper;
 
     /**
-     * 
+     * Refreshplaceholders constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Helper\Data $EmarsysHelper
-     * @param PageFactory $resultPageFactory
+     * @param Data $EmarsysHelper
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
-        PageFactory $resultPageFactory
+        Data $EmarsysHelper
     ) {
-    
         parent::__construct($context);
-        $this->resultPageFactory = $resultPageFactory;
-        $this->EmarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $EmarsysHelper;
     }
 
     /**
@@ -43,10 +38,23 @@ class Refreshplaceholders extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-
         $placeholderData = $this->getRequest()->getParams();
-        $this->EmarsysHelper->refreshPlaceholders($placeholderData['mapping_id'], $this->getRequest()->getParam('store'));
+        $store = $this->getRequest()->getParam('store');
+        if (!$store) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
+            $returnUrl = $this->getUrl(
+                '*/*/refreshplaceholders',
+                array('mapping_id' => $placeholderData['mapping_id'], 'store'=> $storeId)
+            );
+            return $this->resultRedirectFactory->create()->setUrl($returnUrl);
+        }
+        $this->emarsysHelper->refreshPlaceholders(
+            $placeholderData['mapping_id'],
+            $this->getRequest()->getParam('store')
+        );
+
         $resultRedirect = $this->resultRedirectFactory->create();
+
         return $resultRedirect->setRefererOrBaseUrl();
     }
 }

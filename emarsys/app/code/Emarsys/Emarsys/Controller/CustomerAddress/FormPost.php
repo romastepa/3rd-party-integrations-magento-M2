@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\CustomerAddress;
@@ -40,7 +40,8 @@ class FormPost extends \Magento\Customer\Controller\Address
     protected $helperData;
 
     /**
-     * 
+     * FormPost constructor.
+     *
      * @param Context $context
      * @param Session $customerSession
      * @param FormKeyValidator $formKeyValidator
@@ -72,7 +73,6 @@ class FormPost extends \Magento\Customer\Controller\Address
         RealTimeCustomer $realTimeCustomerModel,
         HelperData $helperData
     ) {
-    
         $this->realTimeCustomerModel = $realTimeCustomerModel;
         $this->regionFactory = $regionFactory;
         $this->helperData = $helperData;

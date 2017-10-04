@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Uploadinitialdb;
@@ -10,50 +10,56 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Uploadinitialdb;
 use Emarsys\Emarsys\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Sabre\DAV\Client;
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Backend\App\Action\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Config\Model\ResourceModel\Config;
 
 /**
- * Class TestConnection for API credentials
+ * Class Index for API credentials
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Uploadinitialdb
  */
 class Index extends \Magento\Backend\App\Action
 {
-
     /**
      * @var Data
      */
     protected $emarsysHelper;
 
     /**
-     * @var \Magento\Config\Model\ResourceModel\Config
+     * @var Config
      */
     protected $config;
 
     /**
-     * @var \Emarsys\Log\Helper\Logs
+     * @var Logs
      */
     protected $logsHelper;
 
     /**
-     * 
+     * Index constructor.
      * @param Data $emarsysHelper
-     * @param \Magento\Customer\Model\CustomerFactory $customer
-     * @param \Magento\Backend\App\Action\Context $context
+     * @param CustomerFactory $customer
+     * @param Context $context
      * @param DateTime $date
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel
-     * @param \Emarsys\Log\Helper\Logs $logsHelper
-     * @param \Magento\Config\Model\ResourceModel\Config $config
+     * @param StoreManagerInterface $storeManager
+     * @param Customer $customerResourceModel
+     * @param Logs $logsHelper
+     * @param Config $config
      */
     public function __construct(
         Data $emarsysHelper,
-        \Magento\Customer\Model\CustomerFactory $customer,
-        \Magento\Backend\App\Action\Context $context,
+        CustomerFactory $customer,
+        Context $context,
         DateTime $date,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
-        \Emarsys\Log\Helper\Logs $logsHelper,
-        \Magento\Config\Model\ResourceModel\Config $config
-    ) {
-    
+        StoreManagerInterface $storeManager,
+        Customer $customerResourceModel,
+        Logs $logsHelper,
+        Config $config
+    )
+    {
         $this->emarsysHelper = $emarsysHelper;
         $this->customer = $customer;
         $this->logsHelper = $logsHelper;
@@ -69,40 +75,49 @@ class Index extends \Magento\Backend\App\Action
         $data = $this->getRequest()->getParams();
         $data['fromDate'] = '';
         $data['toDate'] = '';
-        $websiteIdArr = [];
-        if ( !isset($data['website']) ) // if the default configuration is set then the website id won't come
-        {
-            foreach($this->storeManager->getWebsites() as $websiteData)
-            {
-                $data['website'] = $websiteData->getWebsiteId();
+        //if the default configuration is set then the website id won't come
+        if (!isset($data['website'])) {
+            foreach ($this->storeManager->getStores(false) as $storeData) {
+                $data['store'] = $storeData->getId();
+                $data['website'] = $storeData->getWebsiteId();
                 $this->uploadInitialData($data);
             }
             $scopeType = 'default';
             $websiteId = 0;
-        }
-        else
-        {
-            $this->uploadInitialData($data);
+        } else {
+            foreach ($this->storeManager->getStores(false) as $storeData) {
+                if ($data['website'] == $storeData->getWebsiteId()) {
+                    $data['store'] = $storeData->getId();
+                    $this->uploadInitialData($data);
+                }
+            }
             $scopeType = 'websites';
             $websiteId = $data['website'];
         }
-        $initialLoad     = $data['initial_load'];
-        $attribute       = $data['attribute'];
-        $attributeValue  = $data['attributevalue'];
+
+        $initialLoad = $data['initial_load'];
+        $attribute = $data['attribute'];
+        $attributeValue = $data['attributevalue'];
         $this->config->saveConfig('contacts_synchronization/initial_db_load/initial_db_load', $initialLoad, $scopeType, $websiteId);
         $this->config->saveConfig('contacts_synchronization/initial_db_load/attribute', $attribute, $scopeType, $websiteId);
         $this->config->saveConfig('contacts_synchronization/initial_db_load/attribute_value', $attributeValue, $scopeType, $websiteId);
     }
-    
+
+    /**
+     * @param $data
+     */
     public function uploadInitialData($data)
     {
         $scope = 'websites';
         $websiteId = $data['website'];
         $scopeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
-        $storeCode = $this->storeManager->getStore($scopeId)->getCode();
-        $websiteCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
+        if (isset($data['store'])) {
+            $scopeId = $data['store'];
+        }
+        $store = $this->storeManager->getStore($scopeId);
+        $storeCode = $store->getCode();
+        $websiteCode = $store->getWebsite()->getCode();
         $data['storeId'] = $scopeId;
-
         $data['fromDate'] = '';
         $data['toDate'] = '';
 
@@ -114,30 +129,21 @@ class Index extends \Magento\Backend\App\Action
         $logsArray['auto_log'] = 'Complete';
         $logsArray['store_id'] = $scopeId;
         $logsArray['website_id'] = $websiteId;
-        $logId = $this->logsHelper->manualLogs($logsArray,1);
+        $logId = $this->logsHelper->manualLogs($logsArray, 1);
 
         //get these values from db
-
         $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url', $scope, $websiteId);
-
-
         $webDavUser = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_user', $scope, $websiteId);
-
-
         $webDavPass = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_password', $scope, $websiteId);
 
         $errorCount = 0;
+        $notificationErrorCount = 0;
+        $errorStatus = 1;
         if ($webDavUrl != '' && $webDavUser != '' && $webDavPass != '') {
             $errorStatus = 0;
-        } else {
-            $errorStatus = 1;
         }
-
         $notificationMessage = '';
         $subscriberMessage = '';
-        $initialLoad = $data['initial_load'];
-        $attribute = $data['attribute'];
-        $attributeValue = $data['attributevalue'];
 
         if ($errorStatus != 1) {
             $settings = [
@@ -149,22 +155,13 @@ class Index extends \Magento\Backend\App\Action
             $client = new Client($settings);
             $response = $client->request('GET');
             if ($response['statusCode'] == '200' || $response['statusCode'] == '403') {
-                $website = $this->getRequest()->getParam('website');
-                $scopeType = 'websites';
-                $defaultScopeType = 'default';
-                $defaultScopeId = '0';
                 if ($websiteId == '') {
-                    $scopeType = 'default';
                     $websiteId = 0;
                 }
 
-                // Upload Customer CSV first
+                //Upload Customer CSV first
                 $customervalues = [];
-                $customerData = $this->customer->create();
-
                 $optInStatus = $data['initial_load'];
-
-
                 if (isset($scopeId)) {
                     $websiteId = $this->storeManager->getStore($scopeId)->getWebsiteId();
                     $data['website'] = $websiteId;
@@ -182,135 +179,83 @@ class Index extends \Magento\Backend\App\Action
                     }
                 }
                 $mappedAttributes = $this->customerResourceModel->getMappedCustomerAttribute($scopeId);
-                $emarsysFieldNames = [];
-
+                $headers = array();
                 if (isset($mappedAttributes) && count($mappedAttributes) != '') {
-                    $mappingField = 0;
-                    foreach ($mappedAttributes as $mapAttribute) {
-                        $emarsysFieldId = trim($mapAttribute['emarsys_contact_field']);
-                        if (!empty($emarsysFieldId)) {
-                            $mappingField = 1;
-                        }
-                        $magentoFieldIds[] = $mapAttribute['magento_attribute_id'];
-                        $emarsysFieldName = $this->customerResourceModel->getEmarsysFieldName($scopeId, $emarsysFieldId);
-                        $emarsysFieldNames[] = $emarsysFieldName;
+                    $headerIndex = array();
+                    $indexCount = 0;
+                    foreach ($mappedAttributes as $att) {
+                        if ($att['emarsys_contact_field'] == NULL)
+                            continue;
+                        $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($att, $scopeId);
+                        $headers["$att[magento_custom_attribute_id]"] = $emarsysField['name'];
+                        $headerIndex[$indexCount] = $att['magento_custom_attribute_id'];;
+                        $indexCount++;
                     }
-                    if ($mappingField == 1) {
-                        if (!in_array('Email', $emarsysFieldNames)) {
-                            $emarsysFieldNames[] = 'Email';
-                        }
-                        $emarsysFieldNames[] = 'Magento Customer ID';
-                        $emarsysFieldNames[] = 'Magento Customer Unique ID';
+                }
+                if (isset($mappedAttributes) && count($mappedAttributes) != '') {
+                    if (count($headers) > 0) {
+                        $headers['magento_customer_id'] = 'Magento Customer ID';
+                        $headerIndex[$indexCount] = 'magento_customer_id';
+                        $headers['magento_customer_unique_id'] = 'Magento Customer Unique ID';
+                        $indexCount = $indexCount + 1;
+                        $headerIndex[$indexCount] = 'magento_customer_unique_id';
+                        //$headers['opt_in'] = 'Opt-In';
+                        $indexCount = $indexCount + 1;
+                        $headerIndex[$indexCount] = 'opt_in';
+                        $headers['customer_email'] = 'Customer Email';
+                        $indexCount = $indexCount + 1;
+                        $headerIndex[$indexCount] = 'customer_email';
+                        $localFilePath = BP . "/var";
+                        $outputFile = "customers_" . $this->date->date('YmdHis', time()) . "_" . $storeCode . ".csv";
+                        $filePath = $outputFile; //$localFilePath . "/" . $outputFile;
+                        $handle = fopen($filePath, 'w');
+                        fputcsv($handle, $headers);
+                        $customerCollection = $this->customerResourceModel->getCustomerCollection($data);
+                        $customerValues = array();
+                        foreach ($customerCollection as $customerData) {
+                            $customerLoad = $this->customer->create()->load($customerData['entity_id']);
+                            $primaryBilling = $customerLoad->getPrimaryBillingAddress();
+                            $primaryShipping = $customerLoad->getPrimaryshippingAddress();
+                            foreach ($headers as $key => $value) {
+                                $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($key, $scopeId); //using the custom magento id from the emarsys_magento_customer_attributes table
+                                //code for the custom defined attributes in the array starts
 
-                        if ($optInStatus != '') {
-                            $emarsysFieldNames[] = 'Opt-In';
-                        }
-
-                        $heading = $emarsysFieldNames;
-                        $outputFile = "customers_". $this->date->date('YmdHis', time())."_".$websiteCode.".csv";
-                        $handle = fopen($outputFile, 'w');
-                        fputcsv($handle, $heading);
-                        $magentoFieldCodes = [];
-                        foreach ($magentoFieldIds as $field) {
-                            $attData = $this->customerResourceModel->getAttributeCodeById($field);
-                            if($attData['attribute_code']){
-                            $magentoFieldCodes[$attData['attribute_code']] = $attData['attribute_code'];
-                            }
-                        }
-                        $allAttsUsed = [];
-                        foreach ($customervalues as $value) {
-                            $values = [];
-                            $value = array_replace(array_flip($magentoFieldCodes), $value);
-                            foreach ($value as $key => $cusData) {
-                                $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-
-                                if (in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                    $allAttsUsed[] = $key;
-                                    if (isset($cusData)) {
-                                        $values[] = $cusData;
-                                    } else {
-                                        $values[] = '';
-                                    }
-                                }
-                            }
-
-                            if (!in_array($value['email'], $values)) {
-                                $values[] = $value['email'];
-                            }
-                            $values[] = $value['entity_id'];
-                            $values[] = $value['email'] . "#" . $websiteId . "#" . $value['store_id'];
-
-                            if ($optInStatus == 'true') {
-                                $values[] = '1';
-                            } elseif ($optInStatus == 'empty') {
-                                $values[] = 0;
-                            } elseif ($optInStatus == 'attribute') {
-                                $values[] = '1';
-                            }
-                            if (isset($value['default_billing']) && $value['default_billing'] != null) {
-                                $magentoAddFields = [];
-                                $customerBillingAddress = $this->customerResourceModel->getCustPriBillAddress($value['entity_id']);
-                                if ($customerBillingAddress) {
-                                    foreach ($customerBillingAddress->getData() as $key => $dataValue) {
-                                        $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                        if (!is_array($dataValue) && in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                            $magentoAddFields[$key] = $dataValue;
+                                if ($value == "Magento Customer ID") {
+                                    $index = array_search($key, $headerIndex);
+                                    $customerValues[$index] = $customerLoad->getId();
+                                } elseif ($value == "Magento Customer Unique ID") {
+                                    $index = array_search($key, $headerIndex);
+                                    $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId() . "#" . $customerLoad->getStoreId();
+                                } elseif ($value == "Customer Email") {
+                                    $index = array_search($key, $headerIndex);
+                                    $customerValues[$index] = $customerLoad->getEmail();
+                                } elseif ($attributeCode['entity_type_id'] == 1) {
+                                    //code for the custom defined attributes ends here
+                                    $index = array_search($key, $headerIndex);
+                                    $customerValues[$index] = $customerLoad->getData($attributeCode['attribute_code']);
+                                } elseif ($attributeCode['entity_type_id'] == 2) {
+                                    $index = array_search($key, $headerIndex);
+                                    $attrVal = '';
+                                    if (isset($customerData['default_shipping']) && $customerData['default_shipping'] != NULL && $customerData['default_shipping'] != 0) {
+                                        if ($primaryShipping) {
+                                            $attrVal = $primaryShipping->getData($attributeCode['attribute_code']);
+                                        }
+                                    } elseif (isset($customerData['default_billing']) && $customerData['default_billing'] != NULL && $customerData['default_billing'] != NULL) {
+                                        if ($primaryShipping) {
+                                            $attrVal = $primaryBilling->getData($attributeCode['attribute_code']);
                                         }
                                     }
-                                }
-                                $magentoFlipFields = array_replace(array_flip($magentoFieldCodes), $magentoAddFields);
-                                foreach ($magentoFlipFields as $key => $cusData) {
-                                    $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                    if (in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                        if (isset($magentoAddFields[$key])) {
-                                            $attKey = array_search($key, $allAttsUsed);
-                                            //echo('Value:'.$magentoAddFields[$key]);
-                                            if (empty($magentoAddFields[$key])) {
-                                                $values[] = '';
-                                            } else {
-                                                $values[] = $magentoAddFields[$key];
-                                            }
-                                        }
-                                    }
+                                    $customerValues[$index] = $attrVal;
                                 }
                             }
-
-                            if (isset($value['default_shipping']) && $value['default_shipping'] != null) {
-                                $magentoAddFields = [];
-                                $customerBillingAddress = $this->customerResourceModel->getCustPriShipAddress($value['entity_id']);
-                                if ($customerBillingAddress) {
-                                    foreach ($customerBillingAddress->getData() as $key => $dataValue) {
-                                        $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                        if (!is_array($dataValue) && in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                            $magentoAddFields[$key] = $dataValue;
-                                        }
-                                    }
-                                }
-                                $magentoFlipFields = array_replace(array_flip($magentoFieldCodes), $magentoAddFields);
-                                foreach ($magentoFlipFields as $key => $cusData) {
-                                    $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                    if (in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                        if (isset($magentoAddFields[$key])) {
-                                            $attKey = array_search($key, $allAttsUsed);
-                                            if (empty($magentoAddFields[$key])) {
-                                                $values[] = '';
-                                            } else {
-                                                $values[] = $magentoAddFields[$key];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            fputcsv($handle, $values);
+                            fputcsv($handle, $customerValues);
+                            $customerValues = array();
                         }
                         $file = $outputFile;
                         $filePath = BP . "/" . $outputFile;
                         $fileOpen = fopen($filePath, "r");
                         $response = $client->request('PUT', $file, $fileOpen);
                         unlink($outputFile);
-
-
                         if ($response['statusCode'] == '201') {
                             $logsArray['id'] = $logId;
                             $logsArray['emarsys_info'] = 'Customer file uploaded to server successfully';
@@ -320,7 +265,7 @@ class Index extends \Magento\Backend\App\Action
                             $logsArray['log_action'] = 'sync';
                             $this->logsHelper->logs($logsArray);
                             $errorCount = 0;
-                            $notificationMessage = 'File uploaded to server successfully';
+                            $notificationMessage = 'Customer File uploaded to server successfully';
                         } else {
                             $logsArray['id'] = $logId;
                             $logsArray['emarsys_info'] = 'Failed to upload file on server';
@@ -330,7 +275,7 @@ class Index extends \Magento\Backend\App\Action
                             $logsArray['log_action'] = 'sync';
                             $this->logsHelper->logs($logsArray);
                             $errorCount = 1;
-                            $notificationMessage = 'Failed to upload file server  !!!';
+                            $notificationMessage = 'Failed to upload Customer file on server  !!!';
                         }
                     } else {
                         $logsArray['id'] = $logId;
@@ -341,44 +286,46 @@ class Index extends \Magento\Backend\App\Action
                         $logsArray['log_action'] = 'sync';
                         $this->logsHelper->logs($logsArray);
                         $errorCount = 1;
-                        $notificationMessage = 'Attributes are not mapped !!!';
+                        $notificationMessage = 'Customer Attributes are not mapped so failed to upload the customer file!!!';
                     }
                 } else {
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Attributes are not mapped';
-                    $logsArray['description'] = 'Failed to upload file on server. Attributes are not mapped';
+                    $logsArray['description'] = 'Failed to upload Customer file on server. Attributes are not mapped';
                     $logsArray['action'] = 'synced to emarsys';
                     $logsArray['message_type'] = 'Error';
                     $logsArray['log_action'] = 'sync';
                     $this->logsHelper->logs($logsArray);
                     $errorCount = 1;
-                    $notificationMessage = 'Attributes are not mapped !!!';
+                    $notificationMessage = 'Customer Attributes are not mapped so failed to upload the customer file!!!';
                 }
-
 
                 // Upload subscriber CSV file to WebDAV server
                 $websiteStoreIds = [];
-                foreach($this->storeManager->getStores() as $storeData)
-                {
-                    if ($data['website'] == $storeData->getWebsiteId())
-                    {
+                foreach ($this->storeManager->getStores() as $storeData) {
+                    if ($data['website'] == $storeData->getWebsiteId()) {
                         $websiteStoreIds[] = $storeData->getStoreId();
                     }
-  
                 }
                 $customervalues = [];
-
                 $optInStatus = $data['initial_load'];
-
 
                 if (isset($scopeId)) {
                     if ($optInStatus == 'attribute') {
                         $subscribedStatus = $data['attributevalue'];
 
                         $data['subscribeStatus'] = $subscribedStatus;
-                        $customervalues = $this->customerResourceModel->getSubscribedCustomerCollection($data,implode(',',$websiteStoreIds),1);
+                        $customervalues = $this->customerResourceModel->getSubscribedCustomerCollection(
+                            $data,
+                            implode(',', $websiteStoreIds),
+                            1
+                        );
                     } else {
-                        $customervalues = $this->customerResourceModel->getSubscribedCustomerCollection($data,implode(',',$websiteStoreIds),1);
+                        $customervalues = $this->customerResourceModel->getSubscribedCustomerCollection(
+                            $data,
+                            implode(',', $websiteStoreIds),
+                            1
+                        );
                     }
                 }
                 $emarsysFieldNames = ['Email', 'Magento Subscriber ID', 'Magento Customer Unique ID'];
@@ -419,8 +366,8 @@ class Index extends \Magento\Backend\App\Action
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'sync';
                     $this->logsHelper->logs($logsArray);
-                    $errorCount = 0;
-                    $subscriberMessage = 'File uploaded to server successfully';
+                    $notificationErrorCount = 0;
+                    $subscriberMessage = 'Subscriber File uploaded to server successfully';
                 } else {
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Failed to upload file on server';
@@ -429,8 +376,8 @@ class Index extends \Magento\Backend\App\Action
                     $logsArray['message_type'] = 'Error';
                     $logsArray['log_action'] = 'sync';
                     $this->logsHelper->logs($logsArray);
-                    $errorCount = 1;
-                    $subscriberMessage = 'Failed to upload file on server !!!';
+                    $notificationErrorCount = 1;
+                    $subscriberMessage = 'Subscriber Failed to upload file on server !!!';
                 }
             } else {
                 $logsArray['id'] = $logId;
@@ -457,16 +404,19 @@ class Index extends \Magento\Backend\App\Action
         $logsArray['id'] = $logId;
         $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        if ($errorCount == 1) {
+
+        //Display error/success messages
+        if ($errorCount == 1 || $notificationErrorCount == 1) {
             $logsArray['status'] = 'error';
             $logsArray['messages'] = 'Error in Uploading files. Please check.';
-            $errorMessage = $notificationMessage . " " . $subscriberMessage;
+            $errorMessage = $notificationMessage . " and " . $subscriberMessage . " for store " . $store->getName();
             $this->messageManager->addError($errorMessage);
         } else {
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Initial DB data completed';
-            $this->messageManager->addSuccess('File uploaded to server successfully !!!');
+            $this->messageManager->addSuccess(__('File uploaded to server successfully for store %1.', $store->getName()));
         }
+
         $this->logsHelper->manualLogsUpdate($logsArray);
     }
 }

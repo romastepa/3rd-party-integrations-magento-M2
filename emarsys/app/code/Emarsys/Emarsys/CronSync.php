@@ -2,15 +2,47 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys;
 
 use Magento\Framework\App\Action\Context;
 use Sabre\DAV\Client;
+use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Emarsys\Emarsys\Model\Observer\RealTimeCustomer;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysCustomerResourceModel;
+use Psr\Log\LoggerInterface;
+use Emarsys\Emarsys\Model\Api\Contact;
+use Emarsys\Emarsys\Helper\Event;
+use Magento\Backend\App\Action\Context as BackendContext;
+use Magento\Customer\Model\CustomerFactory;
+use Emarsys\Emarsys\Model\Api as EmarsysModelApi;
+use Emarsys\Emarsys\Model\ResourceModel\Order;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\QueueFactory;
+use Magento\Framework\App\Request\Http;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Config\Model\ResourceModel\Config;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Catalog\Model\Product;
+use Emarsys\Emarsys\Model\ResourceModel\Product as EmarsysProductResourceModel;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Sales\Model\Order\CreditmemoRepository;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Eav\Model\Config as EavConfigModel;
+use Magento\Framework\Registry;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
 
 
-
+/**
+ * Class CronSync
+ * @package Emarsys\Emarsys
+ */
 class CronSync
 {
     protected $customerObserver;
@@ -19,45 +51,98 @@ class CronSync
 
     protected $orderResourceModel;
 
-    /**
-     * @param ScopeConfigInterface $scopeConfig
-     * @param Sync $syncHelper
-     * @param Model\ResourceModel\Sync $syncResourceModel
-     */
-    
+    const BATCH_SIZE = 1000;
+
     protected $categoryFactory;
+
+    /**
+     * @var \Magento\Eav\Model\Config
+     */
     protected $eavConfig;
+
+    /**
+     * @var EmarsysProductModel
+     */
+    protected $emarsysProductModel;
+
+    /**
+     * @var
+     */
+    protected $emarsysHelper;
+
+    /**
+     * CronSync constructor.
+     *
+     * @param RealTimeCustomer $customerObserver
+     * @param EmarsysCustomerResourceModel $customerResourceModel
+     * @param LoggerInterface $logger
+     * @param Contact $contactModel
+     * @param Event $eventHelper
+     * @param BackendContext $context
+     * @param CustomerFactory $customer
+     * @param EmarsysModelApi $modelApi
+     * @param Order $orderResourceModel
+     * @param DateTime $date
+     * @param StoreManagerInterface $storeManager
+     * @param QueueFactory $queueModel
+     * @param Http $request
+     * @param Logs $logsHelper
+     * @param Config $resourceConfig
+     * @param EmarsysModelLogs $emarsysLogs
+     * @param ProductFactory $productCollectionFactory
+     * @param Product $productModel
+     * @param EmarsysProductResourceModel $productResourceModel
+     * @param ScopeConfigInterface $scopeConfig
+     * @param CreditmemoRepository $creditmemoRepository
+     * @param OrderFactory $salesOrderCollectionFactory
+     * @param CategoryFactory $categoryFactory
+     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param EavConfigModel $eavConfig
+     * @param Registry $registry
+     * @param EmarsysApiApi $api
+     * @param TypeListInterface $cacheTypeList
+     * @param EmarsysProductModel $emarsysProductModel
+     */
     public function __construct(
-        \Emarsys\Emarsys\Model\Observer\RealTimeCustomer $customerObserver,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
-        \Psr\Log\LoggerInterface $logger,
-        \Emarsys\Emarsys\Model\Api\Contact $contactModel,
-        \Emarsys\Emarsys\Helper\Event $eventHelper,
-        \Magento\Backend\App\Action\Context $context,
-        \Magento\Customer\Model\CustomerFactory $customer,
-        \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\QueueFactory $queueModel,
-        \Magento\Framework\App\Request\Http $request,
-        \Emarsys\Log\Helper\Logs $logsHelper,
-        \Magento\Catalog\Model\ProductFactory $productCollectionFactory,
-        \Magento\Catalog\Model\Product $productModel,
-        \Emarsys\Emarsys\Model\ResourceModel\Product $productResourceModel,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Sales\Model\Order\CreditmemoRepository $creditmemoRepository,
-        \Magento\Sales\Model\OrderFactory $salesOrderCollectionFactory,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
-        \Emarsys\Emarsys\Helper\Data $emarsysDataHelper,
-        \Magento\Eav\Model\Config $eavConfig
-    )
-    {
+        RealTimeCustomer $customerObserver,
+        EmarsysCustomerResourceModel $customerResourceModel,
+        LoggerInterface $logger,
+        Contact $contactModel,
+        Event $eventHelper,
+        BackendContext $context,
+        CustomerFactory $customer,
+        EmarsysModelApi $modelApi,
+        Order $orderResourceModel,
+        DateTime $date,
+        StoreManagerInterface $storeManager,
+        QueueFactory $queueModel,
+        Http $request,
+        Logs $logsHelper,
+        Config $resourceConfig,
+        EmarsysModelLogs $emarsysLogs,
+        ProductFactory $productCollectionFactory,
+        Product $productModel,
+        EmarsysProductResourceModel $productResourceModel,
+        ScopeConfigInterface $scopeConfig,
+        CreditmemoRepository $creditmemoRepository,
+        OrderFactory $salesOrderCollectionFactory,
+        CategoryFactory $categoryFactory,
+        EmarsysDataHelper $emarsysDataHelper,
+        EavConfigModel $eavConfig,
+        Registry $registry,
+        EmarsysApiApi $api,
+        TypeListInterface $cacheTypeList,
+        EmarsysProductModel $emarsysProductModel,
+        \Emarsys\Emarsys\Model\Order $emarsysOrderModel
+    ) {
         $this->customerObserver = $customerObserver;
         $this->customerResourceModel = $customerResourceModel;
         $this->contactModel = $contactModel;
         $this->logger = $logger;
+        $this->emarsysLogs = $emarsysLogs;
         $this->eventHelper = $eventHelper;
         $this->customer = $customer;
+        $this->modelApi = $modelApi;
         $this->queueModel = $queueModel;
         $this->request = $request;
         $this->orderResourceModel = $orderResourceModel;
@@ -71,963 +156,148 @@ class CronSync
         $this->creditmemoRepository = $creditmemoRepository;
         $this->salesOrderCollectionFactory = $salesOrderCollectionFactory;
         $this->categoryFactory = $categoryFactory;
-        $this->_emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysDataHelper = $emarsysDataHelper;
         $this->eavConfig = $eavConfig;
+        $this->registry = $registry;
+        $this->resourceConfig = $resourceConfig;
+        $this->UrlInterface = $context->getUrl();
+        $this->_cacheTypeList = $cacheTypeList;
+        $this->api = $api;
+        $this->emarsysProductModel =  $emarsysProductModel;
+        $this->emarsysOrderModel = $emarsysOrderModel;
     }
-
 
     /**
-     * Customer sync method for cron
+     * @param $schedule
      */
-    public function cronCustomerSync($schedule)
-    {
-        $scheduleId = $schedule->getScheduleId();
-        $storeData = $this->customerResourceModel->getAllStoresId();  // get all active stores
-
-        foreach ($storeData as $store) {
-            // Get last sync date
-            $data = array();
-            $scopeId = $data['storeId'] = $store['store_id'];
-            $websiteId = $data['website'] = $store['website_id'];
-            $data['fromDate'] = '';
-            $data['toDate'] = '';
-            $scope = 'websites';
-
-            $websiteCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
-            $storeCode = $this->storeManager->getStore($scopeId)->getCode();
-
-            $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/attribute_value', $scope, $scopeId);
-            if ($subscribedStatus == '' && $websiteId == 1) {
-                $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/attribute_value');
-            }
-
-            $data['subscribeStatus'] = $subscribedStatus;
-            $customerCollection = $this->customerResourceModel->getCustomerIdCollectionForCron($data);
-
-            foreach ($customerCollection as $customer) {
-                if (isset($customer['entity_id'])) {
-                    $customerId = $customer['entity_id'];
-                    $this->contactModel->syncContact($customerId, $websiteId, $scopeId);
-                }
-            }
-        }
-
-    }
-
     public function cronOrderSyncQueue($schedule)
     {
         $allStores = $this->orderResourceModel->getStores();
-        $creditmemoOrderIds = array();
+
         foreach ($allStores as $store) {
-            if ($store['store_id'] == 0)
+            $storeId = $store['store_id'];
+            if ($storeId == 0) {
                 continue;
-            $creditmemoCollection = $this->creditmemoRepository->create()->getCollection();
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $priceHelper = $objectManager->create('\Magento\Framework\Pricing\Helper\Data');
-            $queueCollection = $objectManager->create('Emarsys\Emarsys\Model\OrderQueue');
-            $queueDataAll = $queueCollection->getCollection()->addFieldToFilter('entity_type_id', 1)->getData();
-            $queueCollection = $objectManager->create('Emarsys\Emarsys\Model\OrderQueue');
-            $queueDataCreditmemoAll = $queueCollection->getCollection()->addFieldToFilter('entity_type_id', 2)->getData();
-            $orderIds = array();
-            foreach ($queueDataAll as $queueData) {
-                $orderIds[] = $queueData['entity_id'];
             }
-            foreach ($queueDataCreditmemoAll as $queueData) {
-                $creditmemoOrderIds[] = $queueData['entity_id'];
-            }
-            $salesOrderModel = $objectManager->create('\Magento\Sales\Model\Order');
-            $salesOrderCollection = $salesOrderModel->getCollection()->addFieldToFilter('store_id', $store['store_id'])->addFieldToFilter('entity_id', array('in' => $orderIds));
-
-            //login functionality start
-            $scope = 'websites';
-            $scopeId = $store['store_id'];
-            $websiteId = $this->storeManager->getStore($scopeId)->getWebsiteId();;
-            $logsArray['job_code'] = 'order';
-            $logsArray['status'] = 'started';
-            $logsArray['messages'] = 'Bulk order export started';
-            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['run_mode'] = 'Automatic';
-            $logsArray['auto_log'] = 'Complete';
-            $logsArray['store_id'] = $scopeId;
-            $logsArray['website_id'] = $websiteId;
-            $logId = $this->logsHelper->manualLogs($logsArray,1);
-
-            $hostname = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/hostname', $scope, $websiteId);
-            $port = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/port', $scope, $websiteId);
-            $username = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/username', $scope, $websiteId);
-            $password = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/ftp_password', $scope, $websiteId);
-            $bulkDir = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/ftp_bulk_export_dir', $scope, $websiteId);
-            $ftpSsl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/useftp_overssl', $scope, $websiteId);
-            $passiveMode = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/usepassive_mode', $scope, $websiteId);
-
-            if ($hostname != '' && $port != '' && $username != '' && $password != '') {
-                $errorStatus = 0;
-            } else {
-                $errorStatus = 1;
-            }
-
-            if ($errorStatus != 1) {
-                if ($ftpSsl == 1) {
-                    $ftpConnection = @ftp_ssl_connect($hostname, $port);
-                } else {
-                    $ftpConnection = @ftp_connect($hostname, $port);
-                }
-                $ftpLogin = @ftp_login($ftpConnection, $username, $password);
-
-                if ($ftpLogin) {
-                    $heading = array('order', 'date', 'customer', 'item', 'unit_price', 'c_sales_amount', 'quantity');
-                    $emasysFields = $this->orderResourceModel->getEmarsysOrderFields();
-                    foreach ($emasysFields as $field) {
-                        if ($field['emarsys_order_field'] != '')
-                            $heading[] = $field['emarsys_order_field'];
-                    }
-
-                    $localFilePath = BP . "/var";
-                    $outputFile = "sales_items_" . $this->date->date('YmdHis', time()) . "_" . $store['code'] .".csv";
-                    $filePath = $localFilePath . "/" . $outputFile;
-                    $handle = fopen($filePath, 'w');
-                    fputcsv($handle, $heading);
-
-                    $orderStatuse = $this->customerResourceModel->getDataFromCoreConfig('smart_insight/smart_insight/orderexportforstatus', $scope, $websiteId);
-                    $orderStatuses = explode(',', $orderStatuse);
-                    $orderCollection = array();
-                    $guestOrderExportStatus = $this->customerResourceModel->getDataFromCoreConfig('smart_insight/smart_insight/exportguest_checkoutorders', $scope, $websiteId);
-                    $emailAsIdentifierStatus = $this->customerResourceModel->getDataFromCoreConfig('smart_insight/smart_insight/exportusing_emailidentifier', $scope, $websiteId);
-
-                    foreach ($salesOrderCollection as $order) {
-                        $orderId = $order->getRealOrderId();
-                        $orderEntityId = $order->getId();
-                        $createdDate = $order->getCreatedAt();
-                        $customerEmail = $order->getCustomerEmail();
-
-                        foreach ($order->getAllVisibleItems() as $item) {
-                            $values = array();
-                            $values[] = $orderId;
-                            $date = new \DateTime($createdDate);
-                            $createdDate = $date->format('Y-m-d');
-                            $values[] = $createdDate;
-                            if ($customerEmail != '') {
-                                $values[] = $customerEmail;
-                            } else {
-                                $values[] = '';
-                            }
-                            $values[] = $item->getProduct()->getSku();
-                            $unitPrice = $item->getPriceInclTax();        //Unit Prices
-                            if ($unitPrice != '') {
-                                $values[] = number_format((float)$unitPrice, 2, '.', '') ;;
-                            } else {
-                                $values[] = '';
-                            }
-                            $cSalesAmount = $item->getRowTotalInclTax() - $item->getDiscountAmount();    //cSalesAmount
-                            if ($cSalesAmount != '') {
-                                $values[] = $cSalesAmount;
-                            } else {
-                                $values[] = '';
-                            }
-                            $values[] = (int)$item->getQtyInvoiced();
-                            foreach ($emasysFields as $field) {
-                                if ($field['emarsys_order_field'] != '') {
-                                    $orderExpValues = $this->orderResourceModel->getOrderColValue($field['emarsys_order_field'], $orderEntityId);
-                                    if(isset($orderExpValues['created_at']))
-                                    {
-                                       $createdAt = $this->_emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
-                                       $values[] = $createdAt;
-                                    }
-                                    else if(isset($orderExpValues['updated_at']))
-                                    {
-                                       $updatedAt = $this->_emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['updated_at']);
-                                       $values[] = $updatedAt;
-
-                                    }
-                                    else
-                                    {
-                                        $values[] = $orderExpValues['magento_column_value'];
-                                    }
-                                }
-                            }
-                            if (($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $order->getCustomerIsGuest() == 1) {
-                            } else {
-                                fputcsv($handle, $values);
-                            }
-
-                        }
-                    }
-
-                    foreach ($queueDataCreditmemoAll as $order) {
-                        $creditMemoOrder = $this->salesOrderCollectionFactory->create()->load($order['entity_id']);
-                        $orderId = $creditMemoOrder->getIncrementId();
-                        $orderEntityId = $creditMemoOrder->getId();
-                        $createdDate = $creditMemoOrder->getCreatedAt();
-                        $customerEmail = $creditMemoOrder->getCustomerEmail();
-                        foreach ($creditMemoOrder->getAllVisibleItems() as $item) {
-                            $values = array();
-                            $values[] = $orderId;
-                            $date = new \DateTime($createdDate);
-                            $createdDate = $date->format('Y-m-d');
-                            $values[] = $createdDate;
-                            if ($customerEmail != '') {
-                                $values[] = $customerEmail;
-                            } else {
-                                $values[] = '';
-                            }
-                            $values[] = $item->getProduct()->getSku();
-                            $unitPrice = $item->getPriceInclTax();        //Unit Prices
-                            if ($unitPrice != '') {
-                                $values[] = "-".number_format((float)$unitPrice, 2, '.', '') ;;
-                            } else {
-                                $values[] = '';
-                            }
-                            $cSalesAmount = $item->getRowTotalInclTax() - $item->getDiscountAmount();    //cSalesAmount
-                            if ($cSalesAmount != '') {
-                                $values[] = "-" . $cSalesAmount;
-                            } else {
-                                $values[] = '';
-                            }
-                            $values[] = (int)$item->getQtyInvoiced();
-
-                            foreach ($emasysFields as $field) {
-                                if ($field['emarsys_order_field'] != '') {
-                                    $orderExpValues = $this->orderResourceModel->getOrderColValue($field['emarsys_order_field'], $orderEntityId);
-                                    if(isset($orderExpValues['created_at']))
-                                    {
-                                       $createdAt = $this->_emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
-                                       $values[] = $createdAt;
-                                    }
-                                    else if(isset($orderExpValues['updated_at']))
-                                    {
-                                       $updatedAt = $this->_emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['updated_at']);
-                                       $values[] = $updatedAt;
-
-                                    }
-                                    else
-                                    {
-                                        $values[] = $orderExpValues['magento_column_value'];
-                                    }
-                                }
-                            }
-
-                            if ($creditMemoOrder->getCustomerIsGuest() == 1) {
-                                if ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) {
-                                } else {
-                                    fputcsv($handle, $values);
-                                }
-                            } else {
-                                fputcsv($handle, $values);
-                            }
-                        }
-
-                    }
-
-                    $file = $outputFile;
-                    $fileOpen = fopen($filePath, "r");
-                    $remoteDirPath = $bulkDir;
-                    if ($remoteDirPath == '/') {
-                        $remoteFileName = $outputFile;
-                    } else {
-                        $remoteDirPath = rtrim($remoteDirPath, '/');
-                        $remoteFileName = $remoteDirPath . "/" . $outputFile;
-                    }
-
-                    if ($passiveMode == 1) {
-                        @ftp_pasv($ftpConnection, true);
-                    }
-
-                    if (!@ftp_chdir($ftpConnection, $remoteDirPath)) {
-                        @ftp_mkdir($ftpConnection, $remoteDirPath);
-                    }
-                    @ftp_chdir($ftpConnection, '/');
-                    if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
-                        $logsArray['id'] = $logId;
-                        $logsArray['emarsys_info'] = 'File uploaded to FTP server successfully';
-                        $logsArray['description'] = $remoteFileName;
-                        $logsArray['action'] = 'synced to FTP';
-                        $logsArray['message_type'] = 'Success';
-                        $logsArray['log_action'] = 'sync';
-                        $this->logsHelper->logs($logsArray);
-                        $errorCount = 0;
-                    } else {
-                        $logsArray['id'] = $logId;
-                        $logsArray['emarsys_info'] = 'Failed to upload file on FTP server';
-                        $logsArray['description'] = 'Failed to upload file on FTP server';
-                        $logsArray['action'] = 'synced to FTP';
-                        $logsArray['message_type'] = 'Error';
-                        $logsArray['log_action'] = 'sync';
-                        $this->logsHelper->logs($logsArray);
-                        $errorCount = 1;
-                    }
-                    unlink($filePath);
-                    $errorCount = 0;
-                } else {
-                    $logsArray['id'] = $logId;
-                    $logsArray['emarsys_info'] = 'Failed to connect with FTP server.';
-                    $logsArray['description'] = 'Failed to connect with FTP server.';
-                    $logsArray['action'] = 'synced to FTP';
-                    $logsArray['message_type'] = 'Error';
-                    $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
-                    $errorCount = 1;
-                }
-            } else {
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = 'Invalid FTP credentials';
-                $logsArray['description'] = 'Invalid FTP credential. Please check your settings and try again';
-                $logsArray['action'] = 'synced to FTP';
-                $logsArray['message_type'] = 'Error';
-                $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
-                $errorCount = 1;
-            }
-            $logsArray['id'] = $logId;
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            if ($errorCount == 1) {
-                $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Order export have an error. Please check';
-            } else {
-
-                $orderExportStatus = $objectManager->create('Emarsys\Emarsys\Model\OrderExportStatus');
-                $orderExportStatusCollection = $orderExportStatus->getCollection()->addFieldToFilter('order_id', array('in' => $orderIds));
-                $allDataExport = $orderExportStatusCollection->getData();
-                foreach ($allDataExport as $orderExportStat) {
-                    $eachOrderStat = $objectManager->create('Emarsys\Emarsys\Model\OrderExportStatus')->load($orderExportStat['id']);
-                    $eachOrderStat->setExported(1);
-                    $eachOrderStat->save();
-                }
-                foreach ($queueDataAll as $queueData) //remove the exported records from the queue table
-                {
-                    $queueDataEach = $objectManager->create('Emarsys\Emarsys\Model\OrderQueue')->load($queueData['id']);
-                    $queueDataEach->delete();
-                }
-
-                $creditmemoExportStatus = $objectManager->create('Emarsys\Emarsys\Model\CreditmemoExportStatus');
-                $creditmemoExportStatusCollection = $creditmemoExportStatus->getCollection()->addFieldToFilter('order_id', array('in' => $creditmemoOrderIds));
-                $allDataExport = $creditmemoExportStatusCollection->getData();
-                foreach ($allDataExport as $orderExportStat) {
-                    $eachOrderStat = $objectManager->create('Emarsys\Emarsys\Model\CreditmemoExportStatus')->load($orderExportStat['id']);
-                    $eachOrderStat->setExported(1);
-                    $eachOrderStat->save();
-                }
-                foreach ($queueDataCreditmemoAll as $queueData) //remove the exported records from the queue table
-                {
-                    $queueDataEach = $objectManager->create('Emarsys\Emarsys\Model\OrderQueue')->load($queueData['id']);
-                    $queueDataEach->delete();
-                }
-                $logsArray['status'] = 'success';
-                $logsArray['messages'] = 'Order export completed';
-            }
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->emarsysOrderModel->syncOrders(
+                $storeId,
+                EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC
+            );
         }
     }
 
+    /**
+     * @param $schedule
+     */
     public function cronProductSync($schedule)
     {
+		set_time_limit(0);
         $allStores = $this->orderResourceModel->getStores();
         foreach ($allStores as $store) {
-            if ($store['store_id'] == 0)
+            if ($store['store_id'] == 0) {
                 continue;
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $scope = 'websites';
-            $scopeId = $store['store_id'];
-            $websiteId = $this->storeManager->getStore($scopeId)->getWebsiteId();
-
-            $logsArray['job_code'] = 'product';
-            $logsArray['status'] = 'started';
-            $logsArray['messages'] = 'bulk product export started';
-            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['run_mode'] = 'Automatic';
-            $logsArray['auto_log'] = 'Complete';
-            $logsArray['store_id'] = $scopeId;
-            $logsArray['website_id'] = $websiteId;
-            $logId = $this->logsHelper->manualLogs($logsArray,1);
-            $hostname = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/hostname', $scope, $websiteId);
-            if ($hostname == '' && $websiteId == 1) {
-                $hostname = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/hostname');
             }
-
-            $port = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/port', $scope, $websiteId);
-            if ($port == '' && $websiteId == 1) {
-                $port = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/port');
-            }
-
-            $username = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/username', $scope, $websiteId);
-            if ($username == '' && $websiteId == 1) {
-                $username = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/username');
-            }
-
-            $password = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/ftp_password', $scope, $websiteId);
-            if ($password == '' && $websiteId == 1) {
-                $password = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/ftp_password');
-            }
-
-            $bulkDir = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/ftp_bulk_export_dir', $scope, $websiteId);
-            if ($bulkDir == '' && $websiteId == 1) {
-                $bulkDir = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/ftp_bulk_export_dir');
-            }
-
-            $ftpSsl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/useftp_overssl', $scope, $websiteId);
-            if ($ftpSsl == '' && $websiteId == 1) {
-                $ftpSsl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/useftp_overssl');
-            }
-
-            $passiveMode = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/usepassive_mode', $scope, $websiteId);
-            if ($passiveMode == '' && $websiteId == 1) {
-                $passiveMode = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/ftp_settings/usepassive_mode');
-            }
-
-            if ($hostname != '' && $port != '' && $username != '' && $password != '') {
-                $errorStatus = 0;
-            } else {
-                $errorStatus = 1;
-            }
-
-            if ($errorStatus != 1) {
-                if ($ftpSsl == 1) {
-                    $ftpConnection = @ftp_ssl_connect($hostname);
-                } else {
-                    $ftpConnection = @ftp_connect($hostname);
-                }
-                $ftpLogin = @ftp_login($ftpConnection, $username, $password);
-                if ($ftpLogin) {
-                    $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($scopeId);
-                    $emarsysFieldNames = array();
-                    $magentoAttributeNames = array();
-                    if (isset($mappedAttributes) && count($mappedAttributes) != '') {
-                        foreach ($mappedAttributes as $mapAttribute) {
-                            $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-                            $emarsysFieldName = $this->productResourceModel->getEmarsysFieldName($scopeId, $emarsysFieldId);
-                            $emarsysFieldNames[] = $emarsysFieldName;
-                            $magentoAttributeNames[] = $mapAttribute['magento_attr_code'];
-                        }
-                        $heading = $emarsysFieldNames;
-                        $localFilePath = BP . "/var";
-                        $outputFile = "products_" . $this->date->date('YmdHis', time()) . "_" . $store['code'].".csv";
-                        $filePath = $localFilePath . "/" . $outputFile;
-                        $handle = fopen($filePath, 'w');
-                        fputcsv($handle, $heading);
-                        $excludeCategories = explode(',', $this->scopeConfig->getValue('emarsys_predict/feed_export/include_bundle_product', $scope, $websiteId));//emarsys_predict/feed_export/excluded_categories
-                        $productCollection = array();
-                        $productCollection = $this->productCollectionFactory->create()->getCollection();
-                        foreach ($productCollection->getData() as $product) {
-
-                            $excludeCatFlag = 0;
-                            $productData = $objectManager->create('\Magento\Catalog\Model\Product')->load($product['entity_id']);
-                            $productType = $productData->getTypeId();
-                            $catIds = array();
-                            $catIds = $productData->getCategoryIds();
-                            $categoryNames = array();
-                            foreach ($catIds as $catId) {
-                                if (in_array($catId, $excludeCategories)) {
-                                    $excludeCatFlag = 1;
-                                    break;
-                                }
-                                $cateData   = $this->categoryFactory->create()->load($catId);
-                                $categoryPath = $cateData->getPath();
-                                $categoryPathIds = explode('/', $categoryPath);
-                                $childCats = array();
-                                if (count($categoryPathIds) > 2) {
-                                    $pathIndex = 0;
-                                    foreach($categoryPathIds as $categoryPathId) {
-                                        if($pathIndex <= 1) {
-                                            $pathIndex++;
-                                            continue;
-                                        }
-                                        $childCateData = $this->categoryFactory->create()->load($categoryPathId);
-                                        $childCats[] = $childCateData->getName();
-                                    }
-                                    $categoryNames[] = implode(" > ", $childCats);
-                                }
-                            }
-
-                            $attributeData = array();
-                            $attributeData = array();
-                            foreach ($magentoAttributeNames as $attributeName) {
-
-                                $attributeOption = $productData->getData($attributeName);
-                                if (!is_array($attributeOption))
-                                {
-                                    $attribute = $this->eavConfig->getAttribute('catalog_product', "$attributeName");
-                                    if ($attribute->getFrontendInput() == 'boolean' || $attribute->getFrontendInput() == 'select'  || $attribute->getFrontendInput() == 'multiselect' )
-                                    {
-                                        $attributeOption = $productData->getAttributeText($attributeName);
-                                    }
-                                }
-                                if (isset($attributeOption) && $attributeOption != '') {
-                                    if(is_array($attributeOption))
-                                    {
-                                        if ($attributeName == 'category_ids')
-                                        {
-                                            $attributeData[] = implode('|',$categoryNames);
-
-                                        }
-                                        else if ($attributeName == 'quantity_and_stock_status')
-                                        {
-
-                                            if ($productData->getData('quantity_and_stock_status')['is_in_stock'] == 1)
-                                                $attributeData[] =  'TRUE';
-                                            else
-                                                $attributeData[] = 'FALSE';
-                                        }
-
-                                        else
-                                        {
-                                            $attributeData[] = implode(',',$attributeOption);
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        if ($attributeName == 'image')
-                                        {
-
-                                            $attributeData[] = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)."catalog/product/".$attributeOption;
-                                        }
-                                        else if ($attributeName == 'url_key')
-                                        {
-                                            $attributeData[] = $productData->getProductUrl();
-                                        }
-                                        else
-                                        {
-                                            $attributeData[] = $attributeOption;
-                                        }
-
-                                    }
-
-                                } else {
-                                    $attributeData[] = '';
-                                }
-                            }
-                            $data['includeBundle'] = $this->scopeConfig->getValue('emarsys_predict/feed_export/include_bundle_product', $scope, $websiteId);
-                            if ((isset($data['includeBundle']) && $data['includeBundle'] == 0 && $productType == 'bundle') || $excludeCatFlag == 1) {
-
-                            } else {
-                                fputcsv($handle, $attributeData);
-                            }
-                        }
-                        $file = $outputFile;
-                        $fileOpen = fopen($filePath, "r");
-                        $remoteDirPath = $bulkDir;
-                        if ($remoteDirPath == '/') {
-                            $remoteFileName = $outputFile;
-                        } else {
-                            $remoteDirPath = rtrim($remoteDirPath, '/');
-                            $remoteFileName = $remoteDirPath . "/" . $outputFile;
-                        }
-                        if ($passiveMode == 1) {
-                            @ftp_pasv($ftpConnection, true);
-                        }
-                        if (!@ftp_chdir($ftpConnection, $remoteDirPath)) {
-                            @ftp_mkdir($ftpConnection, $remoteDirPath);
-                        }
-                        @ftp_chdir($ftpConnection, '/');
-                        if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
-                            $logsArray['id'] = $logId;
-                            $logsArray['emarsys_info'] = 'File uploaded to FTP server successfully';
-                            $logsArray['description'] = $remoteFileName;
-                            $logsArray['action'] = 'synced to emarsys';
-                            $logsArray['message_type'] = 'Success';
-                            $logsArray['log_action'] = 'sync';
-                            $this->logsHelper->logs($logsArray);
-                            $errorCount = 0;
-                        } else {
-                            $logsArray['id'] = $logId;
-                            $logsArray['emarsys_info'] = 'Failed to upload file on FTP server';
-                            $logsArray['description'] = 'Failed to upload file on FTP server';
-                            $logsArray['action'] = 'synced to emarsys';
-                            $logsArray['message_type'] = 'Error';
-                            $logsArray['log_action'] = 'sync';
-                            $this->logsHelper->logs($logsArray);
-                            $errorCount = 1;
-                        }
-                        unlink($filePath);
-
-                        $errorCount = 0;
-                    } else {
-                        $logsArray['id'] = $logId;
-                        $logsArray['emarsys_info'] = 'Attributes are not mapped';
-                        $logsArray['description'] = 'Failed to upload file on server. Attributes are not mapped';
-                        $logsArray['action'] = 'synced to emarsys';
-                        $logsArray['message_type'] = 'Error';
-                        $logsArray['log_action'] = 'sync';
-                        $this->logsHelper->logs($logsArray);
-                        $errorCount = 1;
-                    }
-                } else {
-                    $logsArray['id'] = $logId;
-                    $logsArray['emarsys_info'] = 'Failed to connect with FTP server.';
-                    $logsArray['description'] = 'Failed to connect with FTP server.';
-                    $logsArray['action'] = 'synced to FTP';
-                    $logsArray['message_type'] = 'Error';
-                    $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
-                    $errorCount = 1;
-                }
-            } else {
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = 'Invalid FTP credentials';
-                $logsArray['description'] = 'Invalid FTP credential. Please check your settings and try again';
-                $logsArray['action'] = 'synced to emarsys';
-                $logsArray['message_type'] = 'Error';
-                $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
-                $errorCount = 1;
-            }
-            $logsArray['id'] = $logId;
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            if ($errorCount == 1) {
-                $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Product export have an error. Please check';
-            } else {
-                $logsArray['status'] = 'success';
-                $logsArray['messages'] = 'Product export completed';
-            }
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $storeId = $store['store_id'];
+            $this->emarsysProductModel->syncProducts(
+                $storeId,
+                EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC
+            );
         }
     }
 
+    /**
+     * @param $schedule
+     */
     public function cronCustomerSyncQueue($schedule)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
-        $stores = $storeManager->getStores($withDefault = false);
-        $scopeConfig = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface');
+        try {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
+            $stores = $storeManager->getStores($withDefault = false);
+            $scopeConfig = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface');
 
-        foreach ($stores as $store)
-        {
-            $storeId = $store->getData()['store_id'];
-            $storeCode = $store->getData()['code'];
-            $scope = 'websites';
-            $websiteId = $store->getData()['website_id'];
-            $scopeId = $websiteId;
-            $websiteCode = $storeManager->getStore($storeId)->getWebsite()->getCode();
+            foreach ($stores as $store) {
+                $storeId = $store->getData()['store_id'];
+                $storeCode = $store->getData()['code'];
+                $scope = 'websites';
+                $websiteId = $store->getData()['website_id'];
+                $scopeId = $websiteId;
+                $websiteCode = $storeManager->getStore($storeId)->getWebsite()->getCode();
 
-            $logsArray['job_code'] = 'subscriber';
-            $logsArray['status'] = 'started';
-            $logsArray['messages'] = 'bulk subscriber export started';
-            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['run_mode'] = 'Automatic';
-            $logsArray['auto_log'] = 'Complete';
-            $logsArray['website_id'] = $websiteId;
-            $logsArray['store_id'] = $storeId;
-            $logId = $this->logsHelper->manualLogs($logsArray, 1);
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = 'Subscriber Export Started';
-            $logsArray['description'] = 'Subscriber Export Started for Store ID : ' . $storeId;
-            $logsArray['action'] = 'synced to emarsys';
-            $logsArray['message_type'] = 'Success';
-            $logsArray['log_action'] = 'sync';
-            $logsArray['website_id'] = $websiteId;
-            $this->logsHelper->logs($logsArray);
-
-            $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url', $scope, $scopeId);
-            if ($webDavUrl == '' && $websiteId == 1) {
-                $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url');
-            }
-
-            $webDavUser = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_user', $scope, $scopeId);
-            if ($webDavUser == '' && $websiteId == 1) {
-                $webDavUser = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_user');
-            }
-
-            $webDavPass = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_password', $scope, $scopeId);
-            if ($webDavPass == '' && $websiteId == 1) {
-                $webDavPass = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_password');
-            }
-            if ($webDavUrl != '' && $webDavUser != '' && $webDavPass != '') {
-                $errorStatus = 0;
-            } else {
-                $errorStatus = 1;
-            }
-            if ($errorStatus != 1) {
-                $settings = array(
-                    'baseUri' => $webDavUrl,
-                    'userName' => $webDavUser,
-                    'password' => $webDavPass,
-                    'proxy' => '',
-                );
-                $client = new Client($settings);
-                $customervalues = array();
-                $optInStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/initial_db_load', $scope, $scopeId);
-                if ($optInStatus == '' && $websiteId == 1) {
-                    $optInStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/initial_db_load');
-                }
-
-                $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-                $newsLetSubTableName = $resource->getTableName('newsletter_subscriber');
-
-                $queueCollection = $this->queueModel->create()->getCollection();
-                $queueCollection->addFieldToSelect('entity_id');
-                $queueCollection->addFieldToFilter('entity_type_id', 2);
-                $queueCollection->getSelect()->joinLeft(
-                    ['newsletter_subscriber' => $newsLetSubTableName],
-                    'main_table.entity_id = newsletter_subscriber.subscriber_id', array('subscriber_email', 'subscriber_confirm_code'));
-
-
-                if (isset($scopeId)) {
-                    if ($optInStatus == 'attribute') {
-                        $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/attribute_value', $scope, $scopeId);
-                        if ($subscribedStatus == '' && $websiteId == 1) {
-                            $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/attribute_value');
-                        }
-                        $data['subscribeStatus'] = $subscribedStatus;
-                        $customervalues = $queueCollection;
-                    } else {
-                        $customervalues = $queueCollection;
-                    }
-                }
-
-                $emarsysFieldNames = array();
-                $emarsysFieldId = 3;
-                $emarsysFieldNames[] = $this->customerResourceModel->getEmarsysFieldName($storeId, $emarsysFieldId);
-
-
-                if ($optInStatus != '') {
-                    $emarsysFieldNames[] = 'Opt-In';
-                }
-
-                $heading = $emarsysFieldNames;
-                $localFilePath = BP . "/var";
-                $outputFile = "subscribers_" . $this->date->date('YmdHis', time()) . "_" . $storeCode.".csv";
-                $filePath = $localFilePath . "/" . $outputFile;
-                $handle = fopen($filePath, 'w');
-                fputcsv($handle, $heading);
-                foreach ($customervalues as $value) {
-                    $values = array();
-                    $values[] = $value['subscriber_email'];
-                    if ($optInStatus == 'true') {
-                        $values[] = '1';
-                    } else if ($optInStatus == 'empty') {
-                        $values[] = 0;
-                    } else if ($optInStatus == 'attribute') {
-                        $values[] = '1';
-                    }
-                    fputcsv($handle, $values);
-                }
-                $file = $outputFile;
-                $fileOpen = fopen($filePath, "r");
-                $response = $client->request('PUT', $file, $fileOpen);
-                unlink($filePath);
-                $errorCount = 0;
-                if ($response['statusCode'] == '201') {
-                    $fileLoc = $response['headers']['location']['0'];
-                    $logsArray['id'] = $logId;
-                    $logsArray['emarsys_info'] = 'File uploaded to server successfully';
-                    $logsArray['description'] = $fileLoc;
-                    $logsArray['action'] = 'synced to emarsys';
-                    $logsArray['website_id'] = $websiteId;
-                    $logsArray['message_type'] = 'Success';
-                    $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
-                    $logsArray['website_id'] = $websiteId;
-                    $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                    $errorCount = 0;
-                    foreach ($customervalues as $value) {
-                        $test = $this->queueModel->create()->load($value['entity_id'],'entity_id')->delete();
-                    }
-                } else {
-
-                    $logsArray['id'] = $logId;
-                    $logsArray['emarsys_info'] = 'Failed to upload file on server';
-                    $logsArray['description'] = strip_tags($response['body']);
-                    $logsArray['action'] = 'synced to emarsys';
-                    $logsArray['message_type'] = 'Error';
-                    $logsArray['log_action'] = 'sync';
-                    $logsArray['website_id'] = $websiteId;
-                    $this->logsHelper->logs($logsArray);
-                    $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                    $errorCount = 1;
-                }
-            } else {
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = 'Invalid credentials';
-                $logsArray['description'] = 'Invalid credential. Please check your settings and try again';
-                $logsArray['action'] = 'synced to emarsys';
-                $logsArray['message_type'] = 'Error';
+                $logsArray['job_code'] = 'subscriber';
+                $logsArray['status'] = 'started';
+                $logsArray['messages'] = __('bulk subscriber export started');
+                $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['run_mode'] = 'Automatic';
+                $logsArray['auto_log'] = 'Complete';
                 $logsArray['website_id'] = $websiteId;
+                $logsArray['store_id'] = $storeId;
+                $logId = $this->logsHelper->manualLogs($logsArray, 1);
+                $logsArray['id'] = $logId;
+                $logsArray['emarsys_info'] = __('Subscriber Export Started');
+                $logsArray['description'] = __('Subscriber Export Started for Store ID : %1', $storeId);
+                $logsArray['action'] = 'synced to emarsys';
+                $logsArray['message_type'] = 'Success';
                 $logsArray['log_action'] = 'sync';
+                $logsArray['website_id'] = $websiteId;
                 $this->logsHelper->logs($logsArray);
-                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $errorCount = 1;
-            }
-            $logsArray['id'] = $logId;
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            if ($errorCount == 1) {
-                $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Subscriber export have an error. Please check';
-            } else {
-                $logsArray['status'] = 'success';
-                $logsArray['messages'] = 'Subscriber export completed';
-            }
 
-            $this->logsHelper->manualLogsUpdate($logsArray);
-
-            // customer export start
-
-            $queueCollection = $this->queueModel->create()->getCollection();
-            $queueCollection->addFieldToSelect('entity_id');
-            $queueCollection->addFieldToFilter('entity_type_id', 1);
-            $cusArray = array();
-            $cusColl = $queueCollection->getData();
-            foreach ($cusColl as $key => $value) {
-                $cusArray[] = $value['entity_id'];
-            }
-            $custModel = $this->customer->create();
-            $cusColl = $custModel->getCollection();
-            $cusColl->addAttributeToFilter('entity_id', $cusArray);
-
-            $logsArray['job_code'] = 'customer';
-            $logsArray['status'] = 'started';
-            $logsArray['messages'] = 'bulk customer export started';
-            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['run_mode'] = 'Automatic';
-            $logsArray['auto_log'] = 'Complete';
-            $logsArray['store_id'] = $storeId;
-            $logId1 = $this->logsHelper->manualLogs($logsArray, 1);
-            $logsArray['id'] = $logId1;
-            $logsArray['emarsys_info'] = 'Customer Export Started';
-            $logsArray['description'] = 'Customer Export Started for Store ID : ' . $storeId;
-            $logsArray['action'] = 'synced to emarsys';
-            $logsArray['message_type'] = 'Success';
-            $logsArray['log_action'] = 'sync';
-            $logsArray['website_id'] = $websiteId;
-            $this->logsHelper->logs($logsArray);
-
-            if ($errorStatus != 1) {
-
-                $settings = array(
-                    'baseUri' => $webDavUrl,
-                    'userName' => $webDavUser,
-                    'password' => $webDavPass,
-                    'proxy' => '',
-                );
-
-                $client = new Client($settings);
-
-                $customervalues = array();
-                $customerData = $this->customer->create();
-
-                $optInStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/initial_db_load', $scope, $scopeId);
-                if ($optInStatus == '' && $websiteId == 1) {
-                    $optInStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/initial_db_load');
+                $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url', $scope, $scopeId);
+                $webDavUser = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_user', $scope, $scopeId);
+                $webDavPass = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_password', $scope, $scopeId);
+                if ($webDavUrl != '' && $webDavUser != '' && $webDavPass != '') {
+                    $errorStatus = 0;
+                } else {
+                    $errorStatus = 1;
                 }
+                if ($errorStatus != 1) {
+                    $settings = array(
+                        'baseUri' => $webDavUrl,
+                        'userName' => $webDavUser,
+                        'password' => $webDavPass,
+                        'proxy' => '',
+                    );
+                    $client = new Client($settings);
+                    $customervalues = array();
+                    $optInStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/initial_db_load', $scope, $scopeId);
+                    $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+                    $newsLetSubTableName = $resource->getTableName('newsletter_subscriber');
 
-                if (isset($scopeId)) {
-                    $websiteId = $this->storeManager->getStore($scopeId)->getWebsiteId();
-                    $data['website'] = $websiteId;
-                    if (isset($data['fromDate']) && $data['fromDate'] != '' && isset($data['toDate']) && $data['toDate'] != '') {
-                        $data['fromDate'] = date('Y-m-d H:i:s', strtotime($data['fromDate']));
-                        $data['toDate'] = date('Y-m-d H:i:s', strtotime($data['toDate']));
+                    $queueCollection = $this->queueModel->create()->getCollection();
+                    $queueCollection->addFieldToSelect('entity_id');
+                    $queueCollection->addFieldToFilter('main_table.entity_type_id', 2);
+                    $queueCollection->addFieldToFilter('main_table.store_id', $storeId);
+                    $queueCollection->getSelect()->joinLeft(
+                        ['newsletter_subscriber' => $newsLetSubTableName],
+                        'main_table.entity_id = newsletter_subscriber.subscriber_id', array('subscriber_email', 'subscriber_confirm_code', 'subscriber_status'));
+                    //echo $queueCollection->getSelect(); exit;
+                    if ($queueCollection->getData()) {
+                        $this->updateLastModifiedContacts($queueCollection, $storeId);
                     }
-                    if ($optInStatus == 'attribute') {
-                        $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/attribute_value', $scope, $scopeId);
-                        if ($subscribedStatus == '' && $websiteId == 1) {
-                            $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/initial_db_load/attribute_value');
-                        }
-                        $data['subscribeStatus'] = $subscribedStatus;
-                        $customervalues = $cusColl;
-                    } else {
-                        $customervalues = $cusColl;
+                    if (isset($scopeId)) {
+                            $customervalues = $queueCollection;
                     }
-                }
-                $mappedAttributes = $this->customerResourceModel->getMappedCustomerAttribute($scopeId);
-                $emarsysFieldNames = array();
-
-                if (isset($mappedAttributes) && count($mappedAttributes) != '') {
-
-                    foreach ($mappedAttributes as $mapAttribute) {
-                        $emarsysFieldId = $mapAttribute['emarsys_contact_field'];
-                        $magentoFieldIds[] = $mapAttribute['magento_attribute_id'];
-                        $emarsysFieldName = $this->customerResourceModel->getEmarsysFieldName($scopeId, $emarsysFieldId);
-                        $emarsysFieldNames[] = $emarsysFieldName;
-                    }
-
+                    $emarsysFieldNames = array();
+                    $emarsysFieldId = 3;
+                    $emarsysFieldNames[] = $this->customerResourceModel->getEmarsysFieldName($storeId, $emarsysFieldId);
                     if ($optInStatus != '') {
                         $emarsysFieldNames[] = 'Opt-In';
                     }
-
                     $heading = $emarsysFieldNames;
                     $localFilePath = BP . "/var";
-                    $outputFile = "customers_" . $this->date->date('YmdHis', time()) . "_" . $websiteCode . ".csv";
+                    $outputFile = "subscribers_" . $this->date->date('YmdHis', time()) . "_" . $storeCode.".csv";
                     $filePath = $localFilePath . "/" . $outputFile;
                     $handle = fopen($filePath, 'w');
                     fputcsv($handle, $heading);
-                    $magentoFieldCodes = array();
-                    foreach ($magentoFieldIds as $field) {
-                        $attData = $this->customerResourceModel->getAttributeCodeById($field);
-                        $magentoFieldCodes[$attData['attribute_code']] = $attData['attribute_code'];
-                    }
-                    $allAttsUsed = array();
+
                     foreach ($customervalues as $value) {
                         $values = array();
-                        $value = array_replace(array_flip($magentoFieldCodes), $value->getData());
-                        foreach ($value as $key => $cusData) {
-                            $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-
-                            if (in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                $allAttsUsed[] = $key;
-                                if (isset($cusData)) {
-                                    $values[] = $cusData;
-                                } else {
-                                    $values[] = '';
-                                }
-                            }
-                        }
-                        if ($optInStatus == 'true') {
+                        $values[] = $value['subscriber_email'];
+                        if ($value['subscriber_status'] != 1) {
+                            $values[] = '2';
+                        } else {
                             $values[] = '1';
-                        } else if ($optInStatus == 'empty') {
-                            $values[] = 0;
-                        } else if ($optInStatus == 'attribute') {
-                            $values[] = '1';
-                        }
-                        if (isset($value['default_billing']) && $value['default_billing'] != NULL) {
-                            $magentoAddFields = array();
-                            $customerBillingAddress = $this->customerResourceModel->getCustPriBillAddress($value['entity_id']);
-                            if ($customerBillingAddress)
-                                foreach ($customerBillingAddress->getData() as $key => $dataValue) {
-                                    $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                    if (!is_array($dataValue) && in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                        $magentoAddFields[$key] = $dataValue;
-                                    }
-
-                                }
-                            $magentoFlipFields = array_replace(array_flip($magentoFieldCodes), $magentoAddFields);
-                            foreach ($magentoFlipFields as $key => $cusData) {
-                                $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                if (in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                    if (isset($magentoAddFields[$key])) {
-                                        $attKey = array_search($key, $allAttsUsed);
-                                        $values[$attKey] = $magentoAddFields[$key];
-                                    }
-                                }
-
-                            }
-                        }
-
-                        if (isset($value['default_shipping']) && $value['default_shipping'] != NULL) {
-                            $magentoAddFields = array();
-                            $customerBillingAddress = $this->customerResourceModel->getCustPriShipAddress($value['entity_id']);
-                            if ($customerBillingAddress)
-                                foreach ($customerBillingAddress->getData() as $key => $dataValue) {
-                                    $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                    if (!is_array($dataValue) && in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                        $magentoAddFields[$key] = $dataValue;
-                                    }
-
-                                }
-                            $magentoFlipFields = array_replace(array_flip($magentoFieldCodes), $magentoAddFields);
-                            foreach ($magentoFlipFields as $key => $cusData) {
-                                $attData = $this->customerResourceModel->getAttributeIdByCode($key);
-                                if (in_array($attData['attribute_id'], $magentoFieldIds)) {
-                                    if (isset($magentoAddFields[$key])) {
-                                        $attKey = array_search($key, $allAttsUsed);
-                                        $values[$attKey] = $magentoAddFields[$key];
-                                    }
-                                }
-
-                            }
                         }
                         fputcsv($handle, $values);
                     }
@@ -1038,22 +308,24 @@ class CronSync
                     $errorCount = 0;
                     if ($response['statusCode'] == '201') {
                         $fileLoc = $response['headers']['location']['0'];
-                        $logsArray['id'] = $logId1;
-                        $logsArray['emarsys_info'] = 'File uploaded to server successfully';
+                        $logsArray['id'] = $logId;
+                        $logsArray['emarsys_info'] = __('File uploaded to server successfully');
                         $logsArray['description'] = $fileLoc;
                         $logsArray['action'] = 'synced to emarsys';
+                        $logsArray['website_id'] = $websiteId;
                         $logsArray['message_type'] = 'Success';
                         $logsArray['log_action'] = 'sync';
-                        $logsArray['website_id'] = $websiteId;
                         $this->logsHelper->logs($logsArray);
+                        $logsArray['website_id'] = $websiteId;
                         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                         $errorCount = 0;
                         foreach ($customervalues as $value) {
                             $test = $this->queueModel->create()->load($value['entity_id'],'entity_id')->delete();
                         }
                     } else {
-                        $logsArray['id'] = $logId1;
-                        $logsArray['emarsys_info'] = 'Failed to upload file on server';
+
+                        $logsArray['id'] = $logId;
+                        $logsArray['emarsys_info'] = __('Failed to upload file on server');
                         $logsArray['description'] = strip_tags($response['body']);
                         $logsArray['action'] = 'synced to emarsys';
                         $logsArray['message_type'] = 'Error';
@@ -1064,9 +336,215 @@ class CronSync
                         $errorCount = 1;
                     }
                 } else {
+                    $logsArray['id'] = $logId;
+                    $logsArray['emarsys_info'] = 'Invalid credentials';
+                    $logsArray['description'] = __('Invalid credential. Please check your settings and try again');
+                    $logsArray['action'] = 'synced to emarsys';
+                    $logsArray['message_type'] = 'Error';
+                    $logsArray['website_id'] = $websiteId;
+                    $logsArray['log_action'] = 'sync';
+                    $this->logsHelper->logs($logsArray);
+                    $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                    $errorCount = 1;
+                }
+                $logsArray['id'] = $logId;
+                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                if ($errorCount == 1) {
+                    $logsArray['status'] = 'error';
+                    $logsArray['messages'] = __('Subscriber export have an error. Please check');
+                } else {
+                    $logsArray['status'] = 'success';
+                    $logsArray['messages'] = __('Subscriber export completed');
+                }
+                $this->logsHelper->manualLogsUpdate($logsArray);
+                // customer export start
+                $queueCollection = $this->queueModel->create()->getCollection();
+                $queueCollection->addFieldToSelect('entity_id');
+                $queueCollection->addFieldToFilter('entity_type_id', 1);
+                $cusArray = array();
+                $cusColl = $queueCollection->getData();
+                foreach ($cusColl as $key => $value) {
+                    $cusArray[] = $value['entity_id'];
+                }
+                $custModel = $this->customer->create();
+                $cusColl = '';
+                if($cusArray) {
+                    $cusColl = $custModel->getCollection();
+                    $cusColl->addAttributeToFilter('entity_id', $cusArray);
+                }
+                $logsArray['job_code'] = 'customer';
+                $logsArray['status'] = 'started';
+                $logsArray['messages'] = __('bulk customer export started');
+                $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['run_mode'] = 'Automatic';
+                $logsArray['auto_log'] = 'Complete';
+                $logsArray['store_id'] = $storeId;
+                $logId1 = $this->logsHelper->manualLogs($logsArray, 1);
+                $logsArray['id'] = $logId1;
+                $logsArray['emarsys_info'] = 'Customer Export Started';
+                $logsArray['description'] = __('Customer Export Started for Store ID : %1', $storeId);
+                $logsArray['action'] = 'synced to emarsys';
+                $logsArray['message_type'] = 'Success';
+                $logsArray['log_action'] = 'sync';
+                $logsArray['website_id'] = $websiteId;
+                $this->logsHelper->logs($logsArray);
+                if ($errorStatus != 1) {
+                    $settings = array(
+                        'baseUri' => $webDavUrl,
+                        'userName' => $webDavUser,
+                        'password' => $webDavPass,
+                        'proxy' => '',
+                    );
+
+                    $client = new Client($settings);
+                    $customervalues = [];
+                    $customerData = $this->customer->create();
+
+                    if (isset($scopeId)) {
+                        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
+                        $data['website'] = $websiteId;
+                        $customervalues = $cusColl;
+                    }
+                    $mappedAttributes = $this->customerResourceModel->getMappedCustomerAttribute($scopeId);
+                    $emarsysFieldNames = [];
+                    if (isset($mappedAttributes) && count($mappedAttributes) != '') {
+                        foreach ($mappedAttributes as $mapAttribute) {
+                            $emarsysFieldId = $mapAttribute['emarsys_contact_field'];
+                            $magentoFieldIds[] = $mapAttribute['magento_attribute_id'];
+                            $emarsysFieldName = $this->customerResourceModel->getEmarsysFieldName($scopeId, $emarsysFieldId);
+                            $emarsysFieldNames[] = $emarsysFieldName;
+                        }
+                        $heading = $emarsysFieldNames;
+                        $localFilePath = BP . "/var";
+                        $outputFile = "customers_" . $this->date->date('YmdHis', time()) . "_" . $websiteCode . ".csv";
+                        $filePath = $localFilePath . "/" . $outputFile;
+                        $handle = fopen($filePath, 'w');
+                        fputcsv($handle, $heading);
+                        $magentoFieldCodes = [];
+                        foreach ($magentoFieldIds as $field) {
+                            $attData = $this->customerResourceModel->getAttributeCodeById($field);
+                            if ($attData['attribute_code']) {
+                                $magentoFieldCodes[$attData['attribute_code']] = $attData['attribute_code'];
+                            }else{
+                                $magentoFieldCodes[$attData['attribute_code']] ='';
+                            }
+                        }
+                        $allAttsUsed = [];
+                        if($customervalues) {
+                            foreach ($customervalues as $value) {
+                                $values = [];
+                                $value = array_replace(array_flip($magentoFieldCodes), $value->getData());
+                                foreach ($value as $key => $cusData) {
+                                    $attData = $this->customerResourceModel->getAttributeIdByCode($key);
+                                    if (in_array($attData['attribute_id'], $magentoFieldIds)) {
+                                        $allAttsUsed[] = $key;
+                                        if (isset($cusData)) {
+                                            $values[] = $cusData;
+                                        } else {
+                                            $values[] = '';
+                                        }
+                                    }
+                                }
+                                if (isset($value['default_billing']) && $value['default_billing'] != NULL) {
+                                    $magentoAddFields = array();
+                                    $customerBillingAddress = $this->customerResourceModel->getCustPriBillAddress($value['entity_id']);
+                                    if ($customerBillingAddress)
+                                        foreach ($customerBillingAddress->getData() as $key => $dataValue) {
+                                            $attData = $this->customerResourceModel->getAttributeIdByCode($key);
+                                            if (!is_array($dataValue) && in_array($attData['attribute_id'], $magentoFieldIds)) {
+                                                $magentoAddFields[$key] = $dataValue;
+                                            }
+
+                                        }
+                                    $magentoFlipFields = array_replace(array_flip($magentoFieldCodes), $magentoAddFields);
+                                    foreach ($magentoFlipFields as $key => $cusData) {
+                                        $attData = $this->customerResourceModel->getAttributeIdByCode($key);
+                                        if (in_array($attData['attribute_id'], $magentoFieldIds)) {
+                                            if (isset($magentoAddFields[$key])) {
+                                                $attKey = array_search($key, $allAttsUsed);
+                                                $values[$attKey] = $magentoAddFields[$key];
+                                            }
+                                        }
+                                    }
+                                }
+                                if (isset($value['default_shipping']) && $value['default_shipping'] != NULL) {
+                                    $magentoAddFields = array();
+                                    $customerBillingAddress = $this->customerResourceModel->getCustPriShipAddress($value['entity_id']);
+                                    if ($customerBillingAddress)
+                                        foreach ($customerBillingAddress->getData() as $key => $dataValue) {
+                                            $attData = $this->customerResourceModel->getAttributeIdByCode($key);
+                                            if (!is_array($dataValue) && in_array($attData['attribute_id'], $magentoFieldIds)) {
+                                                $magentoAddFields[$key] = $dataValue;
+                                            }
+
+                                        }
+                                    $magentoFlipFields = array_replace(array_flip($magentoFieldCodes), $magentoAddFields);
+                                    foreach ($magentoFlipFields as $key => $cusData) {
+                                        $attData = $this->customerResourceModel->getAttributeIdByCode($key);
+                                        if (in_array($attData['attribute_id'], $magentoFieldIds)) {
+                                            if (isset($magentoAddFields[$key])) {
+                                                $attKey = array_search($key, $allAttsUsed);
+                                                $values[$attKey] = $magentoAddFields[$key];
+                                            }
+                                        }
+
+                                    }
+                                }
+                                fputcsv($handle, $values);
+                            }
+                        }
+                        $file = $outputFile;
+                        $fileOpen = fopen($filePath, "r");
+                        $response = $client->request('PUT', $file, $fileOpen);
+                        unlink($filePath);
+                        $errorCount = 0;
+                        if ($response['statusCode'] == '201') {
+                            $fileLoc = $response['headers']['location']['0'];
+                            $logsArray['id'] = $logId1;
+                            $logsArray['emarsys_info'] = __('File uploaded to server successfully');
+                            $logsArray['description'] = $fileLoc;
+                            $logsArray['action'] = 'synced to emarsys';
+                            $logsArray['message_type'] = 'Success';
+                            $logsArray['log_action'] = 'sync';
+                            $logsArray['website_id'] = $websiteId;
+                            $this->logsHelper->logs($logsArray);
+                            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                            $errorCount = 0;
+                            if ($customervalues) {
+                                foreach ($customervalues as $value) {
+                                    $test = $this->queueModel->create()->load($value['entity_id'],'entity_id')->delete();
+                                }
+                            }
+                        } else {
+                            $logsArray['id'] = $logId1;
+                            $logsArray['emarsys_info'] = __('Failed to upload file on server');
+                            $logsArray['description'] = strip_tags($response['body']);
+                            $logsArray['action'] = 'synced to emarsys';
+                            $logsArray['message_type'] = 'Error';
+                            $logsArray['log_action'] = 'sync';
+                            $logsArray['website_id'] = $websiteId;
+                            $this->logsHelper->logs($logsArray);
+                            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                            $errorCount = 1;
+                        }
+                    } else {
+                        $logsArray['id'] = $logId1;
+                        $logsArray['emarsys_info'] = __('Attributes are not mapped');
+                        $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
+                        $logsArray['action'] = 'synced to emarsys';
+                        $logsArray['message_type'] = 'Error';
+                        $logsArray['log_action'] = 'sync';
+                        $logsArray['website_id'] = $websiteId;
+                        $this->logsHelper->logs($logsArray);
+                        $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                        $errorCount = 1;
+                    }
+                } else {
                     $logsArray['id'] = $logId1;
-                    $logsArray['emarsys_info'] = 'Attributes are not mapped';
-                    $logsArray['description'] = 'Failed to upload file on server. Attributes are not mapped';
+                    $logsArray['emarsys_info'] = 'Invalid credentials';
+                    $logsArray['description'] = __('Invalid credential. Please check your settings and try again');
                     $logsArray['action'] = 'synced to emarsys';
                     $logsArray['message_type'] = 'Error';
                     $logsArray['log_action'] = 'sync';
@@ -1075,44 +553,226 @@ class CronSync
                     $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                     $errorCount = 1;
                 }
-            } else {
                 $logsArray['id'] = $logId1;
-                $logsArray['emarsys_info'] = 'Invalid credentials';
-                $logsArray['description'] = 'Invalid credential. Please check your settings and try again';
-                $logsArray['action'] = 'synced to emarsys';
-                $logsArray['message_type'] = 'Error';
-                $logsArray['log_action'] = 'sync';
-                $logsArray['website_id'] = $websiteId;
-                $this->logsHelper->logs($logsArray);
+                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $errorCount = 1;
+                if ($errorCount == 1) {
+                    $logsArray['status'] = 'error';
+                    $logsArray['messages'] = __('Customer export have an error. Please check');
+                } else {
+                    $logsArray['status'] = 'success';
+                    $logsArray['messages'] = __('Customer export completed');
+                }
+                $this->logsHelper->manualLogsUpdate($logsArray);
             }
-
-            $logsArray['id'] = $logId1;
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            if ($errorCount == 1) {
-                $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Customer export have an error. Please check';
-            } else {
-                $logsArray['status'] = 'success';
-                $logsArray['messages'] = 'Customer export completed';
-            }
-            $this->logsHelper->manualLogsUpdate($logsArray);
+        } catch(\Excepiton $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'SaveSchema(Product)');
         }
     }
 
+    /**
+     * @param $schedule
+     * @throws \Exception
+     */
     public function cronEmarsysSchemaCheck($schedule)
     {
-        $emarsysApiIds = array();
-        $eventSchema = $this->eventHelper->getEventSchema();
-        foreach ($eventSchema['data'] as $_eventSchema) {
-            $emarsysApiIds[] = $_eventSchema['id'];
+        $websites = $this->storeManager->getWebsites();
+        foreach($websites as $website){
+            $websiteId = $website->getWebsiteId();
+            $emarsysApiIds = array();
+            $this->api->setWebsiteId($websiteId);
+            $response = $this->api->sendRequest('GET', 'event');
+            if($response['body']['data']){
+                foreach($response['body']['data'] as $eventInfo)
+                $emarsysApiIds[] = $eventInfo['id'];
+            }
+            $emarsysLocalIds = $this->eventHelper->getLocalEmarsysEvents($websiteId);
+            $result = array_diff($emarsysApiIds, $emarsysLocalIds);
+            if(count($result)){
+                $this->eventHelper->saveEmarsysEventSchemaNotification();
+                break;
+            }
         }
-        $emarsysLocalIds = $this->eventHelper->getLocalEmarsysEvents();
-        $result = array_diff($emarsysApiIds, $emarsysLocalIds);
-        if (count($result)) {
-            $this->eventHelper->saveEmarsysEventSchemaNotification();
+    }
+
+    /**
+     * @param $collection
+     * @param $storeId
+     */
+    public function updateLastModifiedContacts($collection, $storeId)
+    {
+        try {
+            $currentPageNumber = 1;
+            $collection->setPageSize(self::BATCH_SIZE);
+            $lastPageNumber = $collection->getLastPageNumber();
+
+            while ($currentPageNumber <= $lastPageNumber) {
+                $subscriberIds = [];
+                if ($currentPageNumber != 1) {
+                    $collection->setPageSize(self::BATCH_SIZE)
+                        ->setCurPage($currentPageNumber);
+                }
+                if (count($collection)) {
+                    $subscriberIds = $collection->getColumnValues('entity_id');
+                    if (count($subscriberIds)) {
+                        $this->emarsysDataHelper->backgroudTimeBasedOptinSync($subscriberIds, $storeId);
+                    }
+                }
+                $currentPageNumber = $currentPageNumber + 1;
+            }
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'updateLastModifiedContacts($collection,$storeId)');
+        }
+    }
+
+    /**
+     * syncContactsSubscriptionData for import emsrays optin changes to magento once in a day.
+     */
+    public function syncContactsSubscriptionData()
+    {
+        $queue = [];
+        $websites = $this->storeManager->getWebsites();
+        foreach ($websites as $website) {
+            $logsArray['job_code'] = 'Sync contact Export';
+            $logsArray['status'] = 'started';
+            $logsArray['messages'] = __('Running Sync Contacts Subscription Data');
+            $logsArray['description'] = __('Started Sync Contacts Subscription Data');
+            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['run_mode'] = 'Automatic';
+            $logsArray['auto_log'] = 'Complete';
+            $logsArray['website_id'] = $website->getWebsiteId();
+            $logsArray['store_id'] = $website->getDefaultStore()->getId();
+            $logId = $this->logsHelper->manualLogs($logsArray);
+            try {
+                $enable = $this->scopeConfig->getValue('emarsys_settings/emarsys_setting/enable', 'websites', $website->getWebsiteId());
+                if ($enable) {
+                    $emarsysUserName = $this->scopeConfig->getValue('emarsys_settings/emarsys_setting/emarsys_api_username', 'websites', $website->getWebsiteId());
+                    if (!array_key_exists($emarsysUserName, $queue)) {
+                        $queue[$emarsysUserName] = array();
+                    }
+                    $queue[$emarsysUserName][] = $website->getWebsiteId();
+                }
+            } catch (\Exception $e) {
+                $this->emarsysLogs->addErrorLog($e->getMessage(), $this->storeManager->getStore()->getId(), 'syncContactsSubscriptionData(helper/data)');
+            }
+        }
+        if (count($queue) > 0) {
+            foreach ($queue as $websiteId) {
+                $this->requestSubscriptionUpdates($websiteId, true);
+            }
+        }
+    }
+
+     /**
+     * API Request to get updates
+     */
+    public function requestSubscriptionUpdates(array $websiteId, $isTimeBased = false)
+    {
+        try {
+            $logsArray['job_code'] = 'Sync contact Export';
+            $logsArray['status'] = 'started';
+            $logsArray['messages'] = __('Running requestSubscriptionUpdates');
+            $logsArray['description'] = __('Started Sync Contacts Subscription Data');
+            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['run_mode'] = 'Automatic';
+            $logsArray['auto_log'] = 'Complete';
+            $logsArray['website_id'] = current($websiteId);
+            $logsArray['store_id'] = $this->storeManager->getWebsite(current($websiteId))->getDefaultStore()->getId();
+            $logId = $this->logsHelper->manualLogs($logsArray);
+            $client = $this->emarsysDataHelper->getClient();
+            $dt = (new \Zend_Date());
+            if ($isTimeBased) {
+                $timeRange = array($dt->subHour(1)->toString('YYYY-MM-dd'), $dt->addHour(1)->toString('YYYY-MM-dd'));
+            }
+            $storeId = $this->storeManager->getWebsite(current($websiteId))->getDefaultStore()->getId();
+            $key_id = $this->customerResourceModel->getEmarsysFieldId('Magento Subscriber ID', $storeId);
+            $optinFiledId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $storeId);
+            $payload = [
+                'distribution_method' => 'local',
+                'origin' => 'all',
+                'origin_id' => '0',
+                'contact_fields' => array($key_id, $optinFiledId),
+                'add_field_names_header' => 1,
+                'time_range' => $timeRange,
+                'notification_url' => $this->getExportsNotificationUrl($websiteId, $isTimeBased, $storeId)
+            ];
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = 'test';
+            $logsArray['description'] = $this->getExportsNotificationUrl($websiteId, $isTimeBased, $storeId);
+            $logsArray['action'] = 'synced to emarsys';
+            $logsArray['message_type'] = 'Success';
+            $logsArray['log_action'] = 'sync';
+            $this->logsHelper->logs($logsArray);
+            $this->emarsysDataHelper->getEmarsysAPIDetails($storeId);
+            $this->emarsysDataHelper->getClient();
+            $response = $this->modelApi->post('contact/getchanges', $payload);
+
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = 'test';
+            $logsArray['description'] = print_r($response,true);
+            $logsArray['action'] = 'synced to emarsys';
+            $logsArray['message_type'] = 'Success';
+            $logsArray['log_action'] = 'sync';
+            $this->logsHelper->logs($logsArray);
+            if (isset($response['data']['id'])) {
+                $this->setValue('export_id', $response['data']['id'], current($websiteId));
+                $logsArray['id'] = $logId;
+                $logsArray['emarsys_info'] = 'test';
+                $logsArray['description'] = $response['data']['id'];
+                $logsArray['action'] = 'synced to emarsys';
+                $logsArray['message_type'] = 'Success';
+                $logsArray['log_action'] = 'sync';
+                $this->logsHelper->logs($logsArray);
+            }
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'requestSubscriptionUpdates(helper/data)');
+        }
+    }
+
+    /**
+     * @param int $websiteId
+     * @param bool $isTimeBased
+     * @param $storeId
+     * @return string
+     */
+    public function getExportsNotificationUrl($websiteId = 0, $isTimeBased = false, $storeId)
+    {
+        try {
+            $oldEntryPoint = $this->registry->registry('custom_entry_point');
+            if ($oldEntryPoint) {
+                $this->registry->unregister('custom_entry_point');
+            }
+            $this->registry->register('custom_entry_point', 'index.php');
+
+            if ($isTimeBased) {
+                $url = $this->storeManager->getStore($storeId)->getBaseUrl().'emarsys/index/sync?_store='.$storeId.'&secret='.$this->scopeConfig->getValue('contacts_synchronization/emarsys_emarsys/notification_secret_key').'&website_ids='.implode(',', $websiteId).'&timebased=1';
+            }
+            $this->registry->unregister('custom_entry_point');
+
+            if ($oldEntryPoint) {
+                $this->registry->register('custom_entry_point', $oldEntryPoint);
+            }
+
+            return $url;
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getExportsNotificationUrl(helper/data)');
+        }
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @param $websiteId
+     */
+    public function setValue($key, $value, $websiteId)
+    {
+        try {
+            $this->resourceConfig->saveConfig('emarsys_suite2/storage/' . $key, $value, 'websites', $websiteId);
+            $this->_cacheTypeList->cleanType('config');
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $this->storeManager->getStore()->getId(), 'setValue(helper/data)');
         }
     }
 }

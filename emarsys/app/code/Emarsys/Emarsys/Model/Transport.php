@@ -34,7 +34,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $dataHelper = $objectManager->create('Emarsys\Emarsys\Helper\Data');
-        $logsHelper = $objectManager->create('Emarsys\Log\Helper\Logs');
+        $logsHelper = $objectManager->create('Emarsys\Emarsys\Helper\Logs');
         $storeManagerInterface = $objectManager->create('\Magento\Store\Model\StoreManagerInterface');
         $store_id = $storeManagerInterface->getStore()->getId();
         $websiteId = $storeManagerInterface->getStore()->getWebsiteId();

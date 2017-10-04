@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
@@ -10,7 +10,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class saveSchema extends \Magento\Backend\App\Action
+class SaveSchema extends \Magento\Backend\App\Action
 {
 
     /**
@@ -32,7 +32,7 @@ class saveSchema extends \Magento\Backend\App\Action
      *
      * @param Context $context
      * @param \Emarsys\Emarsys\Model\ResourceModel\Product $productResourceModel
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
@@ -41,8 +41,8 @@ class saveSchema extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Log\Helper\Logs $logHelper,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         PageFactory $resultPageFactory
     ) {
     

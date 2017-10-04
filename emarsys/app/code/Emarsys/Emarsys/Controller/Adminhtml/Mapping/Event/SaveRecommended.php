@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
@@ -48,7 +48,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
      * @param \Emarsys\Emarsys\Helper\Data $EmarsysHelper
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
      * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection
-     * @param \Emarsys\Log\Helper\Logs $logHelper
+     * @param \Emarsys\Emarsys\Helper\Logs $logHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventsCollection
      * @param \Emarsys\Emarsys\Model\Api\Api $api
      */
@@ -61,7 +61,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection,
-        \Emarsys\Log\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventsCollection,
         \Emarsys\Emarsys\Model\Api\Api $api
     ) {

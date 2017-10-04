@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
@@ -58,9 +58,9 @@ class SaveRecommended extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Model\FieldFactory $fieldFactory,
         \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField,
         PageFactory $resultPageFactory,
-        \Emarsys\Log\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
         \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {

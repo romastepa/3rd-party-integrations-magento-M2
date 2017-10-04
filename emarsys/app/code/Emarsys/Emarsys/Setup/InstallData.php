@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Setup;
@@ -15,6 +15,7 @@ use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\App\ResourceConnection;
 
 /**
  * @codeCoverageIgnore
@@ -32,22 +33,24 @@ class InstallData implements InstallDataInterface
     private $attributeSetFactory;
 
     /**
+     * InstallData constructor.
+     *
      * @param CustomerSetupFactory $customerSetupFactory
      * @param AttributeSetFactory $attributeSetFactory
+     * @param ProductMetadataInterface $productMetadata
+     * @param ResourceConnection $ResourceConnection
      */
     public function __construct(
         CustomerSetupFactory $customerSetupFactory,
         AttributeSetFactory $attributeSetFactory,
         ProductMetadataInterface $productMetadata,
-        \Magento\Framework\App\ResourceConnection $ResourceConnection
+        ResourceConnection $ResourceConnection
     ) {
-    
         $this->customerSetupFactory = $customerSetupFactory;
         $this->productMetadata = $productMetadata;
         $this->attributeSetFactory = $attributeSetFactory;
         $this->ResourceConnection = $ResourceConnection;
     }
-
 
     /**
      * {@inheritdoc}
@@ -134,32 +137,5 @@ class InstallData implements InstallDataInterface
 			('Shipment Update', 'sales_email/shipment_comment/template'),
 			('Shipment Update for Guest', 'sales_email/shipment_comment/guest_template');");
         }
-        $customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);
-        $customerEntity = $customerSetup->getEavConfig()->getEntityType('customer');
-        $attributeSetId = $customerEntity->getDefaultAttributeSetId();
-
-        /** @var $attributeSet AttributeSet */
-        $attributeSet = $this->attributeSetFactory->create();
-        $attributeGroupId = $attributeSet->getDefaultGroupId($attributeSetId);
-
-        // $customerSetup->addAttribute(Customer::ENTITY, 'emarsys_customer_sync', [
-        //     'type' => 'int',
-        // 	'label' => 'Emarsys Customer Sync',
-        // 	'input' => 'select',
-        // 	'source' => 'Magento\Eav\Model\Entity\Attribute\Source\Boolean',
-        // 	'required' => false,
-        // 	'default' => '0',
-        // 	'sort_order' => 100,
-        // 	'system' => false,
-        // 	'position' => 100
-        // ]);
-        //
-        // $attribute = $customerSetup->getEavConfig()->getAttribute(Customer::ENTITY, 'emarsys_customer_sync')
-        // ->addData([
-        //     'attribute_set_id' => $attributeSetId,
-        //     'attribute_group_id' => $attributeGroupId,
-        //     'used_in_forms' => ['adminhtml_customer'],
-        // ]);
-        // $attribute->save();
     }
 }

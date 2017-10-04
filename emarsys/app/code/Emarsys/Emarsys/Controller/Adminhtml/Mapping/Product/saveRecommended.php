@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
@@ -50,10 +50,11 @@ class SaveRecommended extends \Magento\Backend\App\Action
         \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavAttribute,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
         \Emarsys\Emarsys\Model\ProductFactory $productFactory,
+        \Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory $productAttributeCollection,
         \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
-        \Emarsys\Log\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct,
         PageFactory $resultPageFactory
@@ -71,6 +72,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
         $this->productFactory = $productFactory;
         $this->resourceModelProduct = $resourceModelProduct;
         $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->productAttributeCollection = $productAttributeCollection;
     }
 
     /**
@@ -99,13 +101,9 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logId = $this->logHelper->manualLogs($logsArray);
             $model = $this->productFactory->create();
             /**
-             * Truncating the Mapping Table first
-             */
-            $this->resourceModelProduct->truncateMappingTable($storeId);
-            /**
              *Here We need set the recommended attribute values
              */
-            $data = $this->resourceModelProduct->getProductAttributeLabelId();
+            $data = $this->resourceModelProduct->getProductAttributeLabelId($storeId);
 
             $recommendedData = [
                 'sku' => ['emarsys_attr_code' => $data[0]],
@@ -117,7 +115,8 @@ class SaveRecommended extends \Magento\Backend\App\Action
             ];
 
             foreach ($recommendedData as $key => $value) {
-                if ($key == '') {
+                $mappedAttributeCode = $this->productAttributeCollection->create()->addFieldToFilter('magento_attr_code',array('eq'=>$key))->addFieldToFilter('store_id',array('eq'=>$storeId))->getFirstItem()->getEmarsysAttrCode();
+                if ($key == '' || $mappedAttributeCode) {
                     continue;
                 }
                 $recommendedArray[] = $value['magento_attr_code'] = $key;

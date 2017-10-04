@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
@@ -36,7 +36,7 @@ class SaveSchema extends \Magento\Backend\App\Action
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
-        \Emarsys\Log\Helper\Logs $logsHelper,
+        \Emarsys\Emarsys\Helper\Logs $logsHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel,
         \Magento\Store\Model\StoreManagerInterface $storeManager,

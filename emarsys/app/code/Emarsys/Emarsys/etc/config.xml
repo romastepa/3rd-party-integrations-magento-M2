@@ -13,6 +13,7 @@
                 <ftp_bulk_export_dir>/</ftp_bulk_export_dir>
                 <useftp_overssl>1</useftp_overssl>
                 <usepassive_mode>1</usepassive_mode>
+                <apiurl>https://api.github.com/repos/emartech/3rd-party-integrations-magento-M2/releases/latest</apiurl>
             </ftp_settings>
         </emarsys_settings>
         <contacts_synchronization>
@@ -20,6 +21,7 @@
                 <realtime_sync>0</realtime_sync>
                 <background_frequency>Daily</background_frequency>
                 <unique_field>email</unique_field>
+                <notification_secret_key>1234567890</notification_secret_key>
             </emarsys_emarsys>
         </contacts_synchronization>
         <opt_in>
@@ -51,26 +53,36 @@
             <feed_export>
                 <enable_nightly_product_feed>0</enable_nightly_product_feed>
             </feed_export>
-            <web_extend>
-                <recommended_product_pages>
-                    <recommended_home_page>||</recommended_home_page>
-                    <recommended_category_page>||</recommended_category_page>
-                    <recommended_product_page>||</recommended_product_page>
-                    <recommended_cart_page>||</recommended_cart_page>
-                    <recommended_order_thankyou_page>||</recommended_order_thankyou_page>
-                    <recommended_nosearch_result_page>||</recommended_nosearch_result_page>
-                </recommended_product_pages>
-                <javascript_tracking>
-                    <enable_javascript_integration>0</enable_javascript_integration>
-                </javascript_tracking>
-            </web_extend>
-            <logs>
-                <log_setting>
-                    <log_days>15</log_days>
-                    <log_cleaning>0</log_cleaning>
-                    <log_report>0</log_report>
-                </log_setting>
-            </logs>
         </emarsys_predict>
+        <web_extend>
+            <recommended_product_pages>
+                <recommended_home_page>||</recommended_home_page>
+                <recommended_category_page>||</recommended_category_page>
+                <recommended_product_page>||</recommended_product_page>
+                <recommended_cart_page>||</recommended_cart_page>
+                <recommended_order_thankyou_page>||</recommended_order_thankyou_page>
+                <recommended_nosearch_result_page>||</recommended_nosearch_result_page>
+            </recommended_product_pages>
+            <javascript_tracking>
+                <enable_javascript_integration>0</enable_javascript_integration>
+                <testmode>0</testmode>
+                <identityregistered>email_address</identityregistered>
+                <uniqueidentifier>sku</uniqueidentifier>
+                <use_base_currency>0</use_base_currency>
+                <tax_included>0</tax_included>
+            </javascript_tracking>
+        </web_extend>
+        <logs>
+            <log_setting>
+                <log_days>15</log_days>
+                <log_cleaning>0</log_cleaning>
+                <log_report>0</log_report>
+            </log_setting>
+        </logs>
+        <about_emarsys>
+            <emarsys_release>
+                <release_url>https://www.emarsys.com/en/services/implementation</release_url>
+            </emarsys_release>
+        </about_emarsys>
     </default>
 </config>

@@ -1,0 +1,81 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ */
+
+/** @var \Emarsys\Emarsys\Block\JavascriptTracking $block */
+?>
+
+<?php $merchantId = $block->getMerchantId(); ?>
+<?php $webExtendStatus = $block->getJsEnableStatusForAllPages(); ?>
+
+<!-- This code will embeded on all pages -->
+<?php if($webExtendStatus && !empty($merchantId)): ?>
+    <?php $helper = $this->helper('Emarsys\Emarsys\Helper\Data'); ?>
+    <script type="text/javascript">
+        var ScarabQueue = ScarabQueue || [];
+        (function (subdomain, id) {
+            if (document.getElementById(id)) return;
+            var js = document.createElement('script');
+            js.id = id;
+            js.src = subdomain + '.scarabresearch.com/js/<?php echo $merchantId; ?>/scarab-v2.js';
+            var fs = document.getElementsByTagName('script')[0];
+            fs.parentNode.insertBefore(js, fs);
+        })('https:' == document.location.protocol ? 'https://recommender' : 'http://cdn', 'scarab-js-api');
+    </script>
+
+    <?php if($helper->isTestModeEnabled()):?>
+        <script>ScarabQueue.push(['testMode']);</script>
+    <?php endif;?>
+
+    <?php if ($currentCategory = $block->getCurrentCategory()): ?>
+        <script>ScarabQueue.push(['category', '<?php echo $currentCategory; ?>']);</script>
+    <?php endif; ?>
+
+    <?php if ($currentProduct = $block->getCurrentProductSku()): ?>
+        <script>ScarabQueue.push(['view', '<?php echo $currentProduct; ?>']);</script>
+    <?php endif; ?>
+
+    <?php if ($searchResult = $block->getSearchResult()): ?>
+        <script>ScarabQueue.push(['searchTerm', '<?php echo $searchResult; ?>']);</script>
+    <?php endif; ?>
+
+    <?php /* Script for an Ajax to avoid caching Issues */ ?>
+    <?php if ($helper->isAjaxUpdateEnabled()) : ?>
+        <script>
+            require([
+                'jquery',
+                'prototype'
+            ], function(jQuery){
+                document.observe('dom:loaded', function() {
+                    var unique_key_value = Math.random()*Math.random();
+                    jQuery.ajax({
+                        url: '<?php echo $block->getAjaxUpdateUrl() ?>',
+                        data: {
+                            'unique_key': unique_key_value
+                        },
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.status == 1) {
+                                jQuery('#webextend-code').html(result.content);
+                            }
+                        },
+                        error: function (xhr, textStatus, thrownError) {
+                            console.log("Emarsys WebExtend Ajax Error: " + thrownError);
+                        }
+                    });
+                });
+            });
+        </script>
+        <div id="webextend-code"></div>
+    <?php else: ?>
+        <?php echo $this->getChildHtml(); ?>
+    <?php endif; ?>
+<?php endif; ?>
+
+
+
+

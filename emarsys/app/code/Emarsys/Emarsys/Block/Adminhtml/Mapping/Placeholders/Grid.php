@@ -2,21 +2,40 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders;
 
-class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
+use Magento\Backend\Block\Widget\Grid\Extended;
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Helper\Data;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Framework\Data\Collection;
+use Magento\Framework\DataObjectFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
+use Emarsys\Emarsys\Model\PlaceholdersFactory;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Framework\Module\Manager as ModuleManager;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\App\ResponseFactory;
+use Magento\Framework\Data\Form\FormKey;
+
+/**
+ * Class Grid
+ * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders
+ */
+class Grid extends Extended
 {
     /**
-     * @var \Magento\Framework\Module\Manager
+     * @var ModuleManager
      */
     protected $moduleManager;
 
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
+     * @var
      */
     protected $_collection;
 
@@ -26,32 +45,32 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $session;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Event
+     * @var Event
      */
     protected $resourceModelEvent;
 
     /**
-     * @var \Magento\Framework\Data\Collection
+     * @var Collection
      */
     protected $dataCollection;
 
     /**
-     * @var \Magento\Framework\DataObjectFactory
+     * @var DataObjectFactory
      */
     protected $dataObjectFactory;
 
     /**
-     * @var \Magento\Eav\Model\Entity\Type
+     * @var Type
      */
     protected $entityType;
 
     /**
-     * @var \Magento\Eav\Model\Entity\Attribute
+     * @var Attribute
      */
     protected $attribute;
 
@@ -61,35 +80,46 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $_storeManager;
 
     /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Magento\Eav\Model\Entity\Type $entityType
-     * @param \Magento\Eav\Model\Entity\Attribute $attribute
-     * @param \Magento\Framework\Data\Collection $dataCollection
-     * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent
-     * @param \Magento\Framework\Module\Manager $moduleManager
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @var FormKey
+     */
+    protected $formKey;
+
+    /**
+     * Grid constructor.
+     *
+     * @param Context $context
+     * @param Data $backendHelper
+     * @param Type $entityType
+     * @param Attribute $attribute
+     * @param Collection $dataCollection
+     * @param DataObjectFactory $dataObjectFactory
+     * @param Event $resourceModelEvent
+     * @param EmarsyseventmappingFactory $EmarsyseventmappingFactory
+     * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
+     * @param EmarsysHelper $EmarsysHelper
+     * @param ModuleManager $moduleManager
+     * @param MessageManagerInterface $messageManager
+     * @param ResponseFactory $responseFactory
+     * @param FormKey $formKey
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Eav\Model\Entity\Type $entityType,
-        \Magento\Eav\Model\Entity\Attribute $attribute,
-        \Magento\Framework\Data\Collection $dataCollection,
-        \Magento\Framework\DataObjectFactory $dataObjectFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent,
-        \Emarsys\Emarsys\Model\EmarsyseventmappingFactory $EmarsyseventmappingFactory,
-        \Emarsys\Emarsys\Model\PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
-        \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
-        \Magento\Framework\Module\Manager $moduleManager,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Framework\App\ResponseFactory $responseFactory,
+        Context $context,
+        Data $backendHelper,
+        Type $entityType,
+        Attribute $attribute,
+        Collection $dataCollection,
+        DataObjectFactory $dataObjectFactory,
+        Event $resourceModelEvent,
+        EmarsyseventmappingFactory $EmarsyseventmappingFactory,
+        PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
+        EmarsysHelper $EmarsysHelper,
+        ModuleManager $moduleManager,
+        MessageManagerInterface $messageManager,
+        ResponseFactory $responseFactory,
+        FormKey $formKey,
         $data = []
     ) {
-    
         $this->session = $context->getBackendSession();
         $this->entityType = $entityType;
         $this->attribute = $attribute;
@@ -105,9 +135,9 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->_url = $context->getUrlBuilder();
         $this->_responseFactory = $responseFactory;
         $this->_messageManager = $messageManager;
+        $this->formKey = $formKey;
         parent::__construct($context, $backendHelper, $data = []);
     }
-
 
     /**
      * @return $this
@@ -119,8 +149,12 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         if (!isset($storeId)) {
             $storeId = 1;
         }
-        $EventMappingCollection = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()->addFieldToFilter("store_id", $storeId)->addFieldToFilter("event_mapping_id", $mappingId);
+        $EventMappingCollection = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
+                                    ->addFieldToFilter("store_id", $storeId)
+                                    ->addFieldToFilter("event_mapping_id", $mappingId);
+
         $this->setCollection($EventMappingCollection);
+
         return parent::_prepareCollection();
     }
 
@@ -142,7 +176,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $emarsysEventPlaceholderMappingColl->addFieldToFilter('event_mapping_id', $mapping_id);
         $emarsysEventPlaceholderMappingColl->addFieldToFilter('store_id', $storeId);
 
-
         if (!$emarsysEventPlaceholderMappingColl->getSize()) {
             $val = $this->EmarsysHelper->insertFirstimeMappingPlaceholders($mapping_id, $storeId);
             if ($val == "") {
@@ -159,25 +192,11 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareColumns()
     {
-
-
         $this->addColumn(
             'magento_placeholder_name',
             ['header' => __('Magento Variable'),
                 'index' => 'magento_placeholder_name']
         );
-
-
-        /*$this->addColumn(
-            'magento_event_template_name',
-            [
-                'header' => __('Magento Email Templates'),
-                'type' => 'varchar',
-                'index' => 'magento_event_template_name',
-                'header_css_class' => 'col-id',
-                'column_css_class' => 'col-id',
-            ]
-            );*/
 
         $this->addColumn(
             'emarsys_placeholder_name',
@@ -193,11 +212,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return string
-     */
-
-
-    /**
      * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $row
      * @return string
      */
@@ -211,12 +225,12 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     public function getMainButtonsHtml()
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $formKey = $objectManager->get('Magento\Framework\Data\Form\FormKey');
-        $form = '<form id="eventsPlaceholderForm"  method="post" action="' . $this->backendHelper->getUrl('emarsys_emarsys/mapping_event/saveplaceholdermapping') . '"><input name="form_key" type="hidden" value="' . $formKey->getFormKey() . '" /><input type="hidden" id="placeholderData" name="placeholderData" value=""></form>';
+        $url = $this->backendHelper->getUrl('emarsys_emarsys/mapping_event/saveplaceholdermapping');
+        $form = '<form id="eventsPlaceholderForm"  method="post" action="' . $url . '">';
+        $form .= '<input name="form_key" type="hidden" value="' . $this->formKey->getFormKey() . '" />';
+        $form .= '<input type="hidden" id="placeholderData" name="placeholderData" value="">';
+        $form .= '</form>';
 
         return $form;
-
     }
-
 }

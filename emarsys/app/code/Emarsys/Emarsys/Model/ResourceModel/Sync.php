@@ -3,7 +3,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
@@ -61,14 +61,14 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * 
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param DateTime $date
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
      * @param type $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,
         DateTime $date,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
         $connectionName = null
     ) {
@@ -100,7 +100,7 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         $connection = $this->getConnection();
 
         if ($entity == 'product') {
-            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_product_attributes'));
+            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_product_attributes')  . " where store_id =" . $storeId);
         }
         if ($entity == 'customer') {
             $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_customer_attributes') . " where store_id =" . $storeId);

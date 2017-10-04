@@ -2,39 +2,25 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 ?>
 <?php echo $block->getGridHtml(); ?>
-
-
-
-
 <?php
 $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 $url = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_STATIC);
 $loadImageUrl = $url . "adminhtml/Magento/backend/en_US/images/loader-2.gif";
 ?>
-
-
-
-
-
 <div id="myModal" class="json-modal">
     <div class="json-modal-content">
         <div class="json-modal-header">
             <span class="json-modal-title">JSON Request</span>
             <span class="close">
-                                <img class="close-image" src="https://ignite.microsoft.com/Images/close.png"
-                                     alt="close">
-                            </span>
+                <img class="close-image" src="<?php echo $this->getViewFileUrl('Emarsys_Emarsys::images/close-button.png'); ?>" alt="close">
+            </span>
         </div>
         <div class="json-modal-container" id="json-data-container">
-
-
-
-
 <pre>{
     "external_id": "RECIPIENT_EMAIL",
     "key_id": "KEY_ID",
@@ -48,22 +34,16 @@ $loadImageUrl = $url . "adminhtml/Magento/backend/en_US/images/loader-2.gif";
     }
 }
 </pre>
-
         </div>
     </div>
 </div>
-
-
 <div class="loading-mask" data-role="loader" style="display: none;">
     <div class="popup popup-loading">
-        <div class="popup-inner"><img alt="Loading..."
-                                      src="<?php echo $loadImageUrl; ?>">Please
-            wait...
+        <div class="popup-inner">
+            <img alt="Loading..." src="<?php echo $loadImageUrl; ?>">Please wait...
         </div>
     </div>
 </div>
-
-
 <script>
     function changeValue(url, attribute, columnAttr, value) {
         var url = url + '?attribute=' + attribute + '&attributeValue=' + value + '&columnAttr=' + columnAttr;
@@ -71,7 +51,6 @@ $loadImageUrl = $url . "adminhtml/Magento/backend/en_US/images/loader-2.gif";
             method: 'get',
             asynchronous: false
         });
-
     }
 
     function updateSchema(redirectUrl, count) {

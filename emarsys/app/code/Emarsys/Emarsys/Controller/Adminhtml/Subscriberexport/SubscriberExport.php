@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\SubscriberExport;
 
@@ -31,7 +31,7 @@ class SubscriberExport extends \Magento\Backend\App\Action
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Magento\Customer\Model\CustomerFactory $customer
      * @param DateTime $date
-     * @param \Emarsys\Log\Helper\Logs $logsHelper
+     * @param \Emarsys\Emarsys\Helper\Logs $logsHelper
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel
      * @param \Magento\Framework\App\Request\Http $request
@@ -40,7 +40,7 @@ class SubscriberExport extends \Magento\Backend\App\Action
         \Magento\Backend\App\Action\Context $context,
         \Magento\Customer\Model\CustomerFactory $customer,
         DateTime $date,
-        \Emarsys\Log\Helper\Logs $logsHelper,
+        \Emarsys\Emarsys\Helper\Logs $logsHelper,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
         \Magento\Framework\App\Request\Http $request
@@ -62,6 +62,7 @@ class SubscriberExport extends \Magento\Backend\App\Action
      */
     public function execute()
     {
+        set_time_limit(0);
         $data = $this->request->getParams();
         $scope = 'websites';
         $storeId = $data['storeId'];

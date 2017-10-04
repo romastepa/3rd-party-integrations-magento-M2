@@ -2,21 +2,26 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field;
 
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Helper\Data;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Eav\Model\Entity\Attribute\Option;
+
+/**
+ * Class Grid
+ * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Field
+ */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
-     * @var \Magento\Framework\Module\Manager
-     */
-    protected $moduleManager;
-
-    /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
+     * Collection object
+     *
+     * @var \Magento\Framework\Data\Collection
      */
     protected $_collection;
 
@@ -26,82 +31,40 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $session;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Field
-     */
-    protected $resourceModelField;
-
-    /**
-     * @var \Magento\Framework\Data\Collection
-     */
-    protected $dataCollection;
-
-    /**
-     * @var \Magento\Framework\DataObjectFactory
-     */
-    protected $dataObjectFactory;
-
-    /**
-     * @var \Magento\Eav\Model\Entity\Type
+     * @var Type
      */
     protected $entityType;
 
     /**
-     * @var \Magento\Eav\Model\Entity\Attribute
+     * @var Option
      */
     protected $attribute;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
-     * @var \Magento\Eav\Model\Config
-     */
-    protected $eavConfig;
-
-    /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Magento\Eav\Model\Entity\Type $entityType
-     * @param \Magento\Eav\Model\Entity\Attribute\Option $attribute
-     * @param \Magento\Framework\Data\Collection $dataCollection
-     * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField
-     * @param \Magento\Framework\Module\Manager $moduleManager
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Eav\Model\Config $eavConfig
+     * Grid constructor.
+     *
+     * @param Context $context
+     * @param Data $backendHelper
+     * @param Type $entityType
+     * @param Option $attribute
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Eav\Model\Entity\Type $entityType,
-        \Magento\Eav\Model\Entity\Attribute\Option $attribute,
-        \Magento\Framework\Data\Collection $dataCollection,
-        \Magento\Framework\DataObjectFactory $dataObjectFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField,
-        \Magento\Framework\Module\Manager $moduleManager,
-        \Magento\Eav\Model\Config $eavConfig,
+        Context $context,
+        Data $backendHelper,
+        Type $entityType,
+        Option $attribute,
         $data = []
     ) {
-    
         $this->session = $context->getBackendSession();
         $this->entityType = $entityType;
         $this->attribute = $attribute;
-        $this->moduleManager = $moduleManager;
         $this->backendHelper = $backendHelper;
-        $this->dataCollection = $dataCollection;
-        $this->dataObjectFactory = $dataObjectFactory;
-        $this->resourceModelField = $resourceModelField;
-        $this->_storeManager = $context->getStoreManager();
-        $this->eavConfig = $eavConfig;
         parent::__construct($context, $backendHelper, $data = []);
     }
 
@@ -119,8 +82,9 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->session->setData('store', $storeId);
     }
 
-
     /**
+     * Apply sorting and filtering to collection
+     *
      * @return $this
      */
     protected function _prepareCollection()
@@ -159,14 +123,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         return parent::_prepareCollection();
     }
 
-
     /**
+     * Initialize grid columns
+     *
      * @return $this
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @throws \Exception
      */
     protected function _prepareColumns()
     {
-
         $this->addColumn(
             'value',
             [
@@ -188,35 +152,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         );
 
         return parent::_prepareColumns();
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        $html = parent::getMainButtonsHtml();
-        $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = 1;
-        }
-        $moduleName = 'emarsys_emarsys';
-        $controllerNamePleaseSelect = 'mapping_field';
-        $controllerNameField = 'mapping_field';
-        $controllerNameProduct = 'mapping_product';
-        $controllerNameCustomer = 'mapping_customer';
-        $controllerNameOrder = 'mapping_order';
-        $controllerNameEvent = 'mapping_event';
-
-        $adminUrlEmarsysProduct = $this->backendHelper->getUrl($moduleName . '/' . $controllerNameProduct . '/index/store/' . $storeId);
-        $adminUrlEmarsysField = $this->backendHelper->getUrl($moduleName . '/' . $controllerNameField . '/index/store/' . $storeId);
-        $adminUrlEmarsysCustomer = $this->backendHelper->getUrl($moduleName . '/' . $controllerNameCustomer . '/index/store/' . $storeId);
-        $adminUrlEmarsysOrder = $this->backendHelper->getUrl($moduleName . '/' . $controllerNameOrder . '/index/store/' . $storeId);
-        $adminUrlEmarsysEvent = $this->backendHelper->getUrl($moduleName . '/' . $controllerNameEvent . '/index/store/' . $storeId);
-        $adminUrlEmarsysPleaseSelect = $this->backendHelper->getUrl($moduleName . '/' . $controllerNamePleaseSelect . '/index/store/' . $storeId);
-        $html = parent::getMainButtonsHtml();
-
-        return $html;
     }
 
     /**

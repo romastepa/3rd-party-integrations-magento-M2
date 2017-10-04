@@ -2,69 +2,130 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model\Observer;
 
-use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\OrderQueueFactory;
+use Emarsys\Emarsys\Model\OrderExportStatusFactory;
+use Magento\Checkout\Model\Session;
+use Magento\Newsletter\Model\SubscriberFactory;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\Order;
+use Magento\Customer\Model\Session as CustomerSession;
+use Emarsys\Emarsys\Model\Logs;
 
+/**
+ * Class OrderSaveFrontend
+ * @package Emarsys\Emarsys\Model\Observer
+ */
 class OrderSaveFrontend implements ObserverInterface
 {
-    private $logger;
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
 
-    protected $customerFactory;
+    /**
+     * @var OrderQueueFactory
+     */
+    protected $orderQueueFactory;
 
-    protected $orderQueueModel;
+    /**
+     * @var OrderExportStatusFactory
+     */
+    protected $orderExportStatusFactory;
 
-    protected $_responseFactory;
+    /**
+     * @var OrderFactory
+     */
+    protected $orderFactory;
 
-    protected $_url;
+    /**
+     * @var SubscriberFactory
+     */
+    protected $subscriberFactory;
 
+    /**
+     * @var Session
+     */
+    protected $checkoutSession;
+
+    /**
+     * @var Order
+     */
+    protected $order;
+
+    /**
+     * @var CustomerSession
+     */
+    protected $customerSession;
+
+    /**
+     * @var Logs
+     */
+    protected $emarsysLogs;
+
+    /**
+     * OrderSaveFrontend constructor.
+     *
+     * @param StoreManagerInterface $storeManager
+     * @param OrderQueueFactory $orderQueueFactory
+     * @param OrderExportStatusFactory $orderExportStatusFactory
+     * @param Session $checkoutSession
+     * @param SubscriberFactory $subscriberFactory
+     * @param OrderFactory $orderFactory
+     * @param Order $orderModel
+     * @param CustomerSession $customerSession
+     * @param Logs $emarsysLogs
+     */
     public function __construct(
-        LoggerInterface $logger,
-        \Magento\Customer\Model\CustomerFactory $customerFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\OrderQueueFactory $orderQueueFactory,
-        \Emarsys\Emarsys\Model\OrderExportStatusFactory $orderExportStatusFactory,
-        \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url,
-        \Magento\Catalog\Model\ProductFactory $productFactory,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Newsletter\Model\SubscriberFactory $subscriberFactory,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Sales\Model\Order $orderModel
+        StoreManagerInterface $storeManager,
+        OrderQueueFactory $orderQueueFactory,
+        OrderExportStatusFactory $orderExportStatusFactory,
+        Session $checkoutSession,
+        SubscriberFactory $subscriberFactory,
+        OrderFactory $orderFactory,
+        Order $orderModel,
+        CustomerSession $customerSession,
+        Logs $emarsysLogs
     ) {
-    
-        $this->logger = $logger;
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->orderQueueFactory = $orderQueueFactory;
-        $this->customerFactory = $customerFactory;
-        $this->_responseFactory = $responseFactory;
         $this->orderExportStatusFactory = $orderExportStatusFactory;
-        $this->_url = $url;
-        $this->productFactory = $productFactory;
         $this->orderFactory = $orderFactory;
-        $this->_subscriberFactory = $subscriberFactory;
-        $this->_checkoutSession = $checkoutSession;
-        $this->_order = $orderModel;
+        $this->subscriberFactory = $subscriberFactory;
+        $this->checkoutSession = $checkoutSession;
+        $this->order = $orderModel;
+        $this->customerSession = $customerSession;
+        $this->emarsysLogs = $emarsysLogs;
     }
 
+    /**
+     * @param \Magento\Framework\Event\Observer $observer
+     * @throws \Exception
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $orderID = $observer->getEvent()->getOrderIds()[0];
-        $order = $this->_order->load($orderID);
+        $order = $this->order->load($orderID);
         $emailID = $order->getCustomerEmail();
         $checkoutNewsSub = '';
-        if (isset($this->_checkoutSession->getData()['newsletter_sub_checkout'])) {
-            $checkoutNewsSub = $this->_checkoutSession->getData()['newsletter_sub_checkout'];
+
+        //Set customer email, Id and order Ids in session
+        $this->newOrderEmailAddress($observer);
+
+        if (isset($this->checkoutSession->getData()['newsletter_sub_checkout'])) {
+            $checkoutNewsSub = $this->checkoutSession->getData()['newsletter_sub_checkout'];
         }
         if ($checkoutNewsSub) {
-            $this->_subscriberFactory->create()->subscribe($emailID);
+            $this->subscriberFactory->create()->subscribe($emailID);
         }
         $orderExportStatusData = $this->orderExportStatusFactory->create()->getCollection()->addFieldToFilter('order_id', $observer->getEvent()->getOrderIds()[0]);
         $orderExported = false;
+
         if (empty($orderExportStatusData->getData())) {
             $orderStatus = $this->orderExportStatusFactory->create();
         } else {
@@ -82,7 +143,9 @@ class OrderSaveFrontend implements ObserverInterface
         $orderStatus->setExported(0);
         $orderStatus->setStatusCode($order->getStatus());
         $orderStatus->save();
-        $orderQueueData = $this->orderQueueFactory->create()->getCollection()->addFieldToFilter('entity_id', $observer->getEvent()->getOrderIds()[0]);
+        $orderQueueData = $this->orderQueueFactory->create()->getCollection()
+            ->addFieldToFilter('entity_id', $observer->getEvent()->getOrderIds()[0]);
+
         if (empty($orderQueueData->getData())) {
             $orderQueue = $this->orderQueueFactory->create();
         } else {
@@ -96,4 +159,34 @@ class OrderSaveFrontend implements ObserverInterface
         $orderQueue->setStoreId($order->getStoreId());
         $orderQueue->save();
     }
+
+    /**
+     * @param $observer
+     */
+    public function newOrderEmailAddress($observer)
+    {
+        try {
+            $orderIds = $observer->getEvent()->getOrderIds();
+            if (empty($orderIds) || !is_array($orderIds)) {
+                return;
+            }
+            foreach ($orderIds as $orderId) {
+                $order = $this->order->load($orderId);
+                $this->customerSession->setWebExtendCustomerEmail($order->getCustomerEmail());
+                if($order->getCustomerId()) {
+                    $this->customerSession->setWebExtendCustomerId($order->getCustomerId());
+                }
+            }
+            $this->customerSession->setWebExtendNewOrderIds($orderIds);
+        } catch (Exception $e) {
+            $this->emarsysLogs->addErrorLog(
+                $e->getMessage(),
+                $this->storeManager->getStore()->getId(),
+                'newOrderEmailAddress()'
+            );
+        }
+
+        return;
+    }
 }
+

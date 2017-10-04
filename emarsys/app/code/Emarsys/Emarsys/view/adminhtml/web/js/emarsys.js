@@ -1,7 +1,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 require(
@@ -10,7 +10,7 @@ require(
     ],
     function ($) {
         $(document).ready(function () {
-    //use the jquery only after the complete document has loaded so jquery event gets bound to the html elements
+            //use the jquery only after the complete document has loaded so jquery event gets bound to the html elements
             $("#emarsyssync_customersync_syncdirection").on('change', function () {
                 alert('If you change sync direction then attribute mapping direction will also change according to sync direction');
             });
@@ -41,6 +41,18 @@ require(
                 $("#contacts_synchronization_initial_db_load_initial_db_load_attribute").show();
                 $("#contacts_synchronization_initial_db_load_initial_db_load_attribute_value").show();
             });
+            $("#emarsys_predict_feed_export_categories_inherit").change(function () {
+                if ($(this).prop('checked')) {
+                    $('#emarsys_predict_feed_export_excludedcategories_inherit').prop('checked', true);
+                    $('#emarsys_predict_feed_export_excludedcategories').addClass('disabled');
+                    $('#emarsys_predict_feed_export_excludedcategories').prop('disabled', true);
+                } else {
+                    $('#emarsys_predict_feed_export_excludedcategories_inherit').prop('checked', false);
+                    $('#emarsys_predict_feed_export_excludedcategories').removeClass('disabled');
+                    $('#emarsys_predict_feed_export_excludedcategories').prop('disabled', false);
+                }
+            });
+            $('#emarsys_predict_feed_export_categories_inherit').trigger('change');
         })
     }
 );
@@ -66,31 +78,23 @@ function support(url, supportvalue)
     });
 }
 
-
 function changeEmarsysValue(url, emarsyseventId, magentoeventId, Id)
 {
-    //Element.hide('loading_mask_loader');
-
     var url = url + '?emarsyseventId=' + emarsyseventId + '&magentoeventId=' + magentoeventId + '&Id=' + Id;
-    //alert(url);
     new Ajax.Request(url, {
         method: 'get',
         asynchronous: false
     });
 }
 
-
 function changeValue(url, attribute, coulmnAttr, value, entityTypeId)
 {
-    // alert("TEST");
     var url = url + '?attribute=' + attribute + '&entityTypeId=' + entityTypeId + '&attributeValue=' + value + '&coulmnAttr=' + coulmnAttr;
     new Ajax.Request(url, {
         method: 'get',
         asynchronous: false
     });
-
 }
-
 
 require([
     'jquery',
@@ -126,7 +130,6 @@ require([
     window.displayLoadingMask = displayLoadingMask;
 });
 
-
 function placeholderRedirect(url)
 {
     window.location = url;
@@ -135,9 +138,7 @@ function placeholderRedirect(url)
 function placeHolderValidation()
 {
     var placeHolder = document.getElementsByName("emarsys_placeholder_name");
-
     var arrayOfObjects = [];
-
     var errorMessages = document.getElementsByClassName("placeholder-error");
     var totalErrorCount = 0;
     for (var i = 0; i < placeHolder.length; i++) {
@@ -151,10 +152,8 @@ function placeHolderValidation()
         if (emarsys_placeholder.search(regexp) == -1) {
             totalErrorCount = totalErrorCount + 1;
             errorMessagesShow(i);
-            //errorMessages[i].show();
         } else {
             errorMessagesHide(i);
-            //errorMessages[i].hide();
         }
     }
     if (totalErrorCount == 0) {
@@ -167,6 +166,7 @@ function errorMessagesShow(id)
 {
     document.getElementById('divErrPlaceholder_' + id).style.display = '';
 }
+
 function errorMessagesHide(id)
 {
     document.getElementById('divErrPlaceholder_' + id).style.display = 'none';
@@ -191,13 +191,24 @@ function openMyPopup(url)
 
 window.onload = function () {
     if (document.getElementById('contacts_synchronization_initial_db_load_initial_db_load_inherit') && document.getElementById('contacts_synchronization_initial_db_load_initial_db_load_inherit').checked) {
-        document.getElementById('contacts_synchronization_initial_db_load_initial_db_load1').disabled=true;
-        document.getElementById('contacts_synchronization_initial_db_load_initial_db_load2').disabled=true;
-        document.getElementById('contacts_synchronization_initial_db_load_initial_db_load3').disabled=true;
+        document.getElementById('contacts_synchronization_initial_db_load_initial_db_load1').disabled = true;
+        document.getElementById('contacts_synchronization_initial_db_load_initial_db_load2').disabled = true;
+        document.getElementById('contacts_synchronization_initial_db_load_initial_db_load3').disabled = true;
+    }
+    if (document.getElementById('row_emarsys_settings_ftp_settings_apiurl')) {
+        document.getElementById('row_emarsys_settings_ftp_settings_apiurl').style.display = 'none';
     }
 };
 
+function Unchecked(value) {
+    document.getElementById('catCheckBox_' + value).click();
+}
 
-
-
-
+function categoryClick(value,catName) {
+    if(document.getElementById('catCheckBox_' + value).checked == true)
+    {
+        document.getElementById('selectedCategories').innerHTML += '<span id=\''+value+'\' onclick=\'Unchecked('+value+')\' class=\"admin__action-multiselect-crumb\">'+catName+'<button class=\"action-close\" type=\"button\"><span class=\"action-close-text\"></span></button></span>';
+    } else {
+        document.getElementById(value).remove();
+    }
+}

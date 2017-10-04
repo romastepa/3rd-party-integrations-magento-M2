@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
@@ -10,37 +10,46 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping\CollectionFactory as EmarsysEventMappingCollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysMagentoEventsCollectionFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsysEventsCollectionFactory;
+use Magento\Email\Model\TemplateFactory;
+use Magento\Email\Block\Adminhtml\Template\Edit;
 
-class Placeholders extends \Magento\Backend\App\Action
+/**
+ * Class Placeholders
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
+ */
+class Placeholders extends Action
 {
-
     /**
      * @var PageFactory
      */
     protected $resultPageFactory;
 
     /**
-     * 
+     * Placeholders constructor.
+     *
      * @param Context $context
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping\CollectionFactory $emarsysEventmappingCollection
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $emarsysMagentoeventsCollection
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $emarsysEventCollection
-     * @param \Magento\Email\Model\TemplateFactory $emailTemplateModelColl
-     * @param \Magento\Email\Block\Adminhtml\Template\Edit $edit
+     * @param EmarsysEventMappingCollectionFactory $emarsysEventmappingCollection
+     * @param EmarsysMagentoEventsCollectionFactory $emarsysMagentoeventsCollection
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param EmarsysEventsCollectionFactory $emarsysEventCollection
+     * @param TemplateFactory $emailTemplateModelColl
+     * @param Edit $edit
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping\CollectionFactory $emarsysEventmappingCollection,
-        \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $emarsysMagentoeventsCollection,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $emarsysEventCollection,
-        \Magento\Email\Model\TemplateFactory $emailTemplateModelColl,
-        \Magento\Email\Block\Adminhtml\Template\Edit $edit
+        EmarsysEventMappingCollectionFactory $emarsysEventmappingCollection,
+        EmarsysMagentoEventsCollectionFactory $emarsysMagentoeventsCollection,
+        ScopeConfigInterface $scopeConfigInterface,
+        EmarsysEventsCollectionFactory $emarsysEventCollection,
+        TemplateFactory $emailTemplateModelColl,
+        Edit $edit
     ) {
-    
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
         $this->emarsysEventmappingCollection = $emarsysEventmappingCollection;
@@ -58,7 +67,6 @@ class Placeholders extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-
         /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
         $resultPage = $this->resultPageFactory->create();
         $meventId = '';
@@ -70,6 +78,7 @@ class Placeholders extends \Magento\Backend\App\Action
         $mappingId = $this->getRequest()->getParam("mapping_id");
         $storeId = $this->getRequest()->getParam("store_id");
         $eventMapping = $this->emarsysEventmappingCollection->create()->addFieldToFilter("id", $mappingId)->getFirstItem();
+
         if ($eventMapping->getId()) {
             $meventId = $eventMapping->getMagentoEventId();
             $emarsysEventId = $eventMapping->getEmarsysEventId();
@@ -81,26 +90,17 @@ class Placeholders extends \Magento\Backend\App\Action
             ->getFirstItem();
         if ($result && $result->getId()) {
             $magentoEvent = $result->getMagentoEvent();
-            //print_r($result->getConfigPath());exit;
-            $templateId = $this->scopeConfigInterface->getValue($result->getConfigPath());
+            $templateId = $this->scopeConfigInterface->getValue($result->getConfigPath(), 'store', $storeId);
         }
         if (is_numeric($templateId)) {
             $result = $this->emailTemplateModel->create()->getCollection()->addFieldToFilter('template_id', $templateId)->getFirstItem();
             $TemplateName = $result->getTemplateCode();
-            //$opt = $this->edit->_getDefaultTemplatesAsOptionsArray();
-        } else {
         }
-        /* This code has to be separated as it is repeating the same many times */
-        //  $emailTemplates = $this->emailTemplateModelColl::getDefaultTemplatesAsOptionsArray();
-        // $emailTemplateLabels = array();
-        //foreach ($emailTemplates as $emailTemplate) {
-        //  $emailTemplateLabels[$emailTemplate['value']] = $emailTemplate['label'];
-        //  }
 
-        //$placeholderHints = $magentoEvent . ' - Placeholders Mapping Magento Event:  ' . $magentoEvent . 'Emarsys Event: ' . $emarsysEvent . 'Magento Template: ' . $TemplateName;
         $placeholderHints = $magentoEvent . ' - Placeholders Mapping';
         $resultPage->addBreadcrumb(__('Emarsys - Event Mapping'), __('Emarsys - Event Mapping'));
         $resultPage->getConfig()->getTitle()->prepend(__($placeholderHints));
+
         return $resultPage;
     }
 }

@@ -2,31 +2,51 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Customer resource model
- *
- * @author      Magento Core Team <core@magentocommerce.com>
- */
-class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
-{
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Customer\Model\CustomerFactory;
+use Emarsys\Emarsys\Model\Logs;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 
-    /**
-     * @var \Magento\Store\Api\StoreRepositoryInterface
-     */
-    protected $storeRepository;
-    /**
-     * @var \Magento\Eav\Model\Entity\Attribute
-     */
-    protected $attribute;
+/**
+ * Class Customer
+ * @package Emarsys\Emarsys\Model\ResourceModel
+ */
+class Customer extends AbstractDb
+{
     /**
      * @var \Magento\Eav\Model\Entity\Type
      */
     protected $entityType;
+
+    /**
+     * @var TimezoneInterface
+     */
+    protected $_timezoneInterface;
+
+    /**
+     * @var \Magento\Eav\Model\Entity\Attribute
+     */
+    protected $attribute;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfigInterface;
+
+    /**
+     * @var Logs
+     */
+    protected $emarsysLogs;
 
     /**
      * @var \Magento\Customer\Model\Customer
@@ -34,40 +54,40 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     protected $customerModel;
 
     /**
-     * 
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Magento\Eav\Model\Entity\Type $entityType
-     * @param \Magento\Eav\Model\Entity\Attribute $attribute
-     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezoneInterface
-     * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
-     * @param \Magento\Customer\Model\CustomerFactory $customerModel
-     * @param \Emarsys\Log\Model\Logs $emarsysLogs
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
-     * @param type $connectionName
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * Customer constructor.
+     *
+     * @param Context $context
+     * @param Type $entityType
+     * @param Attribute $attribute
+     * @param TimezoneInterface $timezoneInterface
+     * @param CustomerFactory $customerModel
+     * @param Logs $emarsysLogs
+     * @param StoreManagerInterface $storeManager
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param null $connectionName
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Magento\Eav\Model\Entity\Type $entityType,
-        \Magento\Eav\Model\Entity\Attribute $attribute,
-        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezoneInterface,
-        \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
-        \Magento\Customer\Model\CustomerFactory $customerModel,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
+        Context $context,
+        Type $entityType,
+        Attribute $attribute,
+        TimezoneInterface $timezoneInterface,
+        CustomerFactory $customerModel,
+        Logs $emarsysLogs,
+        StoreManagerInterface $storeManager,
+        ScopeConfigInterface $scopeConfigInterface,
         $connectionName = null
-    )
-    {
+    ) {
         $this->entityType = $entityType;
         $this->_timezoneInterface = $timezoneInterface;
         $this->attribute = $attribute;
         $this->scopeConfigInterface = $scopeConfigInterface;
-        $this->storeRepository = $storeRepository;
         $this->emarsysLogs = $emarsysLogs;
         $this->customerModel = $customerModel;
-        $this->date = $date;
         $this->storeManager = $storeManager;
         parent::__construct($context, $connectionName);
     }
@@ -148,7 +168,8 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         } else {
             $entityTypeId = 1;
         }
-        $attributeId = $this->getConnection()->fetchOne("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " where attribute_code = '" . $attributeCode . "' and entity_type_id = $entityTypeId ");
+        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $attributeId = $this->getConnection()->fetchOne("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " where attribute_code = " . $attributeCode . " and entity_type_id = $entityTypeId ");
         if ($attributeId) {
             return $attributeId;
         } else {
@@ -179,7 +200,8 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function checkAttributeUsed($customAttCode,$emFieldId,$storeId)
     {
-        $stmt = $this->getConnection()->query("SELECT count(*) as assigned FROM ".$this->getTable('emarsys_customer_field_mapping')." WHERE magento_custom_attribute_id = (SELECT id FROM ".$this->getTable('emarsys_magento_customer_attributes')." WHERE attribute_code_custom = '".$customAttCode."' AND store_id = '".$storeId."' ) AND store_id = '".$storeId."' AND emarsys_contact_field = '".$emFieldId."' " );
+        $customAttCode = $this->getConnection()->quote($customAttCode);
+        $stmt = $this->getConnection()->query("SELECT count(*) as assigned FROM ".$this->getTable('emarsys_customer_field_mapping')." WHERE magento_custom_attribute_id = (SELECT id FROM ".$this->getTable('emarsys_magento_customer_attributes')." WHERE attribute_code_custom = ".$customAttCode." AND store_id = '".$storeId."' ) AND store_id = '".$storeId."' AND emarsys_contact_field = '".$emFieldId."' " );
         return $stmt->fetch();
     }
 
@@ -270,7 +292,6 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     *
      * @param type $path
      * @param type $scope
      * @param type $scopeId
@@ -279,16 +300,15 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getDataFromCoreConfig($path, $scope = NULL, $scopeId = NULL)
     {
         try {
-            if($scope && $scopeId){
-                return $this->scopeConfigInterface->getValue($path,$scope,$scopeId);
-            }else{
+            if ($scope && $scopeId) {
+                return $this->scopeConfigInterface->getValue($path, $scope, $scopeId);
+            } else {
                 return  $this->scopeConfigInterface->getValue($path);
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(),$scopeId,'getDataFromCoreConfig in Customer.php');
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $scopeId, 'getDataFromCoreConfig in Customer.php');
         }
     }
-
 
     /**
      *
@@ -342,9 +362,10 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getEmarsysFieldId($fieldName, $storeId)
     {
+        $fieldName = $this->getConnection()->quote($fieldName);
         $count = array();
         try {
-            $query = "SELECT emarsys_field_id FROM " . $this->getTable('emarsys_contact_field') . " WHERE name = '" . $fieldName . "' AND store_id = " . $storeId;
+            $query = "SELECT emarsys_field_id FROM " . $this->getTable('emarsys_contact_field') . " WHERE name = " . $fieldName . " AND store_id = " . $storeId;
             $count = $this->getConnection()->fetchOne($query);
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'getEmarsysFieldId(ResourceModel)');
@@ -396,7 +417,6 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getCustomerCollection($data)
     {
         if (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] != '' && $data['toDate'] != '') {
-
             date_default_timezone_set($this->_timezoneInterface->getConfigTimezone());
             $fromDateUTC = gmdate("Y-m-d H:i:s", strtotime($data['fromDate']));
             $toDateUTC = gmdate("Y-m-d H:i:s", strtotime($data['toDate']));
@@ -404,50 +424,15 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
             $customers = $this->customerModel->create()
                             ->getCollection()
-                            ->addFieldToFilter('created_at', array('from'=>$fromDateUTC, 'to'=>$toDateUTC))
-                            ->addFieldToFilter('website_id', array('eq'=>$data['website']));
+                            ->addFieldToFilter('created_at', ['from' => $fromDateUTC, 'to' => $toDateUTC])
+                            ->addFieldToFilter('website_id', ['eq' => $data['website']]);
 
-        } else if (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] == '' && $data['toDate'] == '') {
+        } elseif (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] == '' && $data['toDate'] == '') {
             $customers = $this->customerModel->create()->getCollection()
-                                    ->addFieldToFilter('website_id', array('eq'=>$data['website']));
+                                    ->addFieldToFilter('website_id', ['eq' => $data['website']]);
         }
 
         return $customers->getData();
-
-
-
-        $result = array();
-        $mappedAttributes = $this->getMappedCustomerAttribute($data['storeId']);
-        if (isset($mappedAttributes) && count($mappedAttributes) != '') {
-            $magentoAttributeNames = array();
-            foreach ($mappedAttributes as $mapAttribute) {
-                $magentoAttributeId = $mapAttribute['magento_attribute_id'];
-                $magentoAttributeData = $this->getAttributeName($magentoAttributeId);
-                if ($magentoAttributeData[0]['entity_type_id'] == 2) {
-                    $magentoAttributeNames[] = "cae." . $magentoAttributeData[0]['attribute_code'] . " as cust_add_" . $magentoAttributeData[0]['attribute_code'];
-                } else {
-                    $magentoAttributeNames[] = "ce." . $magentoAttributeData[0]['attribute_code'];
-                }
-            }
-            $magentoAttributes = implode(",", $magentoAttributeNames);
-            if (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] != '' && $data['toDate'] != '') {
-
-                if (isset($data['subscribeStatus'])) {
-                    $query = "SELECT " . $magentoAttributes . " FROM " . $this->getTable('customer_entity') . " ce LEFT JOIN " . $this->getTable('newsletter_subscriber') . " ns ON ce.entity_id = ns.customer_id LEFT JOIN " . $this->getTable('customer_address_entity') . " cae ON ce.entity_id = cae.parent_id
-                                WHERE ns.subscriber_status='" . $data['subscribeStatus'] . "' AND ce.website_id = " . $data['website'] . " AND ce.updated_at BETWEEN '" . $data['fromDate'] . "'  AND '" . $data['toDate'] . "'" . " AND ( cae.entity_id IN ( SELECT default_billing FROM  " . $this->getTable('customer_entity') . " ) || cae.entity_id IN ( SELECT default_shipping FROM  " . $this->getTable('customer_entity') . ")  )  ";;
-                } else {
-                    $query = "SELECT " . $magentoAttributes . " FROM " . $this->getTable('customer_entity') . " ce LEFT JOIN " . $this->getTable('customer_address_entity') . " cae ON ce.entity_id = cae.parent_id WHERE ce.website_id = " . $data['website'] . " AND ce.updated_at BETWEEN '" . $data['fromDate'] . "' AND '" . $data['toDate'] . "'" . " AND ( cae.entity_id IN ( SELECT default_billing FROM  " . $this->getTable('customer_entity') . " ) || cae.entity_id IN ( SELECT default_shipping FROM  " . $this->getTable('customer_entity') . ")  )  ";;
-                }
-            } else if (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] == '' && $data['toDate'] == '') {
-                if (isset($data['subscribeStatus'])) {
-                    $query = "SELECT " . $magentoAttributes . " FROM " . $this->getTable('customer_entity') . " ce LEFT JOIN " . $this->getTable('newsletter_subscriber') . " ns ON ce.entity_id = ns.customer_id LEFT JOIN " . $this->getTable('customer_address_entity') . " cae ON ce.entity_id = cae.parent_id WHERE ns.subscriber_status='" . $data['subscribeStatus'] . "' AND ce.website_id = " . $data['website'] . " AND ( cae.entity_id IN ( SELECT default_billing FROM  " . $this->getTable('customer_entity') . " ) || cae.entity_id IN ( SELECT default_shipping FROM  " . $this->getTable('customer_entity') . ")  )  ";
-                } else {
-                    $query = "SELECT " . $magentoAttributes . " FROM " . $this->getTable('customer_entity') . " ce RIGHT JOIN " . $this->getTable('customer_address_entity') . " cae ON ce.entity_id = cae.parent_id WHERE website_id = " . $data['website'] . " AND ( cae.entity_id IN ( SELECT default_billing FROM  " . $this->getTable('customer_entity') . " ) || cae.entity_id IN ( SELECT default_shipping FROM  " . $this->getTable('customer_entity') . ")  )  ";
-                }
-            }
-            $result = $this->getConnection()->fetchAll($query);
-        }
-        return $result;
     }
 
     /**
@@ -532,7 +517,8 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getAttributeIdByCode($code)
     {
-        $stmt = $this->getConnection()->query("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " WHERE attribute_code= '" . $code . "'");
+        $code = $this->getConnection()->quote($code);
+        $stmt = $this->getConnection()->query("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " WHERE attribute_code= " . $code);
         return $stmt->fetch();
     }
 
@@ -576,7 +562,8 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getSubscribeIdFromEmail($data)
     {
-        $query = "SELECT subscriber_id FROM " . $this->getTable('newsletter_subscriber') . " WHERE subscriber_email = '" . $data['email'] . "' AND store_id = " . $data['storeId'];
+        $data['email'] = $this->getConnection()->quote($data['email']);
+        $query = "SELECT subscriber_id FROM " . $this->getTable('newsletter_subscriber') . " WHERE subscriber_email = " . $data['email'] . " AND store_id = " . $data['storeId'];
         try {
             $result = $this->getConnection()->fetchOne($query);
         } catch (\Exception $e) {
@@ -611,7 +598,8 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getKeyId($attributeName, $storeId)
     {
-        $query = "SELECT emarsys_field_id FROM " . $this->getTable('emarsys_contact_field') . " WHERE name = '" . $attributeName . "' AND store_id = " . $storeId;
+        $attributeName = $this->getConnection()->quote($attributeName);
+        $query = "SELECT emarsys_field_id FROM " . $this->getTable('emarsys_contact_field') . " WHERE name = " . $attributeName . " AND store_id = " . $storeId;
         try {
             $result = $this->getConnection()->fetchOne($query);
         } catch (\Exception $e) {
@@ -628,8 +616,9 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function checkCustomerExistsInMagento($email, $websiteId)
     {
+        $email = $this->getConnection()->quote($email);
         $result = '';
-        $query = "SELECT entity_id FROM " . $this->getTable('customer_entity') . " WHERE email = '" . $email . "' AND website_id = " . $websiteId;
+        $query = "SELECT entity_id FROM " . $this->getTable('customer_entity') . " WHERE email = " . $email . " AND website_id = " . $websiteId;
         try {
             $result = $this->getConnection()->fetchOne($query);
         } catch (\Exception $e) {
@@ -698,7 +687,8 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getCustAttIdByCode($attributeCode,$storeId)
     {
-        $stmt = $this->getConnection()->query("SELECT id FROM " . $this->getTable('emarsys_magento_customer_attributes') . " WHERE attribute_code_custom = '".$attributeCode."' AND store_id = ".$storeId."");
+        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $stmt = $this->getConnection()->query("SELECT id FROM " . $this->getTable('emarsys_magento_customer_attributes') . " WHERE attribute_code_custom = ".$attributeCode." AND store_id = ".$storeId."");
         $result =$stmt->fetch();        
         return $result;
     }
@@ -723,7 +713,7 @@ class Customer extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function getMagentoAttributeCode($id,$storeId)
     {
-        $stmt = $this->getConnection()->query("SELECT attribute_code,entity_type_id FROM ".$this->getTable('emarsys_magento_customer_attributes')." WHERE id = '".$id."' AND store_id = '".$storeId."' ");
+        $stmt = $this->getConnection()->query("SELECT attribute_code, attribute_code_custom, entity_type_id FROM ".$this->getTable('emarsys_magento_customer_attributes')." WHERE id = '".$id."' AND store_id = '".$storeId."' ");
         return $stmt->fetch();
     }
     

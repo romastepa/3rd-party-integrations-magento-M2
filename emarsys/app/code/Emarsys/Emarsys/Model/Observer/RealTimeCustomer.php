@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Observer;
@@ -46,7 +46,7 @@ class RealTimeCustomer implements ObserverInterface
 
                 return;
             }
-            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync');
+            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync', \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,$websiteId);
 
             if (isset($data['email'])) {
                 $customerData = $this->customerFactory->create()->setWebsiteId($websiteId)->loadByEmail($data['email']);
@@ -79,7 +79,7 @@ class RealTimeCustomer implements ObserverInterface
         try {
             $storeId = $this->_storeManager->getStore()->getStoreId();
             $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync');
+            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync', \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,$websiteId);
             if ($realtimeStatus == 1) {
                 $this->contactModel->syncContact($customerId, $websiteId, $storeId);
             } else {

@@ -135,6 +135,16 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         return $value;
     }
 
+    protected function _formatQty($value)
+    {
+        try {
+            $value = sprintf('%01.0f', $value);
+        } catch (\Exception $e) {
+            return $value;
+        }
+        return $value;
+    }
+
 
     public function getOrderData($item)
     {
@@ -158,7 +168,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             $order['sku'] = $item->getData('sku');
             $order['product_name'] = $item->getData('name');
             $order['product_weight'] = $item->getData('weight');
-            $order['qty_ordered'] = $item->getData('qty_ordered');
+            $order['qty_ordered'] = $this->_formatQty($item->getData('qty_ordered'));
             $order['original_price'] = $this->_formatPrice($item->getData('original_price'));
             $order['price'] = $this->_formatPrice($item->getData('price'));
             $order['base_price'] = $this->_formatPrice($item->getData('base_price'));

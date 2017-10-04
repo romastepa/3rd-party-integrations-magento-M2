@@ -2,27 +2,23 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\Api;
 
 use Magento\Payment\Model\Method\Logger;
 use Zend_Http_Client;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Emarsys\Emarsys\Model\Adapter\Http\CurlAdapter;
 use Zend_Json;
 
 /**
+ * Class Api
  * API class for Emarsys API wrappers
+ * @package Emarsys\Emarsys\Model\Api
  */
 class Api extends \Magento\Framework\DataObject
 {
-
-    /**
-     * @var
-     */
     protected $_config;
-
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -34,38 +30,31 @@ class Api extends \Magento\Framework\DataObject
      */
     protected $customLogger;
 
-
     protected $apiUrl;
 
     /**
      * @var ScopeConfigInterface
      */
     protected $scopeConfigInterface;
-    /**
-     * @var CurlAdapter
-     */
-    protected $curlAdapter;
 
     /**
+     * Api constructor.
      * By default is looking for first argument as array and assigns it as object
      * attributes This behavior may change in child classes
-     *
      * @param \Psr\Log\LoggerInterface $logger
      * @param Logger $customLogger
+     * @param ScopeConfigInterface $scopeConfigInterface
      * @param array $data
      */
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         Logger $customLogger,
         ScopeConfigInterface $scopeConfigInterface,
-        CurlAdapter $curlAdapter,
         array $data = []
     ) {
-    
         $this->_logger = $logger;
         $this->customLogger = $customLogger;
         $this->scopeConfigInterface = $scopeConfigInterface;
-        $this->curlAdapter = $curlAdapter;
         parent::__construct($data);
     }
 
@@ -75,6 +64,9 @@ class Api extends \Magento\Framework\DataObject
         $this->scope = '';
     }
 
+    /**
+     * @param $websiteId
+     */
     public function setWebsiteId($websiteId)
     {
         $this->websiteId = $websiteId;
@@ -83,7 +75,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Return Emarsys Api user name based on config data
-     *
      * @return string
      */
     public function getApiUsername()
@@ -97,7 +88,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Return Emarsys Api password based on config data
-     *
      * @return string
      */
     public function getApiPassword()
@@ -111,6 +101,7 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * set Emarsys API URL
+     * @return string
      */
     public function setApiUrl()
     {
@@ -133,7 +124,7 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Return Emarsys API URL
-     *
+     * @return string
      */
     public function getApiUrl()
     {
@@ -142,7 +133,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Returns emarsys enabled based on the current scope
-     *
      * @return boolean
      */
     protected function _isEnabled()
@@ -154,12 +144,19 @@ class Api extends \Magento\Framework\DataObject
         return $enable;
     }
 
+    /**
+     * @param $requestType
+     * @param $urlParam
+     * @param array $requestBody
+     * @return array
+     * @throws \Zend_Http_Client_Exception
+     * @throws \Zend_Json_Exception
+     */
     public function sendRequestOrig($requestType, $urlParam, $requestBody = [])
     {
         $client = new Zend_Http_Client();
         $requestUrl = $this->getApiUrl() . $urlParam;
         $client->setUri($requestUrl);
-        $client->setAdapter($this->curlAdapter);
         switch ($requestType) {
             case 'GET':
                 $client->setMethod(Zend_Http_Client::GET);
@@ -204,22 +201,19 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * @param $requestType
-     * @param $endPoint
-     * @param string $requestBody
-     * @return mixed|string
-     * @throws Exception
+     * @param null $endPoint
+     * @param array $requestBody
+     * @return array
+     * @throws \Exception
      */
     public function sendRequest($requestType, $endPoint = null, $requestBody = [])
     {
         if ($endPoint == 'custom') {
             $endPoint = '';
         }
-
         if (!in_array($requestType, ['GET', 'POST', 'PUT', 'DELETE'])) {
-            throw new Exception('Send first parameter must be "GET", "POST", "PUT" or "DELETE"');
+            throw new \Exception('Send first parameter must be "GET", "POST", "PUT" or "DELETE"');
         }
-        // if($this->_username == "" && $this->_secret == "")
-        //         $this->getEmarsysAPIDetails();
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         switch ($requestType) {
@@ -251,7 +245,6 @@ class Api extends \Magento\Framework\DataObject
          * an ISO 8601 date string like '2010-12-31T15:30:59+00:00' or '2010-12-31T15:30:59Z'
          * passwordDigest looks sg like 'MDBhOTMwZGE0OTMxMjJlODAyNmE1ZWJhNTdmOTkxOWU4YzNjNWZkMw=='
          */
-
         $nonce = md5(time());
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));

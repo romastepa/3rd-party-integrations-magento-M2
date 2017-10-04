@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Testconnection;
 
@@ -26,7 +26,7 @@ class Index extends \Magento\Backend\App\Action
     protected $config;
 
     /**
-     * @var \Emarsys\Log\Helper\Logs
+     * @var \Emarsys\Emarsys\Helper\Logs
      */
     protected $logsHelper;
 
@@ -35,14 +35,14 @@ class Index extends \Magento\Backend\App\Action
      * @param Data $emarsysHelper
      * @param \Magento\Backend\App\Action\Context $context
      * @param DateTime $date
-     * @param \Emarsys\Log\Helper\Logs $logsHelper
+     * @param \Emarsys\Emarsys\Helper\Logs $logsHelper
      * @param \Magento\Config\Model\ResourceModel\Config $config
      */
     public function __construct(
         Data $emarsysHelper,
         \Magento\Backend\App\Action\Context $context,
         DateTime $date,
-        \Emarsys\Log\Helper\Logs $logsHelper,
+        \Emarsys\Emarsys\Helper\Logs $logsHelper,
         \Magento\Config\Model\ResourceModel\Config $config
     ) {
     

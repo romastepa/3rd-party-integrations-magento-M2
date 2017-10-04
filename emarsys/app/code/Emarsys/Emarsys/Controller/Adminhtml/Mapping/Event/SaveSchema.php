@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
@@ -46,7 +46,7 @@ class SaveSchema extends \Magento\Backend\App\Action
      * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Log\Helper\Logs $logHelper
+     * @param \Emarsys\Emarsys\Helper\Logs $logHelper
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      */
@@ -56,7 +56,7 @@ class SaveSchema extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel,
         PageFactory $resultPageFactory,
-        \Emarsys\Log\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {

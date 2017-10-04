@@ -52,7 +52,7 @@ class Magentoevent extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Ab
         \Magento\Backend\Model\Session $session,
         \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory,
         \Magento\Backend\Helper\Data $backendHelper,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents $Emarsysmagentoevents,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $CollectionFactory

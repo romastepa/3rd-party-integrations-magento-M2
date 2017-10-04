@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
@@ -52,8 +52,8 @@ class Save extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Model\FieldFactory $fieldFactory,
         \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField,
         PageFactory $resultPageFactory,
-        \Emarsys\Log\Helper\Logs $logHelper,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
         \Magento\Store\Model\StoreManagerInterface $storeManager

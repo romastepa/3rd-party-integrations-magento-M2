@@ -125,6 +125,9 @@
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\FtpTestConnection</frontend_model>
                 </field>
+                <field id="apiurl" type="hidden" sortOrder="45" showInDefault="1" showInWebsite="0"
+                       showInStore="0">                   
+                </field>
             </group>
         </section>
         <section id="contacts_synchronization" translate="label" type="text" sortOrder="10" showInDefault="1"
@@ -156,6 +159,11 @@
                        showInWebsite="1" showInStore="0">
                     <label>Unique Field</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\Uniquefield</source_model>
+                </field>
+
+                <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>Notification secret key</label>
                 </field>
             </group>
             <group id="initial_db_load" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -217,8 +225,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment> <![CDATA[Add the following code snippet in the frontend di.xml file in order to display the NewsLetter Subscription Checkbox in checkout page:<br/><br/><i><textarea disabled rows="6" cols="50">&lt;type name="Magento\Checkout\Block\Checkout\LayoutProcessor"&gt; &lt;plugin name="subscription" type="Emarsys\Emarsys\Plugin\Checkout\Model\Checkout\LayoutProcessor"/&gt;&lt;/type&gt;</textarea></i>]]></comment>
                 </field>
-
-
                 <field id="opt_in_strategy" translate="label comment" sortOrder="10" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Opt-In Strategy</label>
@@ -240,7 +246,7 @@
             </group>
             <group id="subscription_customer_homepage" type="text" sortOrder="13" showInDefault="1" showInWebsite="1"
                    showInStore="0">
-                <label>Subscription: Customer Action Page</label>
+                <label>Subscription: Customer Registration Page</label>
                 <field id="opt_in_strategy" translate="label comment" sortOrder="10" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Opt-In Strategy</label>
@@ -325,8 +331,6 @@
                 <field id="execute_at" translate="label comment" sortOrder="23" type="time" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Execute and Export at</label>
-                    <!-- source model which we created for drop down options
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\Sleektheme</source_model>-->
                     <depends>
                         <field id="smartinsight_enabled">1</field>
                     </depends>
@@ -356,7 +360,7 @@
         <section id="emarsys_predict" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
                  showInStore="0">
             <class>separator-top</class>
-            <label>Predict</label>
+            <label>Product Catalog</label>
             <tab>emarsys_connect</tab>
             <resource>Emarsys_Emarsys::emarsys</resource>
             <group id="feed_export" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
@@ -385,8 +389,6 @@
                 <field id="execute_at" translate="label comment" sortOrder="23" type="time" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Execute and Export at</label>
-                    <!-- source model which we created for drop down options
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\Sleektheme</source_model>-->
                     <depends>
                         <field id="smartinsight_enabled">1</field>
                     </depends>
@@ -402,9 +404,7 @@
                         <field id="smartinsight_enabled">1</field>
                     </depends>
                 </field>
-
             </group>
-
         </section>
         <section id="web_extend" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1"
                  showInStore="0">
@@ -449,15 +449,55 @@
             <group id="javascript_tracking" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="0">
                 <label>Javascript Tracking</label>
-                <field id="merchant_id" translate="label comment" type="text" sortOrder="10" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <label>Merchant Id</label>
-                    <validate>required-entry</validate>
-                </field>
-                <field id="enable_javascript_integration" translate="label comment" type="select" sortOrder="15"
+                <field id="enable_javascript_integration" translate="label comment" type="select" sortOrder="10"
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable Web Extend JavaScript integration?</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="merchant_id" translate="label comment" type="text" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Merchant Id</label>
+                    <validate>required-entry</validate>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
+                </field>
+                <field id="testmode" translate="label comment" type="select" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Test Mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
+                </field>
+                <field id="identityregistered" translate="label comment" type="select" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Identify Registered Logged In Customer By</label>
+                    <source_model>Emarsys\Emarsys\Model\Config\Source\IdentityRegistered</source_model>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
+                </field>
+                <field id="uniqueidentifier" translate="label comment" type="select" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Item Unique Identification</label>
+                    <source_model>Emarsys\Emarsys\Model\Config\Source\UniqueIdentifier</source_model>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
+                </field>
+                <field id="use_base_currency" translate="label comment" type="select" sortOrder="60" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Use Base Currency</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Applicable for both cart and purchase commands. Please do not change the option after the initial setup</comment>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
+                </field>
+                <field id="tax_included" translate="label comment" type="select" sortOrder="70" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Track Prices with Taxes</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Applicable for only purchase command. Enable this parameter if you want to track price with taxes. Please do not change the option after the initial setup</comment>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
+                </field>
+                <field id="ajaxupdate" translate="label comment" type="select" sortOrder="80" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Use Ajax Update</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Applicable for setEmail, setCustomerId, cart and purchase commands only. Enable Ajax if you have issues with cache.</comment>
+                    <depends><field id="enable_javascript_integration">1</field></depends>
                 </field>
             </group>
         </section>
@@ -527,15 +567,6 @@
                     <validate>validate-emails</validate>
                     <comment>(Comma Seperated)</comment>
                 </field>
-                <!-- <field id="log_email" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Email Template</label>
-                    <depends><field id="log_report">1</field></depends>
-                </field> -->
-                <!-- <field id="download_logpath" translate="label comment" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Download Log Path</label>
-                    <validate>required-entry</validate>
-                    <comment>Download log path from magento root folder</comment>
-                </field> -->
                 <field id="downloadlogs" translate="button_label" sortOrder="12" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <button_label>Download Logs</button_label>

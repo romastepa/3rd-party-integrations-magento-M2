@@ -2,37 +2,48 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Customer resource model
- *
- * @author      Magento Core Team <core@magentocommerce.com>
- */
-class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
-{
+use Emarsys\Emarsys\Model\ContactFieldOption;
+use Magento\Store\Api\StoreRepositoryInterface;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
+/**
+ * Class Field
+ * @package Emarsys\Emarsys\Model\ResourceModel
+ */
+class Field extends AbstractDb
+{
     /**
-     * @var \Magento\Store\Api\StoreRepositoryInterface
+     * @var StoreRepositoryInterface
      */
     protected $storeRepository;
 
     /**
-     * 
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
-     * @param type $connectionName
+     * @var ContactFieldOption
+     */
+    protected $contactFieldOption;
+
+    /**
+     * Field constructor.
+     *
+     * @param Context $context
+     * @param StoreRepositoryInterface $storeRepository
+     * @param ContactFieldOption $contactFieldOption
+     * @param null $connectionName
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
+        Context $context,
+        StoreRepositoryInterface $storeRepository,
+        ContactFieldOption $contactFieldOption,
         $connectionName = null
     ) {
-    
         $this->storeRepository = $storeRepository;
+        $this->contactFieldOption = $contactFieldOption;
         parent::__construct($context, $connectionName);
     }
 
@@ -48,6 +59,9 @@ class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     /**
      * Checking count of the mapping table
+     *
+     * @param $storeId
+     * @return string
      */
     public function checkOptionsMapping($storeId)
     {
@@ -80,7 +94,6 @@ class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                         new \Magento\Framework\DataObject($data),
                         $this->getTable("emarsys_contact_field_option")
                     );
-
                     $this->getConnection()->insert($this->getTable("emarsys_contact_field_option"), $data);
                 }
             }
@@ -90,15 +103,23 @@ class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         }
     }
 
+    /**
+     * @param $storeId
+     * @return $this
+     */
     public function getEmarsysFieldOption($storeId)
     {
-        $query = "SELECT ecfo.option_id,ecfo.option_name,ecf.name,ecf.emarsys_field_id,ecf.type FROM " . $this->getTable('emarsys_contact_field_option')." ecfo inner join ".$this->getTable('emarsys_contact_field')." ecf on ecf.emarsys_field_id = ecfo.field_id and ecfo.store_id =  ".$storeId;
-        try {
-            $result = $this->getConnection()->fetchAll($query);
-            return $result;
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
+        $contactFieldColl = $this->contactFieldOption->getCollection()
+            ->addFieldToSelect('option_id')
+            ->addFieldToSelect('option_name');
+
+        $contactFieldColl->join(
+            ['ecf' => $this->getTable('emarsys_contact_field')],
+            'ecf.emarsys_field_id = main_table.field_id and ecf.store_id = main_table.store_id',
+            ['ecf.name', 'ecf.emarsys_field_id', 'ecf.type']
+        )->addFieldToFilter('main_table.store_id', ['eq' => $storeId]);
+
+        return $contactFieldColl;
     }
 
     /**
@@ -113,7 +134,8 @@ class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         } else {
             $entityTypeId = 1;
         }
-        $attributeId = $this->getConnection()->fetchOne("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " where attribute_code = '" . $attributeCode . "' and entity_type_id = $entityTypeId ");
+        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $attributeId = $this->getConnection()->fetchOne("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " where attribute_code = " . $attributeCode . " and entity_type_id = $entityTypeId ");
         if ($attributeId) {
             return $attributeId;
         } else {
@@ -121,6 +143,13 @@ class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         }
     }
 
+    /**
+     * @param $magentoOptionId
+     * @param $emarsysOptionId
+     * @param $emarsysFieldId
+     * @param $storeId
+     * @return string
+     */
     public function checkSelectedOption($magentoOptionId, $emarsysOptionId, $emarsysFieldId, $storeId)
     {
         $magentoSelectedOptions = $this->getConnection()->fetchOne("SELECT count(*) as assigned FROM " . $this->getTable('emarsys_option_mapping') . " eom inner join " . $this->getTable('eav_attribute_option') . " eao on eao.option_id = eom.magento_option_id WHERE eao.option_id = '$magentoOptionId' and eom.emarsys_option_id='$emarsysOptionId' and eom.emarsys_field_id ='$emarsysFieldId'
@@ -129,25 +158,30 @@ class Field extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
+     * @param $storeId
      * @return string
      */
     public function getEmarsysOptionCount($storeId)
     {
-        $emarsysFieldCount = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_contact_field_option') . ' where store_id=' . $storeId);
-        return $emarsysFieldCount;
+        $contactFieldColl = $this->contactFieldOption->getCollection()
+            ->addFieldToSelect('*')
+            ->addFieldToFilter('store_id', ['eq' => $storeId])
+            ->count();
+
+        return $contactFieldColl;
     }
 
+    /**
+     * @param $storeId
+     * @return array
+     */
     public function getRecommendedFieldAttribute($storeId)
     {
-        $emarsysCodes = [
+        return [
             '1' => '1-5', //male-gender
             '2' => '2-5', //female-gender
         ];
-        return $emarsysCodes;
-    }
-
-    public function getEmarsysOptionId($optionId, $emarsys_contact_field, $websiteId)
-    {
-        return $emarsys_contact_field;
     }
 }
+
+

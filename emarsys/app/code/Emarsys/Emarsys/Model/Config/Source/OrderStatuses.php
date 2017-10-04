@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\Config\Source;
 
@@ -23,7 +23,7 @@ class OrderStatuses
     public function __construct(
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Config\Model\ResourceModel\Config $config,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
     

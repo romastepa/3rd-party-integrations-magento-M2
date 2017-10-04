@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Observer;
@@ -31,7 +31,7 @@ class CreditmemoSave implements ObserverInterface
         \Magento\Framework\App\ResponseFactory $responseFactory,
         \Magento\Framework\UrlInterface $url
     ) {
-    
+
         $this->logger = $logger;
         $this->_storeManager = $storeManager;
         $this->orderQueueFactory = $orderQueueFactory;

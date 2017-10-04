@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
@@ -38,7 +38,7 @@ class Save extends \Magento\Backend\App\Action
         PageFactory $resultPageFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Log\Helper\Logs $logsHelper,
+        \Emarsys\Emarsys\Helper\Logs $logsHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel
     ) {
     

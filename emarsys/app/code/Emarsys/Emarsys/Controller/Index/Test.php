@@ -6,9 +6,8 @@ use Magento\Framework\App\Action\Context;
 
 class Test extends \Magento\Framework\App\Action\Action
 {
-
     /**
-     * 
+     * Test constructor.
      * @param Context $context
      * @param \Emarsys\Emarsys\Helper\Event $eventHelper
      */
@@ -16,15 +15,15 @@ class Test extends \Magento\Framework\App\Action\Action
         Context $context,
         \Emarsys\Emarsys\Helper\Event $eventHelper
     ) {
-    
         parent::__construct($context);
         $this->eventHelper = $eventHelper;
     }
 
-
+    /**
+     * Test Action
+     */
     public function execute()
     {
-        $eventSchema = $this->eventHelper->getEmar();
         $emarsysApiIds = [];
         $eventSchema = $this->eventHelper->getEventSchema();
         foreach ($eventSchema['data'] as $_eventSchema) {

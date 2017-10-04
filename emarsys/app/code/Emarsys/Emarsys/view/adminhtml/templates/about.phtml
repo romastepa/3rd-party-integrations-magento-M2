@@ -1,0 +1,38 @@
+<div class="emarsys-ver-detail emarsys-ver-detail-container">
+    <table class="form-list" cellspacing="0" cellpadding="0">
+        <tbody>
+        <?php $emarsysVersionInfo = $block->getEmarsysVersionInfo(); ?>
+        <?php echo $emarsysVersionInfo['notification']; ?>
+        <tr class="border-right">
+            <td class="value border-right">
+                <strong><?php echo __('Latest Emarsys Extension Version: '); ?></strong>
+            </td>
+            <td class="value">
+                <strong><?php echo __('Installed Emarsys Extension Version:'); ?></strong>
+            </td>
+        </tr>
+        <tr class="border-right color">
+            <?php foreach ($emarsysVersionInfo['version_details'] as $requirement) : ?>
+                <td class="value column_condition">
+                        <span class="column_condition_container">
+                            <?php echo $requirement ?>
+                        </span>
+                </td>
+            <?php endforeach; ?>
+        </tr>
+        <tr>
+            <td class="label" class="read-more-container" colspan="2">
+                <div>
+                    <p>
+                        <?php echo __('Click Here to Readmore about the ') ?>
+                        <a href="<?php echo $block->getReadMoreUrl(); ?>" class="read-more-link" target="_blank">
+                            <?php echo __('Latest Realease.') ?>
+                        </a>
+                    </p>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+

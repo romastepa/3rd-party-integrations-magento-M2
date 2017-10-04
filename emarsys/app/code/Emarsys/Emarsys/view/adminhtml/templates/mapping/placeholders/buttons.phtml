@@ -1,14 +1,18 @@
 <?php
-$objectManager   = \Magento\Framework\App\ObjectManager::getInstance();
-$backendHelper         = $objectManager->create('\Magento\Backend\Helper\Data');
-$storeId               = $this->getRequest()->getParam('store');
-$backBtn               = "'".$backendHelper->getUrl("emarsys_emarsys/mapping_event/index", array('store' => $storeId))."'";
-$refreshButton             = "'".$backendHelper->getUrl('*/*/refreshplaceholders/mapping_id/' . $this->getRequest()->getParam('mapping_id'))."'";
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2016 Emarsys Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ */
 ?>
+<?php $storeId = $this->getRequest()->getParam('store'); ?>
+<?php $mappingId = $this->getRequest()->getParam('mapping_id'); ?>
+<?php $backBtn = "'" . $block->getUrl("emarsys_emarsys/mapping_event/index", array('store' => $storeId)) . "'"; ?>
+<?php $refreshButton = "'" . $block->getUrl('*/*/refreshplaceholders/mapping_id/' . $mappingId, array('store' => $storeId)) . "'"; ?>
 <div>
     <span class="scalable">
-<input type="button" class="action-default scalable" value="Back"  onclick="window.location.href=<?php echo $backBtn; ?>" />
-<input type="button" class="action-default scalable" value="Save Mapping"  onclick="placeHolderValidation()" />
-<input type="button" class="action-default scalable" value="Refresh Placeholders"  onclick="window.location.href=<?php echo $refreshButton; ?>"/>
- </span>
+        <input type="button" class="action-default scalable" value="Back" onclick="window.location.href=<?php echo $backBtn; ?>" />
+        <input type="button" class="action-default scalable" value="Save Mapping" onclick="placeHolderValidation()" />
+        <input type="button" class="action-default scalable" value="Refresh Placeholders" onclick="window.location.href=<?php echo $refreshButton; ?>"/>
+    </span>
 </div>

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2016 Kensium Solution Pvt.Ltd. (http://www.kensiumsolutions.com/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Observer;
@@ -15,7 +15,7 @@ class PlaceorderNewsletterSubscriber implements ObserverInterface
     public function __construct(
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Emarsys\Log\Model\Logs $emarsysLogs,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         \Emarsys\Emarsys\Helper\Data $dataHelper,
         \Magento\Newsletter\Model\SubscriberFactory $subscriberFactory,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
