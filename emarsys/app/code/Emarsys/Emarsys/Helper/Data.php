@@ -4,7 +4,6 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Helper;
 
 use Magento\Framework\App\Helper\Context;
@@ -863,7 +862,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                     $pi[$n][$m[1]] = (!isset($m[3]) || $m[2] == $m[3]) ? $m[2] : array_slice($m, 2);
                 }
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return [];
         }
 
@@ -1826,7 +1825,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
 
             return $emarsysEventApiId;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),

@@ -144,7 +144,7 @@ class OrderSaveFrontend implements ObserverInterface
         $orderStatus->setStatusCode($order->getStatus());
         $orderStatus->save();
         $orderQueueData = $this->orderQueueFactory->create()->getCollection()
-            ->addFieldToFilter('entity_id', $observer->getEvent()->getOrderIds()[0]);
+            		->addFieldToFilter('entity_id', $observer->getEvent()->getOrderIds()[0]);
 
         if (empty($orderQueueData->getData())) {
             $orderQueue = $this->orderQueueFactory->create();
@@ -178,7 +178,7 @@ class OrderSaveFrontend implements ObserverInterface
                 }
             }
             $this->customerSession->setWebExtendNewOrderIds($orderIds);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),

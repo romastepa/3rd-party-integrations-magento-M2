@@ -14,10 +14,8 @@ use Magento\AdminNotification\Model\Inbox;
 use Magento\AdminNotification\Model\ResourceModel\Inbox\Collection;
 use Magento\AdminNotification\Model\InboxFactory;
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Backend\Block\Widget\Form;
 use Magento\Framework\Notification\MessageInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class About
@@ -85,8 +83,6 @@ class About extends Form
      * @param InboxFactory $inboxFactory
      * @param DateTime $date
      * @param Logs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
-     * @param ScopeConfigInterface $scopeConfigInterface
      * @param array $data
      */
     public function __construct(
@@ -98,8 +94,6 @@ class About extends Form
         InboxFactory $inboxFactory,
         DateTime $date,
         Logs $emarsysLogs,
-        StoreManagerInterface $storeManager,
-        ScopeConfigInterface $scopeConfigInterface,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -110,8 +104,8 @@ class About extends Form
         $this->inboxFactory = $inboxFactory;
         $this->date = $date;
         $this->emarsysLogs = $emarsysLogs;
-        $this->storeManager = $storeManager;
-        $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->storeManager = $context->getStoreManager();
+        $this->scopeConfigInterface = $context->getScopeConfig();
         $this->setTemplate('about.phtml');
     }
 
@@ -202,3 +196,4 @@ class About extends Form
         return $this->scopeConfigInterface->getValue(Data::EMARSYS_RELEASE_URL, 'default', 0);
     }
 }
+

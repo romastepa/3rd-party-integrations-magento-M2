@@ -63,7 +63,7 @@ class AjaxUpdate extends \Magento\Framework\App\Action\Action
                 ->setTemplate('Emarsys_Emarsys::emarsys/javascripttracking.phtml')
                 ->toHtml();
             $result['status'] = 1;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -75,3 +75,4 @@ class AjaxUpdate extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($this->jsonHelper->jsonEncode($result));
     }
 }
+

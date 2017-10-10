@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ */
 namespace Emarsys\Emarsys\Plugin\Checkout\Model\Checkout;
 
 class LayoutProcessor
@@ -8,7 +12,7 @@ class LayoutProcessor
         \Magento\Checkout\Block\Checkout\LayoutProcessor $subject,
         array $jsLayout
     ) {
-    
+
 
         $flag = 0;
 

@@ -4,7 +4,6 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders;
 
 use Magento\Backend\Block\Widget\Grid\Extended;
@@ -21,7 +20,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\App\ResponseFactory;
-use Magento\Framework\Data\Form\FormKey;
 
 /**
  * Class Grid
@@ -80,7 +78,7 @@ class Grid extends Extended
     protected $_storeManager;
 
     /**
-     * @var FormKey
+     * @var \Magento\Framework\Data\Form\FormKey
      */
     protected $formKey;
 
@@ -100,7 +98,6 @@ class Grid extends Extended
      * @param ModuleManager $moduleManager
      * @param MessageManagerInterface $messageManager
      * @param ResponseFactory $responseFactory
-     * @param FormKey $formKey
      * @param array $data
      */
     public function __construct(
@@ -117,7 +114,6 @@ class Grid extends Extended
         ModuleManager $moduleManager,
         MessageManagerInterface $messageManager,
         ResponseFactory $responseFactory,
-        FormKey $formKey,
         $data = []
     ) {
         $this->session = $context->getBackendSession();
@@ -135,7 +131,7 @@ class Grid extends Extended
         $this->_url = $context->getUrlBuilder();
         $this->_responseFactory = $responseFactory;
         $this->_messageManager = $messageManager;
-        $this->formKey = $formKey;
+        $this->formKey = $context->getFormKey();
         parent::__construct($context, $backendHelper, $data = []);
     }
 

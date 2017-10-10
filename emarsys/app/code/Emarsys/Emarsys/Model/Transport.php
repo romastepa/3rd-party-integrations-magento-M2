@@ -60,8 +60,19 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
                 $logsHelper->logs($logsArray);
                 parent::send($this->_message);
             }
-            $emarsysPlaceholdersData = $this->_message->getEmarsysData()['emarsysPlaceholders'];
-            $emarsysApiEventID = $this->_message->getEmarsysData()['emarsysEventId'];
+
+            $_emarsysPlaceholdersData = $this->_message->getEmarsysData();
+            $emarsysPlaceholdersData = '';
+            $emarsysApiEventID = '';
+            if(is_array($_emarsysPlaceholdersData)){
+                if(isset($_emarsysPlaceholdersData['emarsysPlaceholders'])) {
+                    $emarsysPlaceholdersData = $_emarsysPlaceholdersData['emarsysPlaceholders'];
+                }
+                if(isset($_emarsysPlaceholdersData['emarsysEventId'])){
+                    $emarsysApiEventID = $_emarsysPlaceholdersData['emarsysEventId'];
+                }
+            }
+
             if ($emarsysPlaceholdersData == "" || $emarsysApiEventID == "") {
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Transactional Mails';
@@ -88,7 +99,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
                 if (!$emarsysEnable) {
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Transactional Mails';
-                    $logsArray['description'] = 'Emarsys Transaction Email Disabled. Email sent from Magento.';
+                    $logsArray['description'] = 'Emarsys Transaction Email Either Disabled or Some Extension Conflict (if enabled). Email sent from Magento.';
                     $logsArray['action'] = 'Mail Sent';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'True';
@@ -191,7 +202,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
             //echo $e->getMessgae();
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Emarsys Transactional Email Error';
-            $logsArray['description'] = $e->getMessage();
+            $logsArray['description'] = $e->getMessage() . " Due to this error, Email Sent From Magento.";
             $logsArray['action'] = 'Mail Sending Fail';
             $logsArray['message_type'] = 'Error';
             $logsArray['log_action'] = 'Fail';
@@ -200,6 +211,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
             $logsArray['status'] = 'error';
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logId = $logsHelper->manualLogs($logsArray);
+            parent::send($this->_message);
         }
     }
 }

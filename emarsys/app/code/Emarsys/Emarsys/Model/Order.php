@@ -25,6 +25,7 @@ use Magento\Store\Model\ScopeInterface;
 use Emarsys\Emarsys\Model\OrderQueueFactory;
 use Emarsys\Emarsys\Model\CreditmemoExportStatusFactory;
 use Emarsys\Emarsys\Model\OrderExportStatusFactory;
+use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
 
 /**
  * Class Order
@@ -93,6 +94,11 @@ class Order extends AbstractModel
     protected $orderExportStatusFactory;
 
     /**
+     * @var TimeZone
+     */
+    protected $timezone;
+
+    /**
      * Order constructor.
      * @param Context $context
      * @param Registry $registry
@@ -127,6 +133,7 @@ class Order extends AbstractModel
         OrderQueueFactory $orderQueueFactory,
         CreditmemoExportStatusFactory $creditmemoExportStatusFactory,
         OrderExportStatusFactory $orderExportStatusFactory,
+        TimeZone $timezone,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -143,6 +150,7 @@ class Order extends AbstractModel
         $this->orderQueueFactory = $orderQueueFactory;
         $this->creditmemoExportStatusFactory = $creditmemoExportStatusFactory;
         $this->orderExportStatusFactory = $orderExportStatusFactory;
+        $this->timezone = $timezone;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -359,7 +367,14 @@ class Order extends AbstractModel
                         } else {
                             $values[] = '';
                         }
-                        $values[] = $item->getProduct()->getSku();
+                        $sku = $item->getSku();
+                        $product = $item->getProduct();
+                        if (!is_null($product) && is_object($product)) {
+                            if ($product->getId()) {
+                                $sku = $product->getSku();
+                            }
+                        }
+                        $values[] = $sku;
                         //Unit Prices
                         $unitPrice = $item->getPriceInclTax();
                         if ($unitPrice != '') {
@@ -416,7 +431,15 @@ class Order extends AbstractModel
                         } else {
                             $values[] = '';
                         }
-                        $values[] = $item->getProduct()->getSku();
+                        $csku = $item->getSku();
+                        $creditMemoProduct = $item->getProduct();
+                        if (!is_null($creditMemoProduct) && is_object($creditMemoProduct)) {
+                            if ($creditMemoProduct->getId()) {
+                                $csku = $creditMemoProduct->getSku();
+                            }
+                        }
+                        $values[] = $csku;
+
                         //Unit Prices
                         $unitPrice = $item->getPriceInclTax();
                         if ($unitPrice != '') {

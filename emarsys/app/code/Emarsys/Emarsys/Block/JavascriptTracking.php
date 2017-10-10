@@ -4,7 +4,6 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Block;
 
 use Magento\Framework\View\Element\Template\Context;
@@ -273,7 +272,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             if ($q != '') {
                 $result =  $q;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -403,7 +402,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                 $this->customerSession->setWebExtendNewOrderIds([]);
                 return $result;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -457,7 +456,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
 
                 $returnData = implode($jsData, ',');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -488,7 +487,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                     return $customerId;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -519,7 +518,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                     $loggedInCustomerEmail = addslashes($customer->getEmail());
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),

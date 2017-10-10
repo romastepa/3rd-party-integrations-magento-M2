@@ -63,7 +63,7 @@ class ControllerActionPredispatchObserver implements ObserverInterface
             if($request->getPost() && $request->getPost('email')) {
                 $this->customerSession->setWebExtendCustomerEmail($request->getPost('email'));
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -72,3 +72,4 @@ class ControllerActionPredispatchObserver implements ObserverInterface
         }
     }
 }
+

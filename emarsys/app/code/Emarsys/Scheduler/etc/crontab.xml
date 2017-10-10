@@ -1,7 +1,0 @@
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
-       <group id="emarsys_crontab_group">
-      <job name="emarsys_sitemap_generate" instance="Magento\Sitemap\Model\Observer" method="scheduledGenerateSitemaps">
-          <schedule>*/1 * * * *</schedule>
-      </job>
-   </group>
-</config>
