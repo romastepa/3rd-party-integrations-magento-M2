@@ -14,8 +14,8 @@ use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Order as OrderResourceModel;
@@ -123,8 +123,8 @@ class Order extends AbstractModel
         Registry $registry,
         StoreManagerInterface $storeManager,
         MessageManagerInterface $messageManager,
-        Customer $customerResourceModel,
-        Logs $logsHelper,
+        EmarsysResourceModelCustomer $customerResourceModel,
+        EmarsysHelperLogs $logsHelper,
         DateTime $date,
         EmarsysDataHelper $emarsysDataHelper,
         OrderResourceModel $orderResourceModel,
