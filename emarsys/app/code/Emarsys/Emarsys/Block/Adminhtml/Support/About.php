@@ -14,14 +14,14 @@ use Magento\AdminNotification\Model\Inbox;
 use Magento\AdminNotification\Model\ResourceModel\Inbox\Collection;
 use Magento\AdminNotification\Model\InboxFactory;
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Backend\Block\Widget\Form;
+use Magento\Backend\Block\Widget\Form as MagentoBackendBlockWidgetForm;
 use Magento\Framework\Notification\MessageInterface;
 
 /**
  * Class About
  * @package Emarsys\Emarsys\Block\Adminhtml\Support
  */
-class About extends Form
+class About extends MagentoBackendBlockWidgetForm
 {
     CONST NOTIFICATION_TITLE = 'Emarsys Connector Version LATEST_VERSION is now available';
 

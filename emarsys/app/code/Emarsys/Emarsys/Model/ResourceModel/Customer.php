@@ -13,7 +13,7 @@ use Magento\Eav\Model\Entity\Type;
 use Magento\Eav\Model\Entity\Attribute;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Customer\Model\CustomerFactory;
-use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLog;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
@@ -77,7 +77,7 @@ class Customer extends AbstractDb
         Attribute $attribute,
         TimezoneInterface $timezoneInterface,
         CustomerFactory $customerModel,
-        Logs $emarsysLogs,
+        EmarsysModelLog $emarsysLogs,
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfigInterface,
         $connectionName = null

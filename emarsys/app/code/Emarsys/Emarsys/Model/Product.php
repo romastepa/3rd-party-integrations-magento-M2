@@ -15,8 +15,8 @@ use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
 use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Store\Model\StoreManagerInterface;
@@ -113,8 +113,8 @@ class Product extends AbstractModel
         ProductFactory $productCollectionFactory,
         ProductModel $productModel,
         DateTime $date,
-        Logs $logsHelper,
-        Customer $customerResourceModel,
+        EmarsysHelperLogs $logsHelper,
+        EmarsysResourceModelCustomer $customerResourceModel,
         ProductResourceModel $productResourceModel,
         CategoryFactory $categoryFactory,
         StoreManagerInterface $storeManager,
