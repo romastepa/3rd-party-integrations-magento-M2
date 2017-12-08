@@ -42,6 +42,6 @@ class ViewButton extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abst
     {
         $url = 'logs/grid/index/job_code/'.$row['job_code'].'/schedule_id/'.$row['id'].'/store/'.$row['store_id'];
         $url = $this->backendHelper->getUrl($url);
-         printf("<a href='".$url."'><div style='color:#EB5202 ;text-decoration: underline;text-decoration-color:#EB5202;'>View</div></a>");
+        printf("<a href='%s'><div style='color:#EB5202 ;text-decoration: underline;text-decoration-color:#EB5202;'>View</div></a>", $url);
     }
 }

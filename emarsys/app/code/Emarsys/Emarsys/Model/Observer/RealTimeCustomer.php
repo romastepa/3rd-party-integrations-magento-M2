@@ -41,22 +41,28 @@ class RealTimeCustomer implements ObserverInterface
     {
         try {
             $data = $observer->getEvent();
-            $websiteId = $data->getCustomer()->getWebsiteId();
-            if($this->dataHelper->isEmarsysEnabled($websiteId)=='false'){
+            $customer = $data->getCustomer();
+            $storeId = $customer->getStoreId();
+            $websiteId = $customer->getWebsiteId();
 
+            if ($this->dataHelper->isEmarsysEnabled($websiteId) == 'false') {
                 return;
             }
-            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync', \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,$websiteId);
+
+            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig(
+                'contacts_synchronization/emarsys_emarsys/realtime_sync',
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
+                $websiteId
+            );
 
             if (isset($data['email'])) {
                 $customerData = $this->customerFactory->create()->setWebsiteId($websiteId)->loadByEmail($data['email']);
                 $customerId = $customerData->getEntityId();
                 $websiteId = $customerData->getWebsiteId();
             } else {
-                $customerId = $data->getCustomer()->getId();
-                $websiteId = $data->getCustomer()->getWebsiteId();
+                $customerId = $customer->getId();
             }
-            $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
+
             if ($realtimeStatus == 1) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {

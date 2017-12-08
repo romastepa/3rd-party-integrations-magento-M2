@@ -9,10 +9,23 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Emarsys\Emarsys\Model\ProductFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ResourceModel\Product;
 
+/**
+ * Class SaveRecommended
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
+ */
 class SaveRecommended extends \Magento\Backend\App\Action
 {
-
     /**
      * @var PageFactory
      */
@@ -24,42 +37,49 @@ class SaveRecommended extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ProductFactory
+     * @var ProductFactory
      */
     protected $productFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Product
+     * @var Product
      */
     protected $resourceModelProduct;
 
     /**
-     * @var  \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var ScopeConfigInterface
      */
     protected $scopeConfigInterface;
 
     /**
+     * SaveRecommended constructor.
      * @param Context $context
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\ProductFactory $productFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct
+     * @param Attribute $eavAttribute
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param ProductFactory $productFactory
+     * @param CollectionFactory $productAttributeCollection
+     * @param Data $emarsysHelper
+     * @param StoreManagerInterface $storeManager
+     * @param Logs $emarsysLogs
+     * @param EmarsysHelperLogs $logHelper
+     * @param DateTime $date
+     * @param Product $resourceModelProduct
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavAttribute,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Emarsys\Emarsys\Model\ProductFactory $productFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory $productAttributeCollection,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct,
+        Attribute $eavAttribute,
+        ScopeConfigInterface $scopeConfigInterface,
+        ProductFactory $productFactory,
+        CollectionFactory $productAttributeCollection,
+        Data $emarsysHelper,
+        StoreManagerInterface $storeManager,
+        Logs $emarsysLogs,
+        EmarsysHelperLogs $logHelper,
+        DateTime $date,
+        Product $resourceModelProduct,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->eavAttribute = $eavAttribute;
         $this->session = $context->getSession();
@@ -82,7 +102,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
     {
         if ($this->getRequest()->getParam('store')) {
             $storeId = $this->getRequest()->getParam('store');
-        }else{
+        } else {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
@@ -129,7 +149,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logsArray['emarsys_info'] = 'Saved Recommended Mapping';
             $logsArray['action'] = 'Saved Recommended Mapping';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Saved Recommended Mapping as '.print_r($recommendedArray,true);
+            $logsArray['description'] = 'Saved Recommended Mapping as ' . print_r($recommendedArray, true);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';
@@ -137,14 +157,13 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logsArray['messages'] = 'Product Recommended Mapping Saved Successfully';
             $this->logHelper->logs($logsArray);
             $this->logHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccess("Recommended Product attributes mapped successfully");
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage("Recommended Product attributes mapped successfully");
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'Save Recommended(Product)');
-            $this->messageManager->addError("Error occurred while mapping Product attribute");
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'Save Recommended(Product)');
+            $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
         }
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

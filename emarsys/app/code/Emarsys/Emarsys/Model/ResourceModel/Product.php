@@ -63,7 +63,7 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
      * @param Logger $logger
-     * @param type $connectionName
+     * @param null $connectionName
      */
     public function __construct(
         Context $context,

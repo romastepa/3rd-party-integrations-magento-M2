@@ -9,28 +9,30 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 
-class SaveRow extends \Magento\Backend\App\Action
+/**
+ * Class SaveRow
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
+ */
+class SaveRow extends Action
 {
-
+    /**
+     * @var \Magento\Backend\Model\Session
+     */
     protected $session;
 
-
     /**
-     * 
+     * SaveRow constructor.
      * @param Context $context
      */
     public function __construct(
         Context $context
     ) {
-    
-
         parent::__construct($context);
         $this->session = $context->getSession();
     }
 
     /**
      * Index action
-     *
      * @return \Magento\Backend\Model\View\Result\Page
      */
     public function execute()

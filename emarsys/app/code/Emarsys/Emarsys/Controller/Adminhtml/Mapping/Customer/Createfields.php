@@ -11,10 +11,18 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Emarsys\Emarsys\Model\CustomerFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Magento\Framework\App\Request\Http;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\Api\Api;
 
-class Createfields extends \Magento\Backend\App\Action
+/**
+ * Class Createfields
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
+ */
+class Createfields extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -26,40 +34,39 @@ class Createfields extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\CustomerFactory
+     * @var CustomerFactory
      */
     protected $customerFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     * @var Customer
      */
     protected $resourceModelCustomer;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
-     * 
+     * Createfields constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Model\CustomerFactory $customerFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
+     * @param CustomerFactory $customerFactory
+     * @param Customer $resourceModelCustomer
      * @param PageFactory $resultPageFactory
-     * @param \Magento\Framework\App\Request\Http $request
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Model\Api\Api $api
+     * @param Http $request
+     * @param StoreManagerInterface $storeManager
+     * @param Api $api
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\CustomerFactory $customerFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
+        CustomerFactory $customerFactory,
+        Customer $resourceModelCustomer,
         PageFactory $resultPageFactory,
-        \Magento\Framework\App\Request\Http $request,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\Api\Api $api
+        Http $request,
+        StoreManagerInterface $storeManager,
+        Api $api
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -88,14 +95,13 @@ class Createfields extends \Magento\Backend\App\Action
                     $data['application_type'] = "shorttext";
                     $this->api->sendRequest('POST', 'field', $data);
                 }
-                $this->messageManager->addSuccess('Fileds created');
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addSuccessMessage('Fileds created');
             }
         } catch (Exception $e) {
-            $this->messageManager->addError($e->getMessage());
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage($e->getMessage());
         }
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

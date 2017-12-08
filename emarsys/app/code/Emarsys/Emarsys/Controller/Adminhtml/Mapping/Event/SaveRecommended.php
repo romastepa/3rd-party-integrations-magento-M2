@@ -10,8 +10,17 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory;
+use Emarsys\Emarsys\Model\Api\Api;
 
-class SaveRecommended extends \Magento\Backend\App\Action
+class SaveRecommended extends Action
 {
     /**
      * @var PageFactory
@@ -24,48 +33,47 @@ class SaveRecommended extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Event
+     * @var Event
      */
     protected $eventResourceModel;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var ScopeConfigInterface
      */
     protected $scopeConfigInterface;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
-     * 
+     * SaveRecommended constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel
+     * @param Event $eventResourceModel
      * @param PageFactory $resultPageFactory
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Helper\Data $EmarsysHelper
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection
-     * @param \Emarsys\Emarsys\Helper\Logs $logHelper
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventsCollection
-     * @param \Emarsys\Emarsys\Model\Api\Api $api
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param StoreManagerInterface $storeManager
+     * @param Data $EmarsysHelper
+     * @param DateTime $date
+     * @param CollectionFactory $EmarsyseventCollection
+     * @param Logs $logHelper
+     * @param EmarsysmagentoeventsCollectionFactory $magentoEventsCollection
+     * @param Api $api
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel,
+        Event $eventResourceModel,
         PageFactory $resultPageFactory,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventsCollection,
-        \Emarsys\Emarsys\Model\Api\Api $api
+        ScopeConfigInterface $scopeConfigInterface,
+        StoreManagerInterface $storeManager,
+        Data $EmarsysHelper,
+        DateTime $date,
+        CollectionFactory $EmarsyseventCollection,
+        Logs $logHelper,
+        EmarsysmagentoeventsCollectionFactory $magentoEventsCollection,
+        Api $api
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -86,6 +94,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
      */
     public function execute()
     {
+        $resultRedirect = $this->resultRedirectFactory->create();
         try {
             $eventsCreated = array();
             $session = $this->session;
@@ -99,11 +108,11 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logsArray['run_mode'] = 'Automatic';
             $logsArray['auto_log'] = 'Complete';
             $logsArray['store_id'] = $storeId;
+
             if ($this->EmarsysHelper->isEmarsysEnabled($websiteId) == 'false') {
                 $logsArray['messages'] = 'Emarsys is not Enabled for this Store';
                 $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $resultRedirect = $this->resultRedirectFactory->create();
                 $logId = $this->logHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
@@ -113,7 +122,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 $logsArray['log_action'] = 'True';
                 $logsArray['website_id'] = $websiteId;
                 $this->logHelper->logs($logsArray);
-                $this->messageManager->addError('Emarsys is not Enabled for this store');
+                $this->messageManager->addErrorMessage('Emarsys is not Enabled for this store');
                 return $resultRedirect->setRefererOrBaseUrl();
             }
             $logId = $this->logHelper->manualLogs($logsArray);
@@ -159,10 +168,9 @@ class SaveRecommended extends \Magento\Backend\App\Action
             if ($hasNewEvents) {
                 $this->EmarsysHelper->importEvents($logId);
             }
+            $this->messageManager->addSuccessMessage("Recommended Emarsys Events Created Successfully!");
+            $this->messageManager->addSuccessMessage('Important: Hit "Save Mapping" to complete the mapping!');
 
-            $resultRedirect = $this->resultRedirectFactory->create();
-            $this->messageManager->addSuccess("Recommended Emarsys Events Created Successfully!");
-            $this->messageManager->addSuccess('Important: Hit "Save Mapping" to complete the mapping!');
             return $resultRedirect->setUrl($this->_urlInterface->getUrl("emarsys_emarsys/mapping_event", ["store" => $storeId, "recommended" => 1, "limit" => 200]));
         } catch (\Exception $e) {
             $logsArray['id'] = $logId;
@@ -173,10 +181,9 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logsArray['log_action'] = 'True';
             $logsArray['website_id'] = $websiteId;
             $this->logHelper->logs($logsArray);
-            $this->messageManager->addError('Error occurred while Recommended Mapping' . $e->getMessage());
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
-
+            $this->messageManager->addErrorMessage('Error occurred while Recommended Mapping' . $e->getMessage());
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

@@ -9,45 +9,47 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Webdav;
 use Emarsys\Emarsys\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Sabre\DAV\Client;
-
+use Magento\Backend\App\Action\Context;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Config\Model\ResourceModel\Config;
+use Magento\Backend\App\Action;
 
 /**
- * Class TestConnection for API credentials
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Webdav
  */
-class Index extends \Magento\Backend\App\Action
+class Index extends Action
 {
-
     /**
      * @var Data
      */
     protected $emarsysHelper;
 
     /**
-     * @var \Magento\Config\Model\ResourceModel\Config
+     * @var Config
      */
     protected $config;
 
     /**
-     * @var \Emarsys\Emarsys\Helper\Logs
+     * @var Logs
      */
     protected $logsHelper;
 
     /**
-     * 
+     * Index constructor.
      * @param Data $emarsysHelper
-     * @param \Magento\Backend\App\Action\Context $context
+     * @param Context $context
      * @param DateTime $date
-     * @param \Emarsys\Emarsys\Helper\Logs $logsHelper
-     * @param \Magento\Config\Model\ResourceModel\Config $config
+     * @param Logs $logsHelper
+     * @param Config $config
      */
     public function __construct(
         Data $emarsysHelper,
-        \Magento\Backend\App\Action\Context $context,
+        Context $context,
         DateTime $date,
-        \Emarsys\Emarsys\Helper\Logs $logsHelper,
-        \Magento\Config\Model\ResourceModel\Config $config
+        Logs $logsHelper,
+        Config $config
     ) {
-    
         $this->emarsysHelper = $emarsysHelper;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
@@ -74,7 +76,6 @@ class Index extends \Magento\Backend\App\Action
         $logsArray['website_id'] = $website;
         $logId = $this->logsHelper->manualLogs($logsArray);
 
-
         $webDavUrl = $params['url'];
         $webDavUser = $params['username'];
         $webDavPass = $params['password'];
@@ -95,6 +96,7 @@ class Index extends \Magento\Backend\App\Action
             $client = new Client($settings);
             $response = $client->request('GET');
             if ($response['statusCode'] == '200' || $response['statusCode'] == '403') {
+                //test connection is successful.
                 $scopeType = 'websites';
                 $defaultScopeType = 'default';
                 $defaultScopeId = '0';
@@ -103,7 +105,7 @@ class Index extends \Magento\Backend\App\Action
                     $scopeType = 'default';
                     $scopeId = 0;
                 }
-
+                //save webdav_url information in respected configuration.
                 $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_url', $webDavUrl, $scopeType, $scopeId);
                 if ($website == 1) {
                     $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_url', $webDavUrl, $defaultScopeType, $defaultScopeId);
@@ -117,7 +119,7 @@ class Index extends \Magento\Backend\App\Action
                 $logsArray['log_action'] = 'sync';
                 $this->logsHelper->logs($logsArray);
 
-
+                //save webdav_user information in respected configuration.
                 $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_user', $webDavUser, $scopeType, $scopeId);
                 if ($website == 1) {
                     $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_user', $webDavUser, $defaultScopeType, $defaultScopeId);
@@ -131,6 +133,7 @@ class Index extends \Magento\Backend\App\Action
                 $logsArray['log_action'] = 'sync';
                 $this->logsHelper->logs($logsArray);
 
+                //save webdav_password information in respected configuration.
                 $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_password', $webDavPass, $scopeType, $scopeId);
                 if ($website == 1) {
                     $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_password', $webDavPass, $defaultScopeType, $defaultScopeId);
@@ -143,8 +146,7 @@ class Index extends \Magento\Backend\App\Action
                 $logsArray['message_type'] = 'Success';
                 $logsArray['log_action'] = 'sync';
                 $this->logsHelper->logs($logsArray);
-
-                $this->messageManager->addSuccess('Test connection is success.');
+                $this->messageManager->addSuccessMessage('Test connection is successful.');
 
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -153,7 +155,8 @@ class Index extends \Magento\Backend\App\Action
                 $logsArray['messages'] = 'WebDav test connection completed';
                 $this->logsHelper->manualLogsUpdate($logsArray);
             } else {
-                $this->messageManager->addError('Test connection is failed.');
+                //test connection is failed.
+                $this->messageManager->addErrorMessage('Test connection is failed.');
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -162,7 +165,8 @@ class Index extends \Magento\Backend\App\Action
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
         } else {
-            $this->messageManager->addError('Please enter the valid credentials');
+            //valid credentials not found.
+            $this->messageManager->addErrorMessage('Please enter the valid credentials');
             $logsArray['id'] = $logId;
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());

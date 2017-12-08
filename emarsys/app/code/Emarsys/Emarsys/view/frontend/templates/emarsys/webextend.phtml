@@ -42,6 +42,9 @@
         <script>ScarabQueue.push(['searchTerm', '<?php echo $searchResult; ?>']);</script>
     <?php endif; ?>
 
+    <?php /* Get Recommendations */ ?>
+    <?php //echo $this->getChildHtml('emarsys.recommendations'); ?>
+
     <?php /* Script for an Ajax to avoid caching Issues */ ?>
     <?php if ($helper->isAjaxUpdateEnabled()) : ?>
         <script>
@@ -72,7 +75,7 @@
         </script>
         <div id="webextend-code"></div>
     <?php else: ?>
-        <?php echo $this->getChildHtml(); ?>
+        <?php echo $this->getChildHtml('emarsys.javascripttracking'); ?>
     <?php endif; ?>
 <?php endif; ?>
 

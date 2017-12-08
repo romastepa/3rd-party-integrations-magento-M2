@@ -61,7 +61,7 @@ class SaveSchema extends \Magento\Backend\App\Action
     {
         if ($this->getRequest()->getParam('store')) {
             $storeId = $this->getRequest()->getParam('store');
-        }else{
+        } else {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
@@ -78,7 +78,9 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
             $logId = $this->logHelper->manualLogs($logsArray);
+
             $productFields = $this->productResourceModel->updateProductSchema($storeId);
+
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Update Product Mapping';
             $logsArray['action'] = 'Update Product Mapping Successful';
@@ -91,11 +93,27 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['messages'] = 'Update Product Mapping Saved Successfully';
             $this->logHelper->logs($logsArray);
             $this->logHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccess("product schema added/updated successfully");
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage("Product schema added/updated successfully");
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'SaveSchema(Product)');
+            if ($logId) {
+                $logsArray['id'] = $logId;
+                $logsArray['emarsys_info'] = 'Update Product Mapping not Successful';
+                $logsArray['description'] = $e->getMessage();
+                $logsArray['action'] = 'Update Product Mapping Failed';
+                $logsArray['message_type'] = 'Error';
+                $logsArray['log_action'] = 'Update Product Mapping';
+                $logsArray['messages'] = 'Update Product Mapping not Successful';
+                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogsUpdate($logsArray);
+            }
+            $this->messageManager->addErrorMessage(
+                __('There was a problem while Updating Product Mapping. Please refer emarsys logs for more information.')
+            );
         }
+
+        $resultRedirect = $this->resultRedirectFactory->create();
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

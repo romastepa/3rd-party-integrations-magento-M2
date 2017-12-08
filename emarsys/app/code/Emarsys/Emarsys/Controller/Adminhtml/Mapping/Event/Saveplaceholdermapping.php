@@ -9,8 +9,15 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\EventFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Emarsys\Emarsys\Model\PlaceholdersFactory;
 
-class Saveplaceholdermapping extends \Magento\Backend\App\Action
+/**
+ * Class Saveplaceholdermapping
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
+ */
+class Saveplaceholdermapping extends Action
 {
     /**
      * @var PageFactory
@@ -23,23 +30,23 @@ class Saveplaceholdermapping extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\EventFactory
+     * @var EventFactory
      */
     protected $eventFactory;
 
     /**
-     * 
+     * Saveplaceholdermapping constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Model\EventFactory $eventFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel
-     * @param \Emarsys\Emarsys\Model\PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
+     * @param EventFactory $eventFactory
+     * @param Event $eventResourceModel
+     * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Emarsys\Emarsys\Model\EventFactory $eventFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel,
-        \Emarsys\Emarsys\Model\PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
+        Context $context,
+        EventFactory $eventFactory,
+        Event $eventResourceModel,
+        PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
         PageFactory $resultPageFactory
     ) {
     
@@ -52,29 +59,29 @@ class Saveplaceholdermapping extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * SavePlaceHolderMapping Action
+     * @return $this
      */
     public function execute()
     {
         try {
+            $resultRedirect = $this->resultRedirectFactory->create();
             $placeholderData = $this->getRequest()->getPost('placeholderData');
-            $decodedText = html_entity_decode($placeholderData);
-            $myArray = json_decode($decodedText, true);
+            $placeholders = html_entity_decode($placeholderData);
+            $placeholderDataDecode = json_decode($placeholders, true);
 
-            foreach ($myArray as $value) {
-                foreach ($value as $key => $value1) {
+            foreach ($placeholderDataDecode as $placeholderItem) {
+                foreach ($placeholderItem as $key => $value) {
                     $emarsysEventPlaceholderMapping = $this->emarsysEventPlaceholderMappingFactory->create()->load($key);
-                    $emarsysEventPlaceholderMapping->setEmarsysPlaceholderName($value1);
+                    $emarsysEventPlaceholderMapping->setEmarsysPlaceholderName($value);
                     $emarsysEventPlaceholderMapping->save();
                 }
             }
-
-            $this->messageManager->addSuccess("Placeholders mapped successfully");
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage("Placeholders mapped successfully");
         } catch (\Exception $e) {
-            $this->messageManager->addError("Error occurred while mapping Event  ");
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage("Error occurred while mapping Event " . $e->getMessage());
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

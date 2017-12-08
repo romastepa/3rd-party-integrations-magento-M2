@@ -6,15 +6,17 @@
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\SubscriberExport;
 
+use Magento\Backend\App\Action;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Sabre\DAV\Client;
 
 
 /**
- * Class Index
+ * Class SubscriberExport
+ * @package Emarsys\Emarsys\Controller\Adminhtml\SubscriberExport
  */
-class SubscriberExport extends \Magento\Backend\App\Action
+class SubscriberExport extends Action
 {
     /**
      * @var \Magento\Framework\App\Response\Http\FileFactory
@@ -66,8 +68,9 @@ class SubscriberExport extends \Magento\Backend\App\Action
         $data = $this->request->getParams();
         $scope = 'websites';
         $storeId = $data['storeId'];
-        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
-        $storeCode = $this->storeManager->getStore($storeId)->getCode();
+        $store = $this->storeManager->getStore($storeId);
+        $websiteId = $store->getWebsiteId();
+        $storeCode = $store->getCode();
         $scopeId = $websiteId;
 
         $logsArray['job_code'] = 'subscriber';
@@ -79,6 +82,31 @@ class SubscriberExport extends \Magento\Backend\App\Action
         $logsArray['store_id'] = $storeId;
         $logsArray['website_id'] = $websiteId;
         $logId = $this->logsHelper->manualLogs($logsArray);
+
+        $isEmarsysEnabledForStore = $this->customerResourceModel->getDataFromCoreConfig(
+            'emarsys_settings/emarsys_setting/enable',
+            $scope,
+            $websiteId
+        );
+
+        if (!$isEmarsysEnabledForStore) {
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = __('Emarsys is disabled');
+            $logsArray['description'] = __('Emarsys is disabled for the store %1', $this->storeManager->getStore($scopeId)->getName());
+            $logsArray['action'] = 'synced to emarsys';
+            $logsArray['message_type'] = 'Error';
+            $logsArray['log_action'] = 'sync';
+            $this->logsHelper->logs($logsArray);
+            $logsArray['status'] = 'error';
+            $logsArray['messages'] = __('Subscriber export Failed');
+            $this->messageManager->addErrorMessage(__('Emarsys is disabled for the store %1', $this->storeManager->getStore($scopeId)->getName()));
+            $this->logsHelper->manualLogsUpdate($logsArray);
+
+            $resultRedirect = $this->resultRedirectFactory->create();
+            $url = $this->getUrl("emarsys_emarsys/subscriberexport/index/store/$storeId");
+            return $resultRedirect->setPath($url);
+        }
+
         $websiteStoreIds = [];
         $websiteStoreIds[] = $data['storeId'];
         $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url', $scope, $websiteId);

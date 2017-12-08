@@ -10,10 +10,20 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\FieldFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Field;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
 
-class Save extends \Magento\Backend\App\Action
+/**
+ * Class Save
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
+ */
+class Save extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,40 +35,43 @@ class Save extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\FieldFactory
+     * @var FieldFactory
      */
     protected $fieldFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Field
+     * @var Field
      */
     protected $resourceModelField;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
-   /**
-    *
-    * @param Context $context
-    * @param \Emarsys\Emarsys\Model\FieldFactory $fieldFactory
-    * @param \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField
-    * @param PageFactory $resultPageFactory
-    * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-    */
+    /**
+     * Save constructor.
+     * @param Context $context
+     * @param FieldFactory $fieldFactory
+     * @param Field $resourceModelField
+     * @param PageFactory $resultPageFactory
+     * @param Logs $logHelper
+     * @param EmarsysModelLogs $emarsysLogs
+     * @param Data $emarsysHelper
+     * @param DateTime $date
+     * @param StoreManagerInterface $storeManager
+     */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\FieldFactory $fieldFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField,
+        FieldFactory $fieldFactory,
+        Field $resourceModelField,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        Logs $logHelper,
+        EmarsysModelLogs $emarsysLogs,
+        Data $emarsysHelper,
+        DateTime $date,
+        StoreManagerInterface $storeManager
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->date = $date;
@@ -78,10 +91,11 @@ class Save extends \Magento\Backend\App\Action
     {
         if (isset($session['store'])) {
             $storeId = $session['store'];
-        }else{
+        } else {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+        $resultRedirect = $this->resultRedirectFactory->create();
         try {
             $logsArray['job_code'] = 'Customer Filed Mapping';
             $logsArray['status'] = 'started';
@@ -153,14 +167,12 @@ class Save extends \Magento\Backend\App\Action
             $logsArray['messages'] = 'Save Customer Filed Mapping Successful';
             $this->logHelper->logs($logsArray);
             $this->logHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccess('Customer-Field attributes mapped successfully');
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage('Customer-Field attributes mapped successfully');
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'Save (Customer Filed)');
-            $this->messageManager->addError('Error occurred while mapping Customer-Field');
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage('Error occurred while mapping Customer-Field');
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

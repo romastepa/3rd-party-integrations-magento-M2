@@ -6,19 +6,12 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
+use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Webapi\Soap;
-use SoapClient;
-use SoapFault;
-use Magento\Framework\Locale\ListsInterface;
-use Magento\Config\Model\ResourceModel\Config;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 
-class Customer extends \Magento\Framework\App\Helper\AbstractHelper
+class Customer extends AbstractHelper
 {
-
     /**
      * @var Context
      */
@@ -34,12 +27,17 @@ class Customer extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $dataHelper;
 
+    /**
+     * Customer constructor.
+     * @param Context $context
+     * @param EmarsysModelLogs $emarsysLogs
+     * @param Data $dataHelper
+     */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
+        EmarsysModelLogs $emarsysLogs,
         Data $dataHelper
     ) {
-    
         ini_set('default_socket_timeout', 1000);
         $this->context = $context;
         $this->dataHelper = $dataHelper;
@@ -48,7 +46,8 @@ class Customer extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @throws \Zend_Json_Exception
+     * @param $storeId
+     * @return bool|mixed
      */
     public function getEmarsysCustomerSchema($storeId)
     {
@@ -58,7 +57,7 @@ class Customer extends \Magento\Framework\App\Helper\AbstractHelper
             $jsonDecode = \Zend_Json::decode($response);
             return $jsonDecode;
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(htmlentities($e->getMessage()),$storeId,'getEmarsysCustomerSchema');
+            $this->emarsysLogs->addErrorLog(htmlentities($e->getMessage()), $storeId, 'getEmarsysCustomerSchema');
             return false;
         }
     }

@@ -14,114 +14,127 @@ use Magento\Framework\Mail\MessageInterface;
 use Magento\Framework\Mail\TransportInterfaceFactory;
 use Magento\Framework\ObjectManagerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Magento\Framework\App\State;
 
 class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 {
     public $productCollObj = '';
 
+    public $_state;
+
+    public function __construct(
+        \Magento\Framework\Mail\Template\FactoryInterface $templateFactory,
+        MessageInterface $message,
+        \Magento\Framework\Mail\Template\SenderResolverInterface $senderResolver,
+        ObjectManagerInterface $objectManager,
+        TransportInterfaceFactory $mailTransportFactory,
+        State $state
+    ) {
+        $this->_state = $state;
+        parent::__construct($templateFactory, $message, $senderResolver, $objectManager, $mailTransportFactory);
+    }
 
     public function prepareMessage()
     {
+        $handle = '';
+        $template = $this->getTemplate();
+        $types = [
+            TemplateTypesInterface::TYPE_TEXT => MessageInterface::TYPE_TEXT,
+            TemplateTypesInterface::TYPE_HTML => MessageInterface::TYPE_HTML,
+        ];
 
-            $handle = '';
-            $template = $this->getTemplate();
-            $types = [
-                TemplateTypesInterface::TYPE_TEXT => MessageInterface::TYPE_TEXT,
-                TemplateTypesInterface::TYPE_HTML => MessageInterface::TYPE_HTML,
-            ];
+        $body = $template->processTemplate();
 
-            $body = $template->processTemplate();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->productCollObj = $objectManager->create('\Magento\Catalog\Model\Product');
+        $storeManagerInterfaceObj = $objectManager->create('\Magento\Store\Model\StoreManagerInterface');
+        $storeId = $template->getEmailStoreId();
 
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $this->productCollObj = $objectManager->create('\Magento\Catalog\Model\Product');
-            $storeManagerInterfaceObj = $objectManager->create('\Magento\Store\Model\StoreManagerInterface');
-            $storeId = $storeManagerInterfaceObj->getStore()->getId();
-            $storeCode = $storeManagerInterfaceObj->getStore()->getCode();
-            $websiteId = $storeManagerInterfaceObj->getStore()->getWebsiteId();
-            $dataHelper = $objectManager->create('Emarsys\Emarsys\Helper\Data');
-            $scopeConfig = $objectManager->create('\Magento\Framework\App\Config\ScopeConfigInterface');
-            $request = $objectManager->get('\Magento\Framework\App\Request\Http');
-            $templateIdentifier = $this->templateIdentifier; //$array['messageType']['templateIdentifier'];
-            $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-            list($magentoEventID, $configPath) = $dataHelper->getMagentoEventIdAndPath($templateIdentifier, $storeScope);
-            if (!$magentoEventID) {
-                $this->message->setMessageType($types[$template->getType()])
-                    ->setBody($body)
-                    ->setSubject($template->getSubject())
-                    ->setEmarsysData(["emarsysPlaceholders" => '', "emarsysEventId" => '']);
-                return $this;
-            }
-            $enableOptin = $scopeConfig->getValue('opt_in/optin_enable/enable_optin', 'websites', $websiteId);
-            if ($enableOptin) {
-                $handle = $request->getFullActionName();
-            }
-            $emarsysEventMappingID = $dataHelper->getEmarsysEventMappingId($magentoEventID);
-            if (!$emarsysEventMappingID) {
-                $this->message->setMessageType($types[$template->getType()])
-                    ->setBody($body)
-                    ->setSubject($template->getSubject())
-                    ->setEmarsysData(["emarsysPlaceholders" => '', "emarsysEventId" => '']);
-                return $this;
-            }
-
-            $emarsysEventApiID = $dataHelper->getEmarsysEventApiId($magentoEventID);
-            if ($handle == 'newsletter_subscriber_new' || $handle == 'customer_account_createpost' || $handle == 'checkout_onepage_success') {
-                $emarsysEventApiID = $dataHelper->getEmarsysNewsLetterEventId($emarsysEventApiID, $handle, $configPath);
-            }
-            //echo "apieve".print_r($emarsysEventApiID);exit;
-            if (!$emarsysEventApiID) {
-                $this->message->setMessageType($types[$template->getType()])
-                    ->setBody($body)
-                    ->setSubject($template->getSubject())
-                    ->setEmarsysData(["emarsysPlaceholders" => '', "emarsysEventId" => '']);
-                return $this;
-            }
-
-            $emarsysPlaceholders = $dataHelper->getPlaceHolders($emarsysEventMappingID);
-            if (!$emarsysPlaceholders) {
-                $emarsysPlaceholders = $dataHelper->insertFirstimeMappingPlaceholders($emarsysEventMappingID, $storeId);
-                $emarsysPlaceholders = $dataHelper->getPlaceHolders($emarsysEventMappingID);
-            }
-
-            $emarsysHeaderPlaceholders = $dataHelper->emarsysHeaderPlaceholders($emarsysEventMappingID, $storeId);
-            if (!$emarsysHeaderPlaceholders) {
-                $emarsysInsertFirstHeaderPlaceholders = $dataHelper->insertFirstimeHeaderMappingPlaceholders($emarsysEventMappingID, $storeId);
-                $emarsysHeaderPlaceholders = $dataHelper->emarsysHeaderPlaceholders($emarsysEventMappingID, $storeId);
-            }
-
-            $emarsysFooterPlaceholders = $dataHelper->emarsysFooterPlaceholders($emarsysEventMappingID, $storeId);
-            if (!$emarsysFooterPlaceholders) {
-                $emarsysInsertFirstFooterPlaceholders = $dataHelper->insertFirstimeFooterMappingPlaceholders($emarsysEventMappingID, $storeId);
-                $emarsysFooterPlaceholders = $dataHelper->emarsysFooterPlaceholders($emarsysEventMappingID, $storeId);
-            }
-
-            $processedVariables = [];
-            if ($order = $template->checkOrder()) {
-                foreach ($order->getAllVisibleItems() as $item) {
-                    $orderData[] = $this->getOrderData($item);
-                }
-                $processedVariables['product_purchases'] = $orderData;
-            }
-
-            foreach ($emarsysHeaderPlaceholders as $key => $value) {
-                if ($key == 'css_file_css_email_css') {
-                    continue;
-                } else {
-                    $processedVariables['global'][$key] = $template->getProcessedVariable($value);
-                }
-            }
-            foreach ($emarsysPlaceholders as $key => $value) {
-                $processedVariables['global'][$key] = $template->getProcessedVariable($value);
-            }
-            foreach ($emarsysFooterPlaceholders as $key => $value) {
-                $processedVariables['global'][$key] = $template->getProcessedVariable($value);
-            }
+        $storeCode = $storeManagerInterfaceObj->getStore($storeId)->getCode();
+        $websiteId = $storeManagerInterfaceObj->getStore($storeId)->getWebsiteId();
+        $dataHelper = $objectManager->create('Emarsys\Emarsys\Helper\Data');
+        $scopeConfig = $objectManager->create('\Magento\Framework\App\Config\ScopeConfigInterface');
+        $request = $objectManager->get('\Magento\Framework\App\Request\Http');
+        $templateIdentifier = $this->templateIdentifier; //$array['messageType']['templateIdentifier'];
+        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+        list($magentoEventID, $configPath) = $dataHelper->getMagentoEventIdAndPath($templateIdentifier, $storeScope, $storeId);
+        if (!$magentoEventID) {
             $this->message->setMessageType($types[$template->getType()])
                 ->setBody($body)
                 ->setSubject($template->getSubject())
-                ->setEmarsysData(["emarsysPlaceholders" => $processedVariables, "emarsysEventId" => $emarsysEventApiID]);
-
+                ->setEmarsysData(["emarsysPlaceholders" => '', "emarsysEventId" => '', "store_id" => $storeId]);
             return $this;
+        }
+        $enableOptin = $scopeConfig->getValue('opt_in/optin_enable/enable_optin', 'websites', $websiteId);
+        if ($enableOptin) {
+            $handle = $request->getFullActionName();
+        }
+        $emarsysEventMappingID = $dataHelper->getEmarsysEventMappingId($magentoEventID, $storeId);
+        if (!$emarsysEventMappingID) {
+            $this->message->setMessageType($types[$template->getType()])
+                ->setBody($body)
+                ->setSubject($template->getSubject())
+                ->setEmarsysData(["emarsysPlaceholders" => '', "emarsysEventId" => '', "store_id" => $storeId]);
+            return $this;
+        }
+
+        $emarsysEventApiID = $dataHelper->getEmarsysEventApiId($magentoEventID, $storeId);
+        if ($handle == 'newsletter_subscriber_new' || $handle == 'customer_account_createpost' || $handle == 'checkout_onepage_success') {
+            $emarsysEventApiID = $dataHelper->getEmarsysNewsLetterEventId($emarsysEventApiID, $handle, $configPath);
+        }
+        if (!$emarsysEventApiID) {
+            $this->message->setMessageType($types[$template->getType()])
+                ->setBody($body)
+                ->setSubject($template->getSubject())
+                ->setEmarsysData(["emarsysPlaceholders" => '', "emarsysEventId" => '', "store_id" => $storeId]);
+            return $this;
+        }
+
+        $emarsysPlaceholders = $dataHelper->getPlaceHolders($emarsysEventMappingID);
+        if (!$emarsysPlaceholders) {
+            $emarsysPlaceholders = $dataHelper->insertFirstimeMappingPlaceholders($emarsysEventMappingID, $storeId);
+            $emarsysPlaceholders = $dataHelper->getPlaceHolders($emarsysEventMappingID);
+        }
+
+        $emarsysHeaderPlaceholders = $dataHelper->emarsysHeaderPlaceholders($emarsysEventMappingID, $storeId);
+        if (!$emarsysHeaderPlaceholders) {
+            $emarsysInsertFirstHeaderPlaceholders = $dataHelper->insertFirstimeHeaderMappingPlaceholders($emarsysEventMappingID, $storeId);
+            $emarsysHeaderPlaceholders = $dataHelper->emarsysHeaderPlaceholders($emarsysEventMappingID, $storeId);
+        }
+
+        $emarsysFooterPlaceholders = $dataHelper->emarsysFooterPlaceholders($emarsysEventMappingID, $storeId);
+        if (!$emarsysFooterPlaceholders) {
+            $emarsysInsertFirstFooterPlaceholders = $dataHelper->insertFirstimeFooterMappingPlaceholders($emarsysEventMappingID, $storeId);
+            $emarsysFooterPlaceholders = $dataHelper->emarsysFooterPlaceholders($emarsysEventMappingID, $storeId);
+        }
+
+        $processedVariables = [];
+        if ($order = $template->checkOrder()) {
+            foreach ($order->getAllVisibleItems() as $item) {
+                $orderData[] = $this->getOrderData($item);
+            }
+            $processedVariables['product_purchases'] = $orderData;
+        }
+
+        foreach ($emarsysHeaderPlaceholders as $key => $value) {
+            if ($key == 'css_file_css_email_css') {
+                continue;
+            } else {
+                $processedVariables['global'][$key] = $template->getProcessedVariable($value);
+            }
+        }
+        foreach ($emarsysPlaceholders as $key => $value) {
+            $processedVariables['global'][$key] = $template->getProcessedVariable($value);
+        }
+        foreach ($emarsysFooterPlaceholders as $key => $value) {
+            $processedVariables['global'][$key] = $template->getProcessedVariable($value);
+        }
+        $this->message->setMessageType($types[$template->getType()])
+            ->setBody($body)
+            ->setSubject($template->getSubject())
+            ->setEmarsysData(["emarsysPlaceholders" => $processedVariables, "emarsysEventId" => $emarsysEventApiID, "store_id" => $storeId]);
+
+        return $this;
     }
 
 

@@ -10,27 +10,30 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Data;
 
-class Index extends \Magento\Backend\App\Action
+/**
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
+ */
+class Index extends Action
 {
-
     /**
      * @var PageFactory
      */
     protected $resultPageFactory;
 
     /**
-     * 
+     * Index constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
+     * @param Data $emarsysHelper
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper
+        Data $emarsysHelper
     ) {
-    
         parent::__construct($context);
         $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
@@ -43,7 +46,6 @@ class Index extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-
         $store = $this->getRequest()->getParam('store');
         if (!$store) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
@@ -54,6 +56,7 @@ class Index extends \Magento\Backend\App\Action
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_customer_mapping');
         $resultPage->addBreadcrumb(__('Emarsys - Customer Mapping'), __('Emarsys - Customer Mapping'));
         $resultPage->getConfig()->getTitle()->prepend(__('Emarsys - Customer Mapping'));
+
         return $resultPage;
     }
 }

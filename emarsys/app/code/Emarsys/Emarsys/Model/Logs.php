@@ -24,7 +24,6 @@ class Logs extends \Magento\Framework\Model\AbstractModel
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         try {
-
             $storeManagerInterfaceObj = $objectManager->create('\Magento\Store\Model\StoreManagerInterface');
             $date = $objectManager->create('\Magento\Framework\Stdlib\DateTime\DateTime');
             $logsArray['job_code'] = 'Exception';
@@ -49,7 +48,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             }
         } catch (\Exception $e) {
             $messageManager = $objectManager->create('\Magento\Framework\Message\ManagerInterface');
-            $messageManager->addError(
+            $messageManager->addErrorMessage(
                 __('Unable to Log: ' . $e->getMessage())
             );
         }

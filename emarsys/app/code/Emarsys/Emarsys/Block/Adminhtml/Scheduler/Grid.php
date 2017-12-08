@@ -6,7 +6,7 @@
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Scheduler;
-
+use Magento\Framework\Stdlib\DateTime\Timezone;
 /**
  * Class Grid
  * @package Emarsys\Emarsys\Block\Adminhtml\Scheduler
@@ -46,7 +46,10 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * @var \Emarsys\Emarsys\Helper\Data
      */
     protected $schedulerHelper;
-
+    /**
+     * @var Timezone
+     */
+    protected $timezone;
     /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Backend\Helper\Data $backendHelper
@@ -69,9 +72,10 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Controller\Result\RedirectFactory $redirectFactory,
         \Magento\Framework\Dataobject $dataObject,
+        Timezone $timezone,
         $data = []
     ) {
-    
+        $this->timezone = $timezone;
         $this->schedulerHelper = $schedulerHelper;
         $this->redirectFactory = $redirectFactory;
         $this->backendHelper = $backendHelper;
@@ -143,7 +147,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'Customer Filed Mapping' =>'Customer Filed Mapping',
                 'Product Mapping' =>'Product Mapping',
                 'Backgroud Time Based Optin Sync' => 'Backgroud Time Based Optin Sync',
-                'Sync contact Export' => 'Sync contact Export'
+                'Sync contact Export' => 'Sync contact Export',
+                'Exception' => 'Exception'
             ]
         ]);
 
@@ -153,7 +158,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "created_at",
             'width' => '150',
             'type' => 'timestamp',
-            'frame_callback' => [$viewHelper, 'decorateTimeFrameCallBack']
+            'frame_callback' => [$this, 'decorateTimeFrameCallBack']
         ]);
 
         $this->addColumn("executed_at", [
@@ -162,7 +167,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "executed_at",
             'width' => '150',
             'type' => 'timestamp',
-            'frame_callback' => [$viewHelper, 'decorateTimeFrameCallBack']
+            'frame_callback' => [$this, 'decorateTimeFrameCallBack']
         ]);
 
         $this->addColumn("finished_at", [
@@ -171,7 +176,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "finished_at",
             'width' => '150',
             'type' => 'timestamp',
-            'frame_callback' => [$viewHelper, 'decorateTimeFrameCallBack']
+            'frame_callback' => [$this, 'decorateTimeFrameCallBack']
         ]);
 
         $this->addColumn("run_mode", [
@@ -234,5 +239,25 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     public function getRowUrl($item)
     {
         parent::getRowUrl($item);
+    }
+
+    /**
+     * @param $value
+     * @return string
+     */
+    public function decorateTimeFrameCallBack($value)
+    {
+        if ($value) {
+            return $this->decorateTime($value, false, null);
+        }
+    }
+
+    /**
+     * @param $value
+     * @return string
+     */
+    public function decorateTime($value)
+    {
+        return $this->timezone->date($value)->format('M d, Y h:i:s A');
     }
 }

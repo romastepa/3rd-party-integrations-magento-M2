@@ -9,8 +9,15 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\EventFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
 
-class ChangeValue extends \Magento\Backend\App\Action
+/**
+ * Class ChangeValue
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
+ */
+class ChangeValue extends Action
 {
     /**
      * @var PageFactory
@@ -28,19 +35,20 @@ class ChangeValue extends \Magento\Backend\App\Action
     protected $eventFactory;
 
     /**
+     * ChangeValue constructor.
      * @param Context $context
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\EventFactory $eventFactory
+     * @param EventFactory $eventFactory
+     * @param Event $eventResourceModel
+     * @param EmarsyseventmappingFactory $EmarsyseventmappingFactory
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\EventFactory $eventFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel,
-        \Emarsys\Emarsys\Model\EmarsyseventmappingFactory $EmarsyseventmappingFactory,
+        EventFactory $eventFactory,
+        Event $eventResourceModel,
+        EmarsyseventmappingFactory $EmarsyseventmappingFactory,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->eventResourceModel = $eventResourceModel;
@@ -55,12 +63,12 @@ class ChangeValue extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-        $magento_event_id = $this->getRequest()->getParam('magentoeventId');
-        $emarsys_event_id = $this->getRequest()->getParam('emarsyseventId');
+        $magentoEventId = $this->getRequest()->getParam('magentoeventId');
+        $emarsysEventId = $this->getRequest()->getParam('emarsyseventId');
         $id = $this->getRequest()->getParam('Id');
         $gridSession = $this->session->getMappingGridData();
-        $gridSession[$id]['magento_event_id'] = $magento_event_id;
-        $gridSession[$id]['emarsys_event_id'] = $emarsys_event_id;
+        $gridSession[$id]['magento_event_id'] = $magentoEventId;
+        $gridSession[$id]['emarsys_event_id'] = $emarsysEventId;
         $this->session->setMappingGridData($gridSession);
     }
 }

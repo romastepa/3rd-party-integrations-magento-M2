@@ -1,7 +1,7 @@
 <?php
 /**
  * @category   Emarsys
- * @package    Emarsys_Log
+ * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Grid;
@@ -10,7 +10,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class Index extends \Magento\Backend\App\Action
+class Index extends Action
 {
     /**
      * @var PageFactory
@@ -18,6 +18,7 @@ class Index extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
+     * Index constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */
@@ -25,7 +26,6 @@ class Index extends \Magento\Backend\App\Action
         Context $context,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
     }
@@ -46,6 +46,7 @@ class Index extends \Magento\Backend\App\Action
             $resultPage->addBreadcrumb(__('Log'), __('Customer Log'));
             $resultPage->getConfig()->getTitle()->prepend(__('Customer Log'));
         }
+
         return $resultPage;
     }
 }

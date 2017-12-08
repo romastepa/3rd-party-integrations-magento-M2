@@ -6,20 +6,23 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Webapi\Soap;
-use SoapClient;
-use SoapFault;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Stdlib\DateTime\Timezone;
-use Magento\Framework\Locale\ListsInterface;
 use Magento\Config\Model\ResourceModel\Config;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\ResourceModel\Event as EmarsysResourceModelEvent;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Magento\AdminNotification\Model\InboxFactory;
+use Emarsys\Emarsys\Model\EmarsyseventsFactory;
 
-class Event extends \Magento\Framework\App\Helper\AbstractHelper
+/**
+ * Class Event
+ * @package Emarsys\Emarsys\Helper
+ */
+class Event extends AbstractHelper
 {
     /**
      * @var Logger
@@ -32,25 +35,24 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
     protected $dataHelper;
 
     /**
-     * 
+     * Event constructor.
      * @param Data $dataHelper
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent
+     * @param EmarsysResourceModelEvent $resourceModelEvent
      * @param Context $context
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
-     * @param \Magento\AdminNotification\Model\InboxFactory $adminNotification
-     * @param \Emarsys\Emarsys\Model\EmarsyseventsFactory $emarsysEvents
+     * @param StoreManagerInterface $storeManager
+     * @param EmarsysModelLogs $emarsysLogs
+     * @param InboxFactory $adminNotification
+     * @param EmarsyseventsFactory $emarsysEvents
      */
     public function __construct(
         Data $dataHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent,
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\AdminNotification\Model\InboxFactory $adminNotification,
-        \Emarsys\Emarsys\Model\EmarsyseventsFactory $emarsysEvents
+        EmarsysResourceModelEvent $resourceModelEvent,
+        Context $context,
+        StoreManagerInterface $storeManager,
+        EmarsysModelLogs $emarsysLogs,
+        InboxFactory $adminNotification,
+        EmarsyseventsFactory $emarsysEvents
     ) {
-    
         ini_set('default_socket_timeout', 1000);
         $this->logger = $context->getLogger();
         $this->storeManager = $storeManager;
@@ -62,7 +64,7 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @throws \Zend_Json_\Exception
+     * @return bool|mixed
      */
     public function getEventSchema()
     {
@@ -78,8 +80,7 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * 
-     * @return boolean
+     * @return bool|mixed
      */
     public function getEventTemplateSchema()
     {
@@ -94,10 +95,8 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-
     /**
-     * 
-     * @return boolean
+     * @return bool
      */
     public function saveEmarsysEventSchemaNotification()
     {
@@ -114,10 +113,9 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-
     /**
-     * 
-     * @return boolean
+     * @param $websiteId
+     * @return array|bool
      */
     public function getLocalEmarsysEvents($websiteId)
     {
@@ -138,8 +136,7 @@ class Event extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * 
-     * @return boolean
+     * @return bool
      */
     public function getEmar()
     {

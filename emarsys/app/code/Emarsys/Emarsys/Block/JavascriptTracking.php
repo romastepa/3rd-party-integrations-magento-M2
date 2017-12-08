@@ -18,6 +18,7 @@ use Emarsys\Emarsys\Helper\Data;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\Registry;
 use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class JavascriptTracking
@@ -304,7 +305,9 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     public function getMerchantId()
     {
         return $this->customerResourceModel->getDataFromCoreConfig(
-            Data::XPATH_WEBEXTEND_MERCHANT_ID
+            Data::XPATH_WEBEXTEND_MERCHANT_ID,
+            ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getId()
         );
     }
 
@@ -316,7 +319,9 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     public function getJsEnableStatusForAllPages()
     {
         return (bool)$this->customerResourceModel->getDataFromCoreConfig(
-            Data::XPATH_WEBEXTEND_JS_TRACKING_ENABLED
+            Data::XPATH_WEBEXTEND_JS_TRACKING_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getId()
         );
     }
 

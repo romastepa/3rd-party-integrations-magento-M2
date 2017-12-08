@@ -208,6 +208,28 @@ class Order extends AbstractModel
         $logsArray['website_id'] = $websiteId;
         $logId = $this->logsHelper->manualLogs($logsArray, 1);
 
+        $isEmarsysEnabledForStore = $this->customerResourceModel->getDataFromCoreConfig(
+            'emarsys_settings/emarsys_setting/enable',
+            $scope,
+            $websiteId
+        );
+
+        if (!$isEmarsysEnabledForStore) {
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = __('Emarsys is disabled');
+            $logsArray['description'] = __('Emarsys is disabled for the store %1', $store->getName());
+            $logsArray['action'] = 'synced to emarsys';
+            $logsArray['message_type'] = 'Error';
+            $logsArray['log_action'] = 'sync';
+            $this->logsHelper->logs($logsArray);
+            $logsArray['status'] = 'error';
+            $logsArray['messages'] = __('Order export Failed');
+            $this->messageManager->addErrorMessage(__('Emarsys is disabled for the store %1', $store->getName()));
+            $this->logsHelper->manualLogsUpdate($logsArray);
+
+            return;
+        }
+
         $smartInsightEnabled = $this->customerResourceModel->getDataFromCoreConfig(
             EmarsysDataHelper::XPATH_SMARTINSIGHT_ENABLED,
             $scope,
@@ -247,19 +269,23 @@ class Order extends AbstractModel
         }
 
         if ($errorStatus != 1) {
-            if ($ftpSsl == 1) {
-                $ftpConnection = @ftp_ssl_connect($hostname, $port);
-            } else {
-                $ftpConnection = @ftp_connect($hostname, $port);
-            }
-            $ftpLogin = @ftp_login($ftpConnection, $username, $password);
+            $checkFtpConnection = $this->emarsysDataHelper->checkFtpConnection(
+                $hostname,
+                $username,
+                $password,
+                $port,
+                $ftpSsl,
+                $passiveMode
+            );
 
-            if ($ftpLogin) {
+            if ($checkFtpConnection) {
                 $heading = ['order', 'date', 'customer', 'item', 'unit_price', 'c_sales_amount', 'quantity'];
                 $emasysFields = $this->orderResourceModel->getEmarsysOrderFields();
                 foreach ($emasysFields as $field) {
-                    if ($field['emarsys_order_field'] != '')
-                        $heading[] = $field['emarsys_order_field'];
+                    $emarsysOrderFieldValue = trim($field['emarsys_order_field']);
+                    if ($emarsysOrderFieldValue != '' && $emarsysOrderFieldValue != "'") {
+                        $heading[] = $emarsysOrderFieldValue;
+                    }
                 }
 
                 $localFilePath = BP . "/var";
@@ -391,9 +417,10 @@ class Order extends AbstractModel
                         }
                         $values[] = (int)$item->getQtyInvoiced();
                         foreach ($emasysFields as $field) {
-                            if ($field['emarsys_order_field'] != '') {
+                            $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
+                            if ($emarsysOrderFieldValueOrder != '' && $emarsysOrderFieldValueOrder != "'") {
                                 $orderExpValues = $this->orderResourceModel->getOrderColValue(
-                                    $field['emarsys_order_field'],
+                                    $emarsysOrderFieldValueOrder,
                                     $orderEntityId
                                 );
                                 if (isset($orderExpValues['created_at'])) {
@@ -415,12 +442,13 @@ class Order extends AbstractModel
                 }
 
                 foreach ($creditMemoCollection as $creditMemo) {
-                    $creditMemoOrder = $this->salesOrderCollectionFactory->create()->load($creditMemo['entity_id']);
+                    $creditMemoOrder = $this->salesOrderCollectionFactory->create()->load($creditMemo['order_id']);
                     $orderId = $creditMemoOrder->getIncrementId();
                     $orderEntityId = $creditMemoOrder->getId();
                     $createdDate = $creditMemoOrder->getCreatedAt();
                     $customerEmail = $creditMemoOrder->getCustomerEmail();
-                    foreach ($creditMemoOrder->getAllVisibleItems() as $item) {
+                    foreach ($creditMemo->getAllItems() as $item) {
+                        if ($item->getOrderItem()->getParentItem()) continue;
                         $values = [];
                         $values[] = $orderId;
                         $date = new \DateTime($createdDate);
@@ -454,12 +482,13 @@ class Order extends AbstractModel
                         } else {
                             $values[] = '';
                         }
-                        $values[] = (int)$item->getQtyInvoiced();
+                        $values[] = (int)$item->getQty();
 
                         foreach ($emasysFields as $field) {
-                            if ($field['emarsys_order_field'] != '') {
+                            $emarsysOrderFieldValueCm = trim($field['emarsys_order_field']);
+                            if ($emarsysOrderFieldValueCm != '' && $emarsysOrderFieldValueCm != "'") {
                                 $orderExpValues = $this->orderResourceModel->getOrderColValue(
-                                    $field['emarsys_order_field'],
+                                    $emarsysOrderFieldValueCm,
                                     $orderEntityId
                                 );
 
@@ -479,6 +508,56 @@ class Order extends AbstractModel
                             fputcsv($handle, $values);
                         }
                     }
+
+                    //if creditmemo have adjustments
+                    if ($creditMemo->getAdjustment() != 0 ) {
+                        $values = [];
+                        //set order id
+                        $values[] = $orderId;
+                        $date = new \DateTime($createdDate);
+                        $createdDate = $date->format('Y-m-d');
+                        //set timestamp
+                        $values[] = $createdDate;
+                        if ($customerEmail != '') {
+                            $values[] = $customerEmail;
+                        } else {
+                            $values[] = '';
+                        }
+                        //set item id/sku
+                        $values[] = 0;
+
+                        //set Unit Prices
+                        $values[] = $creditMemo->getAdjustment();
+
+                        //set cSalesAmount
+                        $values[] = $creditMemo->getAdjustment();
+
+                        //set quantity
+                        $values[] = 1;
+
+                        foreach ($emasysFields as $field) {
+                            $emarsysOrderFieldValueAdjustment = trim($field['emarsys_order_field']);
+                            if ($emarsysOrderFieldValueAdjustment != '' && $emarsysOrderFieldValueAdjustment != "'") {
+                                $orderExpValues = $this->orderResourceModel->getOrderColValue(
+                                    $emarsysOrderFieldValueAdjustment,
+                                    $orderEntityId
+                                );
+
+                                if (isset($orderExpValues['created_at'])) {
+                                    $createdAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
+                                    $values[] = $createdAt;
+                                } elseif (isset($orderExpValues['updated_at'])) {
+                                    $updatedAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['updated_at']);
+                                    $values[] = $updatedAt;
+                                } else {
+                                    $values[] = $orderExpValues['magento_column_value'];
+                                }
+                            }
+                        }
+                        if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $creditMemoOrder->getCustomerIsGuest() == 1)) {
+                            fputcsv($handle, $values);
+                        }
+                    }
                 }
 
                 $file = $outputFile;
@@ -491,6 +570,13 @@ class Order extends AbstractModel
                     $remoteFileName = $remoteDirPath . "/" . $outputFile;
                 }
 
+                if ($ftpSsl == 1) {
+                    $ftpConnection = @ftp_ssl_connect($hostname, $port);
+                } else {
+                    $ftpConnection = @ftp_connect($hostname, $port);
+                }
+                $ftpLogin = @ftp_login($ftpConnection, $username, $password);
+
                 if ($passiveMode == 1) {
                     @ftp_pasv($ftpConnection, true);
                 }
@@ -500,8 +586,6 @@ class Order extends AbstractModel
                     @ftp_mkdir($ftpConnection, $remoteDirPath);
                 }
                 @ftp_chdir($ftpConnection, '/');
-                $trackErrors = ini_get('track_errors');
-                ini_set('track_errors', 1);
 
                 //Upload CSV to FTP
                 if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
@@ -519,9 +603,8 @@ class Order extends AbstractModel
                         );
                     }
                 } else {
-                    // error message is now in $php_errormsg
-                    $msg = $php_errormsg;
-                    ini_set('track_errors', $trackErrors);
+                    $errorMessage = error_get_last();
+                    $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
                     $logsArray['description'] = __('Failed to upload file on FTP server. %1', $msg);

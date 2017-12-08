@@ -60,13 +60,12 @@ class Customer extends AbstractDb
 
     /**
      * Customer constructor.
-     *
      * @param Context $context
      * @param Type $entityType
      * @param Attribute $attribute
      * @param TimezoneInterface $timezoneInterface
      * @param CustomerFactory $customerModel
-     * @param Logs $emarsysLogs
+     * @param EmarsysModelLog $emarsysLogs
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param null $connectionName
@@ -244,6 +243,32 @@ class Customer extends AbstractDb
     }
 
     /**
+     * @param $storeId
+     * @return array
+     */
+    public function getCustomMappedCustomerAttribute($storeId)
+    {
+        $emarsysCodes = ['first_name', 'middle_name', 'last_name', 'email', 'gender', 'birth_date'];
+        $emarsysContactFieldId = [];
+
+        foreach ($emarsysCodes as $emarsysCode) {
+            $query = "SELECT emarsys_field_id FROM " . $this->getTable("emarsys_contact_field") . " WHERE string_id = '" . $emarsysCode . "' and  store_id =" . $storeId;
+            $id = $this->getConnection()->fetchOne($query);
+            if ($id) {
+                array_push($emarsysContactFieldId, $id);
+            }
+        }
+        try {
+            $customerAttributes = $this->getConnection()->fetchAll("SELECT * FROM " . $this->getTable('emarsys_customer_field_mapping') . " WHERE store_id =" . $storeId .
+                " and emarsys_contact_field IS NOT NULL" . " and emarsys_contact_field NOT IN ("  . implode(',', $emarsysContactFieldId) . ") ");
+
+            return $customerAttributes;
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'Customer::getCustomMappedCustomerAttribute(ResourceModel)');
+        }
+    }
+
+    /**
      *
      * @param type $storeId
      * @return array
@@ -414,7 +439,7 @@ class Customer extends AbstractDb
      * @param type $data
      * @return array
      */
-    public function getCustomerCollection($data)
+    public function getCustomerCollection($data, $storeId = null)
     {
         if (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] != '' && $data['toDate'] != '') {
             date_default_timezone_set($this->_timezoneInterface->getConfigTimezone());
@@ -422,14 +447,29 @@ class Customer extends AbstractDb
             $toDateUTC = gmdate("Y-m-d H:i:s", strtotime($data['toDate']));
             date_default_timezone_set($this->_timezoneInterface->getDefaultTimezone());
 
-            $customers = $this->customerModel->create()
-                            ->getCollection()
-                            ->addFieldToFilter('created_at', ['from' => $fromDateUTC, 'to' => $toDateUTC])
-                            ->addFieldToFilter('website_id', ['eq' => $data['website']]);
-
-        } elseif (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] == '' && $data['toDate'] == '') {
-            $customers = $this->customerModel->create()->getCollection()
-                                    ->addFieldToFilter('website_id', ['eq' => $data['website']]);
+            if ($storeId) {
+                $customers = $this->customerModel->create()
+                    ->getCollection()
+                    ->addFieldToFilter('created_at', ['from' => $fromDateUTC, 'to' => $toDateUTC])
+                    ->addFieldToFilter('website_id', ['eq' => $data['website']])
+                    ->addFieldToFilter('store_id', ['eq' => $data['storeId']]);
+            } else {
+                $customers = $this->customerModel->create()
+                    ->getCollection()
+                    ->addFieldToFilter('created_at', ['from' => $fromDateUTC, 'to' => $toDateUTC])
+                    ->addFieldToFilter('website_id', ['eq' => $data['website']]);
+            }
+        } else {
+            if ($storeId) {
+                $customers = $this->customerModel->create()
+                    ->getCollection()
+                    ->addFieldToFilter('website_id', ['eq' => $data['website']])
+                    ->addFieldToFilter('store_id', ['eq' => $data['storeId']]);
+            } else {
+                $customers = $this->customerModel->create()
+                    ->getCollection()
+                    ->addFieldToFilter('website_id', ['eq' => $data['website']]);
+            }
         }
 
         return $customers->getData();
@@ -457,7 +497,7 @@ class Customer extends AbstractDb
      * @param type $data
      * @return array
      */
-    public function getSubscribedCustomerCollection($data,$storeIds,$getAll)
+    public function getSubscribedCustomerCollection($data, $storeIds, $getAll)
     {
         if (isset($data['attributevalue']) && $data['attributevalue'] != '') {
             $query = "SELECT subscriber_id,subscriber_email,store_id FROM " . $this->getTable('newsletter_subscriber') . " WHERE subscriber_status = '" . $data['attributevalue'] . "' AND store_id IN ($storeIds) ";

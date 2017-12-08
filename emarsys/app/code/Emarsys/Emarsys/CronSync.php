@@ -411,11 +411,21 @@ class CronSync
                     $emarsysFieldNames = [];
                     if (isset($mappedAttributes) && count($mappedAttributes) != '') {
                         foreach ($mappedAttributes as $mapAttribute) {
+                            if ($mapAttribute['emarsys_contact_field'] == NULL) { continue; }
                             $emarsysFieldId = $mapAttribute['emarsys_contact_field'];
                             $magentoFieldIds[] = $mapAttribute['magento_attribute_id'];
                             $emarsysFieldName = $this->customerResourceModel->getEmarsysFieldName($scopeId, $emarsysFieldId);
                             $emarsysFieldNames[] = $emarsysFieldName;
+                            $indexCount++;
                         }
+                        $emarsysFieldNames['magento_customer_id'] = 'Magento Customer ID';
+                        $emarsysFieldNamesIndex[$indexCount] = 'magento_customer_id';
+                        $emarsysFieldNames['magento_customer_unique_id'] = 'Magento Customer Unique ID';
+                        $indexCount = $indexCount + 1;
+                        $emarsysFieldNamesIndex[$indexCount] = 'magento_customer_unique_id';
+                        $emarsysFieldNames['customer_email'] = 'Customer Email';
+                        $indexCount = $indexCount + 1;
+                        $emarsysFieldNamesIndex[$indexCount] = 'customer_email';
                         $heading = $emarsysFieldNames;
                         $localFilePath = BP . "/var";
                         $outputFile = "customers_" . $this->date->date('YmdHis', time()) . "_" . $websiteCode . ".csv";
@@ -492,6 +502,9 @@ class CronSync
 
                                     }
                                 }
+                                $values[] = $value['entity_id'];
+                                $values[] = $value['email'] . "#" . $value['website_id'] . "#" . $value['store_id'];
+                                $values[] = $value['email'];
                                 fputcsv($handle, $values);
                             }
                         }

@@ -14,7 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as ModelResourceModelCustomer;
 use Emarsys\Emarsys\Model\Queue;
 use Magento\Framework\App\ProductMetadataInterface;
 use Emarsys\Emarsys\Model\QueueFactory as EmarsysQueueFactory;
@@ -26,7 +26,7 @@ use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory;
 use Emarsys\Emarsys\Model\Api as EmarsysApi;
 use Emarsys\Emarsys\Model\Emarsysevents;
-use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Emarsys\Emarsys\Model\ResourceModel\Event as ModelResourceModelEvent;
 use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
 use Magento\Backend\Model\Session as BackendSession;
 use Emarsys\Emarsys\Model\EmarsyseventsFactory;
@@ -329,7 +329,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param Timezone $timezone
      * @param Logs $logHelper
      * @param StoreManagerInterface $storeManager
-     * @param Customer $customerResourceModel
+     * @param ModelResourceModelCustomer $customerResourceModel
      * @param Queue $queueModel
      * @param ProductMetadataInterface $productMetadataInterface
      * @param EmarsysQueueFactory $queueModelColl
@@ -341,7 +341,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param EmarsyseventsCollectionFactory $emarsysEventCollectionFactory
      * @param EmarsysApi $modelApi
      * @param Emarsysevents $emarsysEventsModel
-     * @param Event $eventsResourceModel
+     * @param ModelResourceModelEvent $eventsResourceModel
      * @param EmailTemplateFactory $templateFactory
      * @param BackendSession $session
      * @param EmarsyseventsFactory $emarsysEventsModelFactory
@@ -359,7 +359,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         Timezone $timezone,
         EmarsysHelperLogs $logHelper,
         StoreManagerInterface $storeManager,
-        Customer $customerResourceModel,
+        ModelResourceModelCustomer $customerResourceModel,
         Queue $queueModel,
         ProductMetadataInterface $productMetadataInterface,
         EmarsysQueueFactory $queueModelColl,
@@ -371,7 +371,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         EmarsyseventsCollectionFactory $emarsysEventCollectionFactory,
         EmarsysApi $modelApi,
         Emarsysevents $emarsysEventsModel,
-        Event $eventsResourceModel,
+        ModelResourceModelEvent $eventsResourceModel,
         EmailTemplateFactory $templateFactory,
         BackendSession $session,
         EmarsyseventsFactory $emarsysEventsModelFactory,
@@ -700,11 +700,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             //Update & create new events found in Emarsys
             foreach ($eventArray as $key => $value) {
                 $emarsysEvents = $this->emarsysEventCollectonFactory->create();
-                $emarsysEvents->addFieldToFilter("event_id", $key)
+                $emarsysEventItem = $emarsysEvents->addFieldToFilter("event_id", $key)
                     ->addFieldToFilter("store_id", $storeId)
                     ->getFirstItem();
-                if ($emarsysEvents->getSize()) {
-                    $model = $this->emarsysEventsModel->load($key, "event_id");
+                if ($emarsysEventItem && $emarsysEventItem->getId()) {
+                    $model = $this->emarsysEventsModel->load($emarsysEventItem->getId(), "id");
                     $model->setEmarsysEvent($value);
                     $model->setStoreId($storeId);
                     $model->save();
@@ -1146,7 +1146,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $queueColl->addFieldToFilter('entity_id', $customerId);
         $queueColl->addFieldToFilter('website_id', $websiteId);
 
-        if ($queueColl->getSize() > 0) {
+        if (($queueColl->getSize() > 0) && $queueColl->getData() && isset($queueColl->getData()[0])) {
             $data = $queueColl->getData()[0];
             $queueModel->load($data['id']);
             if ($cron == 1) {
@@ -1780,12 +1780,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $magentoEventId
      * @return string
      */
-    public function getEmarsysEventMappingId($magentoEventId)
+    public function getEmarsysEventMappingId($magentoEventId, $storeId = null)
     {
+        if(is_null($storeId)) {
+            $storeId = $this->storeManager->getStore()->getId();
+        }
+
         $emarsysEventMappingId = "";
         try {
             $emarsysEventsMappingCollection = $this->emarsysEventMapping->create()
                 ->getCollection()
+                ->addFieldToFilter('store_id', $storeId)
                 ->addFieldToFilter('magento_event_id', $magentoEventId);
 
             if (count($emarsysEventsMappingCollection->getData())) {
@@ -1808,12 +1813,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $magentoEventId
      * @return string
      */
-    public function getEmarsysEventApiId($magentoEventId)
+    public function getEmarsysEventApiId($magentoEventId, $storeId = null)
     {
+        if(is_null($storeId)) {
+            $storeId = $this->storeManager->getStore()->getId();
+        }
         $emarsysEventApiId = "";
         try {
             $emarsysEventsMappingCollection = $this->emarsysEventMapping->create()
                 ->getCollection()
+                ->addFieldToFilter('store_id', $storeId)
                 ->addFieldToFilter('magento_event_id', $magentoEventId);
 
             $emarsysEventsColl = $this->emarsysEventsModelFactory->create()
@@ -1943,7 +1952,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $storeScope
      * @return array
      */
-    public function getMagentoEventIdAndPath($templateId, $storeScope)
+    public function getMagentoEventIdAndPath($templateId, $storeScope, $storeId = null)
     {
         $event_id = "";
         $configPath = '';
@@ -1951,7 +1960,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $magentoEventsCollection = $this->magentoEventsCollection->create();
 
             foreach ($magentoEventsCollection as $magentoEvent) {
-                if ($this->scopeConfigInterface->getValue($magentoEvent->getConfigPath(), $storeScope) == $templateId) {
+                if ($this->scopeConfigInterface->getValue($magentoEvent->getConfigPath(), $storeScope, $storeId) == $templateId) {
                     $event_id = $magentoEvent->getId();
                     $configPath = $magentoEvent->getConfigPath();
                 }
@@ -2435,41 +2444,40 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $username
      * @param $password
      * @param $port
-     * @param $passiveMode
      * @param $ftpSsl
-     * @param $remoteDir
+     * @param $passiveMode
      * @return bool
      */
-    public function checkFtpConnection($hostname, $username, $password, $port, $passiveMode, $ftpSsl, $remoteDir)
+    public function checkFtpConnection($hostname, $username, $password, $port, $ftpSsl, $passiveMode)
     {
         $result = false;
-
         try {
             if (!$username || !$password || !$hostname || !$port) {
                 return $result;
             }
 
-            $trackErrors = ini_get('track_errors');
-            ini_set('track_errors', 1);
-
             if ($ftpSsl == 1) {
-                $connId = @ftp_ssl_connect($hostname, $port);
+                $ftpConnId = @ftp_ssl_connect($hostname, $port);
             } else {
-                $connId = @ftp_connect($hostname, $port);
+                $ftpConnId = @ftp_connect($hostname, $port);
             }
-
-            $ftpLogin = @ftp_login($connId, $username, $password);
-
-            if ($ftpLogin) {
-                $result = true;
-                @ftp_close($connId);
+            if ($ftpConnId != '') {
+                $ftpLogin = @ftp_login($ftpConnId, $username, $password);
+                if ($ftpLogin == 1) {
+                    $passsiveState = true;
+                    if ($passiveMode == 1) {
+                        $passsiveState = @ftp_pasv($ftpConnId, true);
+                    }
+                    if ($passsiveState) {
+                        $result = true;
+                        @ftp_close($ftpConnId);
+                    }
+                }
             }
         } catch (\Exception $e) {
-            $msg = $php_errormsg;
             $storeId = $this->_storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog($msg, $storeId, 'checkFtpConnection');
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'checkFtpConnection');
         }
-        ini_set('track_errors', $trackErrors);
 
         return $result;
     }

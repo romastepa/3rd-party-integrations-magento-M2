@@ -23,12 +23,12 @@ class CreditmemoExportStatus extends \Magento\Framework\Model\ResourceModel\Db\A
     protected $entityType;
 
     /**
-     * 
+     * CreditmemoExportStatus constructor.
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
      * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
-     * @param type $connectionName
+     * @param null $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,

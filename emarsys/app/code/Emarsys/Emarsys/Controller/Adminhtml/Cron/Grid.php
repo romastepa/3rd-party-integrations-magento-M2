@@ -11,7 +11,11 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class Grid extends \Magento\Backend\App\Action
+/**
+ * Class Grid
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Cron
+ */
+class Grid extends Action
 {
     /**
      * @var PageFactory
@@ -19,6 +23,7 @@ class Grid extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
+     * Grid constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */
@@ -37,16 +42,10 @@ class Grid extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-        $store = $this->getRequest()->getParam('store');
-        if ($store == '') {
-            $storeId = 1;
-        } else {
-            $storeId = $store;
-        }
-
         $resultPage = $this->resultPageFactory->create();
         $resultPage->addBreadcrumb(__('Available tasks'), __('Available tasks'));
         $resultPage->getConfig()->getTitle()->prepend(__('Available tasks'));
+
         return $resultPage;
     }
 }

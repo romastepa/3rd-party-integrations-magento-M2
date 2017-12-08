@@ -16,6 +16,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
 use Emarsys\Emarsys\Helper\Logs;
 use Magento\Config\Model\ResourceModel\Config;
+use Emarsys\Emarsys\Helper\Country as EmarsysCountryHelper;
 
 /**
  * Class Index for API credentials
@@ -57,9 +58,9 @@ class Index extends \Magento\Backend\App\Action
         StoreManagerInterface $storeManager,
         Customer $customerResourceModel,
         Logs $logsHelper,
-        Config $config
-    )
-    {
+        Config $config,
+        EmarsysCountryHelper $emarsysCountryHelper
+    ) {
         $this->emarsysHelper = $emarsysHelper;
         $this->customer = $customer;
         $this->logsHelper = $logsHelper;
@@ -67,6 +68,7 @@ class Index extends \Magento\Backend\App\Action
         $this->storeManager = $storeManager;
         $this->date = $date;
         $this->config = $config;
+        $this->emarsysCountryHelper = $emarsysCountryHelper;
         parent::__construct($context);
     }
 
@@ -131,6 +133,28 @@ class Index extends \Magento\Backend\App\Action
         $logsArray['website_id'] = $websiteId;
         $logId = $this->logsHelper->manualLogs($logsArray, 1);
 
+        $isEmarsysEnabledForStore = $this->customerResourceModel->getDataFromCoreConfig(
+            'emarsys_settings/emarsys_setting/enable',
+            $scope,
+            $websiteId
+        );
+
+        if (!$isEmarsysEnabledForStore) {
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = __('Emarsys is disabled');
+            $logsArray['description'] = __('Emarsys is disabled for the store %1', $store->getName());
+            $logsArray['action'] = 'synced to emarsys';
+            $logsArray['message_type'] = 'Error';
+            $logsArray['log_action'] = 'sync';
+            $this->logsHelper->logs($logsArray);
+            $logsArray['status'] = 'error';
+            $logsArray['messages'] = __('Initial DB data Failed');
+            $this->messageManager->addErrorMessage(__('Emarsys is disabled for the store %1', $store->getName()));
+            $this->logsHelper->manualLogsUpdate($logsArray);
+
+            return;
+        }
+
         //get these values from db
         $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url', $scope, $websiteId);
         $webDavUser = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_user', $scope, $websiteId);
@@ -166,8 +190,8 @@ class Index extends \Magento\Backend\App\Action
                     $websiteId = $this->storeManager->getStore($scopeId)->getWebsiteId();
                     $data['website'] = $websiteId;
                     if (isset($data['fromDate']) && $data['fromDate'] != '' && isset($data['toDate']) && $data['toDate'] != '') {
-                        $data['fromDate'] = date('Y-m-d H:i:s', strtotime($data['fromDate']));
-                        $data['toDate'] = date('Y-m-d H:i:s', strtotime($data['toDate']));
+                        $data['fromDate'] = $this->date->date('Y-m-d H:i:s', strtotime($data['fromDate']));
+                        $data['toDate'] = $this->date->date('Y-m-d H:i:s', strtotime($data['toDate']));
                     }
                     if ($optInStatus == 'attribute') {
                         $subscribedStatus = $data['attributevalue'];
@@ -188,7 +212,7 @@ class Index extends \Magento\Backend\App\Action
                             continue;
                         $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($att, $scopeId);
                         $headers["$att[magento_custom_attribute_id]"] = $emarsysField['name'];
-                        $headerIndex[$indexCount] = $att['magento_custom_attribute_id'];;
+                        $headerIndex[$indexCount] = $att['magento_custom_attribute_id'];
                         $indexCount++;
                     }
                 }
@@ -199,23 +223,26 @@ class Index extends \Magento\Backend\App\Action
                         $headers['magento_customer_unique_id'] = 'Magento Customer Unique ID';
                         $indexCount = $indexCount + 1;
                         $headerIndex[$indexCount] = 'magento_customer_unique_id';
-                        //$headers['opt_in'] = 'Opt-In';
+                        /*$headers['opt_in'] = 'Opt-In';
                         $indexCount = $indexCount + 1;
-                        $headerIndex[$indexCount] = 'opt_in';
-                        $headers['customer_email'] = 'Customer Email';
-                        $indexCount = $indexCount + 1;
-                        $headerIndex[$indexCount] = 'customer_email';
+                        $headerIndex[$indexCount] = 'opt_in';*/
+                        if(!in_array('Email',$headers)){
+                                    $headers['customer_email'] = 'Customer Email';
+                                    $indexCount = $indexCount + 1;
+                                    $headerIndex[$indexCount] = 'customer_email';
+                        }
                         $localFilePath = BP . "/var";
                         $outputFile = "customers_" . $this->date->date('YmdHis', time()) . "_" . $storeCode . ".csv";
                         $filePath = $outputFile; //$localFilePath . "/" . $outputFile;
                         $handle = fopen($filePath, 'w');
                         fputcsv($handle, $headers);
-                        $customerCollection = $this->customerResourceModel->getCustomerCollection($data);
+                        $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $scopeId);
                         $customerValues = array();
                         foreach ($customerCollection as $customerData) {
                             $customerLoad = $this->customer->create()->load($customerData['entity_id']);
                             $primaryBilling = $customerLoad->getPrimaryBillingAddress();
                             $primaryShipping = $customerLoad->getPrimaryshippingAddress();
+                            $mappedCountries = $this->emarsysCountryHelper->getMapping($scopeId);
                             foreach ($headers as $key => $value) {
                                 $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($key, $scopeId); //using the custom magento id from the emarsys_magento_customer_attributes table
                                 //code for the custom defined attributes in the array starts
@@ -225,7 +252,7 @@ class Index extends \Magento\Backend\App\Action
                                     $customerValues[$index] = $customerLoad->getId();
                                 } elseif ($value == "Magento Customer Unique ID") {
                                     $index = array_search($key, $headerIndex);
-                                    $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId() . "#" . $customerLoad->getStoreId();
+                                    $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId() . "#" . $customerLoad->getData('store_id');
                                 } elseif ($value == "Customer Email") {
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerLoad->getEmail();
@@ -234,15 +261,31 @@ class Index extends \Magento\Backend\App\Action
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerLoad->getData($attributeCode['attribute_code']);
                                 } elseif ($attributeCode['entity_type_id'] == 2) {
+                                    $isShippingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_shipping_') !== false) ? true : false;
+                                    $isBillingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_billing_') !== false) ? true : false;
                                     $index = array_search($key, $headerIndex);
                                     $attrVal = '';
-                                    if (isset($customerData['default_shipping']) && $customerData['default_shipping'] != NULL && $customerData['default_shipping'] != 0) {
-                                        if ($primaryShipping) {
-                                            $attrVal = $primaryShipping->getData($attributeCode['attribute_code']);
+                                    if ($isShippingAttr) {
+                                        if (isset($customerData['default_shipping']) && $customerData['default_shipping'] != NULL && $customerData['default_shipping'] != 0) {
+                                            if ($primaryShipping) {
+                                                $attrVal = $primaryShipping->getData($attributeCode['attribute_code']);
+                                                if ($attributeCode['attribute_code'] == 'country_id') {
+                                                    $attrVal = (isset($mappedCountries[$attrVal]) ? $mappedCountries[$attrVal] : '');
+                                                } elseif ($attributeCode['attribute_code'] == 'street') {
+                                                    $attrVal = str_replace("\n", ',', $attrVal);
+                                                }
+                                            }
                                         }
-                                    } elseif (isset($customerData['default_billing']) && $customerData['default_billing'] != NULL && $customerData['default_billing'] != NULL) {
-                                        if ($primaryShipping) {
-                                            $attrVal = $primaryBilling->getData($attributeCode['attribute_code']);
+                                    } elseif ($isBillingAttr) {
+                                        if (isset($customerData['default_billing']) && $customerData['default_billing'] != NULL && $customerData['default_billing'] != NULL) {
+                                            if ($primaryBilling) {
+                                                $attrVal = $primaryBilling->getData($attributeCode['attribute_code']);
+                                                if ($attributeCode['attribute_code'] == 'country_id') {
+                                                    $attrVal = (isset($mappedCountries[$attrVal]) ? $mappedCountries[$attrVal] : '');
+                                                } elseif ($attributeCode['attribute_code'] == 'street') {
+                                                    $attrVal = str_replace("\n", ',', $attrVal);
+                                                }
+                                            }
                                         }
                                     }
                                     $customerValues[$index] = $attrVal;
@@ -302,11 +345,12 @@ class Index extends \Magento\Backend\App\Action
 
                 // Upload subscriber CSV file to WebDAV server
                 $websiteStoreIds = [];
-                foreach ($this->storeManager->getStores() as $storeData) {
+                /*foreach ($this->storeManager->getStores() as $storeData) {
                     if ($data['website'] == $storeData->getWebsiteId()) {
                         $websiteStoreIds[] = $storeData->getStoreId();
                     }
-                }
+                }*/
+                $websiteStoreIds[] = $scopeId;
                 $customervalues = [];
                 $optInStatus = $data['initial_load'];
 

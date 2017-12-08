@@ -24,8 +24,6 @@ class Delete extends \Magento\Framework\App\Action\Action
      */
     protected $session;
 
-//protected $resourceConnection;
-
     /**
      * @var \Emarsys\Emarsys\Model\CustomerFactory
      */
@@ -62,8 +60,7 @@ class Delete extends \Magento\Framework\App\Action\Action
         PageFactory $resultPageFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->emarsysLogs = $emarsysLogs;
@@ -76,7 +73,6 @@ class Delete extends \Magento\Framework\App\Action\Action
         $this->date = $date;
         $this->_storeManager = $storeManager;
         $this->_resultJsonFactory = $resultJsonFactory;
-
     }
 
     /**

@@ -81,7 +81,6 @@ class EmarsysLogger extends \Magento\Backend\App\Action
         \Magento\Framework\App\Request\Http $request,
         Logger $logger
     ) {
-    
         parent::__construct($context);
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->resultPageFactory = $resultPageFactory;
@@ -129,9 +128,10 @@ class EmarsysLogger extends \Magento\Backend\App\Action
             header('Content-Length: ' . filesize($filePath));
             readfile($filePath);
         } else {
-            $this->messageManager->addSuccess(__('No Logs Found'));
+            $this->messageManager->addSuccessMessage(__('No Logs Found'));
             $resultRedirect = $this->resultRedirectFactory->create();
             $resultRedirect->setRefererOrBaseUrl();
+
             return $resultRedirect;
         }
     }

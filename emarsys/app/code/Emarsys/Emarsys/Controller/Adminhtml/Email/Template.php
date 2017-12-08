@@ -1,14 +1,14 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
- * See COPYING.txt for license details.
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Email;
 
 /**
- * System Template admin controller
- *
- * @author      Magento Core Team <core@magentocommerce.com>
+ * Class Template
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Email
  */
 class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
 {

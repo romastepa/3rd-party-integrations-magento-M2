@@ -11,9 +11,12 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
+/**
+ * Class Edit
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute
+ */
 class Edit extends \Magento\Framework\App\Action\Action
 {
-
     /**
      * @var PageFactory
      */
@@ -23,8 +26,6 @@ class Edit extends \Magento\Framework\App\Action\Action
      * @var \Magento\Backend\Model\Session
      */
     protected $session;
-
-//protected $resourceConnection;
 
     /**
      * @var \Emarsys\Emarsys\Model\CustomerFactory
@@ -62,8 +63,7 @@ class Edit extends \Magento\Framework\App\Action\Action
         PageFactory $resultPageFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->emarsysLogs = $emarsysLogs;
@@ -76,7 +76,6 @@ class Edit extends \Magento\Framework\App\Action\Action
         $this->date = $date;
         $this->_storeManager = $storeManager;
         $this->_resultJsonFactory = $resultJsonFactory;
-
     }
 
     /**

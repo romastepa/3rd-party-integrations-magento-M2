@@ -6,12 +6,17 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Emarsys\Emarsys\Helper\Data;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
 use Emarsys\Emarsys\Model\Api\Api;
 
-class Field extends \Magento\Framework\App\Helper\AbstractHelper
+/**
+ * Class Field
+ * @package Emarsys\Emarsys\Helper
+ */
+class Field extends AbstractHelper
 {
-
     /**
      * @var Logger
      */
@@ -21,27 +26,30 @@ class Field extends \Magento\Framework\App\Helper\AbstractHelper
      * @var Data
      */
     protected $dataHelper;
+
     /**
      * @var Api
      */
     protected $api;
 
+    /**
+     * @var EmarsysResourceModelCustomer
+     */
     protected $customerResourceModel;
 
     /**
-     * 
+     * Field constructor.
      * @param Data $dataHelper
      * @param Api $api
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param Customer $customer
+     * @param Context $context
+     * @param EmarsysResourceModelCustomer $customer
      */
     public function __construct(
         Data $dataHelper,
         Api $api,
-        \Magento\Framework\App\Helper\Context $context,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customer
+        Context $context,
+        EmarsysResourceModelCustomer $customer
     ) {
-    
         ini_set('default_socket_timeout', 5000);
         $this->logger = $context->getLogger();
         $this->api = $api;
@@ -50,9 +58,10 @@ class Field extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * 
-     * @param type $storeId
+     * @param $storeId
      * @return array
+     * @throws \Exception
+     * @throws \Zend_Json_Exception
      */
     public function getEmarsysOptionSchema($storeId)
     {
@@ -70,6 +79,7 @@ class Field extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             }
         }
+
         return $emarsysFieldOptions;
     }
 }

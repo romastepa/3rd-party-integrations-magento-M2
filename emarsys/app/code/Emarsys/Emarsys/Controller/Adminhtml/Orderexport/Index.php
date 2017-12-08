@@ -11,7 +11,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class Index extends \Magento\Backend\App\Action
+class Index extends Action
 {
     /**
      * @var PageFactory
@@ -19,20 +19,14 @@ class Index extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
-     * @var
-     */
-    protected $session;
-
-    /**
+     * Index constructor.
      * @param Context $context
-     * @param \Magento\Backend\Model\Session $session
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->adminSession = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -50,6 +44,7 @@ class Index extends \Magento\Backend\App\Action
         $page->addBreadcrumb(__('Log'), __('Bulk Order Export'));
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_emarsysadminindex10');
         $page->getConfig()->getTitle()->prepend(__('Bulk Order Export'));
+
         return $page;
     }
 }

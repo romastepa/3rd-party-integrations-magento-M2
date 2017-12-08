@@ -10,10 +10,20 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\ProductFactory;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ResourceModel\Product;
 
-class Save extends \Magento\Backend\App\Action
+/**
+ * Class Save
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
+ */
+class Save extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,29 +35,63 @@ class Save extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ProductFactory
+     * @var ProductFactory
      */
     protected $productFactory;
 
     /**
-     *
+     * @var EmarsysModelLogs
+     */
+    protected $emarsysLogs;
+
+    /**
+     * @var Product
+     */
+    protected $resourceModelProduct;
+
+    /**
+     * @var Data
+     */
+    protected $emsrsysHelper;
+
+    /**
+     * @var Logs
+     */
+    protected $logHelper;
+
+    /**
+     * @var DateTime
+     */
+    protected $date;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
+     * Save constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Model\ProductFactory $productFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct
+     * @param ProductFactory $productFactory
+     * @param Data $emsrsysHelper
+     * @param StoreManagerInterface $storeManager
+     * @param Logs $logHelper
+     * @param EmarsysModelLogs $emarsysLogs
+     * @param DateTime $date
+     * @param Product $resourceModelProduct
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\ProductFactory $productFactory,
-        \Emarsys\Emarsys\Helper\Data $emsrsysHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct,
+        ProductFactory $productFactory,
+        Data $emsrsysHelper,
+        StoreManagerInterface $storeManager,
+        Logs $logHelper,
+        EmarsysModelLogs $emarsysLogs,
+        DateTime $date,
+        Product $resourceModelProduct,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -61,13 +105,15 @@ class Save extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * Save Action
+     *
+     * @return $this
      */
     public function execute()
     {
         $resultRedirect = $this->resultRedirectFactory->create();
         try {
-            $savedValues= array();
+            $savedValues= [];
             $model = $this->productFactory->create();
             $session = $this->session->getData();
             $gridSessionStoreId = '';
@@ -97,7 +143,6 @@ class Save extends \Magento\Backend\App\Action
                 if ($key == '') {
                     continue;
                 }
-
                 $value['magento_attr_code'] = $key;
                 $modelColl = $model->getCollection()
                     ->addFieldToFilter('magento_attr_code', $key)
@@ -141,19 +186,16 @@ class Save extends \Magento\Backend\App\Action
             $logsArray['messages'] = 'Save Product Mapping Saved Successfully';
             $this->logHelper->logs($logsArray);
             $this->logHelper->manualLogs($logsArray);
-            $resultRedirect = $this->resultRedirectFactory->create();
-            
             /**
              * Truncating the Mapping Table first
              */
             $this->resourceModelProduct->deleteUnmappedRows($gridSessionStoreId);
-            
-            $this->messageManager->addSuccess("Product attributes Mapped successfully");
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage("Product attributes Mapped successfully");
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(),$gridSessionStoreId,'Save(Product)');
-            $this->messageManager->addError("Error occurred while mapping Product attribute");
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $gridSessionStoreId, 'Save(Product)');
+            $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

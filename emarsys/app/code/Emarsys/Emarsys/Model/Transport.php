@@ -9,6 +9,11 @@ use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
 
 class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framework\Mail\TransportInterface
 {
+    /**
+     * @var \Magento\Framework\Mail\MessageInterface
+     */
+    protected $_message;
+
     public function __construct(
         Data $dataHelper,
         customerResourceModel $customerResourceModel,
@@ -30,25 +35,32 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
 
     public function sendMessage()
     {
-
-
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $dataHelper = $objectManager->create('Emarsys\Emarsys\Helper\Data');
         $logsHelper = $objectManager->create('Emarsys\Emarsys\Helper\Logs');
         $storeManagerInterface = $objectManager->create('\Magento\Store\Model\StoreManagerInterface');
-        $store_id = $storeManagerInterface->getStore()->getId();
-        $websiteId = $storeManagerInterface->getStore()->getWebsiteId();
-        $logsArray['job_code'] = 'transactional_mail';
-        $logsArray['status'] = 'started';
-        $logsArray['messages'] = 'Transactional Email Started';
-        $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $logsArray['run_mode'] = 'Automatic';
-        $logsArray['auto_log'] = 'Complete';
-        $logsArray['store_id'] = $store_id;
 
-        $logId = $logsHelper->manualLogs($logsArray);
         try {
+            $_emarsysPlaceholdersData = $this->_message->getEmarsysData();
+
+            if (isset($_emarsysPlaceholdersData['store_id'])) {
+                $storeId = $_emarsysPlaceholdersData['store_id'];
+            } else {
+                $storeId = $storeManagerInterface->getStore()->getId();
+            }
+
+            $websiteId = $storeManagerInterface->getStore($storeId)->getWebsiteId();
+            $logsArray['job_code'] = 'transactional_mail';
+            $logsArray['status'] = 'started';
+            $logsArray['messages'] = 'Transactional Email Started';
+            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['run_mode'] = 'Automatic';
+            $logsArray['auto_log'] = 'Complete';
+            $logsArray['store_id'] = $storeId;
+
+            $logId = $logsHelper->manualLogs($logsArray);
+
             if($this->dataHelper->isEmarsysEnabled($websiteId) =='false'){
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Transactional Mails';
@@ -61,7 +73,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
                 parent::send($this->_message);
             }
 
-            $_emarsysPlaceholdersData = $this->_message->getEmarsysData();
+
             $emarsysPlaceholdersData = '';
             $emarsysApiEventID = '';
             if(is_array($_emarsysPlaceholdersData)){
@@ -84,14 +96,8 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
                 $logsHelper->logs($logsArray);
                 parent::send($this->_message);
             } else {
-                $contactApi = $objectManager->create('Emarsys\Emarsys\Model\Api\Contact');
                 $api = $objectManager->create('Emarsys\Emarsys\Model\Api\Api');
-                $storeId = $storeManagerInterface->getStore()->getId();
-                $storeCode = $storeManagerInterface->getStore()->getCode();
-                $websiteId = $storeManagerInterface->getStore()->getWebsiteId();
                 $api->setWebsiteId($websiteId);
-                $scopeConfigInterface = $objectManager->create('\Magento\Framework\App\Config\ScopeConfigInterface');
-
                 $emarsysEnable = $dataHelper->getConfigValue('transaction_mail/transactionmail/enable_customer', 'websites', $websiteId);
                 if ($emarsysEnable == '' && $websiteId == 1) {
                     $emarsysEnable = $dataHelper->getConfigValue('transaction_mail/transactionmail/enable_customer');
@@ -189,7 +195,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
                     } else {
                         $logsArray['id'] = $logId;
                         $logsArray['emarsys_info'] = 'Transactional Mails';
-                        $logsArray['description'] = 'Failed to Sync Contact to Emarsys \n Request: ' . print_r($buildRequest, true) . '\n Response: ' . print_r($response, true);
+                        $logsArray['description'] = 'Failed to Sync Contact to Emarsys.  Request: ' . print_r($buildRequest, true) . '\n Response: ' . print_r($response, true);
                         $logsArray['action'] = 'Mail Sent Fail';
                         $logsArray['message_type'] = 'Error';
                         $logsArray['log_action'] = 'False';
@@ -199,7 +205,6 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
                 }
             }
         } catch (\Exception $e) {
-            //echo $e->getMessgae();
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Emarsys Transactional Email Error';
             $logsArray['description'] = $e->getMessage() . " Due to this error, Email Sent From Magento.";
@@ -213,5 +218,13 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements \Magento\Framew
             $logId = $logsHelper->manualLogs($logsArray);
             parent::send($this->_message);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMessage()
+    {
+        return $this->_message;
     }
 }

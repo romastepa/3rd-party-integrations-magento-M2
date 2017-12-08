@@ -10,7 +10,11 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class Detail extends \Magento\Backend\App\Action
+/**
+ * Class Detail
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Logs
+ */
+class Detail extends Action
 {
     /**
      * @var PageFactory
@@ -18,6 +22,7 @@ class Detail extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
+     * Detail constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */
@@ -25,7 +30,6 @@ class Detail extends \Magento\Backend\App\Action
         Context $context,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
     }
@@ -41,6 +45,7 @@ class Detail extends \Magento\Backend\App\Action
         $resultPage = $this->resultPageFactory->create();
         $resultPage->addBreadcrumb(__('Log'), __('Log'));
         $resultPage->getConfig()->getTitle()->prepend(__('Log'));
+
         return $resultPage;
     }
 }

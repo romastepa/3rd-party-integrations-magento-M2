@@ -11,10 +11,8 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-//use Magento\Framework\Controller\ResultFactory;
 class Save extends \Magento\Framework\App\Action\Action
 {
-
     /**
      * @var PageFactory
      */
@@ -24,7 +22,6 @@ class Save extends \Magento\Framework\App\Action\Action
      * @var \Magento\Backend\Model\Session
      */
     protected $session;
-
 
     /**
      * @var \Emarsys\Emarsys\Model\CustomerFactory
@@ -42,7 +39,6 @@ class Save extends \Magento\Framework\App\Action\Action
     protected $_storeManager;
 
     /**
-     *
      * @param Context $context
      * @param \Emarsys\Emarsys\Model\CustomerFactory $customerFactory
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
@@ -61,8 +57,7 @@ class Save extends \Magento\Framework\App\Action\Action
         \Emarsys\Emarsys\Model\EmrattributeFactory $EmrattributeFactory,
         \Emarsys\Emarsys\Model\ResourceModel\Emrattribute\CollectionFactory $EmrattributeCollectionFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->emarsysLogs = $emarsysLogs;
@@ -75,7 +70,6 @@ class Save extends \Magento\Framework\App\Action\Action
         $this->date = $date;
         $this->EmrattributeCollectionFactory = $EmrattributeCollectionFactory;
         $this->_storeManager = $storeManager;
-
     }
 
     /**
@@ -93,7 +87,7 @@ class Save extends \Magento\Framework\App\Action\Action
                 $duplicateCode = $attributeCollection->addFieldToFilter('code',array('eq'=> $field_name))->addFieldToFilter('store_id',array('eq'=>$storeId))->getFirstItem()->getCode();
                 $duplicateLabel = $attributeCollection->addFieldToFilter('label',array('eq'=> $field_label))->addFieldToFilter('store_id',array('eq'=>$storeId))->getFirstItem()->getLabel();
                 if($duplicateCode || $duplicateLabel){
-                $this->messageManager->addError('Attribute with Code ' . $duplicateCode . ' and Label ' . $duplicateLabel .' has not been Created due to duplication');
+                $this->messageManager->addErrorMessage('Attribute with Code ' . $duplicateCode . ' and Label ' . $duplicateLabel .' has not been Created due to duplication');
                     continue;
                 }
                 $attribute_type = $requestParams['attribute_type'][$loop];
