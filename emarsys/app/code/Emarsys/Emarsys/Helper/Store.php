@@ -1,23 +1,32 @@
 <?php
 namespace Emarsys\Emarsys\Helper;
 
-class Store extends \Magento\Framework\View\Element\Template
+use Magento\Backend\Block\Template\Context;
+use Magento\Framework\View\Element\Template;
+
+/**
+ * Class Store
+ * @package Emarsys\Emarsys\Helper
+ */
+class Store extends Template
 {
     protected $_storeManager;
 
+    /**
+     * Store constructor.
+     * @param Context $context
+     * @param array $data
+     */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
+        Context $context,
         array $data = []
     ) {
-    
         $this->_storeManager = $context->getStoreManager();
         parent::__construct($context, $data);
     }
 
     /**
-     * Get store identifier
-     *
-     * @return  int
+     * @return int
      */
     public function getStoreId()
     {
@@ -60,9 +69,8 @@ class Store extends \Magento\Framework\View\Element\Template
 
     /**
      * Get current url for store
-     *
-     * @param bool|string $fromStore Include/Exclude from_store parameter from URL
-     * @return string
+     * @param bool $fromStore
+     * @return mixed
      */
     public function getStoreUrl($fromStore = true)
     {
@@ -71,8 +79,7 @@ class Store extends \Magento\Framework\View\Element\Template
 
     /**
      * Check if store is active
-     *
-     * @return boolean
+     * @return mixed
      */
     public function isStoreActive()
     {

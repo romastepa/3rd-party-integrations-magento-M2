@@ -63,7 +63,7 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * @param DateTime $date
      * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param type $connectionName
+     * @param null $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,

@@ -10,10 +10,20 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Customer;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Eav\Model\Entity\Attribute;
 
-class SaveSchema extends \Magento\Backend\App\Action
+/**
+ * Class SaveSchema
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
+ */
+class SaveSchema extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,48 +35,48 @@ class SaveSchema extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Helper\Customer
+     * @var
      */
     protected $customerHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     * @var EmarsysResourceModelCustomer
      */
     protected $customerResourceModel;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
-     *
-     * @var \Magento\Eav\Model\Entity\Attribute
+     * @var Attribute
      */
     protected  $attribute;
+
     /**
-     *
+     * SaveSchema constructor.
      * @param Context $context
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Helper\Customer $emarsysCustomerHelper
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel
+     * @param Customer $emarsysCustomerHelper
+     * @param EmarsysResourceModelCustomer $customerResourceModel
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Eav\Model\Entity\Attribute $attribute
+     * @param Logs $emarsysLogs
+     * @param EmarsysHelperLogs $logHelper
+     * @param DateTime $date
+     * @param StoreManagerInterface $storeManager
+     * @param Attribute $attribute
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Helper\Customer $emarsysCustomerHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
+        Customer $emarsysCustomerHelper,
+        EmarsysResourceModelCustomer $customerResourceModel,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-         \Magento\Eav\Model\Entity\Attribute $attribute
-        ) {
-    
+        Logs $emarsysLogs,
+        EmarsysHelperLogs $logHelper,
+        DateTime $date,
+        StoreManagerInterface $storeManager,
+        Attribute $attribute
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -89,8 +99,8 @@ class SaveSchema extends \Magento\Backend\App\Action
          */
         $storeId = $this->getRequest()->getParam('store');
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+        $resultRedirect = $this->resultRedirectFactory->create();
         try {
-
             $logsArray['job_code'] = 'Customer Mapping';
             $logsArray['status'] = 'started';
             $logsArray['messages'] = 'Running Update Schema';
@@ -118,16 +128,14 @@ class SaveSchema extends \Magento\Backend\App\Action
             $schemaData = $this->emarsysCustomerHelper->getEmarsysCustomerSchema($storeId);
             if ($schemaData['data'] != '') {
                 $this->customerResourceModel->updateCustomerSchema($schemaData, $storeId);
-                $this->messageManager->addSuccess('Customer schema added/updated successfully');
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addSuccessMessage('Customer schema added/updated successfully');
             } else {
-                $this->messageManager->addError($schemaData['replyText']);
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addErrorMessage($schemaData['replyText']);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'SaveSchema(Customer)');
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

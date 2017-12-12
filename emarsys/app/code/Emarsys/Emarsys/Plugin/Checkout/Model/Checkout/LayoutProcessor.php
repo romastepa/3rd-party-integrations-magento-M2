@@ -6,16 +6,17 @@
  */
 namespace Emarsys\Emarsys\Plugin\Checkout\Model\Checkout;
 
+/**
+ * Class LayoutProcessor
+ * @package Emarsys\Emarsys\Plugin\Checkout\Model\Checkout
+ */
 class LayoutProcessor
 {
     public function afterProcess(
         \Magento\Checkout\Block\Checkout\LayoutProcessor $subject,
         array $jsLayout
     ) {
-
-
         $flag = 0;
-
         $om = \Magento\Framework\App\ObjectManager::getInstance();
         $scopeConfigInterface = $om->create('\Magento\Framework\App\Config\ScopeConfigInterface');
         $storeManagerInterface = $om->create('\Magento\Store\Model\StoreManagerInterface');

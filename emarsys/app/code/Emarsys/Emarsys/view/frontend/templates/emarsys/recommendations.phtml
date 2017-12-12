@@ -10,7 +10,7 @@
 <?php $merchantId = $block->getMerchantId(); ?>
 <?php $webExtendStatus = $this->getJsEnableStatusForAllPages(); ?>
 
-    <!-- This code will embeded on all pages -->
+<!-- This code will embeded on all pages -->
 <?php if ($webExtendStatus && !empty($merchantId)): ?>
     <?php $pageHandleData = $block->getPageHandleStatus(); ?>
     <?php $triggerGoCommand = false; ?>
@@ -194,8 +194,4 @@
             }
         </style>
     <?php endif; //if ($pageHandleData['status'] == 'Valid') ?>
-
-    <?php if ($triggerGoCommand): ?>
-        <script>ScarabQueue.push(['go']);</script>
-    <?php endif; ?>
 <?php endif; ?>

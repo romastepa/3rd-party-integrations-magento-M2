@@ -28,7 +28,7 @@ class OrderExportStatus extends \Magento\Framework\Model\ResourceModel\Db\Abstra
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
      * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
-     * @param type $connectionName
+     * @param null $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,

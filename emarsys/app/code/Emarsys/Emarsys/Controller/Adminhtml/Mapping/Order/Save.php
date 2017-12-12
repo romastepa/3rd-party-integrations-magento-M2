@@ -10,8 +10,16 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\ResourceModel\Order;
 
-class Save extends \Magento\Backend\App\Action
+/**
+ * Class Save
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
+ */
+class Save extends Action
 {
     /**
      * @var PageFactory
@@ -19,29 +27,32 @@ class Save extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
+     * @var \Magento\Backend\Model\Session
      */
-
     protected $session;
 
+    /**
+     * @var Order
+     */
     protected $orderResourceModel;
 
     /**
-     *
+     * Save constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel
+     * @param StoreManagerInterface $storeManager
+     * @param DateTime $date
+     * @param Logs $logsHelper
+     * @param Order $orderResourceModel
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Helper\Logs $logsHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel
+        StoreManagerInterface $storeManager,
+        DateTime $date,
+        Logs $logsHelper,
+        Order $orderResourceModel
     ) {
-    
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
         $this->logsHelper = $logsHelper;
@@ -61,8 +72,7 @@ class Save extends \Magento\Backend\App\Action
         $session = $this->session->getData();
         if (isset($session['store'])) {
             $storeId = $session['store'];
-        }
-        if (!isset($session['store'])) {
+        } else {
             $storeId = 1;
         }
         try {
@@ -76,9 +86,11 @@ class Save extends \Magento\Backend\App\Action
             $logsArray['store_id'] = $storeId;
             $logsArray['website_id'] = $websiteId;
             $logId = $this->logsHelper->manualLogs($logsArray);
+
             $stringJSONData = json_decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
             $data = $this->orderResourceModel->insertIntoMappingTableCustomValue($stringArrayData, $storeId);
+
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Saved Order Mapping Successfully';
             $logsArray['description'] = 'Save Entries as '.print_r($stringArrayData,true);
@@ -91,11 +103,9 @@ class Save extends \Magento\Backend\App\Action
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->logs($logsArray);
             $this->logsHelper->manualLogsUpdate($logsArray);
-            $this->messageManager->addSuccess('Order attributes mapped successfully');
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage(__('Order attributes mapped successfully'));
         } catch (\Exception $e) {
-            if($logId){
+            if ($logId) {
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Save Mapping not Successful';
                 $logsArray['description'] = $e->getMessage();
@@ -108,6 +118,12 @@ class Save extends \Magento\Backend\App\Action
                 $this->logsHelper->logs($logsArray);
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
+            $this->messageManager->addErrorMessage(
+                __('There was a problem while saving the order mapping. Please refer emarsys logs for more information.')
+            );
         }
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

@@ -19,9 +19,7 @@
     <?php endif; ?>
 <?php endif; ?>
 
-<?php if ($cartData = $block->getCartItemsJsonData()): ?>
-    <script>ScarabQueue.push(["cart", [<?php echo $cartData; ?>]]);</script>
-<?php endif; ?>
+<script>ScarabQueue.push(["cart", [<?php echo $block->getCartItemsJsonData() ?>]]);</script>
 
 <?php
 $triggerGoCommand = true;
@@ -41,6 +39,8 @@ if ($orders = $block->getOrderData()) {
     }
 }
 ?>
+
+<?php echo $this->getChildHtml('emarsys.recommendations'); ?>
 
 <?php if ($triggerGoCommand): ?>
     <script>ScarabQueue.push(['go']);</script>

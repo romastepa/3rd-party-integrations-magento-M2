@@ -33,7 +33,7 @@ class Emarsysevents extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
      * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
-     * @param type $connectionName
+     * @param null $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,

@@ -167,7 +167,7 @@ class Order extends AbstractDb
             } else {
                 //else update the attribute value
                 $stmt = $this->getConnection()->query("UPDATE " . $this->getTable('emarsys_order_field_mapping') .
-                    " SET emarsys_order_field = '" . $value . "' WHERE magento_column_name = " . $key . "");
+                    " SET emarsys_order_field = " . $value . " WHERE magento_column_name = " . $key . "");
             }
         }
     }

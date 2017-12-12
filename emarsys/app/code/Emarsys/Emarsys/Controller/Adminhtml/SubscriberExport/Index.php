@@ -11,7 +11,11 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class Index extends \Magento\Backend\App\Action
+/**
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\SubscriberExport
+ */
+class Index extends Action
 {
     /**
      * @var PageFactory
@@ -24,7 +28,7 @@ class Index extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * 
+     * Index constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */
@@ -32,7 +36,6 @@ class Index extends \Magento\Backend\App\Action
         Context $context,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->adminSession = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -50,6 +53,7 @@ class Index extends \Magento\Backend\App\Action
         $page->addBreadcrumb(__('Log'), __('Bulk Subscriber Export'));
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_emarsysadminindex9');
         $page->getConfig()->getTitle()->prepend(__('Bulk Subscriber Export'));
+
         return $page;
     }
 }

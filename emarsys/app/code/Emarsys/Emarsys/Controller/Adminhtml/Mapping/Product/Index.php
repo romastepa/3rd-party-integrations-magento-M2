@@ -9,27 +9,35 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Data;
 
-class Index extends \Magento\Backend\App\Action
+/**
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
+ */
+class Index extends Action
 {
-
     /**
      * @var PageFactory
      */
     protected $resultPageFactory;
 
     /**
-     * 
+     * @var Data
+     */
+    protected $emarsysHelper;
+
+    /**
+     * Index constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
+     * @param Data $emarsysHelper
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
+        Data $emarsysHelper,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
@@ -47,11 +55,12 @@ class Index extends \Magento\Backend\App\Action
         $store = $this->getRequest()->getParam('store');
         if (!$store) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
-            return $this->resultRedirectFactory->create()->setUrl($this->getUrl('*/*',array('store'=>$storeId)));
+            return $this->resultRedirectFactory->create()->setUrl($this->getUrl('*/*', ['store' => $storeId]));
         }
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_emarsysadminindex5');
         $resultPage->addBreadcrumb(__('Emarsys - Product Mapping'), __('Emarsys - Product Mapping'));
         $resultPage->getConfig()->getTitle()->prepend(__('Emarsys - Product Mapping'));
+
         return $resultPage;
     }
 }

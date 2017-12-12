@@ -6,32 +6,35 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-/**
- * Custom Module Email helper
- */
-class Email extends \Magento\Framework\App\Helper\AbstractHelper
-{
-    /* Here section and group refer to name of section and group where you create this field in configuration*/
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
 
+/**
+ * Class Email
+ * @package Emarsys\Emarsys\Helper
+ */
+class Email extends AbstractHelper
+{
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
      */
     protected $_scopeConfig;
 
     /**
-     * Store manager
-     *
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
-     * @var \Magento\Framework\Translate\Inline\StateInterface
+     * @var StateInterface
      */
     protected $inlineTranslation;
 
     /**
-     * @var \Magento\Framework\Mail\Template\TransportBuilder
+     * @var TransportBuilder
      */
     protected $_transportBuilder;
 
@@ -40,14 +43,21 @@ class Email extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $temp_id;
 
+    /**
+     * Email constructor.
+     * @param Context $context
+     * @param StoreManagerInterface $storeManager
+     * @param StateInterface $inlineTranslation
+     * @param TransportBuilder $transportBuilder
+     */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation,
-        \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder
+        Context $context,
+        StoreManagerInterface $storeManager,
+        StateInterface $inlineTranslation,
+        TransportBuilder $transportBuilder
     ) {
-        $this->_scopeConfig = $context->getScopeConfig();
         parent::__construct($context);
+        $this->_scopeConfig = $context->getScopeConfig();
         $this->_storeManager = $storeManager;
         $this->inlineTranslation = $inlineTranslation;
         $this->_transportBuilder = $transportBuilder;
@@ -55,9 +65,8 @@ class Email extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Return store configuration value of your template field that which id you set for template
-     *
-     * @param string $path
-     * @param int $storeId
+     * @param $path
+     * @param $storeId
      * @return mixed
      */
     protected function getConfigValue($path, $storeId)
@@ -71,40 +80,38 @@ class Email extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Return store
-     *
-     * @return Store
+     * @return \Magento\Store\Api\Data\StoreInterface
      */
     public function getStore()
     {
         return $this->_storeManager->getStore();
     }
 
-
     /**
      * @param int $storeId
      * @param $templateParams
      * @param $sender
-     * @param $recieverInfo
+     * @param $reciever
      */
     public function sendEmail($storeId = 1, $templateParams, $sender, $reciever)
     {
         $templateOptions = [
-                        'area' =>  \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-                        'store' => $storeId];
+            'area' =>  \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+            'store' => $storeId
+        ];
 
         $templateVars = $templateParams;
         $from = $sender;
         $to = $reciever;
 
         $this->inlineTranslation->suspend();
-
         $transport = $this->_transportBuilder->setTemplateIdentifier('help_email_template_id')
                                 ->setTemplateOptions($templateOptions)
                                 ->setTemplateVars($templateVars)
                                 ->setFrom($from)
                                 ->addTo($to)
                                 ->getTransport();
-                            $transport->sendMessage();
+        $transport->sendMessage();
         $this->inlineTranslation->resume();
     }
 }

@@ -34,7 +34,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
      * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
      * @param \Magento\Framework\Message\ManagerInterface $messageManager
-     * @param type $connectionName
+     * @param null $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,
@@ -169,7 +169,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             $result = $this->getConnection()->query($query);
             return $result;
         } catch (\Exception $e) {
-            $this->messageManager->addError($e->getMessage());
+            $this->messageManager->addErrorMessage($e->getMessage());
         }
     }
 }

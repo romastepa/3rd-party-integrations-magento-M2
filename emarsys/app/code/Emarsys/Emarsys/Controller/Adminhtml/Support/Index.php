@@ -10,7 +10,11 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-class Index extends \Magento\Backend\App\Action
+/**
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Support
+ */
+class Index extends Action
 {
     /**
      * @var PageFactory
@@ -23,6 +27,7 @@ class Index extends \Magento\Backend\App\Action
     protected $session;
 
     /**
+     * Index constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */
@@ -30,7 +35,6 @@ class Index extends \Magento\Backend\App\Action
         Context $context,
         PageFactory $resultPageFactory
     ) {
-    
         parent::__construct($context);
         $this->adminSession = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -47,6 +51,7 @@ class Index extends \Magento\Backend\App\Action
         $page = $this->resultPageFactory->create();
         $page->getLayout()->getBlock("head");
         $this->_setActiveMenu('Emarsys_Emarsys::support');
+
         return $page;
     }
 }

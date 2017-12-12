@@ -162,16 +162,9 @@ class Product extends AbstractModel
         $storeCode = $store->getCode();
         $scope = 'websites';
 
-        if (is_null($includeBundle)) {
-            $includeBundle = $this->scopeConfig->getValue('emarsys_predict/feed_export/include_bundle_product', $scope, $websiteId);
-        }
-        if (is_null($excludedCategories)) {
-            $excludedCategories = $this->scopeConfig->getValue('emarsys_predict/feed_export/excludedcategories', $scope, $websiteId);
-        }
-
         $logsArray['job_code'] = 'product';
         $logsArray['status'] = 'started';
-        $logsArray['messages'] = __('bulk product export started');
+        $logsArray['messages'] = __('Bulk product export started');
         $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logsArray['run_mode'] = $mode;
         $logsArray['auto_log'] = 'Complete';
@@ -179,6 +172,35 @@ class Product extends AbstractModel
         $logsArray['website_id'] = $websiteId;
         $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logId = $this->logsHelper->manualLogs($logsArray, 1);
+
+        $isEmarsysEnabledForStore = $this->customerResourceModel->getDataFromCoreConfig(
+            'emarsys_settings/emarsys_setting/enable',
+            $scope,
+            $websiteId
+        );
+
+        if (!$isEmarsysEnabledForStore) {
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = __('Emarsys is disabled');
+            $logsArray['description'] = __('Emarsys is disabled for the store %1', $store->getName());
+            $logsArray['action'] = 'synced to emarsys';
+            $logsArray['message_type'] = 'Error';
+            $logsArray['log_action'] = 'sync';
+            $this->logsHelper->logs($logsArray);
+            $logsArray['status'] = 'error';
+            $logsArray['messages'] = __('Catalog Bulk Export Failed');
+            $this->messageManager->addErrorMessage(__('Emarsys is disabled for the store %1', $store->getName()));
+            $this->logsHelper->manualLogsUpdate($logsArray);
+
+            return;
+        }
+
+        if (is_null($includeBundle)) {
+            $includeBundle = $this->scopeConfig->getValue('emarsys_predict/feed_export/include_bundle_product', $scope, $websiteId);
+        }
+        if (is_null($excludedCategories)) {
+            $excludedCategories = $this->scopeConfig->getValue('emarsys_predict/feed_export/excludedcategories', $scope, $websiteId);
+        }
 
         $hostname = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_HOSTNAME, $scope, $websiteId);
         $port = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PORT, $scope, $websiteId);
@@ -195,14 +217,14 @@ class Product extends AbstractModel
         }
 
         if ($errorStatus != 1) {
+            //check ftp connection using ftp credentials
             $checkFtpConnection = $this->emarsysHelper->checkFtpConnection(
                 $hostname,
                 $username,
                 $password,
                 $port,
-                $passiveMode,
                 $ftpSsl,
-                $bulkDir
+                $passiveMode
             );
 
             if ($checkFtpConnection) {
@@ -329,8 +351,6 @@ class Product extends AbstractModel
                             @ftp_mkdir($ftpConnection, $remoteDirPath);
                         }
                         @ftp_chdir($ftpConnection, '/');
-                        $trackErrors = ini_get('track_errors');
-                        ini_set('track_errors', 1);
 
                         if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
                             $logsArray['id'] = $logId;
@@ -347,8 +367,8 @@ class Product extends AbstractModel
                                 );
                             }
                         } else {
-                            $msg = $php_errormsg;
-                            ini_set('track_errors', $trackErrors);
+                            $errorMessage = error_get_last();
+                            $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
                             $logsArray['id'] = $logId;
                             $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
                             $logsArray['description'] = __('Failed to upload file on FTP server %1' , $msg);
@@ -363,7 +383,6 @@ class Product extends AbstractModel
                                 );
                             }
                         }
-                        ini_set('track_errors', $trackErrors);
                         unlink($filePath);
                         $errorCount = 0;
                     } else {

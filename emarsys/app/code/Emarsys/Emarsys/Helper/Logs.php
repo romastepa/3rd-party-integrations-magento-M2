@@ -7,14 +7,27 @@
 
 namespace Emarsys\Emarsys\Helper;
 
+use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\App\Helper\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\CronScheduleFactory;
+use Emarsys\Emarsys\Model\LogsFactory;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Framework\Registry;
 
-class Logs extends \Magento\Framework\App\Helper\AbstractHelper
+/**
+ * Class Logs
+ * @package Emarsys\Emarsys\Helper
+ */
+class Logs extends AbstractHelper
 {
     /**
-     * @var \Emarsys\Emarsys\Model\CronScheduleFactory
+     * @var CronScheduleFactory
      */
     protected $cronScheduleFactory;
 
@@ -24,7 +37,7 @@ class Logs extends \Magento\Framework\App\Helper\AbstractHelper
     protected $cronSchedule = null;
 
     /**
-     * @var \Emarsys\Log\Model\CategoryFactory
+     * @var LogsFactory
      */
     protected $logsFactory;
 
@@ -32,36 +45,37 @@ class Logs extends \Magento\Framework\App\Helper\AbstractHelper
      * @var ScopeConfigInterface
      */
     protected $scopeConfigInterface;
+
     /**
      * @var
      */
     protected $logsModel;
-    /**
-     * @var \Emarsys\Emarsys\Helper\Data
-     */
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Emarsys\Emarsys\Model\CronScheduleFactory $cronScheduleFactory
-     * @param \Emarsys\Emarsys\Model\LogsFactory $logsFactory
-     * @param \Emarsys\Emarsys\Model\Logs $logsModel
+     * Logs constructor.
+     * @param Context $context
+     * @param StoreManagerInterface $storeManager
+     * @param CronScheduleFactory $cronScheduleFactory
+     * @param LogsFactory $logsFactory
+     * @param EmarsysModelLogs $logsModel
      * @param DateTime $date
+     * @param StateInterface $inlineTranslation
+     * @param TransportBuilder $transportBuilder
+     * @param Registry $registry
      * @param ObjectManagerInterface $objectManagerInterface
-     * @param ScopeConfigInterface $scopeConfigInterface
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\CronScheduleFactory $cronScheduleFactory,
-        \Emarsys\Emarsys\Model\LogsFactory $logsFactory,
-        \Emarsys\Emarsys\Model\Logs $logsModel,
+        Context $context,
+        StoreManagerInterface $storeManager,
+        CronScheduleFactory $cronScheduleFactory,
+        LogsFactory $logsFactory,
+        EmarsysModelLogs $logsModel,
         DateTime $date,
-        \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation,
-        \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder,
-        \Magento\Framework\Registry $registry,
+        StateInterface $inlineTranslation,
+        TransportBuilder $transportBuilder,
+        Registry $registry,
         ObjectManagerInterface $objectManagerInterface
     ) {
-    
         $this->cronScheduleFactory = $cronScheduleFactory;
         $this->logsFactory = $logsFactory;
         $this->date = $date;
@@ -132,13 +146,9 @@ class Logs extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    /*
-     * 
-     */
-
     /**
-     * function for updating latest saving manual log record in cron scheduler
-     * @param type $logsArray
+     * Update latest saving manual log record in cron scheduler
+     * @param array $logsArray
      * @return string
      */
     public function manualLogsUpdate($logsArray = [])
@@ -222,10 +232,8 @@ class Logs extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * 
-     * @param type $title
-     * @param type $errorMsg
-     * @return array
+     * @param $title
+     * @param $errorMsg
      */
     public function errorLogEmail($title, $errorMsg)
     {
@@ -270,10 +278,14 @@ class Logs extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param $logId
+     * @param $mesage
+     * @param $websiteId
+     */
     public function childLogs($logId, $mesage, $websiteId)
     {
         try {
-
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Backgroud Time Based Optin Sync Success';
             $logsArray['description'] = $mesage;
@@ -286,7 +298,5 @@ class Logs extends \Magento\Framework\App\Helper\AbstractHelper
         } catch (\Exception $e) {
             $this->_logger->debug($e->getMessage());
         }
-
     }
-
 }

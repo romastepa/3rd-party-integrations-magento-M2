@@ -8,44 +8,47 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Testconnection;
 
 use Emarsys\Emarsys\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Backend\App\Action\Context;
+use Emarsys\Emarsys\Helper\Logs as EmarsysLogs;
+use Magento\Config\Model\ResourceModel\Config;
+use Magento\Backend\App\Action;
 
 /**
- * Class TestConnection for API credentials
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Testconnection
  */
-class Index extends \Magento\Backend\App\Action
+class Index extends Action
 {
-
     /**
      * @var Data
      */
     protected $emarsysHelper;
 
     /**
-     * @var \Magento\Config\Model\ResourceModel\Config
+     * @var Config
      */
     protected $config;
 
     /**
-     * @var \Emarsys\Emarsys\Helper\Logs
+     * @var EmarsysLogs
      */
     protected $logsHelper;
 
     /**
-     * 
+     * Index constructor.
      * @param Data $emarsysHelper
-     * @param \Magento\Backend\App\Action\Context $context
+     * @param Context $context
      * @param DateTime $date
-     * @param \Emarsys\Emarsys\Helper\Logs $logsHelper
-     * @param \Magento\Config\Model\ResourceModel\Config $config
+     * @param EmarsysLogs $logsHelper
+     * @param Config $config
      */
     public function __construct(
         Data $emarsysHelper,
-        \Magento\Backend\App\Action\Context $context,
+        Context $context,
         DateTime $date,
-        \Emarsys\Emarsys\Helper\Logs $logsHelper,
-        \Magento\Config\Model\ResourceModel\Config $config
+        EmarsysLogs $logsHelper,
+        Config $config
     ) {
-    
         $this->emarsysHelper = $emarsysHelper;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
@@ -103,6 +106,7 @@ class Index extends \Magento\Backend\App\Action
 
             if ($jsonDecode['replyCode'] == 0 && $jsonDecode['replyText'] == "OK") {
                 try {
+                    //save information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/enable', 1, $scopeType, $scopeId);
                     if ($website == 1) {
                         $this->config->saveConfig('emarsys_settings/emarsys_setting/enable', 1, $defaultScopeType, $defaultScopeId);
@@ -116,6 +120,7 @@ class Index extends \Magento\Backend\App\Action
                     $logsArray['log_action'] = 'sync';
                     $this->logsHelper->logs($logsArray);
 
+                    //save api_endpoint information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $endpoint, $scopeType, $scopeId);
                     if ($website == 1) {
                         $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $endpoint, $defaultScopeType, $defaultScopeId);
@@ -130,6 +135,7 @@ class Index extends \Magento\Backend\App\Action
                     $this->logsHelper->logs($logsArray);
 
                     if ($endpoint == 'custom') {
+                        //save custom_url information in respected configuration.
                         $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_custom_url', $url, $scopeType, $scopeId);
                         if ($website == 1) {
                             $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_custom_url', $url, $defaultScopeType, $defaultScopeId);
@@ -143,6 +149,7 @@ class Index extends \Magento\Backend\App\Action
                         $this->logsHelper->logs($logsArray);
                     }
 
+                    //save api username information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_username', $username, $scopeType, $scopeId);
                     if ($website == 1) {
                         $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_username', $username, $defaultScopeType, $defaultScopeId);
@@ -155,6 +162,7 @@ class Index extends \Magento\Backend\App\Action
                     $logsArray['log_action'] = 'sync';
                     $this->logsHelper->logs($logsArray);
 
+                    //save api password information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_password', $password, $scopeType, $scopeId);
                     if ($website == 1) {
                         $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_password', $password, $defaultScopeType, $defaultScopeId);
@@ -166,8 +174,7 @@ class Index extends \Magento\Backend\App\Action
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'sync';
                     $this->logsHelper->logs($logsArray);
-
-                    $this->messageManager->addSuccess('Test connection is success.');
+                    $this->messageManager->addSuccessMessage('Test connection is successful.');
 
                     $logsArray['id'] = $logId;
                     $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -176,8 +183,8 @@ class Index extends \Magento\Backend\App\Action
                     $logsArray['messages'] = 'Test connection Completed';
                     $this->logsHelper->manualLogsUpdate($logsArray);
                 } catch (\Exception $e) {
-                    $this->messageManager->addError($e->getMessage());
-                    $this->messageManager->addError('Test connection is failed.');
+                    $this->messageManager->addErrorMessage($e->getMessage());
+                    $this->messageManager->addErrorMessage('Test connection is failed.');
                     $logsArray['id'] = $logId;
                     $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                     $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -186,7 +193,8 @@ class Index extends \Magento\Backend\App\Action
                     $this->logsHelper->manualLogsUpdate($logsArray);
                 }
             } else {
-                $this->messageManager->addError('Test connection is failed. Please check credentials.');
+                //test api connecton failed.
+                $this->messageManager->addErrorMessage('Test connection is failed. Please check credentials.');
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -195,7 +203,8 @@ class Index extends \Magento\Backend\App\Action
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
         } else {
-            $this->messageManager->addError('Please enter the api credentials');
+            //no api credentials found.
+            $this->messageManager->addErrorMessage('Please enter the api credentials');
             $logsArray['id'] = $logId;
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -205,6 +214,10 @@ class Index extends \Magento\Backend\App\Action
         }
     }
 
+    /**
+     * @param $x
+     * @return bool
+     */
     public function is_json($x)
     {
         if (!is_string($x) || !trim($x)) {

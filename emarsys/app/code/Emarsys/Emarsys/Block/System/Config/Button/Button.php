@@ -15,14 +15,12 @@ class Button extends \Magento\Config\Block\System\Config\Form\Field
 
     /**
      * Test Connection Button Label
-     *
      * @var string
      */
     protected $_testConnectionButtonLabel = 'Export customers';
 
     /**
      * Set template to itself
-     *
      * @return $this
      */
     protected function _prepareLayout()
@@ -49,13 +47,11 @@ class Button extends \Magento\Config\Block\System\Config\Form\Field
 
     /**
      * Get the button and scripts contents
-     *
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return string
      */
     protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
-
         $originalData = $element->getOriginalData();
         $buttonLabel = !empty($originalData['button_label']) ? $originalData['button_label'] : $this->_testConnectionButtonLabel;
         $this->addData(

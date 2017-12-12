@@ -10,10 +10,20 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\CustomerFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\Logs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
 
-class Save extends \Magento\Backend\App\Action
+/**
+ * Class Save
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
+ */
+class Save extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,41 +35,43 @@ class Save extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\CustomerFactory
+     * @var CustomerFactory
      */
     protected $customerFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     * @var Customer
      */
     protected $resourceModelCustomer;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
-   /**
-    *
-    * @param Context $context
-    * @param \Emarsys\Emarsys\Model\CustomerFactory $customerFactory
-    * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
-    * @param PageFactory $resultPageFactory
-    * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-    */
+    /**
+     * Save constructor.
+     * @param Context $context
+     * @param CustomerFactory $customerFactory
+     * @param Customer $resourceModelCustomer
+     * @param Data $emsrsysHelper
+     * @param EmarsysHelperLogs $logHelper
+     * @param Logs $emarsysLogs
+     * @param DateTime $date
+     * @param PageFactory $resultPageFactory
+     * @param StoreManagerInterface $storeManager
+     */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\CustomerFactory $customerFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
-        \Emarsys\Emarsys\Helper\Data $emsrsysHelper,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
+        CustomerFactory $customerFactory,
+        Customer $resourceModelCustomer,
+        Data $emsrsysHelper,
+        EmarsysHelperLogs $logHelper,
+        Logs $emarsysLogs,
+        DateTime $date,
         PageFactory $resultPageFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
-
-    )
-    {
+        StoreManagerInterface $storeManager
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->emarsysLogs = $emarsysLogs;
@@ -70,7 +82,6 @@ class Save extends \Magento\Backend\App\Action
         $this->logHelper = $logHelper;
         $this->date = $date;
         $this->_storeManager = $storeManager;
-
     }
 
     /**
@@ -81,7 +92,7 @@ class Save extends \Magento\Backend\App\Action
         $session = $this->session->getData();
         if (isset($session['store'])) {
             $storeId = $session['store'];
-        }else{
+        } else {
             $storeId = $this->emsrsysHelper->getFirstStoreId();
         }
         try {
@@ -99,35 +110,33 @@ class Save extends \Magento\Backend\App\Action
             $logId = $this->logHelper->manualLogs($logsArray);
             $stringJSONData = json_decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
-            foreach ($stringArrayData as $key=>$value)
-            {
+
+            foreach ($stringArrayData as $key => $value) {
                 $customId = $this->resourceModelCustomer->getCustAttIdByCode($key,$storeId);
                 $magentoAttributeId = $this->resourceModelCustomer->getCustomerAttributeId($key);
                 $attData = $this->customerFactory->create()->getCollection()->addFieldToFilter('store_id', array('eq'=>$storeId))->addFieldToFilter('magento_custom_attribute_id',array('eq'=>$customId['id']));
-                if (is_array($attData->getData()) && !empty($attData->getData()) )
-                {
+
+                if (is_array($attData->getData()) && !empty($attData->getData())) {
                     $attDataAll = $attData->getData();
                     $attModel = $this->customerFactory->create()->load($attDataAll[0]['id']);
-                     if($value == ' '){
+                     if ($value == ' ') {
                          $savedFields[] = $value;
-                        $attModel->setData('emarsys_contact_field',NULL);
-                     }else {
+                         $attModel->setData('emarsys_contact_field',NULL);
+                     } else {
                          $savedFields[] = $value;
                          $attModel->setData('emarsys_contact_field', $value);
                      }
-                    $attModel->setData('magento_custom_attribute_id',$customId['id']);
-                    $attModel->setData('magento_attribute_id',$magentoAttributeId);
-                    $attModel->setData('store_id',$storeId);
+                    $attModel->setData('magento_custom_attribute_id', $customId['id']);
+                    $attModel->setData('magento_attribute_id', $magentoAttributeId);
+                    $attModel->setData('store_id', $storeId);
                     $attModel->save();
-                }
-                else
-                {
+                } else {
                     $attModel = $this->customerFactory->create();
-                     if($value == ' '){
+                     if ($value == ' ') {
                          $savedFields[] = $value;
                         $attModel->setData('emarsys_contact_field',NULL);
 
-                     }else {
+                     } else {
                          $savedFields[] = $value;
                          $attModel->setData('emarsys_contact_field', $value);
                      }
@@ -137,9 +146,9 @@ class Save extends \Magento\Backend\App\Action
                     $attModel->save();
                 }
             }
-            if($savedFields){
+            if ($savedFields) {
                 $logsArray['description'] = 'Saved Fields Id(s) '.print_r(implode(",",$savedFields),true);
-            }else{
+            } else {
                 $logsArray['description'] = 'Customer Mapping Saved';
             }
             $logsArray['id'] = $logId;
@@ -153,14 +162,13 @@ class Save extends \Magento\Backend\App\Action
             $logsArray['messages'] = 'Save Customer Mapping Saved Successfully';
             $this->logHelper->logs($logsArray);
             $this->logHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccess('Customer attributes mapped successfully');
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addSuccessMessage('Customer attributes mapped successfully');
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'SaveSchema(Customer)');
-            $this->messageManager->addError('("Error occurred while mapping Customer attribute');
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage('("Error occurred while mapping Customer attribute');
         }
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

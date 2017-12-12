@@ -10,10 +10,20 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\FieldFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Field;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
-class SaveRecommended extends \Magento\Backend\App\Action
+/**
+ * Class SaveRecommended
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
+ */
+class SaveRecommended extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,46 +35,63 @@ class SaveRecommended extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\CustomerFactory
+     * @var DateTime
+     */
+    protected $date;
+
+    /**
+     * @var FieldFactory
      */
     protected $fieldFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Field
+     * @var Field
      */
     protected $resourceModelField;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var ScopeConfigInterface
      */
     protected $scopeConfigInterface;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
+     * @var EmarsysModelLogs
+     */
+    protected $emarsysLogs;
+
+    /**
+     * @var Logs
+     */
+    protected $logHelper;
+
+    /**
+     * SaveRecommended constructor.
      * @param Context $context
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\FieldFactory $fieldFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField
+     * @param FieldFactory $fieldFactory
+     * @param Field $resourceModelField
      * @param PageFactory $resultPageFactory
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Logs $logHelper
+     * @param DateTime $date
+     * @param EmarsysModelLogs $emarsysLogs
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\FieldFactory $fieldFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField,
+        FieldFactory $fieldFactory,
+        Field $resourceModelField,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        Logs $logHelper,
+        DateTime $date,
+        EmarsysModelLogs $emarsysLogs,
+        ScopeConfigInterface $scopeConfigInterface,
+        StoreManagerInterface $storeManager
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -84,6 +111,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
     {
         $storeId = $this->getRequest()->getParam('store');
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+        $resultRedirect = $this->resultRedirectFactory->create();
         try {
             $logsArray['job_code'] = 'Customer Filed Mapping';
             $logsArray['status'] = 'started';
@@ -121,9 +149,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 $logsArray['messages'] = 'Saved Recommended Mapping Successful';
                 $this->logHelper->logs($logsArray);
                 $this->logHelper->manualLogs($logsArray);
-                $this->messageManager->addSuccess("Recommended Customer-Field attributes mapped successfully");
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addSuccessMessage("Recommended Customer-Field attributes mapped successfully");
             } else {
                 $logId = $this->logHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
@@ -138,15 +164,13 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 $logsArray['messages'] = 'Saved Recommended Mapping Completed';
                 $this->logHelper->logs($logsArray);
                 $this->logHelper->manualLogs($logsArray);
-                $this->messageManager->addError("No Recommendations are added");
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addErrorMessage("No Recommendations are added");
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveRecommended (Customer Filed)');
-            $this->messageManager->addError("Error occurred while mapping Customer-Field");
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage("Error occurred while mapping Customer-Field");
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

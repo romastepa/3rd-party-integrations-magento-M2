@@ -10,10 +10,19 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Event;
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\ResourceModel\Event as EmarsysResourceModelEvent;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
 
-class SaveSchema extends \Magento\Backend\App\Action
+/**
+ * Class SaveSchema
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
+ */
+class SaveSchema extends Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,42 +34,41 @@ class SaveSchema extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Helper\Customer
+     * @var
      */
     protected $customerHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     * @var
      */
     protected $customerResourceModel;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
-     * 
+     * SaveSchema constructor.
      * @param Context $context
-     * @param \Emarsys\Emarsys\Helper\Event $eventHelper
-     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel
+     * @param Event $eventHelper
+     * @param Data $emarsysHelper
+     * @param EmarsysResourceModelEvent $eventResourceModel
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Emarsys\Helper\Logs $logHelper
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Logs $logHelper
+     * @param DateTime $date
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Helper\Event $eventHelper,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Event $eventResourceModel,
+        Event $eventHelper,
+        Data $emarsysHelper,
+        EmarsysResourceModelEvent $eventResourceModel,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        Logs $logHelper,
+        DateTime $date,
+        StoreManagerInterface $storeManager
     ) {
-    
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -72,45 +80,45 @@ class SaveSchema extends \Magento\Backend\App\Action
         $this->emarsysHelper = $emarsysHelper;
     }
 
+    /**
+     * SaveSchema Action
+     * @return $this
+     */
     public function execute()
     {
         $storeId = $this->getRequest()->getParam('store');
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
-        try{
-        $logsArray['job_code'] = 'Event Mapping';
-        $logsArray['status'] = 'started';
-        $logsArray['messages'] = 'Running Update Schema';
-        $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $logsArray['run_mode'] = 'Automatic';
-        $logsArray['auto_log'] = 'Complete';
-        $logsArray['store_id'] = $storeId;
-            if($this->emarsysHelper->isEmarsysEnabled($websiteId)=='false'){
-                $logsArray['messages'] = 'Emarsys is not Enabled for this Store';
-                $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $resultRedirect = $this->resultRedirectFactory->create();
-                $logId = $this->logHelper->manualLogs($logsArray);
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = 'Update Schema';
-                $logsArray['description'] ='Update Schema was not Successful';
-                $logsArray['action'] = 'Schame Updated';
-                $logsArray['message_type'] = 'Emarsys was not Enabled';
-                $logsArray['log_action'] = 'True';
-                $logsArray['website_id'] = $websiteId;
-                $this->logHelper->logs($logsArray);
-                $this->messageManager->addError('Emarsys is not Enabled for this store');
-                return $resultRedirect->setRefererOrBaseUrl();
-            }
-        $logId = $this->logHelper->manualLogs($logsArray);
-        $this->emarsysHelper->importEvents($logId);
-        $this->messageManager->addSuccess('Event schema added/updated successfully');
         $resultRedirect = $this->resultRedirectFactory->create();
-        return $resultRedirect->setRefererOrBaseUrl();
-        /**
-         * To Get the schema from Emarsys and add/update in magento mapping table
-         */
-        }catch (\Exception $e){
+        try {
+            $logsArray['job_code'] = 'Event Mapping';
+            $logsArray['status'] = 'started';
+            $logsArray['messages'] = 'Running Update Schema';
+            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $logsArray['run_mode'] = 'Automatic';
+            $logsArray['auto_log'] = 'Complete';
+            $logsArray['store_id'] = $storeId;
+                if ($this->emarsysHelper->isEmarsysEnabled($websiteId) == 'false') {
+                    $logsArray['messages'] = 'Emarsys is not Enabled for this Store';
+                    $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+                    $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+                    $logId = $this->logHelper->manualLogs($logsArray);
+                    $logsArray['id'] = $logId;
+                    $logsArray['emarsys_info'] = 'Update Schema';
+                    $logsArray['description'] ='Update Schema was not Successful';
+                    $logsArray['action'] = 'Schame Updated';
+                    $logsArray['message_type'] = 'Emarsys was not Enabled';
+                    $logsArray['log_action'] = 'True';
+                    $logsArray['website_id'] = $websiteId;
+                    $this->logHelper->logs($logsArray);
+                    $this->messageManager->addErrorMessage('Emarsys is not Enabled for this store');
+
+                    return $resultRedirect->setRefererOrBaseUrl();
+                }
+            $logId = $this->logHelper->manualLogs($logsArray);
+            $this->emarsysHelper->importEvents($logId);
+            $this->messageManager->addSuccessMessage('Event schema added/updated successfully');
+        } catch (\Exception $e) {
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Update Schema';
             $logsArray['description'] = $e->getMessage();
@@ -119,9 +127,9 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['log_action'] = 'True';
             $logsArray['website_id'] = $websiteId;
             $this->logHelper->logs($logsArray);
-            $this->messageManager->addError('Error occurred while Updating Schema'.$e->getMessage());
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage('Error occurred while Updating Schema' . $e->getMessage());
         }
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

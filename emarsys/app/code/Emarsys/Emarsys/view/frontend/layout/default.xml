@@ -3,13 +3,10 @@
     <body>
         <referenceContainer name="content.bottom">
             <container name="emarsys.wrapper" htmlTag="div" htmlClass="emarsys-wrapper" after="-" >
-                <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/webextend.phtml" name="webextend" after="-" cacheable="false" >
-                    <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/javascripttracking.phtml" name="webextend.script" >
-                        <action method="setCacheLifetime"><lifetime>1</lifetime></action>
+                <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/webextend.phtml" name="webextend" after="-">
+                    <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/javascripttracking.phtml" name="emarsys.javascripttracking" >
+                        <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/recommendations.phtml" name="emarsys.recommendations" />
                     </block>
-                </block>
-                <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/recommendations.phtml" name="recommendations.script" after="webextend"  >
-                    <action method="setCacheLifetime"><lifetime>1</lifetime></action>
                 </block>
             </container>
         </referenceContainer>

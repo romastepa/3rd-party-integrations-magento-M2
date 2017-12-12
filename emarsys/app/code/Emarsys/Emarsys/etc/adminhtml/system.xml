@@ -126,12 +126,11 @@
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\FtpTestConnection</frontend_model>
                 </field>
                 <field id="apiurl" type="hidden" sortOrder="45" showInDefault="1" showInWebsite="0"
-                       showInStore="0">                   
+                       showInStore="0">
                 </field>
             </group>
         </section>
-        <section id="contacts_synchronization" translate="label" type="text" sortOrder="10" showInDefault="1"
-                 showInWebsite="1" showInStore="0">
+        <section id="contacts_synchronization" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Contact Synchronization</label>
             <tab>emarsys_connect</tab>
@@ -160,7 +159,6 @@
                     <label>Unique Field</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\Uniquefield</source_model>
                 </field>
-
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="1"
                        showInWebsite="0" showInStore="0">
                     <label>Notification secret key</label>
@@ -180,8 +178,7 @@
                 </field>
             </group>
         </section>
-        <section id="opt_in" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="opt_in" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Opt-In</label>
             <tab>emarsys_connect</tab>
@@ -267,8 +264,7 @@
                 </field>
             </group>
         </section>
-        <section id="transaction_mail" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="transaction_mail" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Transaction Emails</label>
             <tab>emarsys_connect</tab>
@@ -298,8 +294,7 @@
                 </field>
             </group>
         </section>
-        <section id="smart_insight" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="smart_insight" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Smart Insight</label>
             <tab>emarsys_connect</tab>
@@ -357,8 +352,7 @@
             </group>
 
         </section>
-        <section id="emarsys_predict" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="emarsys_predict" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Product Catalog</label>
             <tab>emarsys_connect</tab>
@@ -390,7 +384,7 @@
                        showInWebsite="1" showInStore="0">
                     <label>Execute and Export at</label>
                     <depends>
-                        <field id="smartinsight_enabled">1</field>
+                        <field id="enable_nightly_product_feed">1</field>
                     </depends>
                 </field>
                 <field id="productexportfrequency" translate="label comment" sortOrder="24" type="select"
@@ -401,13 +395,12 @@
                     <backend_model>Emarsys\Emarsys\Model\Config\ProductExportCronConfig</backend_model>
                     <comment>For hours only minutes will be applicable.</comment>
                     <depends>
-                        <field id="smartinsight_enabled">1</field>
+                        <field id="enable_nightly_product_feed">1</field>
                     </depends>
                 </field>
             </group>
         </section>
-        <section id="web_extend" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="web_extend" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Web Extend</label>
             <tab>emarsys_connect</tab>
@@ -501,15 +494,13 @@
                 </field>
             </group>
         </section>
-        <section id="landing_pages" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="landing_pages" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Landing Pages</label>
             <tab>emarsys_connect</tab>
             <resource>Emarsys_Emarsys::emarsys</resource>
         </section>
-        <section id="logs" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1"
-                 showInStore="0">
+        <section id="logs" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Logs</label>
             <tab>emarsys_connect</tab>

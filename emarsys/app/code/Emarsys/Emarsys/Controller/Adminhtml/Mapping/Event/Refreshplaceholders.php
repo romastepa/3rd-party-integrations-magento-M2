@@ -11,6 +11,10 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Helper\Data;
 
+/**
+ * Class Refreshplaceholders
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
+ */
 class Refreshplaceholders extends Action
 {
     /**

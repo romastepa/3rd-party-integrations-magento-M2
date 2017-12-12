@@ -10,10 +10,20 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Model\CustomerFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Model\Logs;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * Class SaveRecommended
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
+ */
 class SaveRecommended extends \Magento\Backend\App\Action
 {
-
     /**
      * @var PageFactory
      */
@@ -25,46 +35,48 @@ class SaveRecommended extends \Magento\Backend\App\Action
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\CustomerFactory
+     * @var CustomerFactory
      */
     protected $customerFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     * @var Customer
      */
     protected $resourceModelCustomer;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var ScopeConfigInterface
      */
     protected $scopeConfigInterface;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
+     * SaveRecommended constructor.
      * @param Context $context
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\CustomerFactory $customerFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
+     * @param CustomerFactory $customerFactory
+     * @param Customer $resourceModelCustomer
      * @param PageFactory $resultPageFactory
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Logs $emarsysLogs
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param DateTime $date
+     * @param EmarsysHelperLogs $logHelper
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\CustomerFactory $customerFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
+        CustomerFactory $customerFactory,
+        Customer $resourceModelCustomer,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
-    )
-    {
+        Logs $emarsysLogs,
+        ScopeConfigInterface $scopeConfigInterface,
+        DateTime $date,
+        EmarsysHelperLogs $logHelper,
+        StoreManagerInterface $storeManager
+    ){
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -97,22 +109,37 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logsArray['store_id'] = $storeId;
             $logId = $this->logHelper->manualLogs($logsArray);
 
+            //Collect custom customer attribute mapping
+            $customerCustomMappedAttrs = $this->resourceModelCustomer->getCustomMappedCustomerAttribute($storeId);
+
             // Truncating the Mapping Table first
             $this->resourceModelCustomer->truncateMappingTable($storeId);
 
+            //Add custom customer attribute mapping
+            if (!empty($customerCustomMappedAttrs)) {
+                foreach ($customerCustomMappedAttrs as $key => $value) {
+                    $model = $this->customerFactory->create();
+                    $model->setEmarsysContactField($value['emarsys_contact_field']);
+                    $model->setMagentoAttributeId($value['magento_attribute_id']);
+                    $model->setMagentoCustomAttributeId($value['magento_custom_attribute_id']);
+                    $model->setStoreId($storeId);
+                    $model->save();
+                }
+            }
+
             // Here We need set the recommended attribute values
             $recommendedData = $this->resourceModelCustomer->getRecommendedCustomerAttribute($storeId);
-            $emarsysCodes = array(
-                        'first_name' => 'firstname',
-                        'middle_name' => 'middlename',
-                        'last_name' => 'lastname',
-                        'email' => 'email',
-                        'gender' => 'gender',
-                        'birth_date' => 'dob'
-                    );
+            $emarsysCodes = [
+                'first_name' => 'firstname',
+                'middle_name' => 'middlename',
+                'last_name' => 'lastname',
+                'email' => 'email',
+                'gender' => 'gender',
+                'birth_date' => 'dob'
+            ];
             if (isset($recommendedData['magento'])) {
                 foreach ($recommendedData['magento'] as $key => $code) {
-                    if (isset($recommendedData['emarsys'][$key])) {
+                    if (isset($recommendedData['emarsys'][$key]) && !empty($recommendedData['emarsys'][$key])) {
                         $model = $this->customerFactory->create();
                         $custMageId = $this->resourceModelCustomer->getCustAttIdByCode($emarsysCodes[$key],$storeId);
                         $model->setEmarsysContactField($recommendedData['emarsys'][$key]);
@@ -134,19 +161,16 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 $logsArray['messages'] = 'Update Schema Completed Successfully';
                 $this->logHelper->logs($logsArray);
                 $this->logHelper->manualLogs($logsArray);
-                $this->messageManager->addSuccess("Recommended Customer attributes mapped successfully");
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addSuccessMessage("Recommended Customer attributes mapped successfully");
             } else {
-                $this->messageManager->addError("No Recommendations are added");
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setRefererOrBaseUrl();
+                $this->messageManager->addErrorMessage("No Recommendations are added");
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'SaveSchema(Customer)');
-            $this->messageManager->addError("Error occurred while mapping Customer attribute");
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
+            $this->messageManager->addErrorMessage("Error occurred while mapping Customer attribute");
         }
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

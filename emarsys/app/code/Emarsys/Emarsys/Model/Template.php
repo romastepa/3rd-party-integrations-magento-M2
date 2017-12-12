@@ -44,7 +44,6 @@ class Template extends \Magento\Email\Model\Template
         return $result;
     }
 
-
     public function checkOrder()
     {
         $variables = $this->_getVars();
@@ -54,5 +53,24 @@ class Template extends \Magento\Email\Model\Template
         } else {
             return false;
         }
+    }
+
+    public function getEmailStoreId()
+    {
+        if ($this->_appState->getAreaCode() === \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE) {
+            $storeId = $this->getDesignConfig()->getStore();
+        } else {
+            $storeId = $this->storeManager->getStore()->getId();
+        }
+
+        $variables = $this->_getVars();
+        if (isset($variables['subscriber'])) {
+            $storeId = $variables['subscriber']->getStoreId();
+        } elseif (isset($variables['customer'])) {
+            $storeId = $variables['customer']->getStoreId();
+        } elseif (isset($variables['order'])) {
+            $storeId = $variables['order']->getStoreId();
+        }
+        return $storeId;
     }
 }

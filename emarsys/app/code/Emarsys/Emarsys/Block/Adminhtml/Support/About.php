@@ -130,32 +130,36 @@ class About extends MagentoBackendBlockWidgetForm
             if (!empty($emarsysLatestVersionInfo)) {
                 if (isset($emarsysLatestVersionInfo['tag_name'])) {
                     $latestAvailableVersion = $emarsysLatestVersionInfo['tag_name'];
-                    if ($installedModuleVersion == $latestAvailableVersion) {
-                        $notificationMessage .= "<div style='color:green; text-align: center; padding: 15px; border: 1px solid #ddd;background: #fff;font-size: 16px;margin:  8px 0;'>Congratulations, You are using the latest version of this Extension </div> ";
-                    }
 
-                    if($latestAvailableVersion > $installedModuleVersion) {
-                        $title = str_replace('LATEST_VERSION', $latestAvailableVersion, self::NOTIFICATION_TITLE);
-                        $description = str_replace('RELEASE_URL', $this->getReadMoreUrl(), self::NOTIFICATION_DESCRIPTION);
-                        $dateAdded = date('Y-m-d H:i:s', strtotime('-7 days'));
+                    switch (version_compare($installedModuleVersion, $latestAvailableVersion)) {
+                        case 0:
+                            $notificationMessage .= "<div style='color:green; text-align: center; padding: 15px; border: 1px solid #ddd;background: #fff;font-size: 16px;margin:  8px 0;'>Congratulations, You are using the latest version of this Extension </div> ";
+                            break;
+                        case -1:
+                            $title = str_replace('LATEST_VERSION', $latestAvailableVersion, self::NOTIFICATION_TITLE);
+                            $description = str_replace('RELEASE_URL', $this->getReadMoreUrl(), self::NOTIFICATION_DESCRIPTION);
+                            $dateAdded = $this->date->date('Y-m-d H:i:s', strtotime('-7 days'));
 
-                        $adminNotification = $this->notificationCollectionFactory->addFieldToFilter('title', ['eq' => $title])
-                            ->addFieldToFilter('date_added', array('gteq' => $dateAdded))
-                            ->setOrder('date_added', 'DESC');
+                            $adminNotification = $this->notificationCollectionFactory->addFieldToFilter('title', ['eq' => $title])
+                                ->addFieldToFilter('date_added', array('gteq' => $dateAdded))
+                                ->setOrder('date_added', 'DESC');
 
-                        if (count($adminNotification) == 0) {
-                            $this->adminNotification->add(MessageInterface::SEVERITY_NOTICE, $title, $description, $this->getReadMoreUrl(), true);
-                        } else {
-                            foreach ($adminNotification as $notification) {
-                                $notification = $this->inboxFactory->create()->load($notification->getNotificationId());
-                                if($notification->getNotificationId()){
-                                    $notification->setIsRead(0);
-                                    $notification->setIsRemove(0);
-                                    $notification->save();
-                                    break;
+                            if (count($adminNotification) == 0) {
+                                $this->adminNotification->add(MessageInterface::SEVERITY_NOTICE, $title, $description, $this->getReadMoreUrl(), true);
+                            } else {
+                                foreach ($adminNotification as $notification) {
+                                    $notification = $this->inboxFactory->create()->load($notification->getNotificationId());
+                                    if($notification->getNotificationId()){
+                                        $notification->setIsRead(0);
+                                        $notification->setIsRemove(0);
+                                        $notification->save();
+                                        break;
+                                    }
                                 }
                             }
-                        }
+                            break;
+                        default:
+                            $notificationMessage .= "<div style='color:red; text-align: center; padding: 15px; border: 1px solid red;background: #fff;font-size: 16px;margin:  8px 0;'>Sorry, Something Seems Wrong With The Installed Module Version.</div> ";
                     }
                 } else {
                     $errorStatus = true;

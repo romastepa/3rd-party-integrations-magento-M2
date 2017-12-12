@@ -6,26 +6,59 @@
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\FtpTestConnection;
 
+use Magento\Backend\App\Action;
 use Emarsys\Emarsys\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\View\Result\PageFactory;
 use Psr\Log\LoggerInterface as Logger;
-
+use Magento\Backend\App\Action\Context;
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Magento\Framework\App\Request\Http;
+use Magento\Config\Model\ResourceModel\Config;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
- * Class TestConnection for API credentials
+ * Class Index
+ * @package Emarsys\Emarsys\Controller\Adminhtml\FtpTestConnection
  */
-class Index extends \Magento\Backend\App\Action
+class Index extends Action
 {
+    /**
+     * @var CustomerFactory
+     */
+    protected $customer;
 
     /**
-     * @var \Magento\Config\Model\ResourceModel\Config
+     * @var StoreManagerInterface
      */
-    protected $config;
+    protected $storeManager;
+
     /**
      * @var PageFactory
      */
     protected $resultPageFactory;
+
+    /**
+     * @var Customer
+     */
+    protected $customerResourceModel;
+
+    /**
+     * @var DateTime
+     */
+    protected $date;
+
+    /**
+     * @var Config
+     */
+    protected $config;
+
+    /**
+     * @var Http
+     */
+    protected $getRequest;
 
     /**
      * @var Logger
@@ -36,33 +69,32 @@ class Index extends \Magento\Backend\App\Action
      * @var scopeConfig
      */
     protected $scopeConfig;
+
     /**
-     * 
-     * @param \Magento\Backend\App\Action\Context $context
+     * Index constructor.
+     * @param Context $context
      * @param PageFactory $resultPageFactory
      * @param DateTime $date
-     * @param \Magento\Customer\Model\CustomerFactory $customer
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel
-     * @param \Magento\Framework\App\Request\Http $request
-     * @param \Magento\Config\Model\ResourceModel\Config $config
+     * @param CustomerFactory $customer
+     * @param StoreManagerInterface $storeManager
+     * @param Customer $customerResourceModel
+     * @param Http $request
+     * @param Config $config
      * @param Logger $logger
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
+        Context $context,
         PageFactory $resultPageFactory,
         DateTime $date,
-        \Magento\Customer\Model\CustomerFactory $customer,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
-        \Magento\Framework\App\Request\Http $request,
-        \Magento\Config\Model\ResourceModel\Config $config,
+        CustomerFactory $customer,
+        StoreManagerInterface $storeManager,
+        Customer $customerResourceModel,
+        Http $request,
+        Config $config,
         Logger $logger,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-
-    )
-    {
+        ScopeConfigInterface $scopeConfig
+    ) {
         $this->customer = $customer;
         $this->storeManager = $storeManager;
         $this->resultPageFactory = $resultPageFactory;
@@ -95,12 +127,10 @@ class Index extends \Magento\Backend\App\Action
                 if ($data['passivemode'] == 1) {
                     $pasvstat = @ftp_pasv($ftpConnection, true);
                 }
-                
                 if($pasvstat) {
                     // Save value in DB
                     $scope = 'websites';
                     $websiteId = $data['website'];
-
                     $this->config->saveConfig('emarsys_settings/ftp_settings/hostname', $data['hostname'], $scope, $websiteId);
                     $this->config->saveConfig('emarsys_settings/ftp_settings/port', $data['port'], $scope, $websiteId);
                     $this->config->saveConfig('emarsys_settings/ftp_settings/username', $data['username'], $scope, $websiteId);
@@ -120,15 +150,15 @@ class Index extends \Magento\Backend\App\Action
                         $this->config->saveConfig('emarsys_settings/ftp_settings/useftp_overssl', $data['ftpssl'], $scope, $websiteId);
                         $this->config->saveConfig('emarsys_settings/ftp_settings/usepassive_mode', $data['passivemode'], $scope, $websiteId);
                     }
-                    $this->messageManager->addSuccess('Test connection successful !!!');
+                    $this->messageManager->addSuccessMessage('Test connection successful !!!');
                 } else {
-                    $this->messageManager->addError('Failed to connect using passive mode.');                   
+                    $this->messageManager->addErrorMessage('Failed to connect using passive mode.');
                 }
             } else {
-                $this->messageManager->addError('Failed to login with server !!!');
+                $this->messageManager->addErrorMessage('Failed to login with server !!!');
             }
         } else {
-            $this->messageManager->addError('Failed to connect with server !!!');
+            $this->messageManager->addErrorMessage('Failed to connect with server !!!');
         }
     }
 }

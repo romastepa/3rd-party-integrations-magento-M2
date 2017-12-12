@@ -10,8 +10,17 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ResourceModel\Order;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data;
 
-class SaveSchema extends \Magento\Backend\App\Action
+/**
+ * Class SaveSchema
+ * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
+ */
+class SaveSchema extends Action
 {
     /**
      * @var PageFactory
@@ -19,30 +28,34 @@ class SaveSchema extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
+     * @var \Magento\Backend\Model\Session
      */
-
     protected $session;
 
+    /**
+     * @var Order
+     */
     protected $orderResourceModel;
 
     /**
-     *
+     * SaveSchema constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel
+     * @param Logs $logsHelper
+     * @param DateTime $date
+     * @param Order $orderResourceModel
+     * @param StoreManagerInterface $storeManager
+     * @param Data $emarsysHelper
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Helper\Logs $logsHelper,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Model\ResourceModel\Order $orderResourceModel,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper
+        Logs $logsHelper,
+        DateTime $date,
+        Order $orderResourceModel,
+        StoreManagerInterface $storeManager,
+        Data $emarsysHelper
     ) {
-    
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
         $this->logsHelper = $logsHelper;
@@ -64,7 +77,7 @@ class SaveSchema extends \Magento\Backend\App\Action
             $session = $this->session->getData();
             if (isset($session['store'])) {
                 $storeId = $session['store'];
-            }else{
+            } else {
                 $storeId = $this->emarsysHelper->getFirstStoreId();
             }
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
@@ -99,23 +112,27 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->logs($logsArray);
             $this->logsHelper->manualLogsUpdate($logsArray);
-            $this->messageManager->addSuccess('Order Schema Updated Successfully.');
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setRefererOrBaseUrl();
-        }catch (\Exception $e){
-            if($logId){
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = 'Update Schema not Successful';
-            $logsArray['description'] = $e->getMessage();
-            $logsArray['action'] = 'Update Order Schema';
-            $logsArray['message_type'] = 'Error';
-            $logsArray['log_action'] = 'Update Order Schema';
-            $logsArray['messages'] = 'Update Schema not Successful';
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->logs($logsArray);
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->messageManager->addSuccessMessage('Order Schema Updated Successfully.');
+        } catch (\Exception $e) {
+            if ($logId) {
+                $logsArray['id'] = $logId;
+                $logsArray['emarsys_info'] = 'Update Schema not Successful';
+                $logsArray['description'] = $e->getMessage();
+                $logsArray['action'] = 'Update Order Schema';
+                $logsArray['message_type'] = 'Error';
+                $logsArray['log_action'] = 'Update Order Schema';
+                $logsArray['messages'] = 'Update Schema not Successful';
+                $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogsUpdate($logsArray);
             }
+            $this->messageManager->addErrorMessage(
+                __('There was a problem while updating order schema. Please refer emarsys logs for more information.')
+            );
         }
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        return $resultRedirect->setRefererOrBaseUrl();
     }
 }

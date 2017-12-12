@@ -5,8 +5,7 @@
         <plugin name="save-in-quote" type="Emarsys\Emarsys\Model\Checkout\ShippingInformationManagement"
                 sortOrder="10"/>
     </type>
-
-    <preference for="\Magento\Framework\Mail\Transport" type="Emarsys\Emarsys\Model\Transport"/>
+    <preference for="\Magento\Framework\Mail\TransportInterface" type="Emarsys\Emarsys\Model\Transport"/>
     <preference for="\Magento\Framework\Mail\Message" type="Emarsys\Emarsys\Model\Message"/>
     <preference for="\Magento\Framework\Mail\Template\TransportBuilder"
                 type="Emarsys\Emarsys\Model\Template\TransportBuilder"/>

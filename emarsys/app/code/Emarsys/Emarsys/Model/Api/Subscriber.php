@@ -134,7 +134,7 @@ class Subscriber
         }
 
         $errorMsg = 0;
-        if (count($buildRequest) > 0) {
+        if ((count($buildRequest) > 0) && (isset($buildRequest['key_id']))) {
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';

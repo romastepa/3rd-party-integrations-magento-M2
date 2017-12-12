@@ -118,7 +118,7 @@ class AfterAddressSaveObserver implements ObserverInterface
                 $websiteId
             );
 
-            $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
+            $storeId = $customerObj->getStoreId();
             if ($realTimeStatus) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {
