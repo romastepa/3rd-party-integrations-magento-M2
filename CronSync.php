@@ -23,6 +23,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\QueueFactory;
 use Magento\Framework\App\Request\Http;
 use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Helper\Logmap as EmarsysHelperLogmap;
 use Magento\Config\Model\ResourceModel\Config;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 use Magento\Catalog\Model\ProductFactory;
@@ -71,6 +72,11 @@ class CronSync
     protected $emarsysHelper;
 
     /**
+     * @var Logmap
+     */
+    protected $logMapHelper;
+
+    /**
      * CronSync constructor.
      *
      * @param RealTimeCustomer $customerObserver
@@ -87,6 +93,7 @@ class CronSync
      * @param QueueFactory $queueModel
      * @param Http $request
      * @param Logs $logsHelper
+     * @param EmarsysHelperLogmap $logMapHelper
      * @param Config $resourceConfig
      * @param EmarsysModelLogs $emarsysLogs
      * @param ProductFactory $productCollectionFactory
@@ -120,6 +127,7 @@ class CronSync
         Logs $logsHelper,
         Config $resourceConfig,
         EmarsysModelLogs $emarsysLogs,
+        EmarsysHelperLogmap $logMapHelper,
         ProductFactory $productCollectionFactory,
         Product $productModel,
         EmarsysProductResourceModel $productResourceModel,
@@ -149,6 +157,7 @@ class CronSync
         $this->date = $date;
         $this->storeManager = $storeManager;
         $this->logsHelper = $logsHelper;
+        $this->logMapHelper = $logMapHelper;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->productModel = $productModel;
         $this->productResourceModel = $productResourceModel;
@@ -234,14 +243,7 @@ class CronSync
                 $logsArray['website_id'] = $websiteId;
                 $logsArray['store_id'] = $storeId;
                 $logId = $this->logsHelper->manualLogs($logsArray, 1);
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = __('Subscriber Export Started');
-                $logsArray['description'] = __('Subscriber Export Started for Store ID : %1', $storeId);
-                $logsArray['action'] = 'synced to emarsys';
-                $logsArray['message_type'] = 'Success';
-                $logsArray['log_action'] = 'sync';
-                $logsArray['website_id'] = $websiteId;
-                $this->logsHelper->logs($logsArray);
+                $this->logMapHelper->generateLog('subscriber_export_started', $logId, $storeId, $websiteId, $storeId);
 
                 $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_url', $scope, $scopeId);
                 $webDavUser = $this->customerResourceModel->getDataFromCoreConfig('emarsys_settings/webdav_setting/webdav_user', $scope, $scopeId);
@@ -305,45 +307,21 @@ class CronSync
                     $fileOpen = fopen($filePath, "r");
                     $response = $client->request('PUT', $file, $fileOpen);
                     unlink($filePath);
-                    $errorCount = 0;
                     if ($response['statusCode'] == '201') {
                         $fileLoc = $response['headers']['location']['0'];
-                        $logsArray['id'] = $logId;
-                        $logsArray['emarsys_info'] = __('File uploaded to server successfully');
-                        $logsArray['description'] = $fileLoc;
-                        $logsArray['action'] = 'synced to emarsys';
-                        $logsArray['website_id'] = $websiteId;
-                        $logsArray['message_type'] = 'Success';
-                        $logsArray['log_action'] = 'sync';
-                        $this->logsHelper->logs($logsArray);
-                        $logsArray['website_id'] = $websiteId;
+                        $logsArray = $this->logMapHelper->generateLog('file_uploaded_successfully', $logId, $fileLoc, $websiteId, $storeId);
                         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                         $errorCount = 0;
                         foreach ($customervalues as $value) {
                             $test = $this->queueModel->create()->load($value['entity_id'],'entity_id')->delete();
                         }
                     } else {
-
-                        $logsArray['id'] = $logId;
-                        $logsArray['emarsys_info'] = __('Failed to upload file on server');
-                        $logsArray['description'] = strip_tags($response['body']);
-                        $logsArray['action'] = 'synced to emarsys';
-                        $logsArray['message_type'] = 'Error';
-                        $logsArray['log_action'] = 'sync';
-                        $logsArray['website_id'] = $websiteId;
-                        $this->logsHelper->logs($logsArray);
+                        $logsArray = $this->logMapHelper->generateLog('file_uploaded_fail', $logId, strip_tags($response['body']), $websiteId, $storeId);
                         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                         $errorCount = 1;
                     }
                 } else {
-                    $logsArray['id'] = $logId;
-                    $logsArray['emarsys_info'] = 'Invalid credentials';
-                    $logsArray['description'] = __('Invalid credential. Please check your settings and try again');
-                    $logsArray['action'] = 'synced to emarsys';
-                    $logsArray['message_type'] = 'Error';
-                    $logsArray['website_id'] = $websiteId;
-                    $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
+                    $logsArray = $this->logMapHelper->generateLog('credentials_invalid', $logId, '', $websiteId, $storeId);
                     $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                     $errorCount = 1;
                 }
@@ -382,14 +360,7 @@ class CronSync
                 $logsArray['auto_log'] = 'Complete';
                 $logsArray['store_id'] = $storeId;
                 $logId1 = $this->logsHelper->manualLogs($logsArray, 1);
-                $logsArray['id'] = $logId1;
-                $logsArray['emarsys_info'] = 'Customer Export Started';
-                $logsArray['description'] = __('Customer Export Started for Store ID : %1', $storeId);
-                $logsArray['action'] = 'synced to emarsys';
-                $logsArray['message_type'] = 'Success';
-                $logsArray['log_action'] = 'sync';
-                $logsArray['website_id'] = $websiteId;
-                $this->logsHelper->logs($logsArray);
+                $logsArray = $this->logMapHelper->generateLog('customer_export_started', $logId1, $storeId, $websiteId, $storeId);
                 if ($errorStatus != 1) {
                     $settings = array(
                         'baseUri' => $webDavUrl,
@@ -515,14 +486,7 @@ class CronSync
                         $errorCount = 0;
                         if ($response['statusCode'] == '201') {
                             $fileLoc = $response['headers']['location']['0'];
-                            $logsArray['id'] = $logId1;
-                            $logsArray['emarsys_info'] = __('File uploaded to server successfully');
-                            $logsArray['description'] = $fileLoc;
-                            $logsArray['action'] = 'synced to emarsys';
-                            $logsArray['message_type'] = 'Success';
-                            $logsArray['log_action'] = 'sync';
-                            $logsArray['website_id'] = $websiteId;
-                            $this->logsHelper->logs($logsArray);
+                            $logsArray = $this->logMapHelper->generateLog('file_uploaded_successfully', $logId1, $fileLoc, $websiteId, $storeId);
                             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                             $errorCount = 0;
                             if ($customervalues) {
@@ -531,38 +495,17 @@ class CronSync
                                 }
                             }
                         } else {
-                            $logsArray['id'] = $logId1;
-                            $logsArray['emarsys_info'] = __('Failed to upload file on server');
-                            $logsArray['description'] = strip_tags($response['body']);
-                            $logsArray['action'] = 'synced to emarsys';
-                            $logsArray['message_type'] = 'Error';
-                            $logsArray['log_action'] = 'sync';
-                            $logsArray['website_id'] = $websiteId;
-                            $this->logsHelper->logs($logsArray);
+                            $logsArray = $this->logMapHelper->generateLog('file_uploaded_fail', $logId1, strip_tags($response['body']), $websiteId, $storeId);
                             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                             $errorCount = 1;
                         }
                     } else {
-                        $logsArray['id'] = $logId1;
-                        $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                        $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                        $logsArray['action'] = 'synced to emarsys';
-                        $logsArray['message_type'] = 'Error';
-                        $logsArray['log_action'] = 'sync';
-                        $logsArray['website_id'] = $websiteId;
-                        $this->logsHelper->logs($logsArray);
+                        $logsArray = $this->logMapHelper->generateLog('attribute_not_mapped', $logId1, '', $websiteId, $storeId);
                         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                         $errorCount = 1;
                     }
                 } else {
-                    $logsArray['id'] = $logId1;
-                    $logsArray['emarsys_info'] = 'Invalid credentials';
-                    $logsArray['description'] = __('Invalid credential. Please check your settings and try again');
-                    $logsArray['action'] = 'synced to emarsys';
-                    $logsArray['message_type'] = 'Error';
-                    $logsArray['log_action'] = 'sync';
-                    $logsArray['website_id'] = $websiteId;
-                    $this->logsHelper->logs($logsArray);
+                    $logsArray = $this->logMapHelper->generateLog('credentials_invalid', $logId1, '', $websiteId, $storeId);
                     $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                     $errorCount = 1;
                 }
@@ -711,33 +654,15 @@ class CronSync
                 'time_range' => $timeRange,
                 'notification_url' => $this->getExportsNotificationUrl($websiteId, $isTimeBased, $storeId)
             ];
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = 'test';
-            $logsArray['description'] = $this->getExportsNotificationUrl($websiteId, $isTimeBased, $storeId);
-            $logsArray['action'] = 'synced to emarsys';
-            $logsArray['message_type'] = 'Success';
-            $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $this->logMapHelper->generateLog('test', $logId, $this->getExportsNotificationUrl($websiteId, $isTimeBased, $storeId), $websiteId, $storeId);
             $this->emarsysDataHelper->getEmarsysAPIDetails($storeId);
             $this->emarsysDataHelper->getClient();
             $response = $this->modelApi->post('contact/getchanges', $payload);
 
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = 'test';
-            $logsArray['description'] = print_r($response,true);
-            $logsArray['action'] = 'synced to emarsys';
-            $logsArray['message_type'] = 'Success';
-            $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $this->logMapHelper->generateLog('test', $logId, print_r($response,true), $websiteId, $storeId);
             if (isset($response['data']['id'])) {
                 $this->setValue('export_id', $response['data']['id'], current($websiteId));
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = 'test';
-                $logsArray['description'] = $response['data']['id'];
-                $logsArray['action'] = 'synced to emarsys';
-                $logsArray['message_type'] = 'Success';
-                $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
+                $this->logMapHelper->generateLog('test', $logId, $response['data']['id'], $websiteId, $storeId);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'requestSubscriptionUpdates(helper/data)');

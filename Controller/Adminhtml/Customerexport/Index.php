@@ -32,12 +32,14 @@ class Index extends Action
     public function __construct(
         Context $context,
         Data $emarsysHelper,
-        PageFactory $resultPageFactory
+        PageFactory $resultPageFactory,
+        \Emarsys\Emarsys\Model\ProductCronSync $productCronSync
     ) {
         parent::__construct($context);
         $this->adminSession = $context->getSession();
         $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
+        $this->productCronSync = $productCronSync;
     }
 
     /**
@@ -46,6 +48,8 @@ class Index extends Action
      */
     public function execute()
     {
+
+        $this->productCronSync->consolidatedСronProductSync();
         $store = $this->getRequest()->getParam('store');
         if (!$store) {
             $storeId = $this->emarsysHelper->getFirstStoreId();

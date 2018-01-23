@@ -213,8 +213,7 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         $requiredMapping['category_ids'] = 'Category';
         $requiredMapping['price'] = 'Price';
         $returnArray = [];
-        foreach($requiredMapping as $key => $value)
-        {
+        foreach ($requiredMapping as $key => $value) {
             $attrData = [];
             $attrData['emarsys_contact_field'] = '';
             $attrData['magento_attr_code'] = $key;
@@ -243,23 +242,26 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getMappedProductAttribute($storeId)
     {
         try {
-            $productAttributes = $this->getConnection()->fetchAll("SELECT * FROM " . $this->getTable('emarsys_product_mapping') . " WHERE store_id =" . $storeId);
+            $select = $this->getConnection()
+                ->select()
+                ->from($this->getTable('emarsys_product_mapping'))
+                ->where('store_id = ?', $storeId);
+
+            $productAttributes = $this->getConnection()->fetchAll($select);
             $emarsysAttributeId = [];
             foreach ($productAttributes as $mapAttribute) {
                 $emarsysAttributeId[] = $mapAttribute['emarsys_attr_code'];
             }
 
             $requiredMapping = $this->getRequiredProductAttributesForExport($storeId);
-            foreach($requiredMapping as $_requiredMapping)
-            {
-                if(!in_array($_requiredMapping['emarsys_attr_code'], $emarsysAttributeId))
-                {
+            foreach($requiredMapping as $_requiredMapping) {
+                if (!in_array($_requiredMapping['emarsys_attr_code'], $emarsysAttributeId)) {
                     $productAttributes[] = $_requiredMapping;
                 }
             }
             return $productAttributes;
         } catch (Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(),$storeId,'getMappedProductAttribute');
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId,'getMappedProductAttribute');
         }
     }
 

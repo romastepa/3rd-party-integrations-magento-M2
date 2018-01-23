@@ -2481,5 +2481,52 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $result;
     }
+
+    /**
+     * @param mixed $store
+     * @return bool
+     */
+    public function checkFtpConnectionByStore($store)
+    {
+        $result = false;
+
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->storeManager->getStore($store);
+        try {
+            $hostname = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_HOSTNAME);
+            $port = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PORT);
+            $username = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USERNAME);
+            $password = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PASSWORD);
+            $ftpSsl = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USEFTP_OVER_SSL);
+            $passiveMode = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USE_PASSIVE_MODE);
+
+            if (!$username || !$password || !$hostname || !$port) {
+                return $result;
+            }
+
+            if ($ftpSsl == 1) {
+                $ftpConnId = @ftp_ssl_connect($hostname, $port);
+            } else {
+                $ftpConnId = @ftp_connect($hostname, $port);
+            }
+            if ($ftpConnId != '') {
+                $ftpLogin = @ftp_login($ftpConnId, $username, $password);
+                if ($ftpLogin == 1) {
+                    $passiveState = true;
+                    if ($passiveMode == 1) {
+                        $passiveState = @ftp_pasv($ftpConnId, true);
+                    }
+                    if ($passiveState) {
+                        $result = true;
+                        @ftp_close($ftpConnId);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $store->getId(), 'checkFtpConnection');
+        }
+
+        return $result;
+    }
 }
 

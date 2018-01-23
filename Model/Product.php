@@ -6,6 +6,7 @@
  */
 namespace Emarsys\Emarsys\Model;
 
+use Emarsys\Emarsys\Helper\Logmap;
 use Magento\Framework\Model\AbstractModel;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
@@ -16,6 +17,7 @@ use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Helper\Logmap as EmarsysHelperLogmap;
 use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
 use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
 use Magento\Catalog\Model\CategoryFactory;
@@ -62,6 +64,11 @@ class Product extends AbstractModel
     protected $logsHelper;
 
     /**
+     * @var Logmap
+     */
+    protected $logMapHelper;
+
+    /**
      * @var DateTime
      */
     protected $date;
@@ -92,18 +99,20 @@ class Product extends AbstractModel
      * @param Context $context
      * @param Registry $registry
      * @param MessageManagerInterface $messageManager
-     * @param AbstractResource|null $resource
-     * @param AbstractDb|null $resourceCollection
      * @param ProductFactory $productCollectionFactory
      * @param ProductModel $productModel
      * @param DateTime $date
-     * @param Logs $logsHelper
-     * @param Customer $customerResourceModel
+     * @param EmarsysHelperLogs $logsHelper
+     * @param EmarsysHelperLogmap $logMapHelper
+     * @param EmarsysResourceModelCustomer $customerResourceModel
      * @param ProductResourceModel $productResourceModel
      * @param CategoryFactory $categoryFactory
      * @param StoreManagerInterface $storeManager
      * @param EavConfig $eavConfig
      * @param EmarsysDataHelper $emarsysHelper
+     * @param ScopeConfigInterface $scopeConfig
+     * @param AbstractResource|null $resource
+     * @param AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
@@ -114,6 +123,7 @@ class Product extends AbstractModel
         ProductModel $productModel,
         DateTime $date,
         EmarsysHelperLogs $logsHelper,
+        EmarsysHelperLogmap $logMapHelper,
         EmarsysResourceModelCustomer $customerResourceModel,
         ProductResourceModel $productResourceModel,
         CategoryFactory $categoryFactory,
@@ -132,6 +142,7 @@ class Product extends AbstractModel
         $this->productResourceModel = $productResourceModel;
         $this->productModel = $productModel;
         $this->logsHelper = $logsHelper;
+        $this->logMapHelper = $logMapHelper;
         $this->date = $date;
         $this->categoryFactory = $categoryFactory;
         $this->eavConfig =  $eavConfig;
@@ -149,11 +160,14 @@ class Product extends AbstractModel
         $this->_init('Emarsys\Emarsys\Model\ResourceModel\Product');
     }
 
+
+
     /**
      * @param $storeId
      * @param $mode
      * @param null $includeBundle
      * @param null $excludedCategories
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function syncProducts($storeId, $mode, $includeBundle = null, $excludedCategories = null)
     {
@@ -180,13 +194,7 @@ class Product extends AbstractModel
         );
 
         if (!$isEmarsysEnabledForStore) {
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = __('Emarsys is disabled');
-            $logsArray['description'] = __('Emarsys is disabled for the store %1', $store->getName());
-            $logsArray['action'] = 'synced to emarsys';
-            $logsArray['message_type'] = 'Error';
-            $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $logsArray = $this->logMapHelper->generateLog('emrs_disabled', $logId, $store->getName());
             $logsArray['status'] = 'error';
             $logsArray['messages'] = __('Catalog Bulk Export Failed');
             $this->messageManager->addErrorMessage(__('Emarsys is disabled for the store %1', $store->getName()));
@@ -353,13 +361,7 @@ class Product extends AbstractModel
                         @ftp_chdir($ftpConnection, '/');
 
                         if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
-                            $logsArray['id'] = $logId;
-                            $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
-                            $logsArray['description'] = $remoteFileName;
-                            $logsArray['action'] = 'synced to emarsys';
-                            $logsArray['message_type'] = 'Success';
-                            $logsArray['log_action'] = 'sync';
-                            $this->logsHelper->logs($logsArray);
+                            $logsArray = $this->logMapHelper->generateLog('ftp_upload_success', $logId, $remoteFileName, $websiteId, $storeId);
                             $errorCount = 0;
                             if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                                 $this->messageManager->addSuccessMessage(
@@ -369,13 +371,7 @@ class Product extends AbstractModel
                         } else {
                             $errorMessage = error_get_last();
                             $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
-                            $logsArray['id'] = $logId;
-                            $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
-                            $logsArray['description'] = __('Failed to upload file on FTP server %1' , $msg);
-                            $logsArray['action'] = 'synced to emarsys';
-                            $logsArray['message_type'] = 'Error';
-                            $logsArray['log_action'] = 'sync';
-                            $this->logsHelper->logs($logsArray);
+                            $logsArray = $this->logMapHelper->generateLog('ftp_upload_fail', $logId, $msg, $websiteId, $storeId);
                             $errorCount = 1;
                             if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                                 $this->messageManager->addErrorMessage(
@@ -386,13 +382,7 @@ class Product extends AbstractModel
                         unlink($filePath);
                         $errorCount = 0;
                     } else {
-                        $logsArray['id'] = $logId;
-                        $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                        $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                        $logsArray['action'] = 'synced to emarsys';
-                        $logsArray['message_type'] = 'Error';
-                        $logsArray['log_action'] = 'sync';
-                        $this->logsHelper->logs($logsArray);
+                        $logsArray = $this->logMapHelper->generateLog('attribute_not_mapped', $logId, '', $websiteId, $storeId);
                         $errorCount = 1;
                         if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
@@ -401,13 +391,7 @@ class Product extends AbstractModel
                         }
                     }
                 } else {
-                    $logsArray['id'] = $logId;
-                    $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                    $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                    $logsArray['action'] = 'synced to emarsys';
-                    $logsArray['message_type'] = 'Error';
-                    $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
+                    $logsArray = $this->logMapHelper->generateLog('attribute_not_mapped', $logId, '', $websiteId, $storeId);
                     $errorCount = 1;
                     if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                         $this->messageManager->addErrorMessage(
@@ -416,13 +400,7 @@ class Product extends AbstractModel
                     }
                 }
             } else {
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
-                $logsArray['description'] = __('Failed to connect with FTP server.');
-                $logsArray['action'] = 'synced to FTP';
-                $logsArray['message_type'] = 'Error';
-                $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
+                $logsArray = $this->logMapHelper->generateLog('ftp_connection_fail', $logId, '', $websiteId, $storeId);
                 $errorCount = 1;
                 if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
@@ -431,13 +409,7 @@ class Product extends AbstractModel
                 }
             }
         } else {
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = __('Invalid FTP credentials');
-            $logsArray['description'] = __('Invalid FTP credential. Please check your settings and try again');
-            $logsArray['action'] = 'synced to emarsys';
-            $logsArray['message_type'] = 'Error';
-            $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $logsArray = $this->logMapHelper->generateLog('ftp_credentials_invalid', $logId, '', $websiteId, $storeId);
             $errorCount = 1;
             if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
