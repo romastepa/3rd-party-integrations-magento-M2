@@ -12,7 +12,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Catalog\Model\ProductFactory;
+use Magento\Catalog\Model\ProductFactory as ProductModelFactory;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
@@ -27,7 +27,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 class Product extends AbstractModel
 {
     /**
-     * @var ProductFactory
+     * @var ProductModelFactory
      */
     protected $productCollectionFactory;
 
@@ -94,7 +94,7 @@ class Product extends AbstractModel
      * @param MessageManagerInterface $messageManager
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
-     * @param ProductFactory $productCollectionFactory
+     * @param ProductModelFactory $productCollectionFactory
      * @param ProductModel $productModel
      * @param DateTime $date
      * @param Logs $logsHelper
@@ -110,7 +110,7 @@ class Product extends AbstractModel
         Context $context,
         Registry $registry,
         MessageManagerInterface $messageManager,
-        ProductFactory $productCollectionFactory,
+        ProductModelFactory $productCollectionFactory,
         ProductModel $productModel,
         DateTime $date,
         EmarsysHelperLogs $logsHelper,
