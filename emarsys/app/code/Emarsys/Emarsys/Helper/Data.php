@@ -1220,33 +1220,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         while ($variable = $this->substringBetween($emailText)) {
             $emailText = str_replace($variable, '', $emailText);
             if (!strstr($variable, '{{trans')) {
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
-            $emarsysVariable = $this->getPlacheloderName($variable);
+            $emarsysVariable = $this->getPlaceholderName($variable);
 
             if (strstr($variable, '{{trans')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{depend')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{/if')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{template config_path')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{if')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
 
@@ -1321,36 +1321,36 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         while ($variable = $this->substringBetween($emailText)) {
             $emailText = str_replace($variable, '', $emailText);
             if (!strstr($variable, '{{trans')) {
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
-            $emarsysVariable = $this->getPlacheloderName($variable);
+            $emarsysVariable = $this->getPlaceholderName($variable);
 
             if (strstr($variable, '{{trans')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
             if (strstr($variable, '{{/depend')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{/if')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{template config_path')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (strstr($variable, '{{depend')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
             if (strstr($variable, '{{if')) {
                 $variable = $this->substringBetweenTransVar($variable);
-                $emarsysVariable = $this->getPlacheloderName($variable);
+                $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
             if (!empty($emarsysVariable)) {
@@ -1378,7 +1378,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 $placeholderModel = $this->emarsysEventPlaceholderMappingFactory->create();
                 $placeholderModel->setEventMappingId($mappingId);
                 $placeholderModel->setMagentoPlaceholderName($_insertNewFromTemplate);
-                $placeholderModel->setEmarsysPlaceholderName($this->getPlacheloderName($_insertNewFromTemplate));
+                $placeholderModel->setEmarsysPlaceholderName($this->getPlaceholderName($_insertNewFromTemplate));
                 $placeholderModel->setStoreId($storeId);
                 $placeholderModel->save();
             }
@@ -1441,69 +1441,55 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $variable
      * @return string
      */
-    public function getPlacheloderName($variable = '')
+    public function getPlaceholderName($variable = '')
     {
         try {
-            if (empty($variable)) {
+            if (empty($variable)
+                || in_array($variable, ["{{/if}}", "{{/depend}}", "{{else}}", "{{var non_inline_styles}}"])
+                || strstr($variable, 'inlinecss')
+            ) {
                 return;
             }
 
-            $skipVars = ["{{/if}}", "{{/depend}}", "{{else}}", "{{var non_inline_styles}}"];
-            if (in_array($variable, $skipVars)) {
-                return;
-            }
+            $findReplace = [
+                " "     => "_",
+                ".get"  => "_",
+                "."     => "_",
+                "{{"    => "_",
+                "}}"    => "_",
+                "()"    => "_",
+                "("     => "_",
+                ")"     => "_",
+                "["     => "_",
+                "]"     => "_",
+                "<"     => "_",
+                ">"     => "_",
+                "=$"    => "_",
+                "="     => "_",
+                "/"     => "_",
+                "\\"    => "_",
+                "\n"    => "_",
+                "$"     => "_",
+                "%"     => "_",
+                ","     => "_",
+                ":"     => "_",
+                "|"     => "_",
+                "'"     => "",
+                '"'     => "",
+                "var"   => "",
+                "trans" => "",
+                "_____" => "_",
+                "____"  => "_",
+                "___"   => "_",
+                "__"    => "_",
+            ];
 
-            $skipMatchingVars = ["template", "inlinecss"];
-            foreach ($skipMatchingVars as $skipMatchingVar) {
-                if (strstr($variable, $skipMatchingVar)) {
-                    return;
-                }
-            }
-
-            $replaceWords = [];
-            $replaceWords[] = ['find' => "var ", 'replace' => ''];
-            $replaceWords[] = ['find' => " ", 'replace' => '_'];
-            $replaceWords[] = ['find' => ".get", 'replace' => '_'];
-            $replaceWords[] = ['find' => ".", 'replace' => '_'];
-            $replaceWords[] = ['find' => "{{", 'replace' => ''];
-            $replaceWords[] = ['find' => "}}", 'replace' => ''];
-            $replaceWords[] = ['find' => "()", 'replace' => ''];
-            $replaceWords[] = ['find' => "('", 'replace' => '_'];
-            $replaceWords[] = ['find' => "(", 'replace' => '_'];
-            $replaceWords[] = ['find' => "')", 'replace' => ''];
-            $replaceWords[] = ['find' => ")", 'replace' => ''];
-            $replaceWords[] = ['find' => '="', 'replace' => '_'];
-            $replaceWords[] = ['find' => '"_', 'replace' => '_'];
-            $replaceWords[] = ['find' => '"', 'replace' => '_'];
-            $replaceWords[] = ['find' => '=$', 'replace' => '_'];
-            $replaceWords[] = ['find' => '|', 'replace' => '_'];
-            $replaceWords[] = ['find' => '/', 'replace' => '_'];
-            $replaceWords[] = ['find' => '=', 'replace' => '_'];
-            $replaceWords[] = ['find' => 'trans', 'replace' => ''];
-            $replaceWords[] = ['find' => '%', 'replace' => '_'];
-            $replaceWords[] = ['find' => '$', 'replace' => '_'];
-            $replaceWords[] = ['find' => ',', 'replace' => '_'];
-            $replaceWords[] = ['find' => '[', 'replace' => '_'];
-            $replaceWords[] = ['find' => ']', 'replace' => '_'];
-            $replaceWords[] = ['find' => ':', 'replace' => '_'];
-            $replaceWords[] = ['find' => '\'', 'replace' => '_'];
-            $replaceWords[] = ['find' => "\n", 'replace' => ''];
-            $replaceWords[] = ['find' => '__', 'replace' => '_'];
-            $replaceWords[] = ['find' => '___', 'replace' => '_'];
-            $replaceWords[] = ['find' => '____', 'replace' => '_'];
-            $replaceWords[] = ['find' => '_____', 'replace' => '_'];
-            $replaceWords[] = ['find' => '__', 'replace' => '_'];
-
-            $emarsysVariable = strtolower($variable);
-
-            foreach ($replaceWords as $replaceWord) {
-                $emarsysVariable = str_replace($replaceWord['find'], $replaceWord['replace'], $emarsysVariable);
-            }
+            $emarsysVariable = str_replace(array_keys($findReplace), $findReplace, strtolower($variable));
 
             return trim(trim($emarsysVariable, "_"));
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getPlacheloderName');
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getPlaceholderName');
         }
     }
 
