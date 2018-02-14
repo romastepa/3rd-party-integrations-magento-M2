@@ -8,13 +8,13 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Support;
 
 use Magento\Backend\Block\Widget\Context;
 use Emarsys\Emarsys\Helper\Data;
-use Magento\Backend\Block\Widget\Form;
+use Magento\Backend\Block\Widget\Form as BlockForm;
 
 /**
  * Class Requirements
  * @package Emarsys\Emarsys\Block\Adminhtml\Support
  */
-class Requirements extends Form
+class Requirements extends BlockForm
 {
     /**
      * @var Data
