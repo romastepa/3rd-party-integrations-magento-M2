@@ -11,7 +11,8 @@
             <tab>emarsys_connect</tab>
             <resource>Emarsys_Emarsys::emarsys</resource>
             <group id="emarsys_setting" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Emarsys Settings</label>
+                <label>API Settings</label>
+                <comment>Used for contact synchronisation, Event triggering etc.</comment>
                 <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Enabled</label>
@@ -70,6 +71,7 @@
             </group>
             <group id="webdav_setting" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>WebDAV Settings</label>
+                <comment>Used for bulk contact synchronisation / initial load of your contacts</comment>
                 <field id="webdav_url" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>WebDAV URL</label>
@@ -90,6 +92,7 @@
             </group>
             <group id="ftp_settings" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>FTP Settings</label>
+                <comment>Used for all your e-commerce data</comment>
                 <field id="hostname" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Hostname</label>
