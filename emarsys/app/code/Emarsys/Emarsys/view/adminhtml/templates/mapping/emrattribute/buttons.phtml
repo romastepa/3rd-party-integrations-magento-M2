@@ -1,13 +1,16 @@
 <?php
-$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-$backendHelper = $objectManager->create('\Magento\Backend\Helper\Data');
-$storeId = $this->getStoreId();
-$moduleName = 'emarsys_emarsys';
-$backEmarsysBtn = $backendHelper->getUrl($moduleName . '/' . 'mapping_product' . '/index/store/' . $storeId);
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ */
+
+$backEmarsysBtn = $block->getUrl('emarsys_emarsys/mapping_product/index', ["store" => $this->getStoreId()]);
 ?>
 <div>
     <span class="scalable">
-
-<a href="<?php echo $backEmarsysBtn; ?>" class="action-default scalable customerSaveBtn">Back</a>
+        <a href="<?php echo $backEmarsysBtn; ?>" class="action-default scalable customerSaveBtn">
+            <?php echo __('Back') ?>
+        </a>
     </span>
 </div>

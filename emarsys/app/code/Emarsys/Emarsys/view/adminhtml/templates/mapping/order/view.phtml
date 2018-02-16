@@ -4,16 +4,18 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-$helper = $objectManager->create('\Magento\Backend\Helper\Data');
-$saveUrl = $helper->getUrl('emarsys_emarsys/mapping_order/save');
+?>
+<?php
+/**
+ * @var $block \Emarsys\Emarsys\Block\Adminhtml\Mapping\Order
+ */
 ?>
 <?php echo $block->getGridHtml(); ?>
-
-<form method="POST" action="<?php echo $saveUrl; ?>" id="idformorder">
+<form method="POST" action="<?php echo $block->getUrl('emarsys_emarsys/mapping_order/save'); ?>" id="idformorder">
     <input type="hidden" id="idjsonstringdata" name="jsonstringdata" value=""/>
-    <input type="hidden" name="form_key"
-           value="<?php echo $objectManager->get('Magento\Framework\Data\Form\FormKey')->getFormKey(); ?>"/>
+    <input type="hidden"
+           name="form_key"
+           value="<?php echo $block->getFormKey(); ?>"/>
 </form>
 <script>
     function changeValue(url, attribute, coulmnAttr, value, entityTypeId) {
@@ -22,7 +24,6 @@ $saveUrl = $helper->getUrl('emarsys_emarsys/mapping_order/save');
             method: 'get',
             asynchronous: false
         });
-
     }
     function updateSchema(redirectUrl, count) {
         if (count > 0) {
@@ -53,7 +54,6 @@ $saveUrl = $helper->getUrl('emarsys_emarsys/mapping_order/save');
         }
     }
 
-
     require(['jquery', 'jquery/ui'], function ($) {
         $('.orderSaveBtn').on('click', function () {
             jsondata = {};
@@ -67,10 +67,7 @@ $saveUrl = $helper->getUrl('emarsys_emarsys/mapping_order/save');
         $('.updateSchema').on('click', function () {
             var confirm = window.confirm("Do you want to update schema.");
             if (confirm)
-                window.location.href = "<?php echo $helper->getUrl('emarsys_emarsys/mapping_order/saveschema'); ?>";
+                window.location.href = "<?php echo $block->getUrl('emarsys_emarsys/mapping_order/saveschema'); ?>";
         });
-
-
     });
-
 </script>

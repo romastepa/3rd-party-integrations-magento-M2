@@ -1,22 +1,49 @@
 <?php
 namespace Emarsys\Emarsys\Block\Adminhtml\Customformfield\Edit\Renderer;
 
+/**
+ * Class CustomRenderer
+ * @package Emarsys\Emarsys\Block\Adminhtml\Customformfield\Edit\Renderer
+ */
 class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElement
 {
+    /**
+     * CustomRenderer constructor.
+     * @param \Magento\Framework\Data\Form\Element\Factory $factoryElement
+     * @param \Magento\Framework\Data\Form\Element\CollectionFactory $factoryCollection
+     * @param \Magento\Framework\Escaper $escaper
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
+     * @param \Magento\Framework\App\Request\Http $http
+     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param \Magento\Catalog\Model\Category $category
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Framework\Data\Form\Element\Factory $factoryElement,
+        \Magento\Framework\Data\Form\Element\CollectionFactory $factoryCollection,
+        \Magento\Framework\Escaper $escaper,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
+        \Magento\Store\Model\StoreManagerInterface $storeManagerInterface,
+        \Magento\Framework\App\Request\Http $http,
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Magento\Catalog\Model\Category $category,
+        array $data = []
+    ) {
+        parent::__construct($factoryElement, $factoryCollection, $escaper, $data);
+        $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->storeManagerInterface = $storeManagerInterface;
+        $this->http = $http;
+        $this->categoryFactory = $categoryFactory;
+        $this->category = $category;
+    }
+
+    /**
+     * @return string
+     */
     public function getElementHtml()
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $categoryFactory = $objectManager->create('Magento\Catalog\Model\CategoryFactory');
-        $categoryModel = $objectManager->create('Magento\Catalog\Model\Category');
-        $storeManager = $objectManager->create('Magento\Store\Model\StoreManagerInterface');
-        $session = $objectManager->create('Magento\Backend\Model\Session');
-        $optionArray = [];
-        $selectedSubCats = "";
-        $selectedCats = '';
-        $html = "";
-        $storeId = $session->getStore();
         $rootCategoryId = 1;
-        //$rootCategoryId = $storeManager->getStore($storeId)->getRootCategoryId();
         list($catTree, $selectedCats) = $this->getTreeCategories($rootCategoryId);
         $html = "
         <div class=\"emarsys-search\">
@@ -27,31 +54,34 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
 </div>";
         $html .=
             " <ul><li>
-        <div class= 'catg-sub-'><input type= 'checkbox' disabled = 'disabled'name= 'dummy-checkbox'/>Root Category</div>" .
+        <div class= 'catg-sub-'><input type= 'checkbox' disabled = 'disabled'name= 'dummy-checkbox'/>Root Category</div>" . $catTree;
 
-            $catTree;
         return $html;
     }
 
+    /**
+     * @param $parentId
+     * @param int $level
+     * @return array
+     */
     public function getTreeCategories($parentId, $level = 1)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $scopeConfig = $objectManager->create('\Magento\Framework\App\Config\ScopeConfigInterface');
-        $html = '<ul class="category-' . $level . '">';
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $categoryFactory = $objectManager->create('Magento\Catalog\Model\CategoryFactory');
-        $storeManager = $objectManager->create('Magento\Store\Model\StoreManagerInterface');
-        $request = $objectManager->get('\Magento\Framework\App\Request\Http');
-        $storeId = $request->getParam('store');
-        $websiteId = $storeManager->getStore($storeId)->getWebsiteId();
-        $allCategories = $categoryFactory->create()->getCollection()->addAttributeToFilter('parent_id', ['eq' => $parentId]);
-        $categoryModel = $objectManager->create('Magento\Catalog\Model\Category');
-        $selectedCats = '';
-        $categoriesExcluded = $scopeConfig->getValue('emarsys_predict/feed_export/excludedcategories', 'websites', $websiteId);
+        $storeId = $this->http->getParam('store');
+        $websiteId = $this->storeManagerInterface->getStore($storeId)->getWebsiteId();
+        $categoriesExcluded = $this->scopeConfigInterface->getValue(
+            'emarsys_predict/feed_export/excludedcategories',
+            'websites',
+            $websiteId
+        );
         $categoriesExcluded = explode(',', $categoriesExcluded);
+        $allCategories = $this->categoryFactory->create()->getCollection()
+            ->addAttributeToFilter('parent_id', ['eq' => $parentId]);
+        $selectedCats = '';
+        $html = '<ul class="category-' . $level . '">';
+
         foreach ($allCategories as $cat) {
             $checked = '';
-            $category = $categoryModel->load($cat->getId());
+            $category = $this->category->load($cat->getId());
             if (in_array($cat->getId(), $categoriesExcluded)) {
                 $checked = 'checked=checked';
             }
@@ -70,6 +100,7 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
             $html .= '</li>';
         }
         $html .= '</ul>';
+
         return [$html, $selectedCats];
     }
 }
