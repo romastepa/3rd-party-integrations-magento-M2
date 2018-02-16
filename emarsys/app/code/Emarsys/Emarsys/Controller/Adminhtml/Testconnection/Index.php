@@ -87,8 +87,6 @@ class Index extends Action
 
         if ($username != "" && $password != '') {
             $scopeType = 'websites';
-            $defaultScopeType = 'default';
-            $defaultScopeId = '0';
             $scopeId = $website;
             if ($website == '') {
                 $scopeType = 'default';
@@ -108,9 +106,6 @@ class Index extends Action
                 try {
                     //save information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/enable', 1, $scopeType, $scopeId);
-                    if ($website == 1) {
-                        $this->config->saveConfig('emarsys_settings/emarsys_setting/enable', 1, $defaultScopeType, $defaultScopeId);
-                    }
 
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
@@ -122,9 +117,6 @@ class Index extends Action
 
                     //save api_endpoint information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $endpoint, $scopeType, $scopeId);
-                    if ($website == 1) {
-                        $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $endpoint, $defaultScopeType, $defaultScopeId);
-                    }
 
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
@@ -137,9 +129,7 @@ class Index extends Action
                     if ($endpoint == 'custom') {
                         //save custom_url information in respected configuration.
                         $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_custom_url', $url, $scopeType, $scopeId);
-                        if ($website == 1) {
-                            $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_custom_url', $url, $defaultScopeType, $defaultScopeId);
-                        }
+
                         $logsArray['id'] = $logId;
                         $logsArray['emarsys_info'] = 'Test connection';
                         $logsArray['description'] = "Inserted custom url";
@@ -151,9 +141,7 @@ class Index extends Action
 
                     //save api username information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_username', $username, $scopeType, $scopeId);
-                    if ($website == 1) {
-                        $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_username', $username, $defaultScopeType, $defaultScopeId);
-                    }
+
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
                     $logsArray['description'] = "Inserted username";
@@ -164,9 +152,7 @@ class Index extends Action
 
                     //save api password information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_password', $password, $scopeType, $scopeId);
-                    if ($website == 1) {
-                        $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_password', $password, $defaultScopeType, $defaultScopeId);
-                    }
+
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
                     $logsArray['description'] = "Inserted Password";
@@ -194,12 +180,12 @@ class Index extends Action
                 }
             } else {
                 //test api connecton failed.
-                $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again');
+                $this->messageManager->addErrorMessage('Test connection is failed. Please check credentials.');
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. ' . json_encode($jsonDecode, JSON_PRETTY_PRINT);
+                $logsArray['messages'] = 'Test connection is failed. Please check credentials. ' . json_encode($jsonDecode, JSON_PRETTY_PRINT);
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
         } else {
@@ -209,7 +195,7 @@ class Index extends Action
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Connection failed. Please enter the api credentials';
+            $logsArray['messages'] = 'Test connection is failed. Please enter the api credentials';
             $this->logsHelper->manualLogsUpdate($logsArray);
         }
     }
@@ -218,7 +204,7 @@ class Index extends Action
      * @param $x
      * @return bool
      */
-    public function is_json($x)
+    private function is_json($x)
     {
         if (!is_string($x) || !trim($x)) {
             return false;
