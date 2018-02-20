@@ -7,8 +7,36 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Support\Edit;
 
+/**
+ * Class Tabs
+ * @package Emarsys\Emarsys\Block\Adminhtml\Support\Edit
+ */
 class Tabs extends \Magento\Backend\Block\Widget\Tabs
 {
+    /**
+     * @var \Magento\Cms\Model\Wysiwyg\ConfigFactory
+     */
+    protected $wysiwygConfigFactory;
+
+    /**
+     * Tabs constructor.
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Framework\Json\EncoderInterface $jsonEncoder
+     * @param \Magento\Backend\Model\Auth\Session $authSession
+     * @param \Magento\Cms\Model\Wysiwyg\ConfigFactory $wysiwygConfigFactory
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,
+        \Magento\Framework\Json\EncoderInterface $jsonEncoder,
+        \Magento\Backend\Model\Auth\Session $authSession,
+        \Magento\Cms\Model\Wysiwyg\ConfigFactory $wysiwygConfigFactory,
+        array $data = []
+    ) {
+        $this->wysiwygConfigFactory = $wysiwygConfigFactory;
+        parent::__construct($context, $jsonEncoder, $authSession, $data);
+    }
+
     /**
      * Constructor
      */
@@ -25,9 +53,6 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
      */
     protected function _beforeToHtml()
     {
-        /*$this->addTab("form_section", array(
-            "content" => $this->getLayout()->createBlock('Emarsys\Emarsys\Adminhtml\Support\Edit\Tab\Form')->toHtml(),
-        ));*/
         $this->addTab(
             'form_section',
             [
@@ -35,6 +60,7 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
                 'active' => true
             ]
         );
+
         return parent::_beforeToHtml();
     }
 
@@ -44,8 +70,7 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
     protected function _prepareLayout()
     {
         parent::_prepareLayout();
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $wysiwyg = $objectManager->create('Magento\Cms\Model\Wysiwyg\Config');
+        $wysiwyg = $this->wysiwygConfigFactory->create();
         if ($wysiwyg->isEnabled()) {
             $this->getLayout()->getBlock('head')->setCanLoadTinyMce(true);
         }

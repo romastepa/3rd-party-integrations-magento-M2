@@ -4,15 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-$helper = $objectManager->create('\Magento\Backend\Helper\Data');
-$saveUrl = $helper->getUrl('emarsys_emarsys/mapping_customer/save');
 ?>
 <?php echo $block->getGridHtml(); ?>
-<form method="POST" action="<?php echo $saveUrl; ?>" id="idformcustomer">
+<form method="POST" action="<?php echo $block->getUrl('emarsys_emarsys/mapping_customer/save'); ?>" id="idformcustomer">
     <input type="hidden" id="idjsonstringdata" name="jsonstringdata" value=""/>
-    <input type="hidden" name="form_key"
-    value="<?php echo $objectManager->get('Magento\Framework\Data\Form\FormKey')->getFormKey(); ?>"/>
+    <input type="hidden"
+           name="form_key"
+           value="<?php echo $block->getFormKey(); ?>"/>
 </form>
 <script>
     function changeValue(url, attribute, coulmnAttr, value, entityTypeId) {
@@ -21,7 +19,6 @@ $saveUrl = $helper->getUrl('emarsys_emarsys/mapping_customer/save');
             method: 'get',
             asynchronous: false
         });
-
     }
     function updateSchema(redirectUrl, count) {
         if (count > 0) {
@@ -37,7 +34,6 @@ $saveUrl = $helper->getUrl('emarsys_emarsys/mapping_customer/save');
         } else {
             setLocation(redirectUrl);
         }
-
     }
     function checkMapping(url, count) {
         if (count > 0) {
@@ -62,6 +58,5 @@ $saveUrl = $helper->getUrl('emarsys_emarsys/mapping_customer/save');
             $('#idjsonstringdata').val(stringJsonData);
             $('#idformcustomer').submit();
         });
-
     });
 </script>

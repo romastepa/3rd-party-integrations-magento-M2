@@ -1015,4 +1015,36 @@ class InstallSchema implements InstallSchemaInterface
 
         $installer->endSetup();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
+    {
+        $setup->startSetup();
+        if (version_compare($context->getVersion(), "1.0.7", "<")) {
+            $tableName = $setup->getTable('emarsys_product_export');
+            $connection = $setup->getConnection();
+            if ($connection->isTableExists($tableName) == false) {
+                $table = $connection
+                    ->newTable($tableName)
+                    ->addColumn(
+                        'entity_id',
+                        Table::TYPE_INTEGER,
+                        null,
+                        ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                        'Product Id'
+                    )->addColumn(
+                        'params',
+                        Table::TYPE_BLOB,
+                        '64k',
+                        [],
+                        'Product Params'
+                    )
+                    ->setComment('Catalog Product Export');
+                $setup->getConnection()->createTable($table);
+            }
+        }
+        $setup->endSetup();
+    }
 }

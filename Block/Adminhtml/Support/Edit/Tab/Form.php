@@ -7,9 +7,25 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Support\Edit\Tab;
 
+/**
+ * Class Form
+ * @package Emarsys\Emarsys\Block\Adminhtml\Support\Edit\Tab
+ */
 class Form extends \Magento\Backend\Block\Widget\Form\Generic
 {
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $storeManagerInterface;
 
+    /**
+     * Form constructor.
+     * @param \Magento\Backend\Block\Widget\Context $context
+     * @param \Magento\Backend\Model\Auth\Session $session
+     * @param \Magento\Framework\Data\FormFactory $formFactory
+     * @param \Magento\Framework\Registry $registry
+     * @param array $data
+     */
     public function __construct(
         \Magento\Backend\Block\Widget\Context $context,
         \Magento\Backend\Model\Auth\Session $session,
@@ -22,51 +38,53 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         $this->admin = $context->getBackendSession();
         $this->_formFactory = $formFactory;
         $this->_registry = $registry;
+        $this->storeManagerInterface = $context->getStoreManager();
     }
+
     /**
      * Init form
      */
     protected function _prepareForm()
     {
         $userId = $this->session->getUser()->getId();
-
         $user = $this->admin;
         $url = $this->getUrl("*/*/supportEmails");
-
         $form = $this->_formFactory->create();
 
         $this->setForm($form);
-        $fieldset = $form->addFieldset("support_form", ["legend"=>'<h4 class="" style="background-color: #41362f;color:#fff;line-height: 20px;padding:10px">Support Information</h4>']);
+        $fieldset = $form->addFieldset("support_form", ["legend" => '<h4 class="" style="background-color: #41362f;color:#fff;line-height: 20px;padding:10px">Support Information</h4>']);
+
         $fieldset->addField("type", "select", [
             'label'     => 'Support Type',
             'name'      => 'type',
             'required'  => true,
-            'onchange'  => 'support(\''.$url.'\',this.value)',
+            'onchange'  => 'support(\'' . $url. '\', this.value)',
             'values'    => [
-                ['value' => '' ,'label' => 'Please Select'],
-                ['value' => 'Sales Support','label' => 'Sales Support'],
-                ['value' => 'Customization Service','label' => 'Customization Service'],
-                ['value' => 'Feedback and Complaint','label' => 'Feedback and Complaint'],
-                ['value' => 'Technical Support','label' => 'Technical Support'],
-                ['value' => 'Urgent Issue','label' => 'Urgent Issue'],
-                ['value' => 'Installation Service','label' => 'Installation Service'],
-                ['value' => 'Request Upgrade','label' => 'Request Upgrade'],
-                ['value' => 'Other','label' => 'Other']
+                ['value' => '' , 'label' => 'Please Select'],
+                ['value' => 'Sales Support', 'label' => 'Sales Support'],
+                ['value' => 'Customization Service', 'label' => 'Customization Service'],
+                ['value' => 'Feedback and Complaint', 'label' => 'Feedback and Complaint'],
+                ['value' => 'Technical Support', 'label' => 'Technical Support'],
+                ['value' => 'Urgent Issue', 'label' => 'Urgent Issue'],
+                ['value' => 'Installation Service', 'label' => 'Installation Service'],
+                ['value' => 'Request Upgrade', 'label' => 'Request Upgrade'],
+                ['value' => 'Other', 'label' => 'Other']
             ],
         ]);
+
         $fieldset->addField("show_email", "label", [
             "label" => "Email",
             "id"    => "email",
             "class" => "showemail",
             'after_element_html' => '<span id="show-email"></span>',
         ]);
+
         $fieldset->addField("firstname", "text", [
             "label" => "Name",
             "class" => "required-entry",
             "required" => true,
             "name" => "firstname",
         ]);
-
 
         $fieldset->addField("subject", "text", [
             "label" => "Subject",
@@ -96,7 +114,6 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
                     'value'     => 'Urgent',
                     'label'     => 'Urgent',
                 ],
-
             ],
         ]);
 
@@ -104,8 +121,6 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
                 'name' => 'message',
                 'label' => 'Message',
                 'title' => 'Message',
-//                'config'    => Mage::getSingleton('cms/wysiwyg_config')->getConfig(),
-//                'wysiwyg'   => true,
             'required' => true
         ]);
 
@@ -125,10 +140,8 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         }
 
         if (isset($support_data['file']) && $support_data['file']) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $urlLoader = $objectManager->create('Magento\Store\Model\StoreManagerInterface');
-            $baseUrl = $urlLoader->getStore()->getBaseUrl();
-            $support_data['file'] = $baseUrl . 'support/'.$support_data['file'];
+            $baseUrl = $this->storeManagerInterface->getStore()->getBaseUrl();
+            $support_data['file'] = $baseUrl . 'support/' . $support_data['file'];
         }
 
         $form->setValues($user->getData());

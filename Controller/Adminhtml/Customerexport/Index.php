@@ -4,7 +4,6 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
 use Magento\Backend\App\Action;
@@ -32,8 +31,7 @@ class Index extends Action
     public function __construct(
         Context $context,
         Data $emarsysHelper,
-        PageFactory $resultPageFactory,
-        \Emarsys\Emarsys\Model\ProductCronSync $productCronSync
+        PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
         $this->adminSession = $context->getSession();
@@ -48,12 +46,10 @@ class Index extends Action
      */
     public function execute()
     {
-
-        $this->productCronSync->consolidatedСronProductSync();
         $store = $this->getRequest()->getParam('store');
         if (!$store) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
-            return $this->resultRedirectFactory->create()->setUrl($this->getUrl('*/*', ['store'=>$storeId]));
+            return $this->resultRedirectFactory->create()->setUrl($this->getUrl('*/*', ['store' => $storeId]));
         }
         $data = $this->adminSession->getFormData(true);
         $page = $this->resultPageFactory->create();
