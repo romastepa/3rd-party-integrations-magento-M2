@@ -1,0 +1,18 @@
+<?php
+/**
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ */
+?>
+<?php $storeId = $this->getRequest()->getParam('store'); ?>
+<?php $mappingId = $this->getRequest()->getParam('mapping_id'); ?>
+<?php $backBtn = "'" . $block->getUrl("emarsys_emarsys/mapping_event/index", ['store' => $storeId]) . "'"; ?>
+<?php $refreshButton = "'" . $block->getUrl('*/*/refreshplaceholders', ['mapping_id' => $mappingId, 'store' => $storeId]) . "'"; ?>
+<div>
+    <span class="scalable">
+        <input type="button" class="action-default scalable" value="Back" onclick="window.location.href=<?php echo $backBtn; ?>" />
+        <input type="button" class="action-default scalable" value="Save Mapping" onclick="placeHolderValidation()" />
+        <input type="button" class="action-default scalable" value="Refresh Placeholders" onclick="window.location.href=<?php echo $refreshButton; ?>"/>
+    </span>
+</div>
