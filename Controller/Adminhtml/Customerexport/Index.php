@@ -37,7 +37,6 @@ class Index extends Action
         $this->adminSession = $context->getSession();
         $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
-        $this->productCronSync = $productCronSync;
     }
 
     /**

@@ -205,13 +205,13 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     public function getRequiredProductAttributesForExport($storeId)
     {
         $requiredMapping = [];
-        $requiredMapping['sku'] = 'Item'; // Mage_Attr_Code = Emarsys_Attr_Code
-        $requiredMapping['name'] = 'Title';
-        $requiredMapping['quantity_and_stock_status'] = 'Available';
-        $requiredMapping['url_key'] = 'Link';
-        $requiredMapping['image'] = 'Image';
-        $requiredMapping['category_ids'] = 'Category';
-        $requiredMapping['price'] = 'Price';
+        $requiredMapping['sku'] = 'item'; // Mage_Attr_Code = Emarsys_Attr_Code
+        $requiredMapping['name'] = 'title';
+        $requiredMapping['quantity_and_stock_status'] = 'available';
+        $requiredMapping['url_key'] = 'link';
+        $requiredMapping['image'] = 'image';
+        $requiredMapping['category_ids'] = 'category';
+        $requiredMapping['price'] = 'price';
         $returnArray = [];
         foreach ($requiredMapping as $key => $value) {
             $attrData = [];

@@ -6,6 +6,18 @@
  */
 namespace Emarsys\Emarsys\Model;
 
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Psr\Log\LoggerInterface as Logger;
+use Magento\Directory\Model\CurrencyFactory;
+
+use Magento\Framework\Model\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Data\Collection\AbstractDb;
+
 use Magento\Framework\Model\AbstractModel;
 
 /**
@@ -14,6 +26,91 @@ use Magento\Framework\Model\AbstractModel;
  */
 class Emarsysproductexport extends AbstractModel
 {
+    CONST EMARSYS_DELIMITER = '{EMARSYS}';
+    CONST BATCH_SIZE = 500;
+
+    protected $_preparedData = array();
+
+    protected $_mapHeader = array('item');
+
+    protected $_processedStores = array();
+
+    /**
+     * @var ProductCollectionFactory
+     */
+    protected $productCollectionFactory;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var EmarsysDataHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * @var CurrencyFactory
+     */
+    protected $currencyFactory;
+
+    /**
+     * @var \Magento\Framework\File\Csv
+     */
+    protected $csvWriter;
+
+    /**
+     * Emarsysproductexport constructor.
+     *
+     * @param ProductCollectionFactory $productCollectionFactory
+     * @param StoreManagerInterface $storeManager
+     * @param EmarsysDataHelper $emarsysHelper
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Logger $logger
+     * @param CurrencyFactory $currencyFactory
+     * @param \Magento\Framework\File\Csv $csvWriter
+     * @param Context $context
+     * @param Registry $registry
+     * @param AbstractResource|null $resource
+     * @param AbstractDb|null $resourceCollection
+     * @param array $data
+     */
+    public function __construct(
+        ProductCollectionFactory $productCollectionFactory,
+        StoreManagerInterface $storeManager,
+        EmarsysDataHelper $emarsysHelper,
+        ScopeConfigInterface $scopeConfig,
+        Logger $logger,
+        CurrencyFactory $currencyFactory,
+        \Magento\Framework\File\Csv $csvWriter,
+        Context $context,
+        Registry $registry,
+        AbstractResource $resource = null,
+        AbstractDb $resourceCollection = null,
+        array $data = []
+    ) {
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->storeManager = $storeManager;
+        $this->emarsysHelper = $emarsysHelper;
+        $this->scopeConfig = $scopeConfig;
+        $this->logger = $logger;
+        $this->currencyFactory = $currencyFactory;
+        $this->csvWriter = $csvWriter;
+
+        parent::__construct($context, $registry, $resource, $resourceCollection, $data);
+    }
+
     /**
      * constructor
      */
@@ -21,5 +118,183 @@ class Emarsysproductexport extends AbstractModel
     {
         parent::_construct();
         $this->_init('Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport');
+    }
+
+    /**
+     * Get Catalog Product Export Collection
+     * @param int|object $storeId
+     * @param int $currentPageNumber
+     * @param array $attributes
+     * @return object
+     */
+    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle, $excludedCategories)
+    {
+        try {
+            /** @var \Magento\Store\Model\Store $store */
+            $store = $this->storeManager->getStore($storeId);
+
+            $collection = $this->productCollectionFactory->create()
+                ->addStoreFilter($store->getId())
+                ->setPageSize(self::BATCH_SIZE)
+                ->setCurPage($currentPageNumber)
+                ->addAttributeToSelect($attributes)
+                ->addAttributeToFilter('visibility', ["neq" => 1]);
+
+            if (is_null($includeBundle)) {
+                $includeBundle = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
+            }
+
+            if (!$includeBundle) {
+                $collection->addAttributeToFilter('type_id', ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]);
+            }
+            if (is_null($excludedCategories)) {
+                $excludedCategories = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
+            }
+            if ($excludedCategories) {
+                $excludedCategories = explode(',', $excludedCategories);
+                $collection->addAttributeToFilter('category_ids', ['nin' => $excludedCategories]);
+            }
+            return $collection;
+        } catch (Exception $e) {
+            $this->logger->critical($e->getMessage());
+        }
+    }
+
+    /**
+     * Save CSV for Website
+     *
+     * @param $websiteId
+     * @return array
+     * @throws Exception
+     */
+    public function saveToCsv($websiteId)
+    {
+        $this->_prepareData();
+
+        $path = $fileDirectory = \Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR . '/export';
+
+        $this->emarsysHelper->checkAndCreateFolder($path);
+
+        $name = "products_" . date('YmdHis', time()) . "_" . $websiteId . ".csv";
+        $file = $path . '/' . $name;
+
+        $this->csvWriter
+            ->setEnclosure('"')
+            ->setDelimiter(',')
+            ->saveData($file, (array($this->_mapHeader) + $this->_preparedData));
+
+        return array($file, $name);
+    }
+
+    /**
+     * Prepare Data for CSV
+     *
+     * @return array
+     */
+    protected function _prepareData()
+    {
+        $currentPageNumber = 1;
+
+        $collection = $this->getCollection();
+        $collection->setPageSize(self::BATCH_SIZE)
+            ->setCurPage($currentPageNumber);
+
+        $lastPageNumber = $collection->getLastPageNumber();
+
+        while ($currentPageNumber <= $lastPageNumber) {
+            if ($currentPageNumber != 1) {
+                $collection->setCurPage($currentPageNumber);
+            }
+            foreach ($collection as $product) {
+                $productId = $product->getId();
+                $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
+                foreach ($productData as $param) {
+                    $item = unserialize($param);
+                    $map = $this->prepareHeader(
+                        $item['store'],
+                        $item['header'],
+                        $item['default_store'],
+                        $item['currency_code']
+                    );
+
+                    if (!isset($this->_preparedData[$productId])) {
+                        $this->_preparedData[$productId] = array_fill(0, count($this->_mapHeader), "");
+                    } else {
+                        $processed = $this->_preparedData[$productId];
+                        $this->_preparedData[$productId] = array_fill(0, count($this->_mapHeader), "");
+                        $this->_preparedData[$productId] = $processed + $this->_preparedData[$productId];
+                    }
+
+                    foreach ($item['data'] as $key => $value) {
+                        if (isset($this->_mapHeader[$map[$key]]) &&
+                            ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
+                                || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
+                            )) {
+                            $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();
+                            if ($item['currency_code'] != $currencyCodeTo) {
+                                $rate = $this->currencyFactory->create()->load($item['currency_code'])->getAnyRate($currencyCodeTo);
+                                $value = $value * $rate;
+                            }
+                        }
+                        $this->_preparedData[$productId][$map[$key]] = $value;
+                    }
+                }
+                ksort($this->_preparedData[$productId]);
+            }
+
+            $currentPageNumber++;
+        }
+
+        return $this->_preparedData;
+    }
+
+    /**
+     * Prepare Global Header and Mapping
+     *
+     * @param string $storeCode
+     * @param array $header
+     * @param bool $isDefault
+     * @param string $currencyCode
+     * @return mixed
+     */
+    public function prepareHeader($storeCode, $header, $isDefault = false, $currencyCode)
+    {
+        if (!array_key_exists($storeCode, $this->_processedStores)) {
+            // $this->_processedStores[$storeCode] = array(oldKey => newKey);
+            $this->_processedStores[$storeCode] = array();
+            foreach ($header as $key => &$value) {
+                if (strtolower($value) == 'item') {
+                    unset($header[$key]);
+                    $this->_processedStores[$storeCode][$key] = 0;
+                    continue;
+                }
+
+                if (!$isDefault) {
+                    if (strtolower($value) == 'price' || strtolower($value) == 'msrp') {
+                        $newValue = $value . '_' . $currencyCode;
+                        $existingKey = array_search($newValue, $this->_mapHeader);
+                        if ($existingKey) {
+                            unset($header[$key]);
+                            $this->_processedStores[$storeCode][$key] = $existingKey;
+                            continue;
+                        } else {
+                            $value = $newValue;
+                        }
+                    } else {
+                        $value = $value . '_' . $storeCode;
+                    }
+                }
+            }
+            $headers = array_flip($header);
+
+            foreach ($headers as $head => $key) {
+                $this->_mapHeader[] = $head;
+                $renewedHead = array_keys($this->_mapHeader);
+                $lastElementKey = array_pop($renewedHead);
+                $this->_processedStores[$storeCode][$key] = $lastElementKey;
+            }
+        }
+
+        return $this->_processedStores[$storeCode];
     }
 }

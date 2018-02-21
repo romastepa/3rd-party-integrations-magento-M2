@@ -40,6 +40,7 @@ use Magento\Newsletter\Model\SubscriberFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem\Io\File as FilesystemIoFile;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\Filesystem\Io\Ftp;
 
 /**
  * Class Data
@@ -344,6 +345,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $filesystemIoFile;
 
     /**
+     * @var Ftp
+     */
+    protected $ftp;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -374,6 +380,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param SubscriberCollectionFactory $newsLetterCollectionFactory
      * @param Subscriber $subscriber
      * @param SubscriberFactory $subscriberFactory
+     * @param Ftp $ftp
      */
     public function __construct(
         Context $context,
@@ -405,7 +412,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         Subscriber $subscriber,
         SubscriberFactory $subscriberFactory,
         DirectoryList $directoryList,
-        FilesystemIoFile $filesystemIoFile
+        FilesystemIoFile $filesystemIoFile,
+        Ftp $ftp
     ) {
         $this->context = $context;
         $this->emarsysLogs = $emarsysLogs;
@@ -439,6 +447,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->subscriberFactory = $subscriberFactory;
         $this->directoryList = $directoryList;
         $this->filesystemIoFile = $filesystemIoFile;
+        $this->ftp = $ftp;
 
         parent::__construct($context);
     }
@@ -2524,37 +2533,46 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($store);
         try {
-            $hostname = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_HOSTNAME);
-            $port = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PORT);
-            $username = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USERNAME);
-            $password = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PASSWORD);
-            $ftpSsl = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USEFTP_OVER_SSL);
-            $passiveMode = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USE_PASSIVE_MODE);
+            $hostname = $store->getConfig(self::XPATH_EMARSYS_FTP_HOSTNAME);
+            $port = $store->getConfig(self::XPATH_EMARSYS_FTP_PORT);
+            $username = $store->getConfig(self::XPATH_EMARSYS_FTP_USERNAME);
+            $password = $store->getConfig(self::XPATH_EMARSYS_FTP_PASSWORD);
+            $ftpSsl = $store->getConfig(self::XPATH_EMARSYS_FTP_USEFTP_OVER_SSL);
+            $passiveMode = $store->getConfig(self::XPATH_EMARSYS_FTP_USE_PASSIVE_MODE);
 
             if (!$username || !$password || !$hostname || !$port) {
                 return $result;
             }
-
-            if ($ftpSsl == 1) {
-                $ftpConnId = @ftp_ssl_connect($hostname, $port);
-            } else {
-                $ftpConnId = @ftp_connect($hostname, $port);
-            }
-            if ($ftpConnId != '') {
-                $ftpLogin = @ftp_login($ftpConnId, $username, $password);
-                if ($ftpLogin == 1) {
-                    $passiveState = true;
-                    if ($passiveMode == 1) {
-                        $passiveState = @ftp_pasv($ftpConnId, true);
-                    }
-                    if ($passiveState) {
-                        $result = true;
-                        @ftp_close($ftpConnId);
-                    }
-                }
-            }
+            $result = $this->ftp->open(
+                array(
+                    'host' => $hostname,
+                    'port' => $port,
+                    'user' => $username,
+                    'password' => $password,
+                    'ssl' => $ftpSsl ? true : false,
+                    'passive' => $passiveMode ? true : false
+                )
+            );
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $store->getId(), 'checkFtpConnection');
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param mixed $store
+     * @param string $filePath
+     * @param string $filename
+     * @return bool
+     */
+    public function moveFileToFtp($store, $filePath, $filename)
+    {
+        $result = false;
+        if ($this->checkFtpConnectionByStore($store)) {
+            $content = file_get_contents($filePath);
+            $result = $this->ftp->write($filename, $content);
+            $this->ftp->close();
         }
 
         return $result;
@@ -2575,7 +2593,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function checkAndCreateFolder($folderName)
     {
         if ($this->filesystemIoFile->checkAndCreateFolder($folderName)) {
-            if ($this->filesystemIoFile->chmod($folderName, 0777, true)) {
+            if ($this->filesystemIoFile->chmod($folderName, 0775, true)) {
                 return true;
             }
         }
