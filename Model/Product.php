@@ -739,17 +739,18 @@ class Product extends AbstractModel
 
     public function consolidatedCatalogExport($mode = EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
     {
-        try {
-            set_time_limit(0);
+        set_time_limit(0);
 
-            $logsArray['job_code'] = 'product';
-            $logsArray['status'] = 'started';
-            $logsArray['messages'] = __('Bulk product export started');
-            $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logsArray['run_mode'] = $mode;
-            $logsArray['auto_log'] = 'Complete';
-            $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $logId = $this->logsHelper->manualLogs($logsArray, 1);
+        $logsArray['job_code'] = 'product';
+        $logsArray['status'] = 'started';
+        $logsArray['messages'] = __('Bulk product export started');
+        $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
+        $logsArray['run_mode'] = $mode;
+        $logsArray['auto_log'] = 'Complete';
+        $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+        $logId = $this->logsHelper->manualLogs($logsArray, 1);
+
+        try {
             $logsArray['id'] = $logId;
             $logsArray['log_action'] = 'sync';
             $logsArray['action'] = 'synced to emarsys';
@@ -836,8 +837,29 @@ class Product extends AbstractModel
                     $this->moveFile($store['store'], $outputFile, $csvFilePath, $logId, $mode);
                 }
             }
+
+            $logsArray['id'] = $logId;
+            if ($this->_errorCount) {
+                $logsArray['status'] = 'error';
+                $logsArray['messages'] = __('Product export have an error. Please check.');
+            } else {
+                $logsArray['status'] = 'success';
+                $logsArray['messages'] = __('Product export completed');
+            }
+            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $this->logsHelper->manualLogsUpdate($logsArray);
         } catch (Exception $e) {
-            Mage::helper('emarsys_suite2')->log($e->getMessage(), $this);
+            $msg = $e->getMessage();
+            $logsArray['id'] = $logId;
+            $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
+            $logsArray['description'] = __("Exception " . $msg);
+            $logsArray['message_type'] = 'Error';
+            $this->logsHelper->logs($logsArray);
+            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                $this->messageManager->addErrorMessage(
+                    __("Exception " . $msg)
+                );
+            }
         }
     }
 
