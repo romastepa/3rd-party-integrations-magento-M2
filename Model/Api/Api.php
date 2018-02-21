@@ -10,7 +10,8 @@ use Magento\Payment\Model\Method\Logger;
 use Zend_Http_Client;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Zend_Json;
-use Emarsys\Emarsys\Helper\Data;
+use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Module\ModuleListInterface;
 
 /**
  * Class Api
@@ -39,10 +40,14 @@ class Api extends \Magento\Framework\DataObject
     protected $scopeConfigInterface;
 
     /**
-     * @var Data
+     * @var ProductMetadataInterface
      */
-    protected $emarsysHelper;
+    protected $productMetadataInterface;
 
+    /**
+     * @var ModuleListInterface
+     */
+    protected $moduleListInterface;
 
     /**
      * Api constructor.
@@ -51,20 +56,24 @@ class Api extends \Magento\Framework\DataObject
      * @param \Psr\Log\LoggerInterface $logger
      * @param Logger $customLogger
      * @param ScopeConfigInterface $scopeConfigInterface
-     * @param Data $emarsysHelper
+     * @param ProductMetadataInterface $productMetadataInterface
+     * @param ModuleListInterface $moduleListInterface
      * @param array $data
      */
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         Logger $customLogger,
+        //EmarsysDataHelper $emarsysHelper,
         ScopeConfigInterface $scopeConfigInterface,
-        Data $emarsysHelper,
+        ProductMetadataInterface $productMetadataInterface,
+        ModuleListInterface $moduleListInterface,
         array $data = []
     ) {
         $this->_logger = $logger;
         $this->customLogger = $customLogger;
         $this->scopeConfigInterface = $scopeConfigInterface;
-        $this->emarsysHelper = $emarsysHelper;
+        $this->productMetadataInterface = $productMetadataInterface;
+        $this->moduleListInterface = $moduleListInterface;
         parent::__construct($data);
     }
 
@@ -199,7 +208,7 @@ class Api extends \Magento\Framework\DataObject
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
             ],
-            'Extension-Version' => 'Magento ' . $this->emarsysHelper->getVersion() . ' - ' . $this->emarsysHelper->getEmarsysVersion()
+            'Extension-Version' => 'Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne(self::MODULE_NAME)['setup_version']
         ];
         $client->setHeaders($header);
         $response = $client->request();
@@ -266,7 +275,7 @@ class Api extends \Magento\Framework\DataObject
                 'Nonce="' . $nonce . '", ' .
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
-                'Extension-Version: Magento ' . $this->emarsysHelper->getVersion() . ' - ' . $this->emarsysHelper->getEmarsysVersion(),
+                'Extension-Version: Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne(self::MODULE_NAME)['setup_version']
             ]);
         $response = curl_exec($ch);
 
