@@ -208,7 +208,7 @@ class Api extends \Magento\Framework\DataObject
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
             ],
-            'Extension-Version' => 'Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne(self::MODULE_NAME)['setup_version']
+            'Extension-Version' => 'Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne('Emarsys_Emarsys')['setup_version']
         ];
         $client->setHeaders($header);
         $response = $client->request();
@@ -275,7 +275,7 @@ class Api extends \Magento\Framework\DataObject
                 'Nonce="' . $nonce . '", ' .
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
-                'Extension-Version: Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne(self::MODULE_NAME)['setup_version']
+                'Extension-Version: Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne('Emarsys_Emarsys')['setup_version']
             ]);
         $response = curl_exec($ch);
 
