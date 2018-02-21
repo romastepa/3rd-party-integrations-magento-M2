@@ -10,6 +10,7 @@ use Magento\Payment\Model\Method\Logger;
 use Zend_Http_Client;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Zend_Json;
+use Emarsys\Emarsys\Helper\Data;
 
 /**
  * Class Api
@@ -38,23 +39,32 @@ class Api extends \Magento\Framework\DataObject
     protected $scopeConfigInterface;
 
     /**
+     * @var Data
+     */
+    protected $emarsysHelper;
+
+
+    /**
      * Api constructor.
      * By default is looking for first argument as array and assigns it as object
      * attributes This behavior may change in child classes
      * @param \Psr\Log\LoggerInterface $logger
      * @param Logger $customLogger
      * @param ScopeConfigInterface $scopeConfigInterface
+     * @param Data $emarsysHelper
      * @param array $data
      */
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         Logger $customLogger,
         ScopeConfigInterface $scopeConfigInterface,
+        Data $emarsysHelper,
         array $data = []
     ) {
         $this->_logger = $logger;
         $this->customLogger = $customLogger;
         $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($data);
     }
 
@@ -188,7 +198,8 @@ class Api extends \Magento\Framework\DataObject
                 'Nonce="' . $nonce . '", ' .
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
-            ]
+            ],
+            'Extension-Version' => 'Magento ' . $this->emarsysHelper->getVersion() . ' - ' . $this->emarsysHelper->getEmarsysVersion()
         ];
         $client->setHeaders($header);
         $response = $client->request();
@@ -255,6 +266,7 @@ class Api extends \Magento\Framework\DataObject
                 'Nonce="' . $nonce . '", ' .
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
+                'Extension-Version: Magento ' . $this->emarsysHelper->getVersion() . ' - ' . $this->emarsysHelper->getEmarsysVersion(),
             ]);
         $response = curl_exec($ch);
 

@@ -180,12 +180,12 @@ class Index extends Action
                 }
             } else {
                 //test api connecton failed.
-                $this->messageManager->addErrorMessage('Test connection is failed. Please check credentials.');
+                $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Test connection is failed. Please check credentials. ' . json_encode($jsonDecode, JSON_PRETTY_PRINT);
+                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. ' . json_encode($jsonDecode, JSON_PRETTY_PRINT);
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
         } else {
@@ -195,7 +195,7 @@ class Index extends Action
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Test connection is failed. Please enter the api credentials';
+            $logsArray['messages'] = 'Connection failed. Please enter the api credentials.';
             $this->logsHelper->manualLogsUpdate($logsArray);
         }
     }

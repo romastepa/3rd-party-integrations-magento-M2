@@ -59,10 +59,12 @@ class ProductSync
                     continue;
                 }
 
-                $this->emarsysProductModel->syncProducts(
+                /*$this->emarsysProductModel->syncProducts(
                     $storeId,
                     EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC
-                );
+                );*/
+
+                $this->emarsysProductModel->consolidatedCatalogExport(EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(

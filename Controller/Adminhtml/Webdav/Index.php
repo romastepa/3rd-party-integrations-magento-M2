@@ -148,22 +148,22 @@ class Index extends Action
                 $this->logsHelper->manualLogsUpdate($logsArray);
             } else {
                 //test connection is failed.
-                $this->messageManager->addErrorMessage('Test connection is failed.');
+                $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'WebDav test connection failed' . $checkWebDavConnection['response_body'];
+                $logsArray['messages'] = 'WebDav connection failed. Please check your credentials and try again. ' . $checkWebDavConnection['response_body'];
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
         } else {
             //valid credentials not found.
-            $this->messageManager->addErrorMessage('Please enter the valid credentials');
+            $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
             $logsArray['id'] = $logId;
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'WebDav test connection is failed. Please enter valid credentials';
+            $logsArray['messages'] = 'WebDav connection failed. Please enter valid credentials.';
             $this->logsHelper->manualLogsUpdate($logsArray);
         }
     }

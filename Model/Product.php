@@ -793,7 +793,7 @@ class Product extends AbstractModel
                         $excludedCategories
                     );
 
-                    $lastPageNumber = 1;$collection->getLastPageNumber();
+                    $lastPageNumber = $collection->getLastPageNumber();
                     $header = $emarsysFieldNames[$storeId];
 
                     while ($currentPageNumber <= $lastPageNumber) {

@@ -2013,7 +2013,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $data = [
             'name' => 'Technical Support',
-            'email' => 'support@kensium.com'
+            'email' => 'support@emarsys.com'
         ];
         return $data;
     }

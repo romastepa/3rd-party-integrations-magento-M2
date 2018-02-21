@@ -269,7 +269,7 @@ class Logs extends AbstractHelper
                 'message' => $errorMsg
             ];
             $from = [
-                'email' => "support@kensium.com",
+                'email' => "support@emarsys.com",
                 'name' => "Support"
             ];
             $this->inlineTranslation->suspend();
