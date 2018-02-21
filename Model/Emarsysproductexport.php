@@ -46,11 +46,6 @@ class Emarsysproductexport extends AbstractModel
     protected $storeManager;
 
     /**
-     * @var EmarsysDataHelper
-     */
-    protected $emarsysHelper;
-
-    /**
      * @var ScopeConfigInterface
      */
     protected $scopeConfig;
@@ -71,14 +66,19 @@ class Emarsysproductexport extends AbstractModel
     protected $csvWriter;
 
     /**
+     * @var \Magento\Framework\Filesystem\Io\File
+     */
+    protected $ioFile;
+
+    /**
      * Emarsysproductexport constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
      * @param StoreManagerInterface $storeManager
-     * @param EmarsysDataHelper $emarsysHelper
      * @param ScopeConfigInterface $scopeConfig
      * @param Logger $logger
      * @param CurrencyFactory $currencyFactory
+     * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
      * @param Context $context
      * @param Registry $registry
@@ -89,10 +89,10 @@ class Emarsysproductexport extends AbstractModel
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
         StoreManagerInterface $storeManager,
-        EmarsysDataHelper $emarsysHelper,
         ScopeConfigInterface $scopeConfig,
         Logger $logger,
         CurrencyFactory $currencyFactory,
+        \Magento\Framework\Filesystem\Io\File $ioFile,
         \Magento\Framework\File\Csv $csvWriter,
         Context $context,
         Registry $registry,
@@ -102,10 +102,10 @@ class Emarsysproductexport extends AbstractModel
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->storeManager = $storeManager;
-        $this->emarsysHelper = $emarsysHelper;
         $this->scopeConfig = $scopeConfig;
         $this->logger = $logger;
         $this->currencyFactory = $currencyFactory;
+        $this->ioFile = $ioFile;
         $this->csvWriter = $csvWriter;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
@@ -171,9 +171,11 @@ class Emarsysproductexport extends AbstractModel
     {
         $this->_prepareData();
 
-        $path = $fileDirectory = \Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR . '/export';
+        $path = \Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR . '/export';
 
-        $this->emarsysHelper->checkAndCreateFolder($path);
+        if (!is_dir($path)) {
+            $this->ioFile->mkdir($path, 0775);
+        }
 
         $name = "products_" . date('YmdHis', time()) . "_" . $websiteId . ".csv";
         $file = $path . '/' . $name;
