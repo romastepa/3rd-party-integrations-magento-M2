@@ -208,22 +208,22 @@ class Logs extends AbstractHelper
     public function logs($logsArray = [])
     {
         $currentDate = $this->date->date('Y-m-d H:i:s', time());
-        $schedulerId = $logsArray['id'];
+        $schedulerId = @$logsArray['id'];
 
         $logsModel = $this->logsFactory->create();
         $logsModel->setLogExecId($schedulerId)
             ->setCreatedAt($currentDate)
-            ->setEmarsysInfo($logsArray['emarsys_info'])
-            ->setDescription($logsArray['description'])
-            ->setAction($logsArray['action'])
-            ->setMessageType($logsArray['message_type'])
-            ->setStoreId($logsArray['store_id'])
-            ->setWebsiteId($logsArray['website_id'])
-            ->setLogAction($logsArray['log_action']);
+            ->setEmarsysInfo(@$logsArray['emarsys_info'])
+            ->setDescription(@$logsArray['description'])
+            ->setAction(isset($logsArray['action']) ? $logsArray['action'] : 'synced to emarsys')
+            ->setMessageType(@$logsArray['message_type'])
+            ->setStoreId(@$logsArray['store_id'])
+            ->setWebsiteId(isset($logsArray['website_id']) ? $logsArray['website_id'] : 0)
+            ->setLogAction(isset($logsArray['log_action']) ? $logsArray['log_action'] : 'sync');
 
         $logsModel->save();
 
-        $websiteId = $logsArray['website_id'];
+        $websiteId = isset($logsArray['website_id']) ? $logsArray['website_id'] : 0;
         if ($websiteId == 0) {
             $scopeType = 'default';
         } else {

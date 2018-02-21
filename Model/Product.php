@@ -749,11 +749,11 @@ class Product extends AbstractModel
         $logsArray['auto_log'] = 'Complete';
         $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logId = $this->logsHelper->manualLogs($logsArray, 1);
+        $logsArray['id'] = $logId;
+        $logsArray['log_action'] = 'sync';
+        $logsArray['action'] = 'synced to emarsys';
 
         try {
-            $logsArray['id'] = $logId;
-            $logsArray['log_action'] = 'sync';
-            $logsArray['action'] = 'synced to emarsys';
             $this->_errorCount = false;
             $this->_mode = $mode;
 
@@ -891,6 +891,7 @@ class Product extends AbstractModel
             if ($apiExportResult['result'] == 1) {
                 //successfully uploaded file on Emarsys
                 $logsArray['id'] = $logId;
+                $logsArray['job_code'] = 'product';
                 $logsArray['emarsys_info'] = __('File uploaded to Emarsys');
                 $logsArray['description'] = __('File uploaded to Emarsys. File Name: %1. API Export result: %2', $csvFilePath, $apiExportResult['resultBody']);
                 $logsArray['message_type'] = 'Success';
@@ -906,6 +907,7 @@ class Product extends AbstractModel
                 $this->_errorCount = true;
                 $msg = $apiExportResult['resultBody'];
                 $logsArray['id'] = $logId;
+                $logsArray['job_code'] = 'product';
                 $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
                 $logsArray['description'] = __('Failed to upload file on Emarsys. %1' , $msg);
                 $logsArray['message_type'] = 'Error';
@@ -921,6 +923,7 @@ class Product extends AbstractModel
                 //successfully uploaded the file on ftp
                 $this->_errorCount = false;
                 $logsArray['id'] = $logId;
+                $logsArray['job_code'] = 'product';
                 $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
                 $logsArray['description'] = $outputFile;
                 $logsArray['message_type'] = 'Success';
@@ -936,6 +939,7 @@ class Product extends AbstractModel
                 $errorMessage = error_get_last();
                 $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
                 $logsArray['id'] = $logId;
+                $logsArray['job_code'] = 'product';
                 $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
                 $logsArray['description'] = __('Failed to upload file on FTP server %1' , $msg);
                 $logsArray['message_type'] = 'Error';
@@ -993,6 +997,7 @@ class Product extends AbstractModel
                         if ($merchantId == '' || $token == '') {
                             $this->_errorCount = true;
                             $logsArray['id'] = $logId;
+                            $logsArray['job_code'] = 'product';
                             $logsArray['emarsys_info'] = __('Invalid API credentials');
                             $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
                             $logsArray['message_type'] = 'Error';
@@ -1009,6 +1014,7 @@ class Product extends AbstractModel
                         if (!$checkFtpConnection) {
                             $this->_errorCount = true;
                             $logsArray['id'] = $logId;
+                            $logsArray['job_code'] = 'product';
                             $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
                             $logsArray['description'] = __('Failed to connect with FTP server.');
                             $logsArray['message_type'] = 'Error';
@@ -1038,6 +1044,7 @@ class Product extends AbstractModel
                 } else {
                     $this->_errorCount = true;
                     $logsArray['id'] = $logId;
+                    $logsArray['job_code'] = 'product';
                     $logsArray['emarsys_info'] = __('Catalog Feed Export is Disabled');
                     $logsArray['description'] = __('Catalog Feed Export is Disabled for the store %1.', $store->getName());
                     $logsArray['message_type'] = 'Error';
@@ -1046,6 +1053,7 @@ class Product extends AbstractModel
             } else {
                 $this->_errorCount = true;
                 $logsArray['id'] = $logId;
+                $logsArray['job_code'] = 'product';
                 $logsArray['emarsys_info'] = __('Emarsys is disabled');
                 $logsArray['description'] = __('Emarsys is disabled for the website %1', $websiteId);
                 $logsArray['message_type'] = 'Error';
