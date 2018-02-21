@@ -980,8 +980,8 @@ class Product extends AbstractModel
                                     __('Invalid API credential. Please check your settings and try again !!!')
                                 );
                             }
+                            return;
                         }
-                        return;
                     } else {
                         $checkFtpConnection = $this->emarsysHelper->checkFtpConnectionByStore($store);
                         if (!$checkFtpConnection) {
@@ -996,8 +996,8 @@ class Product extends AbstractModel
                                     __("Failed to connect with FTP server. Please check your settings and try again !!!")
                                 );
                             }
+                            return;
                         }
-                        return;
                     }
 
                     $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
