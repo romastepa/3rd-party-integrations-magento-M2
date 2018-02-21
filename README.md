@@ -17,13 +17,14 @@
 
 ### Composer Setup
 1. ```composer config repositories.emartech-3rd-party-integrations-magento-m2 git git@github.com:emartech/3rd-party-integrations-magento-M2```
-2. ```composer require emarsys/emarsys:"1.0.6"```
+2. ```composer require emarsys/emarsys:"1.0.7"```
 3. ```php bin/magento setup:upgrade```
-4. ```php bin/magento setup:static-content:deploy```
-5. ```php bin/magento cache:flush```
+4. ```php bin/magento setup:di:compile```
+5. ```php bin/magento setup:static-content:deploy```
+6. ```php bin/magento cache:flush```
 
 
 # Release Notes
 
-## v1.0.6
-Added Composer Installation method
+## v1.0.7
+Performance and Multi Store support
