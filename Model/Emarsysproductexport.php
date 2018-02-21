@@ -71,6 +71,11 @@ class Emarsysproductexport extends AbstractModel
     protected $ioFile;
 
     /**
+     * @var \Magento\Framework\Filesystem\DirectoryList
+     */
+    protected $dir;
+
+    /**
      * Emarsysproductexport constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -80,6 +85,7 @@ class Emarsysproductexport extends AbstractModel
      * @param CurrencyFactory $currencyFactory
      * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
+     * @param \Magento\Framework\Filesystem\DirectoryList $dir,
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -94,6 +100,7 @@ class Emarsysproductexport extends AbstractModel
         CurrencyFactory $currencyFactory,
         \Magento\Framework\Filesystem\Io\File $ioFile,
         \Magento\Framework\File\Csv $csvWriter,
+        \Magento\Framework\Filesystem\DirectoryList $dir,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -107,6 +114,7 @@ class Emarsysproductexport extends AbstractModel
         $this->currencyFactory = $currencyFactory;
         $this->ioFile = $ioFile;
         $this->csvWriter = $csvWriter;
+        $this->dir = $dir;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -171,7 +179,7 @@ class Emarsysproductexport extends AbstractModel
     {
         $this->_prepareData();
 
-        $path = \Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR . '/export';
+        $path = $this->dir->getPath(\Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR) . '/export';
 
         if (!is_dir($path)) {
             $this->ioFile->mkdir($path, 0775);
