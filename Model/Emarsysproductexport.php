@@ -185,7 +185,7 @@ class Emarsysproductexport extends AbstractModel
             $this->ioFile->mkdir($path, 0775);
         }
 
-        $name = "products_" . date('YmdHis', time()) . "_" . $websiteId . ".csv";
+        $name = "products_" . $websiteId . ".csv";
         $file = $path . '/' . $name;
 
         $this->csvWriter
