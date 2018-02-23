@@ -18,11 +18,11 @@
 ### Composer Setup
 1. ```composer config repositories.emartech-3rd-party-integrations-magento-m2 git git@github.com:emartech/3rd-party-integrations-magento-M2```
 2. ```composer require emarsys/emarsys:"1.0.7"```
-4. ```php bin/magento module:enable Emarsys_Emarsys```
-3. ```php bin/magento setup:upgrade```
-4. ```php bin/magento setup:di:compile```
-5. ```php bin/magento setup:static-content:deploy```
-6. ```php bin/magento cache:flush```
+3. ```php bin/magento module:enable Emarsys_Emarsys```
+4. ```php bin/magento setup:upgrade```
+5. ```php bin/magento setup:di:compile```
+6. ```php bin/magento setup:static-content:deploy```
+7. ```php bin/magento cache:flush```
 
 
 # Release Notes
