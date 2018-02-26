@@ -993,7 +993,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getPhpSettings()
     {
         return [
-            'memory_limit' => $this->getMemoryLimit(),
+            //'memory_limit' => $this->getMemoryLimit(),
             'max_execution_time' => @ini_get('max_execution_time'),
             'phpinfo' => $this->getPhpInfoArray()
         ];
@@ -1011,14 +1011,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return 0;
         }
 
-        $lastMemoryLimitLetter = strtolower(substr($memoryLimit, -1));
-        switch ($lastMemoryLimitLetter) {
-            case 'g':
-                $memoryLimit *= 1024;
+        switch (strtolower(substr($memoryLimit, -1))) {
             case 'm':
-                $memoryLimit *= 1024;
-            case 'k':
-                $memoryLimit *= 1024;
+            case 'g':
+            case 'k': return (int)$memoryLimit * 1024;
+            default: return (int)$memoryLimit;
         }
 
         if ($inMegabytes) {
