@@ -848,7 +848,7 @@ class Product extends AbstractModel
             }
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->manualLogsUpdate($logsArray);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $msg = $e->getMessage();
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
@@ -1076,51 +1076,6 @@ class Product extends AbstractModel
         }
 
         return $this->_websites[$apiUserName];
-    }
-
-    /**
-     * Get Mapped Attributes
-     *
-     * @param int $websiteId
-     * @param int $storeId
-     */
-    public function getMappedAttributes($websiteId, $storeId)
-    {
-        $staticExportArray = Mage::helper('webextend')->getStaticExportArray();
-        $staticMagentoAttributeArray = Mage::helper('webextend')->getStaticMagentoAttributeArray();
-        $emarsysFieldNames = array();
-        $magentoAttributeNames = array();
-
-        //Getting mapped emarsys attribute collection
-        $model = Mage::getModel('webextend/emarsysproductattributesmapping');
-        $collection = $model->getCollection();
-        $collection->addFieldToFilter("store_id", $storeId);
-        $collection->addFieldToFilter("emarsys_attribute_code_id", array("neq" => 0));
-        if ($collection->getSize()) {
-            //need to make sure required mapping fields should be there else we have to manually map.
-            foreach ($collection as $col_record) {
-                $emarsysFieldName = Mage::getModel('webextend/emarsysproductattributesmapping')->getEmarsysFieldName($storeId, $col_record->getData('emarsys_attribute_code_id'));
-                $emarsysFieldNames[] = $emarsysFieldName;
-                $magentoAttributeNames[] = $col_record->getData('magento_attribute_code');
-            }
-            for ($ik = 0; $ik < count($staticExportArray); $ik++) {
-                if (!in_array($staticExportArray[$ik], $emarsysFieldNames)) {
-                    $emarsysFieldNames[] = $staticExportArray[$ik];
-                    $magentoAttributeNames[] = $staticMagentoAttributeArray[$ik];
-                }
-            }
-        } else {
-            // As we does not have any Magento Emarsys Attibutes mapping so we will go with default Emarsys export attributes
-            for ($ik = 0; $ik < count($staticExportArray); $ik++) {
-                if (!in_array($staticExportArray[$ik], $emarsysFieldNames)) {
-                    $emarsysFieldNames[] = $staticExportArray[$ik];
-                    $magentoAttributeNames[] = $staticMagentoAttributeArray[$ik];
-                }
-            }
-        }
-
-        $this->_credentials[$websiteId][$storeId]['emarsys_field_names'] = $emarsysFieldNames;
-        $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $magentoAttributeNames;
     }
 
     /**

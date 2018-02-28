@@ -163,7 +163,7 @@ class Emarsysproductexport extends AbstractModel
                 $collection->addAttributeToFilter('category_ids', ['nin' => $excludedCategories]);
             }
             return $collection;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
         }
     }
@@ -173,7 +173,7 @@ class Emarsysproductexport extends AbstractModel
      *
      * @param $websiteId
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     public function saveToCsv($websiteId)
     {
