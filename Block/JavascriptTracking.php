@@ -166,7 +166,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
 
                             continue;
                         }
-                        $childCat = $this->categoryFactory->create()->load($categoryPathId);
+                        $childCat = $this->categoryFactory->create()->setStoreId($this->storeManager->getDefaultStoreView()->getId())->load($categoryPathId);
                         $childCats[] = $childCat->getName();
                     }
                     $categoryName = implode(" > ", $childCats);
