@@ -27,5 +27,5 @@
 
 # Release Notes
 
-## v1.0.7
+## v1.0.8
 Performance and Multi Store support
