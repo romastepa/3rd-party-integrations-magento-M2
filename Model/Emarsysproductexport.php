@@ -10,7 +10,6 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductColl
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Psr\Log\LoggerInterface as Logger;
 use Magento\Directory\Model\CurrencyFactory;
 
 use Magento\Framework\Model\Context;
@@ -81,7 +80,6 @@ class Emarsysproductexport extends AbstractModel
      * @param ProductCollectionFactory $productCollectionFactory
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
-     * @param Logger $logger
      * @param CurrencyFactory $currencyFactory
      * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
@@ -96,7 +94,6 @@ class Emarsysproductexport extends AbstractModel
         ProductCollectionFactory $productCollectionFactory,
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig,
-        Logger $logger,
         CurrencyFactory $currencyFactory,
         \Magento\Framework\Filesystem\Io\File $ioFile,
         \Magento\Framework\File\Csv $csvWriter,
@@ -110,7 +107,7 @@ class Emarsysproductexport extends AbstractModel
         $this->productCollectionFactory = $productCollectionFactory;
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
-        $this->logger = $logger;
+        $this->logger = $context->getLogger();
         $this->currencyFactory = $currencyFactory;
         $this->ioFile = $ioFile;
         $this->csvWriter = $csvWriter;
