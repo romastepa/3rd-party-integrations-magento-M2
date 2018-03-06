@@ -98,7 +98,7 @@ class RealTimeSubscriber implements ObserverInterface
         $subscriberObjEmailSaved = $subscriber->getSubscriberEmail();
 
         $subscriberEmailChangeFlag = false;
-        if ($subscriberObjEmailSaved != $subscriber->getOrigData('subscriber_email')){
+        if (method_exists($subscriber, 'getOrigData') && $subscriberObjEmailSaved != $subscriber->getOrigData('subscriber_email')){
             $subscriberEmailChangeFlag = true;
         }
 

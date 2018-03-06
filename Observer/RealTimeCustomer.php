@@ -116,7 +116,10 @@ class RealTimeCustomer implements ObserverInterface
             }
 
             $subscriberId = 0;
-            $isNewCustomer = $observer->getEvent()->getCustomer()->getOrigData('NewCustomerCheck');
+            $isNewCustomer = true;
+            if (method_exists($observer->getEvent()->getCustomer(), 'getOrigData')) {
+                $isNewCustomer = $observer->getEvent()->getCustomer()->getOrigData('NewCustomerCheck');
+            }
             if ($isNewCustomer) {
                 $this->registry->unregister('NewCustomerIdSet');
                 $this->registry->register('NewCustomerIdSet',$customer->getId());
@@ -125,8 +128,10 @@ class RealTimeCustomer implements ObserverInterface
                 $subscriberId = $checkSubscriber->getId();
             }
 
-            $forceMagentoIDAsKeyID = false;
-            $beforeSaveEmailAddress = $observer->getEvent()->getCustomer()->getOrigData('customer_email');
+            $forceMagentoIDAsKeyID = $beforeSaveEmailAddress = false;
+            if (method_exists($observer->getEvent()->getCustomer(),'getOrigData')) {
+                $beforeSaveEmailAddress = $observer->getEvent()->getCustomer()->getOrigData('customer_email');
+            }
             if ($beforeSaveEmailAddress != $observer->getEvent()->getCustomer()->getEmail()) {
                 $forceMagentoIDAsKeyID = true;
             }
