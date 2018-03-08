@@ -13,7 +13,6 @@ use Magento\Framework\ObjectManagerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Magento\Framework\Mail\Template\FactoryInterface;
 use Magento\Framework\Mail\Template\SenderResolverInterface;
-use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -28,35 +27,32 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
     public $productCollObj = '';
 
     /**
-     * @var Logs
+     * @var \Emarsys\Emarsys\Model\Logs
      */
     protected $emarsysLogs;
 
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManager ;
+    protected $storeManager;
 
     /**
      * TransportBuilder constructor.
+     * @param StoreManagerInterface $storeManager
      * @param FactoryInterface $templateFactory
      * @param MessageInterface $message
      * @param SenderResolverInterface $senderResolver
      * @param ObjectManagerInterface $objectManager
      * @param TransportInterfaceFactory $mailTransportFactory
-     * @param Logs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
+        StoreManagerInterface $storeManager,
         FactoryInterface $templateFactory,
         MessageInterface $message,
         SenderResolverInterface $senderResolver,
         ObjectManagerInterface $objectManager,
-        TransportInterfaceFactory $mailTransportFactory,
-        Logs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        TransportInterfaceFactory $mailTransportFactory
     ) {
-        $this->emarsysLogs = $emarsysLogs;
         $this->storeManager = $storeManager;
         parent::__construct(
             $templateFactory,
@@ -70,7 +66,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
     /**
      * Get mail transport
      *
-     * @return \Magento\Framework\Mail\TransportInterface
+     * @return $this
      */
     public function prepareMessage()
     {
@@ -207,6 +203,8 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         try {
             $value = sprintf('%01.2f', $value);
         } catch (Exception $e) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $this->emarsysLogs = $objectManager->create('\Emarsys\Emarsys\Model\Logs');
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
@@ -303,6 +301,8 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 
             return $order;
         } catch (Exception $e) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $this->emarsysLogs = $objectManager->create('\Emarsys\Emarsys\Model\Logs');
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
