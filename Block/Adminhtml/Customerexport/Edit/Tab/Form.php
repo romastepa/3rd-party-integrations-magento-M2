@@ -114,18 +114,6 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
             'style' => 'width:200px',
         ]);
 
-        $fieldset->addField(
-            'file_format',
-            'select',
-            [
-                'name' => 'file_format',
-                'style' => 'width:200px',
-                'title' => __('Export To'),
-                'label' => __('Export To'),
-                'required' => false,
-                'values' => $this->_formatFactory->create()->toOptionArray()
-            ]
-        );
         return parent::_prepareForm();
     }
 }
