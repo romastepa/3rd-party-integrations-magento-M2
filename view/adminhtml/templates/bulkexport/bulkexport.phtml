@@ -15,7 +15,6 @@
             var entityType = document.getElementById("entitytype").value;
             var fromDate = document.getElementById("fromdate").value.trim();
             var toDate = document.getElementById("todate").value.trim();
-            var exportType = document.getElementById("file_format").value;
             error = 0;
             if (fromDate != '' && toDate == '') {
                 message = "Please enter 'to date' also.";
@@ -37,7 +36,7 @@
                 alert(message);
             }
             if (error == 0) {
-                var url = url + '?entityType=' + entityType + '&fromDate=' + fromDate + '&toDate=' + toDate + '&exportType=' + exportType;
+                var url = url + '?entityType=' + entityType + '&fromDate=' + fromDate + '&toDate=' + toDate;
                 location.href = url;
             }
         }
@@ -45,9 +44,8 @@
 
     function bulkSubscriberExportData(url) {
         var entityType = document.getElementById("entitytype").value;
-        var exportType = document.getElementById("file_format").value;
 
-        var url = url + '?entityType=' + entityType + '&exportType=' + exportType;
+        var url = url + '?entityType=' + entityType;
         location.href = url;
     }
 
@@ -55,7 +53,6 @@
         var entityType = document.getElementById("entitytype").value;
         var fromDate = document.getElementById("fromdate").value.trim();
         var toDate = document.getElementById("todate").value.trim();
-        var exportType = document.getElementById("file_format").value;
 
         error = 0;
         if (fromDate != '' && toDate == '') {
@@ -78,14 +75,13 @@
             alert(message);
         }
         if (error == 0) {
-            var url = url + '?entityType=' + entityType + '&fromDate=' + fromDate + '&toDate=' + toDate + '&exportType=' + exportType;
+            var url = url + '?entityType=' + entityType + '&fromDate=' + fromDate + '&toDate=' + toDate;
             location.href = url;
         }
     }
 
     function bulkProductExportData(url) {
         var entityType = document.getElementById("entitytype").value;
-        var exportType = document.getElementById("file_format").value;
         var includeBundle = document.getElementById("include_bundle").value;
         var TotalCheckBoxes = document.getElementsByName("checkbox");
         var checkboxesChecked = [];
@@ -98,7 +94,7 @@
         }
         var excludeCategories = '';
         excludeCategories = checkboxesChecked.toString();
-        var url = url + '?entityType=' + entityType + '&exportType=' + exportType + '&includeBundle=' + includeBundle + '&excludeCategories=' + excludeCategories;
+        var url = url + '?entityType=' + entityType + '&includeBundle=' + includeBundle + '&excludeCategories=' + excludeCategories;
         location.href = url;
     }
 
