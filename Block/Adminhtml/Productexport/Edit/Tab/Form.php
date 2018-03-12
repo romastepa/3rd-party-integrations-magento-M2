@@ -130,18 +130,6 @@ class Form extends Generic
             ]
         );
 
-        $fieldset->addField(
-            'file_format',
-            'select',
-            [
-                'name' => 'file_format',
-                'style' => 'width:350px',
-                'title' => __('Export To'),
-                'label' => __('Export To'),
-                'required' => false,
-                'values' => $this->_formatFactory->create()->toOptionArray()
-            ]
-        );
         return parent::_prepareForm();
     }
 }
