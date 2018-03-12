@@ -157,7 +157,7 @@ class Emarsysproductexport extends AbstractModel
             }
             if ($excludedCategories) {
                 $excludedCategories = explode(',', $excludedCategories);
-                $collection->addAttributeToFilter('category_ids', ['nin' => $excludedCategories]);
+                $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
             return $collection;
         } catch (\Exception $e) {
