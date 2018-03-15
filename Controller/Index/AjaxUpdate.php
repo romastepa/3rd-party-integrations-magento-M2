@@ -60,11 +60,15 @@ class AjaxUpdate extends \Magento\Framework\App\Action\Action
             $this->_view->loadLayout();
             $layout = $this->_view->getLayout();
 
-            $parentBlock = $layout->createBlock('Emarsys\Emarsys\Block\JavascriptTracking')
-                                ->setTemplate('Emarsys_Emarsys::emarsys/javascripttracking.phtml');
+            $parentBlock = $layout->createBlock('Emarsys\Emarsys\Block\JavascriptTracking',
+                '',
+                ['full_action_name' => $this->getRequest()->getParam('full_action_name')]
+            )->setTemplate('Emarsys_Emarsys::emarsys/javascripttracking.phtml');
 
-            $childBlock = $layout->createBlock('Emarsys\Emarsys\Block\JavascriptTracking', 'emarsys.recommendations')
-                                ->setTemplate('Emarsys_Emarsys::emarsys/recommendations.phtml');
+            $childBlock = $layout->createBlock('Emarsys\Emarsys\Block\JavascriptTracking',
+                '',
+                ['full_action_name' => $this->getRequest()->getParam('full_action_name')]
+            )->setTemplate('Emarsys_Emarsys::emarsys/recommendations.phtml');
 
             $parentBlock->setChild('emarsys.recommendations', $childBlock);
 

@@ -226,7 +226,10 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     {
         $websiteId = $this->getWebsiteId();
         $scope = ScopeInterface::SCOPE_WEBSITES;
-        $handle = $this->getPageHandle();
+        $handle = $this->_request->getParam('full_action_name');
+        if (!$handle) {
+            $handle = $this->getPageHandle();
+        }
         $pageResult = [];
 
         $pageHandles = [
