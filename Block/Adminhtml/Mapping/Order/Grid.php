@@ -167,7 +167,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->session->setData('store', $storeId);
         $mappingExists = $this->resourceModelOrder->orderMappingExists();
         if ($mappingExists == false) {
-            $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader();
+            $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
             foreach ($header as $column) {
                 $manData[$column] = $column;
             }

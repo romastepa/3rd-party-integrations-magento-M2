@@ -75,6 +75,11 @@ class Emarsysproductexport extends AbstractModel
     protected $dir;
 
     /**
+     * @var \Magento\CatalogInventory\Helper\Stock
+     */
+    protected $stockFilter;
+
+    /**
      * Emarsysproductexport constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -84,6 +89,7 @@ class Emarsysproductexport extends AbstractModel
      * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
      * @param \Magento\Framework\Filesystem\DirectoryList $dir,
+     * @param \Magento\CatalogInventory\Helper\Stock $stockFilter,
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -98,6 +104,7 @@ class Emarsysproductexport extends AbstractModel
         \Magento\Framework\Filesystem\Io\File $ioFile,
         \Magento\Framework\File\Csv $csvWriter,
         \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\CatalogInventory\Helper\Stock $stockFilter,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -112,6 +119,7 @@ class Emarsysproductexport extends AbstractModel
         $this->ioFile = $ioFile;
         $this->csvWriter = $csvWriter;
         $this->dir = $dir;
+        $this->stockFilter = $stockFilter;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -143,7 +151,7 @@ class Emarsysproductexport extends AbstractModel
                 ->setPageSize(self::BATCH_SIZE)
                 ->setCurPage($currentPageNumber)
                 ->addAttributeToSelect($attributes)
-                ->addAttributeToFilter('visibility', ["neq" => 1]);
+                ->addAttributeToSelect(['visibility']);
 
             if (is_null($includeBundle)) {
                 $includeBundle = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
@@ -159,6 +167,8 @@ class Emarsysproductexport extends AbstractModel
                 $excludedCategories = explode(',', $excludedCategories);
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
+
+            $this->stockFilter->addInStockFilterToCollection($collection);
             return $collection;
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());

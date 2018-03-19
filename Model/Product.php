@@ -1040,7 +1040,6 @@ class Product extends AbstractModel
                         $this->_credentials[$websiteId][$storeId]['store'] = $store;
                         $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $mappedAttributes;
                     }
-
                 } else {
                     $this->_errorCount = true;
                     $logsArray['id'] = $logId;
@@ -1133,32 +1132,34 @@ class Product extends AbstractModel
                 }
             }
             if (isset($attributeOption) && $attributeOption != '') {
-                if (is_array($attributeOption) || ($attributeOption instanceof \Magento\Framework\Phrase)) {
-                    if ($attributeName == 'category_ids') {
-                        $attributeData[] = implode('|', $categoryNames);
-                    } elseif ($attributeName == 'quantity_and_stock_status') {
-                        if ($productData->getData('quantity_and_stock_status') == 1) {
-                            $attributeData[] =  'TRUE';
-                        } else {
-                            $attributeData[] = 'FALSE';
-                        }
+                if ($attributeName == 'quantity_and_stock_status') {
+                    if ($productData->getData('inventory_in_stock') == 1
+                        && $productData->getData('visibility') != 1
+                    ) {
+                        $attributeData[] = 'TRUE';
                     } else {
-                        $attributeData[] = implode(',', $attributeOption);
+                        $attributeData[] = 'FALSE';
                     }
+                } elseif ($attributeName == 'category_ids') {
+                    $attributeData[] = implode('|', $categoryNames);
+                } elseif (is_array($attributeOption)) {
+                    $attributeData[] = implode(',', $attributeOption);
+                } elseif ($attributeName == 'image') {
+                    $mediaUrl = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+                    $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
+                    $attributeData[] = str_replace('pub/', '', $imgUrl);
+                } elseif ($attributeName == 'url_key') {
+                    $attributeData[] = $productData->getProductUrl();
                 } else {
-                    if ($attributeName == 'image') {
-                        $mediaUrl = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
-                        $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
-                        $attributeData[] = str_replace('pub/', '', $imgUrl);
-                    } elseif ($attributeName == 'url_key') {
-                        $attributeData[] = $productData->getProductUrl();
-                    } else {
-                        $attributeData[] = $attributeOption;
-                    }
+                    $attributeData[] = $attributeOption;
                 }
             } else {
                 if ($attributeName == 'url_key') {
                     $attributeData[] = $productData->getProductUrl();
+                } elseif ($attributeName == 'image') {
+                    $mediaUrl = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+                    $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
+                    $attributeData[] = str_replace('pub/', '', $imgUrl);
                 } else {
                     $attributeData[] = '';
                 }
