@@ -194,9 +194,9 @@ class Order extends AbstractDb
     /**
      * @return array
      */
-    public function getEmarsysOrderFields()
+    public function getEmarsysOrderFields($storeId)
     {
-        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader();
+        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
         $excludeFields = implode("', '", $heading);
         $headingStr = implode(',', $heading);
         $stmt = $this->getConnection()->query("SELECT emarsys_order_field FROM " . $this->getTable('emarsys_order_field_mapping') . " WHERE emarsys_order_field NOT IN ('" . $excludeFields . "') and emarsys_order_field not in (\"'\", \"\") ");
@@ -209,10 +209,10 @@ class Order extends AbstractDb
      * @param $orderId
      * @return mixed|void
      */
-    public function getOrderColValue($emarsysField, $orderId)
+    public function getOrderColValue($emarsysField, $orderId, $storeId = 0)
     {
         $emarsysField = $this->getConnection()->quote($emarsysField);
-        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader();
+        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
         if (in_array($emarsysField, $heading)) {
             return;
         }

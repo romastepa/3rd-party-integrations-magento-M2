@@ -81,7 +81,12 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
      */
     public function render(DataObject $row)
     {
-        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader();
+        $session = $this->session->getData();
+        $storeId = 0;
+        if (isset($session['store'])) {
+            $storeId = $session['store'];
+        }
+        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
         array_unshift($heading, 'website_id');
         $attributeCode = $row->getData('attribute_code');
         $entityTypeId = $row->getEntityTypeId();
@@ -92,10 +97,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         } else {
             $html = "<input class = 'admin__control-text emarsysatts' type='text' name = '" . $row->getData('magento_column_name') . "' value = '" . $row->getData('emarsys_order_field') . "'  />";
         }
-        $session = $this->session->getData();
-        if (isset($session['store'])) {
-            $storeId = $session['store'];
-        }
+
 
         return $html;
     }

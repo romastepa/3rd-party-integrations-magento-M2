@@ -257,9 +257,15 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             foreach ($requiredMapping as $_requiredMapping) {
                 if (!in_array($_requiredMapping['emarsys_attr_code'], $emarsysAttributeId)) {
                     $productAttributes[] = $_requiredMapping;
+                } elseif ($_requiredMapping['magento_attr_code'] == 'quantity_and_stock_status'
+                    && in_array($_requiredMapping['emarsys_attr_code'], $emarsysAttributeId)
+                ) {
+                    $key = array_search($_requiredMapping['emarsys_attr_code'], $emarsysAttributeId);
+                    unset($productAttributes[$key]);
+                    $productAttributes[] = $_requiredMapping;
                 }
             }
-            return $productAttributes;
+            return array_values($productAttributes);
         } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getMappedProductAttribute');
         }
@@ -275,7 +281,7 @@ class Product extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         try {
             $emarsysFieldName = $this->getConnection()->fetchOne("SELECT label FROM " . $this->getTable('emarsys_emarsys_product_attributes') . " WHERE id = '" . $fieldId . "' AND store_id =" . $storeId);
-            return $emarsysFieldName;
+            return trim(strtolower($emarsysFieldName));
         } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getEmarsysFieldName');
         }

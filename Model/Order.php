@@ -704,7 +704,7 @@ class Order extends AbstractModel
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
         $scope = ScopeInterface::SCOPE_WEBSITE;
-        $emasysFields = $this->orderResourceModel->getEmarsysOrderFields();
+        $emasysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
 
         $guestOrderExportStatus = $this->customerResourceModel->getDataFromCoreConfig(
             EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS,
@@ -720,7 +720,7 @@ class Order extends AbstractModel
         $handle = fopen($filePath, 'w');
 
         //Get Header for sales csv
-        $header = $this->getSalesCsvHeader();
+        $header = $this->getSalesCsvHeader($storeId);
 
         //put headers in sales csv
         fputcsv($handle, $header);
@@ -732,6 +732,7 @@ class Order extends AbstractModel
                 $orderEntityId = $order->getId();
                 $createdDate = $order->getCreatedAt();
                 $customerEmail = $order->getCustomerEmail();
+                $customerId = $order->getCustomerId();
 
                 foreach ($order->getAllVisibleItems() as $item) {
                     $values = [];
@@ -743,10 +744,10 @@ class Order extends AbstractModel
                     $values[] = $createdDate;
 
                     //set customer
-                    if ($customerEmail != '') {
+                    if ($emailAsIdentifierStatus) {
                         $values[] = $customerEmail;
                     } else {
-                        $values[] = '';
+                        $values[] = $customerId;
                     }
                     $sku = $item->getSku();
                     $product = $item->getProduct();
@@ -781,7 +782,8 @@ class Order extends AbstractModel
                         if ($emarsysOrderFieldValueOrder != '' && $emarsysOrderFieldValueOrder != "'") {
                             $orderExpValues = $this->orderResourceModel->getOrderColValue(
                                 $emarsysOrderFieldValueOrder,
-                                $orderEntityId
+                                $orderEntityId,
+                                $storeId
                             );
                             if (isset($orderExpValues['created_at'])) {
                                 $createdAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
@@ -809,6 +811,8 @@ class Order extends AbstractModel
                 $orderEntityId = $creditMemoOrder->getId();
                 $createdDate = $creditMemoOrder->getCreatedAt();
                 $customerEmail = $creditMemoOrder->getCustomerEmail();
+                $customerId = $creditMemoOrder->getCustomerId();
+
                 foreach ($creditMemo->getAllItems() as $item) {
                     if ($item->getOrderItem()->getParentItem()) continue;
                     $values = [];
@@ -818,10 +822,12 @@ class Order extends AbstractModel
                     $createdDate = $date->format('Y-m-d');
                     //set timestamp
                     $values[] = $createdDate;
-                    if ($customerEmail != '') {
+
+                    //set customer
+                    if ($emailAsIdentifierStatus) {
                         $values[] = $customerEmail;
                     } else {
-                        $values[] = '';
+                        $values[] = $customerId;
                     }
                     //set product id/sku
                     $csku = $item->getSku();
@@ -856,7 +862,8 @@ class Order extends AbstractModel
                         if ($emarsysOrderFieldValueCm != '' && $emarsysOrderFieldValueCm != "'") {
                             $orderExpValues = $this->orderResourceModel->getOrderColValue(
                                 $emarsysOrderFieldValueCm,
-                                $orderEntityId
+                                $orderEntityId,
+                                $storeId
                             );
 
                             if (isset($orderExpValues['created_at'])) {
@@ -884,11 +891,14 @@ class Order extends AbstractModel
                     $createdDate = $date->format('Y-m-d');
                     //set timestamp
                     $values[] = $createdDate;
-                    if ($customerEmail != '') {
+
+                    //set customer
+                    if ($emailAsIdentifierStatus) {
                         $values[] = $customerEmail;
                     } else {
-                        $values[] = '';
+                        $values[] = $customerId;
                     }
+
                     //set item id/sku
                     $values[] = 0;
 
@@ -906,7 +916,8 @@ class Order extends AbstractModel
                         if ($emarsysOrderFieldValueAdjustment != '' && $emarsysOrderFieldValueAdjustment != "'") {
                             $orderExpValues = $this->orderResourceModel->getOrderColValue(
                                 $emarsysOrderFieldValueAdjustment,
-                                $orderEntityId
+                                $orderEntityId,
+                                $storeId
                             );
 
                             if (isset($orderExpValues['created_at'])) {
@@ -950,13 +961,13 @@ class Order extends AbstractModel
      * Get Sales CSV Header
      * @return array
      */
-    public function getSalesCsvHeader()
+    public function getSalesCsvHeader($storeId = 0)
     {
         //default header
-        $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader();
+        $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
 
         //header collected from mapped order attributes
-        $emasysFields = $this->orderResourceModel->getEmarsysOrderFields();
+        $emasysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
         foreach ($emasysFields as $field) {
             $emarsysOrderFieldValue = trim($field['emarsys_order_field']);
             if ($emarsysOrderFieldValue != '' && $emarsysOrderFieldValue != "'") {
