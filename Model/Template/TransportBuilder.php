@@ -76,18 +76,15 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $this->productCollObj = $objectManager->create('\Magento\Catalog\Model\Product');
-        $storeManagerInterfaceObj = $objectManager->create('\Magento\Store\Model\StoreManagerInterface');
         $storeId = $template->getEmailStoreId();
-        $websiteId = $storeManagerInterfaceObj->getStore($storeId)->getWebsiteId();
-        $dataHelper = $objectManager->create('Emarsys\Emarsys\Helper\Data');
+        /** @var \Emarsys\Emarsys\Helper\Data $dataHelper */
+        $dataHelper = $objectManager->create('\Emarsys\Emarsys\Helper\Data');
         $scopeConfig = $objectManager->create('\Magento\Framework\App\Config\ScopeConfigInterface');
         $request = $objectManager->get('\Magento\Framework\App\Request\Http');
-        $templateIdentifier = $this->templateIdentifier;
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
         list($magentoEventID, $configPath) = $dataHelper->getMagentoEventIdAndPath(
-            $templateIdentifier,
-            $storeScope,
+            $this->templateIdentifier,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
         );
 
@@ -102,7 +99,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
                 ]);
             return $this;
         }
-        $enableOptin = $scopeConfig->getValue('opt_in/optin_enable/enable_optin', 'websites', $websiteId);
+        $enableOptin = $scopeConfig->getValue('opt_in/optin_enable/enable_optin', 'websites', $this->storeManager->getStore($storeId)->getWebsiteId());
         if ($enableOptin) {
             $handle = $request->getFullActionName();
         }
