@@ -243,17 +243,19 @@ class Emarsysproductexport extends AbstractModel
                     }
 
                     foreach ($item['data'] as $key => $value) {
-                        if (isset($this->_mapHeader[$map[$key]]) &&
-                            ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
-                                || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
-                            )) {
-                            $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();
-                            if ($item['currency_code'] != $currencyCodeTo) {
-                                $rate = $this->currencyFactory->create()->load($item['currency_code'])->getAnyRate($currencyCodeTo);
-                                $value = $value * $rate;
+                        if (isset($map[$key])) {
+                            if (isset($this->_mapHeader[$map[$key]]) &&
+                                ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
+                                    || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
+                                )) {
+                                $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();
+                                if ($item['currency_code'] != $currencyCodeTo) {
+                                    $rate = $this->currencyFactory->create()->load($item['currency_code'])->getAnyRate($currencyCodeTo);
+                                    $value = $value * $rate;
+                                }
                             }
+                            $this->_preparedData[$productId][$map[$key]] = $value;
                         }
-                        $this->_preparedData[$productId][$map[$key]] = $value;
                     }
                 }
                 ksort($this->_preparedData[$productId]);

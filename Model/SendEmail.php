@@ -198,7 +198,7 @@ class SendEmail extends AbstractModel
                         $emailKeyId = $this->customerResourceModel->getKeyId('Email', $storeId);
                         $buildRequest[$emailKeyId] = $externalId;
 
-			$uniqueKeyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
+			            $uniqueKeyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
                         $buildRequest[$uniqueKeyId] = $externalId . "#" . $websiteId . "#" . $storeId;
 
                         //log information that is about to send for contact sync
