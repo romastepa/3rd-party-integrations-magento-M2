@@ -273,8 +273,7 @@ class ApiExport extends ZendClient
             'sample@data.com',
             'test_product_item_1',
             '0.0',
-            '0',
-            '00.00',
+            '0'
         ];
     }
 
