@@ -770,13 +770,6 @@ class Order extends AbstractModel
                     //set quantity
                     $values[] = (int)$item->getQtyInvoiced();
 
-                    //set cSalesAmount
-                    $cSalesAmount = $item->getRowTotalInclTax() - $item->getDiscountAmount();
-                    if ($cSalesAmount != '') {
-                        $values[] = $cSalesAmount;
-                    } else {
-                        $values[] = '';
-                    }
                     foreach ($emasysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         if ($emarsysOrderFieldValueOrder != '' && $emarsysOrderFieldValueOrder != "'") {
@@ -849,14 +842,6 @@ class Order extends AbstractModel
                     //set quantity
                     $values[] = (int)$item->getQty();
 
-                    //set cSalesAmount
-                    $cSalesAmount = $item->getRowTotalInclTax() - $item->getDiscountAmount();
-                    if ($cSalesAmount != '') {
-                        $values[] = "-" . $cSalesAmount;
-                    } else {
-                        $values[] = '';
-                    }
-
                     foreach ($emasysFields as $field) {
                         $emarsysOrderFieldValueCm = trim($field['emarsys_order_field']);
                         if ($emarsysOrderFieldValueCm != '' && $emarsysOrderFieldValueCm != "'") {
@@ -907,9 +892,6 @@ class Order extends AbstractModel
 
                     //set quantity
                     $values[] = 1;
-
-                    //set cSalesAmount
-                    $values[] = $creditMemo->getAdjustment();
 
                     foreach ($emasysFields as $field) {
                         $emarsysOrderFieldValueAdjustment = trim($field['emarsys_order_field']);

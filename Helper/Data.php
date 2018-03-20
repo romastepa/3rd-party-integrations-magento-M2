@@ -2585,9 +2585,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         $emailAsIdentifierStatus = (bool)$store->getConfig(self::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {
-            return ['order', 'timestamp', 'email', 'item', 'price', 'quantity', 'f_c_sales_amount'];
+            return ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
         } else {
-            return ['order', 'timestamp', 'customer', 'item', 'price', 'quantity', 'f_c_sales_amount'];
+            return ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
         }
     }
 
