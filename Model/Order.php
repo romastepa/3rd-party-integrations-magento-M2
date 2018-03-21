@@ -637,7 +637,9 @@ class Order extends AbstractModel
                 }
             }
             //remove file after sync
-            unlink($filePath);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
             $currentPageNumber++;
         }
 
