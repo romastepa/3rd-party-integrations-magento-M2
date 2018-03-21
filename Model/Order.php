@@ -338,30 +338,24 @@ class Order extends AbstractModel
                 );
 
                 if ($maxRecordExport) {
-                    $orderSyncStatus = false;
-                    $cmSyncStatus = false;
                     //export data in chunks based on max record set in admin configuration
-                    if (!empty($orderCollection)) {
-                        $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
-                            \Magento\Sales\Model\Order::ENTITY,
-                            $orderCollection,
-                            $mode,
-                            $storeId,
-                            $maxRecordExport,
-                            $logsArray
-                        );
-                    }
-                    if (!empty($creditMemoCollection)) {
-                        $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
-                            \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
-                            $creditMemoCollection,
-                            $mode,
-                            $storeId,
-                            $maxRecordExport,
-                            $logsArray
-                        );
-                    }
-                    if ($orderSyncStatus && $cmSyncStatus) {
+                    $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
+                        \Magento\Sales\Model\Order::ENTITY,
+                        $orderCollection,
+                        $mode,
+                        $storeId,
+                        $maxRecordExport,
+                        $logsArray
+                    );
+                    $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
+                        \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
+                        $creditMemoCollection,
+                        $mode,
+                        $storeId,
+                        $maxRecordExport,
+                        $logsArray
+                    );
+                    if ($orderSyncStatus || $cmSyncStatus) {
                         $errorCount = false;
                     }
                 } else {
@@ -601,6 +595,7 @@ class Order extends AbstractModel
      */
     public function generateBatchFilesAndSyncToEmarsys($entity, $entityCollection, $mode, $storeId, $limit, $logsArray)
     {
+        $currentPageNumber = 1;
         $store = $this->storeManager->getStore($storeId);
         $messageCollector = [];
         $result = false;
@@ -609,11 +604,16 @@ class Order extends AbstractModel
         );
 
         //sales order operation
-        $entityCollection->setPageSize($limit);
-        $pages = $entityCollection->getLastPageNumber();
+        $entityCollection->setPageSize($limit)
+            ->setCurPage($currentPageNumber);
 
-        for ($i = 1; $i <= $pages; $i++) {
-            $entityCollection->setCurPage($i);
+        $lastPageNumber = $entityCollection->getLastPageNumber();
+
+        while ($currentPageNumber <= $lastPageNumber) {
+            if ($currentPageNumber != 1) {
+                $entityCollection->setCurPage($currentPageNumber);
+                $entityCollection->clear();
+            }
 
             //get sales csv file name
             $outputFile = $this->getSalesCsvFileName($store->getCode(), true);
@@ -625,20 +625,20 @@ class Order extends AbstractModel
                 $this->generateOrderCsv($storeId, $filePath, '', $entityCollection);
             }
 
-            $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
+            if ($entityCollection->getSize()) {
+                $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
 
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                if ($syncResponse['status']) {
-                    array_push($messageCollector, 1);
-                } else {
-                    array_push($messageCollector, 0);
+                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                    if ($syncResponse['status']) {
+                        array_push($messageCollector, 1);
+                    } else {
+                        array_push($messageCollector, 0);
+                    }
                 }
             }
             //remove file after sync
             unlink($filePath);
-
-            //clear the current page collection
-            $entityCollection->clear();
+            $currentPageNumber++;
         }
 
         //display messages
