@@ -311,6 +311,7 @@
                 <field id="merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Merchant Id</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
                     <depends>
                         <field id="enableapi">1</field>
                     </depends>
@@ -318,6 +319,7 @@
                 <field id="token" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Bearer Token</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
                     <depends>
                         <field id="enableapi">1</field>
                     </depends>
@@ -397,6 +399,7 @@
                 <field id="catalog_merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Merchant Id</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
                     <depends>
                         <field id="enable_catalog_api">1</field>
                     </depends>
@@ -404,6 +407,7 @@
                 <field id="catalog_token" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Bearer Token</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
                     <depends>
                         <field id="enable_catalog_api">1</field>
                     </depends>
@@ -467,6 +471,7 @@
                 <field id="merchant_id" translate="label comment" type="text" sortOrder="20" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Merchant Id</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
                     <validate>required-entry</validate>
                     <depends><field id="enable_javascript_integration">1</field></depends>
                 </field>

@@ -221,6 +221,7 @@ class Emarsysproductexport extends AbstractModel
         while ($currentPageNumber <= $lastPageNumber) {
             if ($currentPageNumber != 1) {
                 $collection->setCurPage($currentPageNumber);
+                $collection->clear();
             }
             foreach ($collection as $product) {
                 $productId = $product->getId();
