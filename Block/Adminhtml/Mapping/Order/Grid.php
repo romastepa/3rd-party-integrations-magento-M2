@@ -119,7 +119,10 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $customCollection = $this->orderFactory->create()->getCollection()->setOrder('magento_column_name', 'ASC');
+        $storeId = $this->getRequest()->getParam('store', 1);
+        $customCollection = $this->orderFactory->create()->getCollection()
+            ->addFilter('store_id', $storeId)
+            ->setOrder('magento_column_name', 'ASC');
         $this->setCollection($customCollection);
 
         return parent::_prepareCollection();
@@ -160,13 +163,10 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     {
         parent::_construct();
         $this->session->setData('gridData', '');
-        $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = 1;
-        }
+        $storeId = $this->getRequest()->getParam('store', 1);
         $this->session->setData('store', $storeId);
-        $mappingExists = $this->resourceModelOrder->orderMappingExists();
-        if ($mappingExists == false) {
+        $mappingExists = $this->resourceModelOrder->orderMappingExists($storeId);
+        if (empty($mappingExists)) {
             $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
             foreach ($header as $column) {
                 $manData[$column] = $column;
