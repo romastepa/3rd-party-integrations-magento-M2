@@ -98,13 +98,17 @@ class Order extends AbstractDb
 
     /**
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
     public function getSalesOrderColumnNames()
     {
-        $stmt = $this->getConnection()->query("SELECT `COLUMN_NAME` FROM `INFORMATION_SCHEMA`.`COLUMNS` WHERE table_schema = DATABASE() AND `TABLE_NAME`='" .
-            $this->getTable('sales_order') . "'");
-        $result = $stmt->fetchAll();
-        return $result;
+        $stmt = $this->getConnection()->query("
+            SELECT `COLUMN_NAME` 
+            FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+            WHERE table_schema = DATABASE() 
+            AND `TABLE_NAME`='" . $this->getTable('sales_order') . "'
+        ");
+        return $stmt->fetchAll();
     }
 
     /**
@@ -114,19 +118,19 @@ class Order extends AbstractDb
     public function insertIntoMappingTable($data, $storeId)
     {
         foreach ($data as $key => $value) {
-            $value['COLUMN_NAME'] = $this->getConnection()->quote($value['COLUMN_NAME']);
-            $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " .
-                $this->getTable('emarsys_order_field_mapping') . " WHERE magento_column_name = " .
-                $value['COLUMN_NAME'] . " ");
+            $select = $this->getConnection()
+                ->select()
+                ->from($this->getMainTable())
+                ->where('magento_column_name = ?', $value['COLUMN_NAME'])
+                ->where('store_id = ?', $storeId);
 
-            $result = $stmt->fetch();
-            if ($result == 0) {
-                //insert the attribute
-                //for the first time enter the empty records for the emarsys id
-                $stmt = $this->getConnection()->query("INSERT INTO  " .
-                    $this->getTable('emarsys_order_field_mapping') .
-                    " (magento_column_name,emarsys_order_field,store_id) VALUES (" .
-                    $value['COLUMN_NAME'] . "," . "''" . "," . $storeId . ") ");
+            $result = $this->getConnection()->fetchAll($select);
+
+            if (empty($result)) {
+                $this->getConnection()->insert($this->getMainTable(), [
+                    'magento_column_name' => $value['COLUMN_NAME'],
+                    'store_id' => $storeId
+                ]);
             }
         }
     }
@@ -134,23 +138,25 @@ class Order extends AbstractDb
     /**
      * @param $data
      * @param $storeId
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function insertIntoMappingTableStaticData($data, $storeId)
     {
         foreach ($data as $key => $value) {
-            $value = $this->getConnection()->quote($value);
-            $key = $this->getConnection()->quote($key);
-            $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " .
-                $this->getTable('emarsys_order_field_mapping') . " WHERE magento_column_name = " .
-                $value . " ");
+            $select = $this->getConnection()
+                ->select()
+                ->from($this->getMainTable())
+                ->where('magento_column_name = ?', $value)
+                ->where('store_id = ?', $storeId);
 
-            $result = $stmt->fetch();
-            if ($result == 0) {
-                //insert the attribute
-                //for the first time enter the empty records for the emarsys id
-                $stmt = $this->getConnection()->query("INSERT INTO  " . $this->getTable('emarsys_order_field_mapping') .
-                    " (magento_column_name,emarsys_order_field,store_id) VALUES (" . $value . "," . $key . ",'" .
-                    $storeId . "')  ");
+            $result = $this->getConnection()->fetchAll($select);
+
+            if (empty($result)) {
+                $this->getConnection()->insert($this->getMainTable(), [
+                    'magento_column_name' => $value,
+                    'emarsys_order_field' => $key,
+                    'store_id' => $storeId
+                ]);
             }
         }
     }
@@ -158,6 +164,7 @@ class Order extends AbstractDb
     /**
      * @param $data
      * @param $storeId
+     * @throws \Zend_Db_Statement_Exception
      */
     public function insertIntoMappingTableCustomValue($data, $storeId)
     {
@@ -181,14 +188,18 @@ class Order extends AbstractDb
     }
 
     /**
-     * @return mixed
+     * @param $storeId
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function orderMappingExists()
+    public function orderMappingExists($storeId)
     {
-        $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " .
-            $this->getTable('emarsys_order_field_mapping') . "  ");
-        $result = $stmt->fetch();
-        return $result;
+        $select = $this->getConnection()
+            ->select()
+            ->from($this->getMainTable())
+            ->where('store_id = ?', $storeId);
+
+        return $this->getConnection()->fetchAll($select);
     }
 
     /**
@@ -197,11 +208,14 @@ class Order extends AbstractDb
     public function getEmarsysOrderFields($storeId)
     {
         $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
-        $excludeFields = implode("', '", $heading);
-        $headingStr = implode(',', $heading);
-        $stmt = $this->getConnection()->query("SELECT emarsys_order_field FROM " . $this->getTable('emarsys_order_field_mapping') . " WHERE emarsys_order_field NOT IN ('" . $excludeFields . "') and emarsys_order_field not in (\"'\", \"\") ");
-        $result = $stmt->fetchAll();
-        return $result;
+        $select = $this->getConnection()
+            ->select()
+            ->from($this->getMainTable())
+            ->where('emarsys_order_field NOT IN (?)', $heading)
+            ->where('emarsys_order_field != ?', '')
+            ->where('store_id = ?', $storeId);
+
+        return $this->getConnection()->fetchAll($select);
     }
 
     /**

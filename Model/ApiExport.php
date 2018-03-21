@@ -263,18 +263,38 @@ class ApiExport extends ZendClient
 
     /**
      * Get Sales Order Sample Data for Test Connection Button.
+     *
+     * @param int $store
      * @return array
      */
-    public function sampleDataSmartInsightExport()
+    public function sampleDataSmartInsightExport($store = 0)
     {
-        return [
-            '00000',
-            '2016-06-06T14:02:00Z',
-            'sample@data.com',
-            'test_product_item_1',
-            '0.0',
-            '0'
-        ];
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->storeManagerInterface->getStore($store);
+
+        $emailAsIdentifierStatus = (bool)$store->getConfig($this->emarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
+        if ($emailAsIdentifierStatus) {
+            //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
+            return [
+                '00000',
+                '2017-07-07T07:07:07Z',
+                'sample@data.com',
+                'test_product_item_1',
+                '0.00',
+                '0'
+            ];
+        } else {
+            //header ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
+            return [
+                '00000',
+                '2017-07-07T07:07:07Z',
+                'customer_id',
+                'test_product_item_1',
+                '0.00',
+                '0'
+            ];
+        }
+
     }
 
     /**
