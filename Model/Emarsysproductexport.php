@@ -195,10 +195,19 @@ class Emarsysproductexport extends AbstractModel
         $name = "products_" . $websiteId . ".csv";
         $file = $path . '/' . $name;
 
+        $columnCount = count($this->_mapHeader);
+        $emptyArray = array_fill(0, $columnCount, "");
+
+        foreach ($this->_preparedData as &$row) {
+            if (count($row) < $columnCount) {
+                $row = $row + $emptyArray;
+            }
+        }
+
         $this->csvWriter
             ->setEnclosure('"')
             ->setDelimiter(',')
-            ->saveData($file, (array($this->_mapHeader) + $this->_preparedData));
+            ->saveData($file, ([$this->_mapHeader] + $this->_preparedData));
 
         return array($file, $name);
     }
