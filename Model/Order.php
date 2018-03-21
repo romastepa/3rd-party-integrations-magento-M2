@@ -627,13 +627,13 @@ class Order extends AbstractModel
 
             if ($entityCollection->getSize()) {
                 $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
-            }
 
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                if ($syncResponse['status']) {
-                    array_push($messageCollector, 1);
-                } else {
-                    array_push($messageCollector, 0);
+                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                    if ($syncResponse['status']) {
+                        array_push($messageCollector, 1);
+                    } else {
+                        array_push($messageCollector, 0);
+                    }
                 }
             }
             //remove file after sync
