@@ -112,6 +112,7 @@ class SubscriberExport extends Action
                     $scope,
                     $websiteId
                 );
+                $data['initial_load'] = $optInStatus;
 
                 if ($optInStatus == 'attribute') {
                     $subscribedStatus = $this->customerResourceModel->getDataFromCoreConfig(
