@@ -6,7 +6,6 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
@@ -46,6 +45,7 @@ class ProductBulkExport
 
     /**
      * ProductBulkExport constructor.
+     *
      * @param EmarsysCronHelper $cronHelper
      * @param JsonHelper $jsonHelper
      * @param EmarsysProductModel $emarsysProductModel
@@ -70,23 +70,15 @@ class ProductBulkExport
     {
         try {
             $currentCronInfo = $this->cronHelper->getCurrentCronInformation(
-                EmarsysCronHelper::CRON_JOB_CATALOG_BULK_EXPORT
+                \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CATALOG_BULK_EXPORT
             );
 
             if ($currentCronInfo) {
                 $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
-                $storeId = $data['storeId'];
                 $includeBundle = $data['includeBundle'];
                 $excludedCategories = $data['excludeCategories'];
 
-                /*$this->emarsysProductModel->syncProducts(
-                    $storeId,
-                    EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC,
-                    $includeBundle,
-                    $excludedCategories
-                );*/
-
-                $this->emarsysProductModel->consolidatedCatalogExport(EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle, $excludedCategories);
+                $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle, $excludedCategories);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
