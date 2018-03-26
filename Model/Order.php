@@ -338,13 +338,6 @@ class Order extends AbstractModel
                     $websiteId
                 );
 
-                if (!is_object($orderCollection)) {
-                    $message .= ' $orderCollection is not an Object.';
-                }
-                if (!is_object($creditMemoCollection)) {
-                    $message .= ' $creditMemoCollection is not an Object.';
-                }
-
                 if ($maxRecordExport) {
                     //export data in chunks based on max record set in admin configuration
                     $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
@@ -613,7 +606,7 @@ class Order extends AbstractModel
             \Magento\Sales\Model\Order::ENTITY
         );
 
-        if (is_object($entityCollection)) {
+        if ($entityCollection->getSize()) {
             //sales order operation
             $entityCollection->setPageSize($limit)
                 ->setCurPage($currentPageNumber);
@@ -746,7 +739,7 @@ class Order extends AbstractModel
         fputcsv($handle, $header);
 
         //write data for orders into csv
-        if ($orderCollection && (is_object($orderCollection)) && ($orderCollection->getSize())) {
+        if ($orderCollection && $orderCollection->getSize()) {
             foreach ($orderCollection as $order) {
                 $orderId = $order->getRealOrderId();
                 $orderEntityId = $order->getId();
@@ -817,7 +810,7 @@ class Order extends AbstractModel
         }
 
         //write data for credit-memo into csv
-        if ($creditMemoCollection && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
+        if ($creditMemoCollection && $creditMemoCollection->getSize()) {
             foreach ($creditMemoCollection as $creditMemo) {
                 $creditMemoOrder = $this->salesOrderCollectionFactory->create()->load($creditMemo['order_id']);
                 $orderId = $creditMemoOrder->getIncrementId();
