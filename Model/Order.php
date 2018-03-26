@@ -605,7 +605,6 @@ class Order extends AbstractModel
      */
     public function generateBatchFilesAndSyncToEmarsys($entity, $entityCollection, $mode, $storeId, $limit, $logsArray)
     {
-        $currentPageNumber = 1;
         $store = $this->storeManager->getStore($storeId);
         $messageCollector = [];
         $result = false;
