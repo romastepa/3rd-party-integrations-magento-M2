@@ -6,7 +6,6 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs;
@@ -52,20 +51,7 @@ class ProductSync
     {
         try {
             set_time_limit(0);
-            $stores = $this->storeManager->getStores();
-            foreach ($stores as $store) {
-                $storeId = $store->getId();
-                if ($store->getId() == 0) {
-                    continue;
-                }
-
-                /*$this->emarsysProductModel->syncProducts(
-                    $storeId,
-                    EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC
-                );*/
-
-                $this->emarsysProductModel->consolidatedCatalogExport(EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC);
-            }
+            $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC);
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),

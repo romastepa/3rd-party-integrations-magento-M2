@@ -6,7 +6,6 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
@@ -42,10 +41,11 @@ class SmartInsightBulkExport
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManager ;
+    protected $storeManager;
 
     /**
      * SmartInsightBulkExport constructor.
+     *
      * @param EmarsysCronHelper $cronHelper
      * @param JsonHelper $jsonHelper
      * @param EmarsysOrderModel $order
@@ -63,14 +63,13 @@ class SmartInsightBulkExport
         $this->jsonHelper = $jsonHelper;
         $this->emarsysOrderModel =  $order;
         $this->emarsysLogs = $emarsysLogs;
-        $this->storeManager = $storeManager;
     }
 
     public function execute()
     {
         try {
             $currentCronInfo = $this->cronHelper->getCurrentCronInformation(
-                EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT
+                \Emarsys\Emarsys\Helper\Cron::CRON_JOB_SI_BULK_EXPORT
             );
 
             if ($currentCronInfo) {
@@ -81,7 +80,7 @@ class SmartInsightBulkExport
 
                 $this->emarsysOrderModel->syncOrders(
                     $storeId,
-                    EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL,
+                    \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL,
                     $fromDate,
                     $toDate
                 );

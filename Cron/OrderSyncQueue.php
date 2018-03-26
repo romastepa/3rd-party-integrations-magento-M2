@@ -6,7 +6,6 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 use Emarsys\Emarsys\Model\Order as EmarsysModelOrder;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs;
@@ -55,13 +54,13 @@ class OrderSyncQueue
             $stores = $this->storeManager->getStores();
             foreach ($stores as $store) {
                 $storeId = $store->getId();
-                if ($store->getId() == 0) {
+                if ($storeId == 0) {
                     continue;
                 }
 
                 $this->emarsysOrderModel->syncOrders(
                     $storeId,
-                    EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC
+                    \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC
                 );
             }
         } catch (\Exception $e) {

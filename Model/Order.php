@@ -289,6 +289,7 @@ class Order extends AbstractModel
         $websiteId = $store->getWebsiteId();
         $scope = ScopeInterface::SCOPE_WEBSITES;
         $errorCount = true;
+        $message = '';
 
         $merchantId = $this->customerResourceModel->getDataFromCoreConfig(
             EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_MERCHANT_ID,
@@ -337,31 +338,32 @@ class Order extends AbstractModel
                     $websiteId
                 );
 
+                if (!is_object($orderCollection)) {
+                    $message .= ' $orderCollection is not an Object.';
+                }
+                if (!is_object($creditMemoCollection)) {
+                    $message .= ' $creditMemoCollection is not an Object.';
+                }
+
                 if ($maxRecordExport) {
-                    $orderSyncStatus = false;
-                    $cmSyncStatus = false;
                     //export data in chunks based on max record set in admin configuration
-                    if (!empty($orderCollection)) {
-                        $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
-                            \Magento\Sales\Model\Order::ENTITY,
-                            $orderCollection,
-                            $mode,
-                            $storeId,
-                            $maxRecordExport,
-                            $logsArray
-                        );
-                    }
-                    if (!empty($creditMemoCollection)) {
-                        $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
-                            \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
-                            $creditMemoCollection,
-                            $mode,
-                            $storeId,
-                            $maxRecordExport,
-                            $logsArray
-                        );
-                    }
-                    if ($orderSyncStatus && $cmSyncStatus) {
+                    $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
+                        \Magento\Sales\Model\Order::ENTITY,
+                        $orderCollection,
+                        $mode,
+                        $storeId,
+                        $maxRecordExport,
+                        $logsArray
+                    );
+                    $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
+                        \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
+                        $creditMemoCollection,
+                        $mode,
+                        $storeId,
+                        $maxRecordExport,
+                        $logsArray
+                    );
+                    if ($orderSyncStatus || $cmSyncStatus) {
                         $errorCount = false;
                     }
                 } else {
@@ -387,7 +389,9 @@ class Order extends AbstractModel
                         }
                     }
                     //remove file after sync
-                    unlink($filePath);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
                 }
             } else {
                 //smart insight api test connection is failed
@@ -413,13 +417,13 @@ class Order extends AbstractModel
 
         if ($errorCount) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = __('Order export have an error. Please check.');
+            $logsArray['messages'] = __('Order export have an error. Please check.' . $message);
         } else {
             if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
                 $this->cleanOrderQueueTable();
             }
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = __('Order export completed');
+            $logsArray['messages'] = __('Order export completed' . $message);
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogsUpdate($logsArray);
@@ -601,6 +605,7 @@ class Order extends AbstractModel
      */
     public function generateBatchFilesAndSyncToEmarsys($entity, $entityCollection, $mode, $storeId, $limit, $logsArray)
     {
+        $currentPageNumber = 1;
         $store = $this->storeManager->getStore($storeId);
         $messageCollector = [];
         $result = false;
@@ -608,37 +613,52 @@ class Order extends AbstractModel
             \Magento\Sales\Model\Order::ENTITY
         );
 
-        //sales order operation
-        $entityCollection->setPageSize($limit);
-        $pages = $entityCollection->getLastPageNumber();
+        if (is_object($entityCollection)) {
+            //sales order operation
+            $entityCollection->setPageSize($limit)
+                ->setCurPage($currentPageNumber);
 
-        for ($i = 1; $i <= $pages; $i++) {
-            $entityCollection->setCurPage($i);
+            $lastPageNumber = $entityCollection->getLastPageNumber();
 
-            //get sales csv file name
-            $outputFile = $this->getSalesCsvFileName($store->getCode(), true);
-            $filePath =  $fileDirectory . "/" . $outputFile;
-
-            if ($entity == \Magento\Sales\Model\Order::ENTITY) {
-                $this->generateOrderCsv($storeId, $filePath, $entityCollection, '');
-            } else {
-                $this->generateOrderCsv($storeId, $filePath, '', $entityCollection);
-            }
-
-            $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
-
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                if ($syncResponse['status']) {
-                    array_push($messageCollector, 1);
-                } else {
-                    array_push($messageCollector, 0);
+            while ($currentPageNumber <= $lastPageNumber) {
+                if ($currentPageNumber != 1) {
+                    $entityCollection->setCurPage($currentPageNumber);
+                    $entityCollection->clear();
                 }
-            }
-            //remove file after sync
-            unlink($filePath);
 
-            //clear the current page collection
-            $entityCollection->clear();
+                //get sales csv file name
+                $outputFile = $this->getSalesCsvFileName($store->getCode(), true);
+                $filePath = $fileDirectory . "/" . $outputFile;
+
+                if ($entity == \Magento\Sales\Model\Order::ENTITY) {
+                    $this->generateOrderCsv($storeId, $filePath, $entityCollection, '');
+                } else {
+                    $this->generateOrderCsv($storeId, $filePath, '', $entityCollection);
+                }
+
+                if ($entityCollection->getSize()) {
+                    $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
+
+                    if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                        if ($syncResponse['status']) {
+                            array_push($messageCollector, 1);
+                        } else {
+                            array_push($messageCollector, 0);
+                        }
+                    }
+                } else {
+                    if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                        array_push($messageCollector, 1);
+                    }
+                }
+                //remove file after sync
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+                $currentPageNumber++;
+            }
+        } else {
+            array_push($messageCollector, 0);
         }
 
         //display messages
