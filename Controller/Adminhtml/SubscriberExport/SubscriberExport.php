@@ -99,6 +99,7 @@ class SubscriberExport extends Action
             $scope = ScopeInterface::SCOPE_WEBSITES;
             $store = $this->storeManager->getStore($storeId);
             $websiteId = $store->getWebsiteId();
+            $data['website'] = $websiteId;
             $websiteStoreIds = [];
             $websiteStoreIds[] = $storeId;
             $resultRedirect = $this->resultRedirectFactory->create();
