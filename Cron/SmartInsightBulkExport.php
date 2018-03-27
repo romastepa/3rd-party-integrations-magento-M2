@@ -63,6 +63,7 @@ class SmartInsightBulkExport
         $this->jsonHelper = $jsonHelper;
         $this->emarsysOrderModel =  $order;
         $this->emarsysLogs = $emarsysLogs;
+        $this->storeManager = $storeManager;
     }
 
     public function execute()

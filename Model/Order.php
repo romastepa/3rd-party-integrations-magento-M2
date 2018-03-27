@@ -763,8 +763,10 @@ class Order extends AbstractModel
 
                     //set unit Price
                     $unitPrice = $item->getPriceInclTax();
+                    $qty = (int)$item->getQtyInvoiced();
+                    $rowTotal = ((float)$unitPrice*$qty) - $item->getDiscountAmount();
                     if ($unitPrice != '') {
-                        $values[] = number_format((float)$unitPrice, 2, '.', '') ;
+                        $values[] = number_format($rowTotal, 2, '.', '');
                     } else {
                         $values[] = '';
                     }
@@ -836,8 +838,10 @@ class Order extends AbstractModel
 
                     //set Unit Prices
                     $unitPrice = $item->getPriceInclTax();
+                    $qty = (int)$item->getQty();
+                    $rowTotal = ((float)$unitPrice*$qty) - $item->getDiscountAmount();
                     if ($unitPrice != '') {
-                        $values[] = "-" . number_format((float)$unitPrice, 2, '.', '');
+                        $values[] = "-" . number_format($rowTotal, 2, '.', '');
                     } else {
                         $values[] = '';
                     }

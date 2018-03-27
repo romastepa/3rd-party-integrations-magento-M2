@@ -41,6 +41,11 @@ class Order extends AbstractDb
     protected $emarsysDataHelper;
 
     /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
      * Order constructor.
      *
      * @param Context $context
@@ -55,12 +60,16 @@ class Order extends AbstractDb
         Attribute $attribute,
         StoreRepositoryInterface $storeRepository,
         EmarsysDataHelper $emarsysDataHelper,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         $connectionName = null
     ) {
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;
         $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->_storeManager = $storeManager;
+        $this->emarsysLogs = $emarsysLogs;
         parent::__construct($context, $connectionName);
     }
 
@@ -230,16 +239,27 @@ class Order extends AbstractDb
         if (in_array($emarsysField, $heading)) {
             return;
         }
-        $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " . $this->getTable('emarsys_order_field_mapping') . " WHERE emarsys_order_field = " . $emarsysField);
-        $result = $stmt->fetch();
-        if ($result['magento_column_name'] == 'created_at') {
-            $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as created_at FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
-        } elseif ($result['magento_column_name'] == 'updated_at') {
-            $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as updated_at FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
-        } elseif ($result['magento_column_name'] == 'customer_dob') {
-            $stmt = $this->getConnection()->query("SELECT DATE_FORMAT(" . $result['magento_column_name']. ",'%Y-%m-%d') as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
-        } else {
-            $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+
+        try {
+            $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " . $this->getTable('emarsys_order_field_mapping') . " WHERE emarsys_order_field = " . $emarsysField);
+            $result = $stmt->fetch();
+            if ($result['magento_column_name'] == 'created_at') { 
+                $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as created_at FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'updated_at') {
+                $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as updated_at FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'customer_dob') {
+                $stmt = $this->getConnection()->query("SELECT DATE_FORMAT(" . $result['magento_column_name']. ",'%Y-%m-%d') as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'email') {
+                $stmt = $this->getConnection()->query("SELECT customer_email as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'customer') {
+                $stmt = $this->getConnection()->query("SELECT customer_id as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } else {
+                $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            }
+        } catch (\Exception $e) {
+            $storeId = $this->_storeManager->getStore()->getId();
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getOrderColValue()');
+            return;
         }
 
         return $stmt->fetch();
