@@ -118,11 +118,6 @@ class CustomerExport extends Action
     public function execute()
     {
         try {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            //$new = $objectManager->create('\Emarsys\Emarsys\Cron\CustomerBulkExportWebDav');
-            $new = $objectManager->create('\Emarsys\Emarsys\Cron\CustomerSyncQueue');
-            $new->execute();
-
             $data = $this->request->getParams();
             $storeId = $data['storeId'];
             $store = $this->storeManager->getStore($storeId);
