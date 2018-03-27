@@ -119,12 +119,9 @@ class OrderExport extends Action
     public function execute()
     {
         try {
+            //collect params
             $data = $this->request->getParams();
             $storeId = $data['storeId'];
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $new = $objectManager->create('\Emarsys\Emarsys\Model\Order');
-            $new->syncOrders($storeId, \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC);
-            //collect params
             $store = $this->storeManager->getStore($storeId);
             $websiteId = $store->getWebsiteId();
             $exportFromDate = $data['fromDate'];
