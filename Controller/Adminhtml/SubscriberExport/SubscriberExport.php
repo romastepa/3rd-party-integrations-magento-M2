@@ -23,7 +23,7 @@ use Emarsys\Emarsys\Model\Logs as EmarsysLogsModel;
  */
 class SubscriberExport extends Action
 {
-    const MAX_SUBSCRIBERS_RECORDS = 10000;
+    const MAX_SUBSCRIBERS_RECORDS = 100000;
 
     /**
      * @var StoreManagerInterface
@@ -121,6 +121,7 @@ class SubscriberExport extends Action
                         $websiteId
                     );
                     $data['subscribeStatus'] = $subscribedStatus;
+                    $data['attributevalue'] = $subscribedStatus;
                 }
 
                 //get subscribers collection
