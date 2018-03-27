@@ -834,6 +834,12 @@ class Product extends AbstractModel
 
                 if (!empty($store)) {
                     list($csvFilePath, $outputFile) = $this->productExportModel->saveToCsv($websiteId);
+                    $bulkDir = $this->customerResourceModel->getDataFromCoreConfig(
+                        EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR, 
+                        ScopeInterface::SCOPE_WEBSITES, 
+                        $websiteId
+                    );
+                    $outputFile = $bulkDir . $outputFile;
                     $this->moveFile($store['store'], $outputFile, $csvFilePath, $logId, $mode);
                 }
             }
