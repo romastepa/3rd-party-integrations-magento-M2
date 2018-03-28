@@ -134,6 +134,8 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 'price' => ['emarsys_attr_code' => $data[5]]
             ];
 
+            //Remove existing data
+            $this->resourceModelProduct->deleteRecommendedMappingExistingAttr($recommendedData, $storeId);
             foreach ($recommendedData as $key => $value) {
                 $mappedAttributeCode = $this->productAttributeCollection->create()
                     ->addFieldToFilter('magento_attr_code', ['eq' => $key])

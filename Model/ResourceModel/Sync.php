@@ -139,7 +139,7 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             }
 
             return $lastsyncDate;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getLastSyncDate');
         }
     }

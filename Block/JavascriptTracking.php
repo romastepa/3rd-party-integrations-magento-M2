@@ -378,14 +378,16 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                         $collection = $this->orderItemCollectionFactory->create()
                             ->addAttributeToFilter('parent_item_id', ['eq' => $item['item_id']])
                             ->load();
-                        $bundlePrice = 0;
+                        $bundleBaseDiscount = 0;
+                        $bundleDiscount = 0;
                         foreach ($collection as $collPrice) {
-                            $bundlePrice += $collPrice['base_discount_amount'];
+                            $bundleBaseDiscount += $collPrice['base_discount_amount'];
+                            $bundleDiscount += $collPrice['discount_amount'];
                         }
                         if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundlePrice) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundlePrice);
+                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
                         } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundlePrice : $item->getRowTotal() - $bundlePrice;
+                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
                         }
                     } else {
                         if ($taxIncluded) {

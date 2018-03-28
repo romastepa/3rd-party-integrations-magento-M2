@@ -97,7 +97,7 @@ class Createfields extends Action
                 }
                 $this->messageManager->addSuccessMessage('Fileds created');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
         }
         $resultRedirect = $this->resultRedirectFactory->create();

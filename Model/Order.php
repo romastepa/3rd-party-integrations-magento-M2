@@ -24,6 +24,8 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
+use Magento\Catalog\Model\ProductFactory;
 
 /**
  * Class Order
@@ -107,6 +109,16 @@ class Order extends AbstractModel
     protected $directoryList;
 
     /**
+     * @var OrderItemCollectionFactory
+     */
+    protected $orderItemCollectionFactory;
+
+    /**
+     * @var ProductFactory
+     */
+    protected $productFactory;
+
+    /**
      * Order constructor.
      * @param Context $context
      * @param Registry $registry
@@ -125,6 +137,8 @@ class Order extends AbstractModel
      * @param TimeZone $timezone
      * @param ApiExport $apiExport
      * @param DirectoryList $directoryList
+     * @param ProductFactory $productFactory
+     * @param OrderItemCollectionFactory $orderItemCollectionFactory
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
@@ -147,6 +161,8 @@ class Order extends AbstractModel
         TimeZone $timezone,
         ApiExport $apiExport,
         DirectoryList $directoryList,
+        OrderItemCollectionFactory $orderItemCollectionFactory,
+        ProductFactory $productFactory,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -166,6 +182,8 @@ class Order extends AbstractModel
         $this->timezone = $timezone;
         $this->apiExport = $apiExport;
         $this->directoryList = $directoryList;
+        $this->orderItemCollectionFactory = $orderItemCollectionFactory;
+        $this->productFactory = $productFactory;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -719,6 +737,9 @@ class Order extends AbstractModel
             $websiteId
         );
 
+        $taxIncluded = $this->emarsysDataHelper->isIncludeTax();
+        $useBaseCurrency = $this->emarsysDataHelper->isUseBaseCurrency();
+
         $handle = fopen($filePath, 'w');
 
         //Get Header for sales csv
@@ -762,13 +783,41 @@ class Order extends AbstractModel
                     $values[] = $sku;
 
                     //set unit Price
-                    $unitPrice = $item->getPriceInclTax();
+                    $productObj = $this->productFactory->create()->load($item->getProductId());
+
+                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE) && (!$productObj->getPriceType())) {
+                        $collection = $this->orderItemCollectionFactory->create()
+                            ->addAttributeToFilter('parent_item_id', ['eq' => $item['item_id']])
+                            ->load();
+                        $bundleBaseDiscount = 0;
+                        $bundleDiscount = 0;
+                        foreach ($collection as $collPrice) {
+                            $bundleBaseDiscount += $collPrice['base_discount_amount'];
+                            $bundleDiscount += $collPrice['discount_amount'];
+                        }
+                        if ($taxIncluded) {
+                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
+                        } else {
+                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
+                        }
+                    } else {
+                        if ($taxIncluded) {
+                            $price = $useBaseCurrency? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                        } else {
+                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                        }
+                    }
+
                     $qty = (int)$item->getQtyInvoiced();
-                    $rowTotal = ((float)$unitPrice*$qty) - $item->getDiscountAmount();
-                    if ($unitPrice != '') {
+                    $rowTotal = 0;
+                    if ($qty > 0) {
+                        $rowTotal = $price;
+                    }
+
+                    if ($rowTotal != '') {
                         $values[] = number_format($rowTotal, 2, '.', '');
                     } else {
-                        $values[] = '';
+                        $values[] = 0;
                     }
 
                     //set quantity
@@ -836,15 +885,44 @@ class Order extends AbstractModel
                     }
                     $values[] = $csku;
 
-                    //set Unit Prices
-                    $unitPrice = $item->getPriceInclTax();
-                    $qty = (int)$item->getQty();
-                    $rowTotal = ((float)$unitPrice*$qty) - $item->getDiscountAmount();
-                    if ($unitPrice != '') {
-                        $values[] = "-" . number_format($rowTotal, 2, '.', '');
+                    //set unit Price
+                    $productObj = $this->productFactory->create()->load($item->getProductId());
+
+                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE) && (!$productObj->getPriceType())) {
+                        $collection = $this->orderItemCollectionFactory->create()
+                            ->addAttributeToFilter('parent_item_id', ['eq' => $item['item_id']])
+                            ->load();
+                        $bundleBaseDiscount = 0;
+                        $bundleDiscount = 0;
+                        foreach ($collection as $collPrice) {
+                            $bundleBaseDiscount += $collPrice['base_discount_amount'];
+                            $bundleDiscount += $collPrice['discount_amount'];
+                        }
+                        if ($taxIncluded) {
+                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
+                        } else {
+                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
+                        }
                     } else {
-                        $values[] = '';
+                        if ($taxIncluded) {
+                            $price = $useBaseCurrency? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                        } else {
+                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                        }
                     }
+
+                    $qty = (int)$item->getQty();
+                    $rowTotal = 0;
+                    if ($qty > 0) {
+                        $rowTotal = $price;
+                    }
+
+                    if ($rowTotal != '') {
+                        $values[] = '-' . number_format($rowTotal, 2, '.', '');
+                    } else {
+                        $values[] = 0;
+                    }
+
                     //set quantity
                     $values[] = (int)$item->getQty();
 
@@ -1159,3 +1237,4 @@ class Order extends AbstractModel
         return;
     }
 }
+
