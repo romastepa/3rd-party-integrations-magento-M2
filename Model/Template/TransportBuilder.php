@@ -275,7 +275,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             $order['additional_data'] = ($item->getData('additional_data') ? $item->getData('additional_data') : "");
 
             return $order;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $emarsysLogs = $objectManager->create('\Emarsys\Emarsys\Model\Logs');
             $emarsysLogs->addErrorLog(
                 $e->getMessage(),
