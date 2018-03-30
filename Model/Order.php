@@ -832,20 +832,20 @@ class Order extends AbstractModel
                         }
                     }
 
-                    $qty = (int)$item->getQtyInvoiced();
+                    $qty = (int)$item->getQty();
                     $rowTotal = 0;
                     if ($qty > 0) {
                         $rowTotal = $price;
                     }
 
                     if ($rowTotal != '') {
-                        $values[] = number_format($rowTotal, 2, '.', '');
+                        $values[] = '-' . number_format($rowTotal, 2, '.', '');
                     } else {
                         $values[] = 0;
                     }
 
                     //set quantity
-                    $values[] = (int)$item->getQtyInvoiced();
+                    $values[] = $qty;
 
                     foreach ($emasysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
