@@ -78,7 +78,7 @@ class ProductBulkExport
                 $includeBundle = $data['includeBundle'];
                 $excludedCategories = $data['excludeCategories'];
 
-                $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle, $excludedCategories);
+                $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL, $includeBundle, $excludedCategories);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(

@@ -46,6 +46,11 @@ class Order extends AbstractDb
     protected $_storeManager;
 
     /**
+     * @var array
+     */
+    protected $emarsysOrderFields = [];
+
+    /**
      * Order constructor.
      *
      * @param Context $context
@@ -216,15 +221,20 @@ class Order extends AbstractDb
      */
     public function getEmarsysOrderFields($storeId)
     {
-        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getMainTable())
-            ->where('emarsys_order_field NOT IN (?)', $heading)
-            ->where('emarsys_order_field != ?', '')
-            ->where('store_id = ?', $storeId);
 
-        return $this->getConnection()->fetchAll($select);
+        if (!isset($this->emarsysOrderFields[$storeId])) {
+            $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
+            $select = $this->getConnection()
+                ->select()
+                ->from($this->getMainTable())
+                ->where('emarsys_order_field NOT IN (?)', $heading)
+                ->where('emarsys_order_field != ?', '')
+                ->where('store_id = ?', $storeId);
+
+            $this->emarsysOrderFields[$storeId] = $this->getConnection()->fetchAll($select);
+        }
+
+        return $this->emarsysOrderFields[$storeId];
     }
 
     /**
