@@ -24,8 +24,6 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
 use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
-use Magento\Catalog\Model\ProductFactory;
 
 /**
  * Class Order
@@ -109,14 +107,14 @@ class Order extends AbstractModel
     protected $directoryList;
 
     /**
-     * @var OrderItemCollectionFactory
+     * @var array
      */
-    protected $orderItemCollectionFactory;
+    protected $salesCsvHeader = [];
 
     /**
-     * @var ProductFactory
+     * @var null | resource
      */
-    protected $productFactory;
+    protected $handle = null;
 
     /**
      * Order constructor.
@@ -137,8 +135,6 @@ class Order extends AbstractModel
      * @param TimeZone $timezone
      * @param ApiExport $apiExport
      * @param DirectoryList $directoryList
-     * @param ProductFactory $productFactory
-     * @param OrderItemCollectionFactory $orderItemCollectionFactory
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
@@ -161,8 +157,6 @@ class Order extends AbstractModel
         TimeZone $timezone,
         ApiExport $apiExport,
         DirectoryList $directoryList,
-        OrderItemCollectionFactory $orderItemCollectionFactory,
-        ProductFactory $productFactory,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -182,8 +176,6 @@ class Order extends AbstractModel
         $this->timezone = $timezone;
         $this->apiExport = $apiExport;
         $this->directoryList = $directoryList;
-        $this->orderItemCollectionFactory = $orderItemCollectionFactory;
-        $this->productFactory = $productFactory;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -206,7 +198,6 @@ class Order extends AbstractModel
     {
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITE;
 
         //Loging functionality start
         $logsArray['job_code'] = 'order';
@@ -253,11 +244,7 @@ class Order extends AbstractModel
             //check smart insight enabled for the website
             if ($this->emarsysDataHelper->getCheckSmartInsight($websiteId)) {
                 //get configuration of catalog export method
-                $apiExportEnabled = $this->customerResourceModel->getDataFromCoreConfig(
-                    EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_API_ENABLED,
-                    $scope,
-                    $websiteId
-                );
+                $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_API_ENABLED);
 
                 //check method of data exort from admin configuration
                 if ($apiExportEnabled) {
@@ -304,20 +291,10 @@ class Order extends AbstractModel
     public function exportOrdersDataUsingApi($storeId, $mode, $exportFromDate, $exportTillDate, $logsArray)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
         $errorCount = true;
 
-        $merchantId = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_MERCHANT_ID,
-            $scope,
-            $websiteId
-        );
-        $token = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_TOKEN,
-            $scope,
-            $websiteId
-        );
+        $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_MERCHANT_ID);
+        $token = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_TOKEN);
 
         if ($merchantId != '' && $token != '') {
             //test connection using merchant id and token
@@ -349,11 +326,7 @@ class Order extends AbstractModel
                 );
 
                 //check maximum record export is set
-                $maxRecordExport = $this->customerResourceModel->getDataFromCoreConfig(
-                    EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_MAX_RECORDS,
-                    $scope,
-                    $websiteId
-                );
+                $maxRecordExport = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_MAX_RECORDS);
 
                 if ($maxRecordExport) {
                     $orderSyncStatus = false;
@@ -457,139 +430,107 @@ class Order extends AbstractModel
     public function exportOrdersDataUsingFtp($storeId, $mode, $exportFromDate, $exportTillDate, $logsArray)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITE;
         $errorCount = true;
 
-        //Collect FTP Credentials
-        $hostname = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_HOSTNAME, $scope, $websiteId);
-        $port = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PORT, $scope, $websiteId);
-        $username = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USERNAME, $scope, $websiteId);
-        $password = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PASSWORD, $scope, $websiteId);
-        $bulkDir = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR, $scope, $websiteId);
-        $ftpSsl = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USEFTP_OVER_SSL, $scope, $websiteId);
-        $passiveMode = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USE_PASSIVE_MODE, $scope, $websiteId);
+        $bulkDir = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
 
-        if ($hostname != '' && $port != '' && $username != '' && $password != '') {
-            //check ftp connection using ftp credentials
-            $checkFtpConnection = $this->emarsysDataHelper->checkFtpConnection(
-                $hostname,
-                $username,
-                $password,
-                $port,
-                $ftpSsl,
-                $passiveMode
+        if ($this->emarsysDataHelper->checkFtpConnectionByStore($store)) {
+            //ftp connection established successfully
+            $outputFile = $this->getSalesCsvFileName($store->getCode());
+            $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(
+                \Magento\Sales\Model\Order::ENTITY
             );
 
-            if ($checkFtpConnection) {
-                //ftp connection established successfully
-                $outputFile = $this->getSalesCsvFileName($store->getCode());
-                $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(
-                    \Magento\Sales\Model\Order::ENTITY
-                );
+            //Check and create directory for csv generation
+            $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
+            $filePath =  $fileDirectory . "/" . $outputFile;
 
-                //Check and create directory for csv generation
-                $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
-                $filePath =  $fileDirectory . "/" . $outputFile;
+            //prepare order collection
+            $orderCollection = $this->getOrderCollection(
+                $mode,
+                $storeId,
+                $exportFromDate,
+                $exportTillDate
+            );
 
-                //prepare order collection
-                $orderCollection = $this->getOrderCollection(
-                    $mode,
-                    $storeId,
-                    $exportFromDate,
-                    $exportTillDate
-                );
+            //prepare credit-memo collection
+            $creditMemoCollection = $this->getCreditMemoCollection(
+                $mode,
+                $storeId,
+                $exportFromDate,
+                $exportTillDate
+            );
 
-                //prepare credit-memo collection
-                $creditMemoCollection = $this->getCreditMemoCollection(
-                    $mode,
-                    $storeId,
-                    $exportFromDate,
-                    $exportTillDate
-                );
+            $maxRecordExport = 100;
 
-                //Generate Sales CSV
-                $this->generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection);
+            //Generate Sales CSV
 
-                //CSV upload to FTP process starts
-                $fileOpen = fopen($filePath, "r");
-                $remoteDirPath = $bulkDir;
-                if ($remoteDirPath == '/') {
-                    $remoteFileName = $outputFile;
-                } else {
-                    $remoteDirPath = rtrim($remoteDirPath, '/');
-                    $remoteFileName = $remoteDirPath . "/" . $outputFile;
-                }
+            $orderCollection->setPageSize($maxRecordExport);
+            $pages = $orderCollection->getLastPageNumber();
 
-                if ($ftpSsl == 1) {
-                    $ftpConnection = @ftp_ssl_connect($hostname, $port);
-                } else {
-                    $ftpConnection = @ftp_connect($hostname, $port);
-                }
+            for ($i = 1; $i <= $pages; $i++) {
+                $orderCollection->setCurPage($i);
+                $this->generateOrderCsv($storeId, $filePath, $orderCollection, false, true);
+                $orderCollection->clear();
+            }
 
-                //Login to FTP
-                $ftpLogin = @ftp_login($ftpConnection, $username, $password);
+            $creditMemoCollection->setPageSize($maxRecordExport);
+            $pages = $creditMemoCollection->getLastPageNumber();
 
-                if ($passiveMode == 1) {
-                    @ftp_pasv($ftpConnection, true);
-                }
+            for ($i = 1; $i <= $pages; $i++) {
+                $creditMemoCollection->setCurPage($i);
+                $this->generateOrderCsv($storeId, $filePath, false, $creditMemoCollection, true);
+                $creditMemoCollection->clear();
+            }
 
-                //Create remote directory if not present
-                if (!@ftp_chdir($ftpConnection, $remoteDirPath)) {
-                    @ftp_mkdir($ftpConnection, $remoteDirPath);
-                }
-                @ftp_chdir($ftpConnection, '/');
+            //CSV upload to FTP process starts
 
-                //Upload CSV to FTP
-                if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
-                    //file uploaded to FTP server successfully
-                    $errorCount = false;
-                    $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
-                    $logsArray['description'] = $remoteFileName;
-                    $logsArray['message_type'] = 'Success';
-                    $this->logsHelper->logs($logsArray);
-                    if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                        $this->messageManager->addSuccessMessage(
-                            __("File uploaded to FTP server successfully !!!")
-                        );
-                    }
-                } else {
-                    //Failed to upload file on FTP server
-                    $errorMessage = error_get_last();
-                    $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
-                    $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
-                    $logsArray['description'] = __('Failed to upload file on FTP server. %1', $msg);
-                    $logsArray['message_type'] = 'Error';
-                    $this->logsHelper->logs($logsArray);
-                    if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                        $this->messageManager->addErrorMessage(
-                            __("Failed to upload file on FTP server !!! %1", $msg)
-                        );
-                    }
-                }
-                //remove file after sync
-                unlink($filePath);
+            $remoteDirPath = $bulkDir;
+            if ($remoteDirPath == '/') {
+                $remoteFileName = $outputFile;
             } else {
-                //failed to connect with FTP server with given credentials
-                $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
-                $logsArray['description'] = __('Failed to connect with FTP server.');
+                $remoteDirPath = rtrim($remoteDirPath, '/');
+                $remoteFileName = $remoteDirPath . "/" . $outputFile;
+            }
+
+            //Upload CSV to FTP
+            if ($this->emarsysDataHelper->moveFileToFtp($store, $filePath, $remoteFileName)) {
+                //file uploaded to FTP server successfully
+                $errorCount = false;
+                $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
+                $logsArray['description'] = $remoteFileName;
+                $logsArray['message_type'] = 'Success';
+                $this->logsHelper->logs($logsArray);
+                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                    $this->messageManager->addSuccessMessage(
+                        __("File uploaded to FTP server successfully !!!")
+                    );
+                }
+            } else {
+                //Failed to upload file on FTP server
+                $errorMessage = error_get_last();
+                $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
+                $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
+                $logsArray['description'] = __('Failed to upload file on FTP server. %1', $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
                 if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
-                        __('"Failed to connect with FTP server. Please check your settings and try again !!!"')
+                        __("Failed to upload file on FTP server !!! %1", $msg)
                     );
                 }
             }
+            //remove file after sync
+            unlink($filePath);
         } else {
-            //missing ftp credentials
-            $logsArray['emarsys_info'] = __('Invalid FTP credentials');
-            $logsArray['description'] = __('Invalid FTP credential. Please check your settings and try again');
+            //failed to connect with FTP server with given credentials
+            $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
+            $logsArray['description'] = __('Failed to connect with FTP server.');
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
             if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
-                    __("Invalid FTP credential. Please check your settings and try again !!!")
+                    __('"Failed to connect with FTP server. Please check your settings and try again !!!"')
                 );
             }
         }
@@ -718,46 +659,55 @@ class Order extends AbstractModel
      * @param $filePath
      * @param $orderCollection
      * @param $creditMemoCollection
+     * @param bool $sameFile
      */
-    public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection)
+    public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection, $sameFile = false)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITE;
         $emasysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
 
-        $guestOrderExportStatus = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS,
-            $scope,
-            $websiteId
-        );
-        $emailAsIdentifierStatus = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
-            $scope,
-            $websiteId
-        );
+        $guestOrderExportStatus = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
+        $emailAsIdentifierStatus = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
 
         $taxIncluded = $this->emarsysDataHelper->isIncludeTax();
         $useBaseCurrency = $this->emarsysDataHelper->isUseBaseCurrency();
 
-        $handle = fopen($filePath, 'w');
 
-        //Get Header for sales csv
-        $header = $this->getSalesCsvHeader($storeId);
+        if ($sameFile && !$this->handle) {
+            $this->handle = fopen($filePath, 'w');
 
-        //put headers in sales csv
-        fputcsv($handle, $header);
+            //Get Header for sales csv
+            $header = $this->getSalesCsvHeader($storeId);
+
+            //put headers in sales csv
+            fputcsv($this->handle, $header);
+        } elseif (!$sameFile) {
+            $this->handle = fopen($filePath, 'w');
+
+            //Get Header for sales csv
+            $header = $this->getSalesCsvHeader($storeId);
+
+            //put headers in sales csv
+            fputcsv($this->handle, $header);
+        }
 
         //write data for orders into csv
         if ($orderCollection && (is_object($orderCollection)) && ($orderCollection->getSize())) {
             foreach ($orderCollection as $order) {
                 $orderId = $order->getRealOrderId();
-                $orderEntityId = $order->getId();
                 $createdDate = $order->getCreatedAt();
                 $customerEmail = $order->getCustomerEmail();
                 $customerId = $order->getCustomerId();
 
-                foreach ($order->getAllVisibleItems() as $item) {
+                $parentId = null;
+                foreach ($order->getItems() as $item) {
+                    if ($item->getProductType() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+                        $parentId == $item->getId();
+                    }
+                    if ($parentId && $item->getParentItemId() == $parentId) {
+                        $parentId = null;
+                        continue;
+                    }
                     $values = [];
                     //set order id
                     $values[] = $orderId;
@@ -772,39 +722,27 @@ class Order extends AbstractModel
                     } else {
                         $values[] = $customerId;
                     }
-                    $sku = $item->getSku();
-                    $product = $item->getProduct();
-                    if (!is_null($product) && is_object($product)) {
-                        if ($product->getId()) {
-                            $sku = $product->getSku();
-                        }
-                    }
                     //set product sku/id
-                    $values[] = $sku;
+                    $values[] = $item->getSku();;
 
-                    //set unit Price
-                    $productObj = $this->productFactory->create()->load($item->getProductId());
+                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE)) {
+                        $parentId = null;
+                        $productOptions = $item->getProductOptions();
+                        if (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 1) {
+                            if ($taxIncluded) {
+                                $price = $useBaseCurrency ? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                            } else {
+                                $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                            }
+                        } elseif (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 0) {
+                            $price = 0;
+                        }
 
-                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE) && (!$productObj->getPriceType())) {
-                        $collection = $this->orderItemCollectionFactory->create()
-                            ->addAttributeToFilter('parent_item_id', ['eq' => $item['item_id']])
-                            ->load();
-                        $bundleBaseDiscount = 0;
-                        $bundleDiscount = 0;
-                        foreach ($collection as $collPrice) {
-                            $bundleBaseDiscount += $collPrice['base_discount_amount'];
-                            $bundleDiscount += $collPrice['discount_amount'];
-                        }
-                        if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
-                        } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
-                        }
                     } else {
                         if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                            $price = $useBaseCurrency ? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
                         } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
                         }
                     }
 
@@ -825,25 +763,13 @@ class Order extends AbstractModel
 
                     foreach ($emasysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
-                        if ($emarsysOrderFieldValueOrder != '' && $emarsysOrderFieldValueOrder != "'") {
-                            $orderExpValues = $this->orderResourceModel->getOrderColValue(
-                                $emarsysOrderFieldValueOrder,
-                                $orderEntityId,
-                                $storeId
-                            );
-                            if (isset($orderExpValues['created_at'])) {
-                                $createdAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
-                                $values[] = $createdAt;
-                            } elseif (isset($orderExpValues['updated_at'])) {
-                                $updatedAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['updated_at']);
-                                $values[] = $updatedAt;
-                            } else {
-                                $values[] = $orderExpValues['magento_column_value'];
-                            }
+                        $magentoColumnName = trim($field['magento_column_name']);
+                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
+                            $values[] = $order->getData($magentoColumnName);
                         }
                     }
                     if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $order->getCustomerIsGuest() == 1)) {
-                        fputcsv($handle, $values);
+                        fputcsv($this->handle, $values);
                     }
                 }
             }
@@ -859,8 +785,15 @@ class Order extends AbstractModel
                 $customerEmail = $creditMemoOrder->getCustomerEmail();
                 $customerId = $creditMemoOrder->getCustomerId();
 
+                $parentId = null;
                 foreach ($creditMemo->getAllItems() as $item) {
-                    if ($item->getOrderItem()->getParentItem()) continue;
+                    if ($item->getProductType() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+                        $parentId == $item->getId();
+                    }
+                    if ($parentId && $item->getParentItemId() == $parentId) {
+                        $parentId = 0;
+                        continue;
+                    }
                     $values = [];
                     //set order id
                     $values[] = $orderId;
@@ -875,79 +808,54 @@ class Order extends AbstractModel
                     } else {
                         $values[] = $customerId;
                     }
-                    //set product id/sku
-                    $csku = $item->getSku();
-                    $creditMemoProduct = $item->getProduct();
-                    if (!is_null($creditMemoProduct) && is_object($creditMemoProduct)) {
-                        if ($creditMemoProduct->getId()) {
-                            $csku = $creditMemoProduct->getSku();
-                        }
-                    }
-                    $values[] = $csku;
+                    //set product sku/id
+                    $values[] = $item->getSku();;
 
-                    //set unit Price
-                    $productObj = $this->productFactory->create()->load($item->getProductId());
+                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE)) {
+                        $parentId = null;
+                        $productOptions = $item->getProductOptions();
+                        if (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 1) {
+                            if ($taxIncluded) {
+                                $price = $useBaseCurrency ? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                            } else {
+                                $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                            }
+                        } elseif (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 0) {
+                            $price = 0;
+                        }
 
-                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE) && (!$productObj->getPriceType())) {
-                        $collection = $this->orderItemCollectionFactory->create()
-                            ->addAttributeToFilter('parent_item_id', ['eq' => $item['item_id']])
-                            ->load();
-                        $bundleBaseDiscount = 0;
-                        $bundleDiscount = 0;
-                        foreach ($collection as $collPrice) {
-                            $bundleBaseDiscount += $collPrice['base_discount_amount'];
-                            $bundleDiscount += $collPrice['discount_amount'];
-                        }
-                        if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
-                        } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
-                        }
                     } else {
                         if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                            $price = $useBaseCurrency ? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
                         } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
                         }
                     }
 
-                    $qty = (int)$item->getQty();
+                    $qty = (int)$item->getQtyInvoiced();
                     $rowTotal = 0;
                     if ($qty > 0) {
                         $rowTotal = $price;
                     }
 
                     if ($rowTotal != '') {
-                        $values[] = '-' . number_format($rowTotal, 2, '.', '');
+                        $values[] = number_format($rowTotal, 2, '.', '');
                     } else {
                         $values[] = 0;
                     }
 
                     //set quantity
-                    $values[] = (int)$item->getQty();
+                    $values[] = (int)$item->getQtyInvoiced();
 
                     foreach ($emasysFields as $field) {
-                        $emarsysOrderFieldValueCm = trim($field['emarsys_order_field']);
-                        if ($emarsysOrderFieldValueCm != '' && $emarsysOrderFieldValueCm != "'") {
-                            $orderExpValues = $this->orderResourceModel->getOrderColValue(
-                                $emarsysOrderFieldValueCm,
-                                $orderEntityId,
-                                $storeId
-                            );
-
-                            if (isset($orderExpValues['created_at'])) {
-                                $createdAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
-                                $values[] = $createdAt;
-                            } elseif (isset($orderExpValues['updated_at'])) {
-                                $updatedAt = $this->emarsysDataHelper->getDateTimeInLocalTimezone($orderExpValues['updated_at']);
-                                $values[] = $updatedAt;
-                            } else {
-                                $values[] = $orderExpValues['magento_column_value'];
-                            }
+                        $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
+                        $magentoColumnName = trim($field['magento_column_name']);
+                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
+                            $values[] = $creditMemo->getData($magentoColumnName);
                         }
                     }
-                    if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $creditMemoOrder->getCustomerIsGuest() == 1)) {
-                        fputcsv($handle, $values);
+                    if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $creditMemo->getCustomerIsGuest() == 1)) {
+                        fputcsv($this->handle, $values);
                     }
                 }
 
@@ -998,7 +906,7 @@ class Order extends AbstractModel
                         }
                     }
                     if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $creditMemoOrder->getCustomerIsGuest() == 1)) {
-                        fputcsv($handle, $values);
+                        fputcsv($this->handle, $values);
                     }
                 }
             }
@@ -1029,19 +937,22 @@ class Order extends AbstractModel
      */
     public function getSalesCsvHeader($storeId = 0)
     {
-        //default header
-        $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
+        if (!isset($this->salesCsvHeader[$storeId])) {
+            //default header
+            $header = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
 
-        //header collected from mapped order attributes
-        $emasysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
-        foreach ($emasysFields as $field) {
-            $emarsysOrderFieldValue = trim($field['emarsys_order_field']);
-            if ($emarsysOrderFieldValue != '' && $emarsysOrderFieldValue != "'") {
-                $header[] = $emarsysOrderFieldValue;
+            //header collected from mapped order attributes
+            $emasysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
+            foreach ($emasysFields as $field) {
+                $emarsysOrderFieldValue = trim($field['emarsys_order_field']);
+                if ($emarsysOrderFieldValue != '' && $emarsysOrderFieldValue != "'") {
+                    $header[] = $emarsysOrderFieldValue;
+                }
             }
+            $this->salesCsvHeader[$storeId] = $header;
         }
 
-        return $header;
+        return $this->salesCsvHeader[$storeId];
     }
 
     /**
@@ -1054,14 +965,8 @@ class Order extends AbstractModel
     public function getOrderCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITE;
-        $orderStatuse = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS,
-            $scope,
-            $websiteId
-        );
-        $orderStatuses = explode(',', $orderStatuse);
+        $orderStatuses = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS);
+        $orderStatuses = explode(',', $orderStatuses);
         $orderCollection = [];
 
         if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
