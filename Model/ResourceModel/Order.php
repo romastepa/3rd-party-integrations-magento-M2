@@ -165,13 +165,15 @@ class Order extends AbstractDb
 
             $result = $this->getConnection()->fetchRow($select);
 
-            if (empty($result) || empty($result['emarsys_order_field'])) {
-                $this->getConnection()->insert($this->getMainTable(), [
-                    'magento_column_name' => $value,
-                    'emarsys_order_field' => $key,
-                    'store_id' => $storeId
-                ]);
+            $data = [];
+            if (!empty($result)) {
+                $data['id'] = $result['id'];
             }
+            $data['magento_column_name'] = $value;
+            $data['emarsys_order_field'] = $key;
+            $data['store_id'] = $storeId;
+
+            $this->getConnection()->insertOnDuplicate($this->getMainTable(), $data ,['emarsys_order_field']);
         }
     }
 
