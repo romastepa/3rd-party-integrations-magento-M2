@@ -2567,8 +2567,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $result = false;
         if ($this->checkFtpConnectionByStore($store)) {
-            $content = file_get_contents($filePath);
-            $result = $this->ftp->write($filename, $content);
+            $result = $this->ftp->write($filename, $filePath);
             $this->ftp->close();
         }
 

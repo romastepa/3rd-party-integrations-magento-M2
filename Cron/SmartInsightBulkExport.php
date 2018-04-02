@@ -69,6 +69,7 @@ class SmartInsightBulkExport
     public function execute()
     {
         try {
+            set_time_limit(0);
             $currentCronInfo = $this->cronHelper->getCurrentCronInformation(
                 \Emarsys\Emarsys\Helper\Cron::CRON_JOB_SI_BULK_EXPORT
             );
