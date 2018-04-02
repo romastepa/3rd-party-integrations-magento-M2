@@ -89,7 +89,8 @@ class Save extends Action
 
             $stringJSONData = json_decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
-            $data = $this->orderResourceModel->insertIntoMappingTableCustomValue($stringArrayData, $storeId);
+
+            $this->orderResourceModel->insertIntoMappingTableCustomValue($stringArrayData, $storeId);
 
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Saved Order Mapping Successfully';
