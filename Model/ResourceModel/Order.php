@@ -163,9 +163,9 @@ class Order extends AbstractDb
                 ->where('magento_column_name = ?', $value)
                 ->where('store_id = ?', $storeId);
 
-            $result = $this->getConnection()->fetchAll($select);
+            $result = $this->getConnection()->fetchRow($select);
 
-            if (empty($result)) {
+            if (empty($result) || empty($result['emarsys_order_field'])) {
                 $this->getConnection()->insert($this->getMainTable(), [
                     'magento_column_name' => $value,
                     'emarsys_order_field' => $key,
