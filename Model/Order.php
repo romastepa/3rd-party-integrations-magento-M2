@@ -461,7 +461,7 @@ class Order extends AbstractModel
                 $exportTillDate
             );
 
-            $maxRecordExport = 100;
+            $maxRecordExport = 1000;
 
             //Generate Sales CSV
 
@@ -471,7 +471,10 @@ class Order extends AbstractModel
             for ($i = 1; $i <= $pages; $i++) {
                 $orderCollection->setCurPage($i);
                 $this->generateOrderCsv($storeId, $filePath, $orderCollection, false, true);
-                $orderCollection->clear();
+                $logsArray['emarsys_info'] = __('Order\'s iteration %1 of %2', $i, $pages);
+                $logsArray['description'] = __('Order\'s iteration %1 of %2', $i, $pages);
+                $logsArray['message_type'] = 'Success';
+                $this->logsHelper->logs($logsArray);
             }
 
             $creditMemoCollection->setPageSize($maxRecordExport);
@@ -481,6 +484,10 @@ class Order extends AbstractModel
                 $creditMemoCollection->setCurPage($i);
                 $this->generateOrderCsv($storeId, $filePath, false, $creditMemoCollection, true);
                 $creditMemoCollection->clear();
+                $logsArray['emarsys_info'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
+                $logsArray['description'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
+                $logsArray['message_type'] = 'Success';
+                $this->logsHelper->logs($logsArray);
             }
 
             //CSV upload to FTP process starts
@@ -911,7 +918,8 @@ class Order extends AbstractModel
                 }
             }
         }
-
+        unset($orderCollection);
+        unset($creditMemoCollection);
         return;
     }
 
