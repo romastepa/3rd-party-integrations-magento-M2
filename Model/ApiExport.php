@@ -348,6 +348,10 @@ class ApiExport extends ZendClient
         $result = $this->apiExport($apiUrl, $filePath);
         unlink($filePath);
 
+        if (!$result['result'] && $result['status'] == 400) {
+            $result['result'] = 1;
+        }
+
         return $result;
     }
 }
