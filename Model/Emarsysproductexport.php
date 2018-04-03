@@ -185,6 +185,7 @@ class Emarsysproductexport extends AbstractModel
     public function saveToCsv($websiteId)
     {
         $this->_mapHeader = array('item');
+        $this->_preparedData = array();
         $this->_prepareData();
 
         $path = $this->dir->getPath(\Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR) . '/export';
