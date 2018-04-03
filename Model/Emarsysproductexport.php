@@ -184,6 +184,7 @@ class Emarsysproductexport extends AbstractModel
      */
     public function saveToCsv($websiteId)
     {
+        $this->_mapHeader = array('item');
         $this->_prepareData();
 
         $path = $this->dir->getPath(\Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR) . '/export';
@@ -192,7 +193,7 @@ class Emarsysproductexport extends AbstractModel
             $this->ioFile->mkdir($path, 0775);
         }
 
-        $name = "products_" . $websiteId . ".csv";
+        $name = 'products_' . $websiteId . '.csv';
         $file = $path . '/' . $name;
 
         $columnCount = count($this->_mapHeader);
