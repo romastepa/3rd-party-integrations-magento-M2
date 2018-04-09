@@ -11,7 +11,7 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Cron\Model\Schedule;
 use Emarsys\Emarsys\Model\EmarsysCronDetailsFactory;
 use Magento\Cron\Model\ScheduleFactory;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
 use Emarsys\Emarsys\Model\Logs as Emarsyslogs;
 use Magento\Store\Model\StoreManagerInterface;
@@ -66,13 +66,18 @@ class Cron extends AbstractHelper
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManager ;
+    protected $storeManager;
+
+    /**
+     * @var DateTime
+     */
+    protected $datetime;
 
     /**
      * Cron constructor.
      * @param Context $context
      * @param ScheduleFactory $scheduleFactory
-     * @param TimezoneInterface $timezone
+     * @param DateTime $datetime
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
      * @param JsonHelper $jsonHelper
      * @param Logs $emarsysLogs
@@ -81,7 +86,7 @@ class Cron extends AbstractHelper
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
-        TimezoneInterface $timezone,
+        DateTime $datetime,
         EmarsysCronDetailsFactory $emarsysCronDetails,
         JsonHelper $jsonHelper,
         Emarsyslogs $emarsysLogs,
@@ -89,7 +94,7 @@ class Cron extends AbstractHelper
     ) {
         $this->context = $context;
         $this->scheduleFactory = $scheduleFactory;
-        $this->timezone = $timezone;
+        $this->datetime = $datetime;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->jsonHelper = $jsonHelper;
         $this->emarsysLogs = $emarsysLogs;
@@ -217,8 +222,8 @@ class Cron extends AbstractHelper
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp()))
-            ->setScheduledAt(strftime('%Y-%m-%d %H:%M', $this->timezone->scopeTimeStamp()));
+            ->setCreatedAt($this->datetime->gmtDate())
+            ->setScheduledAt($this->datetime->gmtDate());
         $cron->save();
 
         return $result;
