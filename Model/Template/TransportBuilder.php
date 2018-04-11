@@ -10,10 +10,8 @@ use Magento\Framework\App\TemplateTypesInterface;
 use Magento\Framework\Mail\MessageInterface;
 use Magento\Framework\Mail\TransportInterfaceFactory;
 use Magento\Framework\ObjectManagerInterface;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Magento\Framework\Mail\Template\FactoryInterface;
 use Magento\Framework\Mail\Template\SenderResolverInterface;
-use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Catalog\Model\ProductFactory;
 use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
@@ -47,11 +45,6 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
     public $productCollObj = '';
 
     /**
-     * @var Logs
-     */
-    protected $emarsysLogs;
-
-    /**
      * @var StoreManagerInterface
      */
     protected $storeManager ;
@@ -63,7 +56,6 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
      * @param SenderResolverInterface $senderResolver
      * @param ObjectManagerInterface $objectManager
      * @param TransportInterfaceFactory $mailTransportFactory
-     * @param Logs $emarsysLogs
      * @param StoreManagerInterface $storeManager
      * @param ProductFactory $productFactory
      * @param EmarsysHelper $emarsysDataHelper
@@ -76,17 +68,15 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         SenderResolverInterface $senderResolver,
         ObjectManagerInterface $objectManager,
         TransportInterfaceFactory $mailTransportFactory,
-        Logs $emarsysLogs,
         StoreManagerInterface $storeManager,
         ProductFactory $productFactory,
         EmarsysHelper $emarsysDataHelper,
         ScopeConfigInterface $scopeConfigInterface,
         Http $requestHttp
     ) {
-        $this->emarsysDataHelper = $emarsysDataHelper;
-        $this->productFactory = $productFactory;
-        $this->emarsysLogs = $emarsysLogs;
         $this->storeManager = $storeManager;
+        $this->productFactory = $productFactory;
+        $this->emarsysDataHelper = $emarsysDataHelper;
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->requestHttp = $requestHttp;
         parent::__construct(
@@ -310,7 +300,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 
             return $order;
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->emarsysDataHelper->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'TransportBuilder::getOrderData()'

@@ -14,6 +14,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Helper\Logs\Proxy as EmarsysLogs;
 
 /**
  * Class Logs
@@ -24,29 +25,42 @@ class Logs extends \Magento\Framework\Model\AbstractModel
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManager ;
+    protected $storeManager;
 
     /**
      * @var ManagerInterface
      */
-    protected $messageManagerInterface ;
+    protected $messageManagerInterface;
+
+    /**
+     * @var DateTime
+     */
+    protected $dateTime;
+
+    /**
+     * @var EmarsysLogs
+     */
+    protected $emarsysLog;
 
     /**
      * Logs constructor.
-     * @param Context $context
-     * @param Registry $registry
      * @param StoreManagerInterface $storeManager
      * @param ManagerInterface $managerInterface
+     * @param DateTime $dateTime
+     * @param EmarsysLogs $emarsysLog
+     * @param Context $context
+     * @param Registry $registry
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
-        Context $context,
-        Registry $registry,
         StoreManagerInterface $storeManager,
         ManagerInterface $managerInterface,
         DateTime $dateTime,
+        EmarsysLogs $emarsysLog,
+        Context $context,
+        Registry $registry,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -54,6 +68,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
         $this->storeManager = $storeManager;
         $this->messageManagerInterface = $managerInterface;
         $this->dateTime = $dateTime;
+        $this->emarsysLog = $emarsysLog;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -70,7 +85,6 @@ class Logs extends \Magento\Framework\Model\AbstractModel
 
     public function addErrorLog($messages, $storeId, $info)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         try {
             $logsArray['job_code'] = 'Exception';
             $logsArray['status'] = 'error';
@@ -80,8 +94,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             $logsArray['run_mode'] = '';
             $logsArray['auto_log'] = '';
             $logsArray['store_id'] = $storeId;
-            $logsHelper = $objectManager->create('Emarsys\Emarsys\Helper\Logs');
-            $logId = $logsHelper->manualLogs($logsArray);
+            $logId = $this->emarsysLog->manualLogs($logsArray);
 
             if ($logId) {
                 $logsArray['id'] = $logId;
@@ -91,7 +104,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
                 $logsArray['message_type'] = 'error';
                 $logsArray['log_action'] = 'fail';
                 $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
-                $logsHelper->logs($logsArray);
+                $this->emarsysLog->logs($logsArray);
             }
         } catch (\Exception $e) {
             $this->messageManagerInterface->addErrorMessage(
