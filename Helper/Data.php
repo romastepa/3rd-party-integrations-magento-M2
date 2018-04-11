@@ -1120,7 +1120,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.0',
+                    'value' => '1.0.12',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),
@@ -2675,5 +2675,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
             $websiteId
         );
+    }
+
+    /**
+     * @param $messages
+     * @param $storeId
+     * @param $info
+     */
+    public function addErrorLog($messages, $storeId, $info)
+    {
+        return $this->emarsysLogs->addErrorLog($messages, $storeId, $info);
     }
 }
