@@ -286,5 +286,17 @@ class Order extends AbstractDb
         $result = $stmt->fetchAll();
         return $result;
     }
+
+    public function deleteOrderAttributeMapping($emarsysOrderField, $storeId)
+    {
+        $stmt = "SELECT * FROM " . $this->getTable('emarsys_order_field_mapping') . " WHERE emarsys_order_field = '" . $emarsysOrderField . "' AND store_id = " .$storeId;
+        $result = $this->getConnection()->fetchAll($stmt);
+        if (!empty($result)) {
+            $query = "UPDATE " . $this->getTable('emarsys_order_field_mapping') . " SET emarsys_order_field = '' WHERE emarsys_order_field = '" . $emarsysOrderField . "' AND store_id = " . $storeId;
+            $updateResult = $this->getConnection()->query($query);
+            return $updateResult;
+        }
+        return;
+    }
 }
 

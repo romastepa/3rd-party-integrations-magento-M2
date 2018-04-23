@@ -261,6 +261,7 @@
                        showInWebsite="1" showInStore="0">
                     <label>Export using email as identifier</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Note: Please run Update Schema at Order Mapping Screen after changing this configuration.</comment>
                     <depends>
                         <field id="smartinsight_enabled">1</field>
                     </depends>
