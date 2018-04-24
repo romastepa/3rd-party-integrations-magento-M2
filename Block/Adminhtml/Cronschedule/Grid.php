@@ -46,11 +46,13 @@ class Grid extends Extended
     protected function _prepareCollection()
     {
         $cronJobs = $this->scheduleFactory->create()->getCollection();
-        $cronJobs->getSelect()->joinLeft(
-            ['ecd' => 'emarsys_cron_details'],
-            'ecd.schedule_id = main_table.schedule_id',
-            ['ecd.params']
-        )->order('main_table.schedule_id DESC');
+        $cronJobs->addFieldToFilter('job_code', array('like' => '%emarsys%'));
+        $cronJobs->getSelect()
+            ->joinLeft(
+                ['ecd' => 'emarsys_cron_details'],
+                'ecd.schedule_id = main_table.schedule_id',
+                ['ecd.params']
+            );
 
         $this->setCollection($cronJobs);
 
@@ -165,6 +167,30 @@ class Grid extends Extended
                 'width' => '50',
                 'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\Message',
                 'filter' => false
+            ]
+        );
+
+        $this->addColumn(
+            'action',
+            [
+                'header' => __('Action'),
+                'type' => 'action',
+                'getter' => 'getId',
+                'actions' => [
+                    [
+                        'caption' => __('Delete'),
+                        'url' => [
+                            'base' => 'emarsys_emarsys/cronschedule/delete',
+                            'params' => [
+                                'id' => $this->getId(),
+                            ],
+                        ],
+                        'field' => 'id',
+                        'confirm' => __('Are you sure?')
+                    ],
+                ],
+                'filter' => false,
+                'sortable' => false
             ]
         );
 
