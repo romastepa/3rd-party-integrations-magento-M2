@@ -2577,17 +2577,27 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @return array
      */
-    public function getSalesOrderCsvDefaultHeader($store = 0)
+    public function getSalesOrderCsvDefaultHeader($storeId = 0, $getAllheaders = false)
     {
-        /** @var \Magento\Store\Model\Store $store */
-        $store = $this->storeManager->getStore($store);
+        $header = ['order', 'timestamp', 'customer', 'email', 'item', 'price', 'quantity'];
 
-        $emailAsIdentifierStatus = (bool)$store->getConfig(self::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
-        if ($emailAsIdentifierStatus) {
-            return ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
-        } else {
-            return ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
+        if (!$getAllheaders) {
+            /** @var \Magento\Store\Model\Store $store */
+            $store = $this->storeManager->getStore($storeId);
+            $websiteId = $store->getWebsiteId();
+            $emailAsIdentifierStatus = (bool)$this->scopeConfig->getValue(
+                self::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
+                $websiteId
+            );
+            if ($emailAsIdentifierStatus) {
+                unset($header[2]);
+            } else {
+                unset($header[3]);
+            }
         }
+
+        return $header;
     }
 
     /**
