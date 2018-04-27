@@ -19,8 +19,7 @@
             <group id="emarsys_setting" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>API Settings</label>
                 <comment>Used for contact synchronisation, Event triggering etc.</comment>
-                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
@@ -168,7 +167,6 @@
                 <label>Initial DB Load</label>
                 <field id="initial_db_load" translate="label" type="text" sortOrder="10" showInDefault="1"
                        showInWebsite="1" showInStore="0">
-                    <label>Initial Load DB</label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\InitialLoadDb</frontend_model>
                 </field>
                 <field id="upload_initial_data" translate="button_label" sortOrder="11" showInDefault="1"
@@ -250,7 +248,47 @@
             <label>Smart Insight</label>
             <tab>emarsys_connect</tab>
             <resource>Emarsys_Emarsys::emarsys</resource>
-            <group id="smart_insight" type="text" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Smart Insight API Settings</label>
+                <field id="enableapi" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Enable API Export</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Merchant Id</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
+                    <depends>
+                        <field id="enableapi">1</field>
+                    </depends>
+                </field>
+                <field id="token" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Bearer Token</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
+                    <depends>
+                        <field id="enableapi">1</field>
+                    </depends>
+                </field>
+                <field id="max_records_per_export" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Maximum Records</label>
+                    <source_model>Emarsys\Emarsys\Model\Config\Source\MaxRecordsPerExport</source_model>
+                    <depends>
+                        <field id="enableapi">1</field>
+                    </depends>
+                </field>
+                <field id="ping" translate="button_label" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <button_label>Test Connection</button_label>
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\SmartInsightApiTestConnection</frontend_model>
+                    <depends>
+                        <field id="enableapi">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="smart_insight" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Smart Insight</label>
                 <field id="smartinsight_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
                        showInWebsite="1" showInStore="0">
@@ -301,52 +339,42 @@
                     </depends>
                 </field>
             </group>
-            <group id="api_settings" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Smart Insight API Settings</label>
-                <field id="enableapi" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Enable API Export</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Merchant Id</label>
-                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
-                    <depends>
-                        <field id="enableapi">1</field>
-                    </depends>
-                </field>
-                <field id="token" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Bearer Token</label>
-                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
-                    <depends>
-                        <field id="enableapi">1</field>
-                    </depends>
-                </field>
-                <field id="max_records_per_export" translate="label" type="select" sortOrder="20" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <label>Maximum Records</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\MaxRecordsPerExport</source_model>
-                    <depends>
-                        <field id="enableapi">1</field>
-                    </depends>
-                </field>
-                <field id="ping" translate="button_label" sortOrder="40" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <button_label>Test Connection</button_label>
-                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\SmartInsightApiTestConnection</frontend_model>
-                    <depends>
-                        <field id="enableapi">1</field>
-                    </depends>
-                </field>
-            </group>
         </section>
         <section id="emarsys_predict" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Product Catalog</label>
             <tab>emarsys_connect</tab>
             <resource>Emarsys_Emarsys::emarsys</resource>
+            <group id="catalog_api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Feed Export API Settings</label>
+                <field id="enable_catalog_api" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable API Export</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="catalog_merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Merchant Id</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
+                    <depends>
+                        <field id="enable_catalog_api">1</field>
+                    </depends>
+                </field>
+                <field id="catalog_token" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Bearer Token</label>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
+                    <depends>
+                        <field id="enable_catalog_api">1</field>
+                    </depends>
+                </field>
+                <field id="catalog_ping" translate="button_label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <button_label>Test Connection</button_label>
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\CatalogApiTestConnection</frontend_model>
+                    <depends>
+                        <field id="enable_catalog_api">1</field>
+                    </depends>
+                </field>
+            </group>
             <group id="feed_export" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
                    showInStore="0">
                 <label>Feed Export</label>
@@ -386,37 +414,6 @@
                     <comment>For hours only minutes will be applicable.</comment>
                     <depends>
                         <field id="enable_nightly_product_feed">1</field>
-                    </depends>
-                </field>
-            </group>
-            <group id="catalog_api_settings" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Feed Export API Settings</label>
-                <field id="enable_catalog_api" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Enable API Export</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="catalog_merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Merchant Id</label>
-                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
-                    <depends>
-                        <field id="enable_catalog_api">1</field>
-                    </depends>
-                </field>
-                <field id="catalog_token" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Bearer Token</label>
-                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
-                    <depends>
-                        <field id="enable_catalog_api">1</field>
-                    </depends>
-                </field>
-                <field id="catalog_ping" translate="button_label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <button_label>Test Connection</button_label>
-                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\CatalogApiTestConnection</frontend_model>
-                    <depends>
-                        <field id="enable_catalog_api">1</field>
                     </depends>
                 </field>
             </group>

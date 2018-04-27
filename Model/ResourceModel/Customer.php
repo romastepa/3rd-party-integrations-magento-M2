@@ -59,6 +59,11 @@ class Customer extends AbstractDb
     protected $storeManager;
 
     /**
+     * @var array
+     */
+    protected $notVisibleFields = [0, 27, 28, 29, 30, 33, 34, 36, 47, 48];
+
+    /**
      * Customer constructor.
      * @param Context $context
      * @param Type $entityType
@@ -103,22 +108,28 @@ class Customer extends AbstractDb
 
     /**
      * Checking count of the mapping table
-     * @param type $storeId
-     * @return array
+     * @param $storeId
+     * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function checkCustomerMapping($storeId)
     {
-        $customerAttributes = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_customer_field_mapping') . " WHERE store_id =" . $storeId);
-        return $customerAttributes;
+        $select = $this->getConnection()
+            ->select()
+            ->from($this->getMainTable(), 'count(*)')
+            ->where('store_id = ?', $storeId);
+
+        return $this->getConnection()->fetchOne($select);
     }
 
     /**
-     * truncate the mapping table
+     * Truncate the mapping table
      * @param $storeId
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function truncateMappingTable($storeId)
     {
-        $this->getConnection()->query("DELETE FROM  " . $this->getTable("emarsys_customer_field_mapping") . " WHERE store_id = $storeId");
+        $this->getConnection()->delete($this->getMainTable(), $this->getConnection()->quote('store_id = ?', $storeId));
     }
 
     /**
@@ -128,10 +139,17 @@ class Customer extends AbstractDb
      */
     public function updateCustomerSchema($contactFields = [], $storeId)
     {
-        $this->getConnection()->query("DELETE FROM " . $this->getTable("emarsys_contact_field" . " WHERE store_id = '" . $storeId . "' "));
+        $this->getConnection()->delete($this->getTable('emarsys_contact_field'), $this->getConnection()->quote('store_id = ?', $storeId));
         if (isset($contactFields['data'])) {
             foreach ($contactFields['data'] as $field) {
-                $this->getConnection()->query("INSERT INTO " . $this->getTable("emarsys_contact_field") . "(`emarsys_field_id`,`name`,`type`,`string_id`,`language_code`,`store_id`) VALUES('" . $field['id'] . "','" . $field['name'] . "','" . $field['application_type'] . "','" . $field['string_id'] . "','en','$storeId')");
+                $this->getConnection()->insert($this->getTable('emarsys_contact_field'), [
+                    "emarsys_field_id" => $field['id'],
+                    "name" => $field['name'],
+                    "type" => $field['application_type'],
+                    "string_id" => $field['string_id'],
+                    "language_code" => 'en',
+                    "store_id" => $storeId,
+                ]);
             }
             return true;
         } else {
@@ -145,13 +163,13 @@ class Customer extends AbstractDb
      */
     public function getEmarsysContactFields($storeId)
     {
-        $query = "SELECT * FROM " . $this->getTable('emarsys_contact_field') . " WHERE store_id=" . $storeId;
-        try {
-            $result = $this->getConnection()->fetchAll($query);
-            return $result;
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getEmarsysContactFields(ResourceModel)');
-        }
+        $select = $this->getConnection()
+            ->select()
+            ->from($this->getTable('emarsys_contact_field'))
+            ->where('store_id = ?', $storeId)
+            ->where('emarsys_field_id not in (?)', $this->notVisibleFields);
+
+        return $this->getConnection()->fetchAll($select);
     }
 
     /**
@@ -207,7 +225,7 @@ class Customer extends AbstractDb
      */
     public function getEmarsysAttrCount($storeId)
     {
-        $emarsysFieldCount = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_contact_field') . " WHERE store_id=" . $storeId . "");
+        $emarsysFieldCount = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_contact_field') . " WHERE store_id=" . $storeId);
         return $emarsysFieldCount;
     }
 

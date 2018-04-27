@@ -272,7 +272,7 @@ class ApiExport extends ZendClient
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManagerInterface->getStore($store);
 
-        $emailAsIdentifierStatus = (bool)$store->getConfig($this->emarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
+        $emailAsIdentifierStatus = (bool)$store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {
             //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
             return [
