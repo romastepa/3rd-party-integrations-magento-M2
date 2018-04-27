@@ -736,6 +736,7 @@ class Order extends AbstractModel
             ScopeInterface::SCOPE_WEBSITES,
             $websiteId
         );
+
         $taxIncluded = $this->emarsysDataHelper->isIncludeTax();
         $useBaseCurrency = $this->emarsysDataHelper->isUseBaseCurrency();
 
@@ -853,13 +854,9 @@ class Order extends AbstractModel
 
                 $parentId = null;
                 foreach ($creditMemo->getAllItems() as $item) {
-                    if ($item->getProductType() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
-                        $parentId = $item->getId();
-                    }
-                    if ($parentId && $item->getParentItemId() == $parentId) {
-                        $parentId = 0;
-                        continue;
-                    }
+
+                    if ($item->getOrderItem()->getParentItem()) continue;
+
                     $values = [];
                     //set order id
                     $values[] = $orderId;
@@ -1031,7 +1028,6 @@ class Order extends AbstractModel
                             $header[] = $emarsysOrderFieldValue;
                         }
                     }
-                    //$header[] = $emarsysOrderFieldValue;
                 }
             }
             $this->salesCsvHeader[$storeId] = $header;
