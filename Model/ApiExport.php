@@ -76,7 +76,6 @@ class ApiExport extends ZendClient
      * @param RawFactory $resultRawFactory
      * @param Csv $csvWriter
      * @param StoreManagerInterface $storeManagerInterface
-     * @param EmarsysModelLogs $emarsysLogs
      * @param JsonHelper $jsonHelper
      * @param OrderResourceModel $orderResourceModel
      * @param ProductResourceModel $productResourceModel
@@ -86,7 +85,6 @@ class ApiExport extends ZendClient
         RawFactory $resultRawFactory,
         Csv $csvWriter,
         StoreManagerInterface $storeManagerInterface,
-        EmarsysModelLogs $emarsysLogs,
         JsonHelper $jsonHelper,
         OrderResourceModel $orderResourceModel,
         ProductResourceModel $productResourceModel
