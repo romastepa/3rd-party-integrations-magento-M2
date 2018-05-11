@@ -637,7 +637,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             'api_password' => $password,
         ];
 
-        return $this->modelApi->_construct($config);
+        return $this->modelApi->setParams($config);
     }
 
     /**
@@ -730,7 +730,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $output = curl_exec($ch);
 
         if (curl_error($ch)) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 curl_error($ch),
                 $this->storeManager->getStore()->getId(),
                 'Send(helper/data)'
@@ -1521,7 +1521,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 return $start . $string . $end;
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'substringBetween($haystack, $start = "{{", $end = "}}")'
@@ -1547,7 +1547,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 return "{{var " . $string . "}}";
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'substringBetweenTransVar($haystack, $start = "=$", $end = "}}")'
@@ -1604,7 +1604,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return trim(trim($emarsysVariable, "_"));
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getPlaceholderName');
+            $this->addErrorLog($e->getMessage(), $storeId, 'getPlaceholderName');
         }
     }
 
@@ -1654,7 +1654,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $order;
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog(htmlentities($e->getMessage()), $storeId, 'emarsysDefaultPlaceholders');
+            $this->addErrorLog(htmlentities($e->getMessage()), $storeId, 'emarsysDefaultPlaceholders');
         }
     }
 
@@ -1678,7 +1678,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 $store_id
             );
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $store_id,
                 'insertFirstimeHeaderMappingPlaceholders'
@@ -1709,7 +1709,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 $store_id
             );
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $store_id,
                 'insertFirstimeFooterMappingPlaceholders'
@@ -1743,7 +1743,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $headerPlaceholderArray;
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $store_id,
                 'emarsysHeaderPlaceholders'
@@ -1778,7 +1778,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
             return $footerPlaceholderArray;
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $store_id,
                 'emarsysFooterPlaceholders'
@@ -1867,7 +1867,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),
                 'getMagentoEventId'
@@ -1900,7 +1900,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $emarsysEventMappingId;
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),
                 'getEmarsysEventMappingId'
@@ -1936,7 +1936,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $emarsysEventApiId;
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),
                 'getEmarsysEventApiId'
@@ -1976,7 +1976,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 return $variables;
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),
                 'getPlaceHolders'
@@ -2067,7 +2067,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),
                 'getMagentoEventIdAndPath'
@@ -2202,7 +2202,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $subscriber->getStoreId(),
                 'realtimeTimeBasedOptinSync'
@@ -2228,7 +2228,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $EmarsysOptinChangeTime = $acst_date->format('Y-m-d H:i:s');  // UTC:  2011-04-27 2:exit;
 
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $this->storeManager->getStore()->getId(),
                 'convertToUtc'
@@ -2337,7 +2337,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $storeId,
                 'backgroudTimeBasedOptinSync'
@@ -2386,7 +2386,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 } while ($this->_processSubscriptionUpdates($response, $isTimeBased));
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getWebsite(current($websiteIds))->getDefaultStore()->getId(),
                 'importSubscriptionUpdates(helperData)'
@@ -2513,7 +2513,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
         } catch (\Exception $e) {
             $storeId = $this->_storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'checkFtpConnection');
+            $this->addErrorLog($e->getMessage(), $storeId, 'checkFtpConnection');
         }
 
         return $result;
@@ -2551,7 +2551,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 )
             );
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $store->getId(), 'checkFtpConnection');
+            $this->addErrorLog($e->getMessage(), $store->getId(), 'checkFtpConnection');
         }
 
         return $result;
@@ -2584,12 +2584,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if (!$getAllheaders) {
             /** @var \Magento\Store\Model\Store $store */
             $store = $this->storeManager->getStore($storeId);
-            $websiteId = $store->getWebsiteId();
-            $emailAsIdentifierStatus = (bool)$this->scopeConfig->getValue(
-                self::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
-                $websiteId
-            );
+            $emailAsIdentifierStatus = (bool)$store->getConfig(self::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
             if ($emailAsIdentifierStatus) {
                 unset($header[2]);
             } else {

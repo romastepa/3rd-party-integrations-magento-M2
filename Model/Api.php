@@ -2,10 +2,12 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
+
+use Magento\Framework\Json\Helper\Data as JsonHelperData;
 
 /**
  * Class Api
@@ -14,22 +16,36 @@ namespace Emarsys\Emarsys\Model;
 class Api extends \Magento\Framework\HTTP\ZendClient
 {
     public $_apiUrl;
-
     public $_username;
-
     public $_password;
+    public $jasonHelper;
+    public $config = [];
+
+    /**
+     * @param $params
+     * @param JsonHelperData $jasonHelper
+     * @return \Magento\Framework\HTTP\ZendClient
+     */
+    public function _construct($params, JsonHelperData $jasonHelper)
+    {
+        $this->jasonHelper = $jasonHelper;
+        $this->_apiUrl = $params['api_url'];
+        $this->_username = $params['api_username'];
+        $this->_password = $params['api_password'];
+        $this->config['timeout'] = 60;
+        return parent::__construct($this->_apiUrl, $config = null);
+    }
 
     /**
      * @param $params
      * @return \Magento\Framework\HTTP\ZendClient
      */
-    public function _construct($params)
+    public function setParams($params)
     {
         $this->_apiUrl = $params['api_url'];
         $this->_username = $params['api_username'];
         $this->_password = $params['api_password'];
         $this->config['timeout'] = 60;
-
         return parent::__construct($this->_apiUrl);
     }
 
@@ -41,7 +57,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
         $nonce = md5(time());
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->_password, false));
-
         return sprintf(
             'UsernameToken Username="%s", PasswordDigest="%s", Nonce="%s", Created="%s"',
             $this->_username,
@@ -62,8 +77,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
      */
     protected function _request($apiCall, $method = 'GET', $data = [], $jsonDecode = true)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $this->jasonHelper = $objectManager->get('Magento\Framework\Json\Helper\Data');
         $this->setUri($this->_apiUrl . $apiCall);
         $this->setHeaders(
             [
@@ -81,7 +94,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
                     $this->setRawData($this->jasonHelper->jsonEncode($data));
                 }
             }
-
             $responseObject = $this->request($method);
             $response = $responseObject->getBody();
             if ($jsonDecode) {
@@ -104,7 +116,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
         if (is_object($data)) {
             $data = $data->toArray();
         }
-
         return $this->_request($apiCall, \Zend_Http_Client::POST, $data);
     }
 
@@ -119,7 +130,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
         if (is_object($data)) {
             $data = $data->toArray();
         }
-
         return $this->_request($apiCall, \Zend_Http_Client::PUT, $data);
     }
 
@@ -142,7 +152,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     {
         $result = 1;
         $response = $this->get('settings');
-
         return $response;
     }
 }
