@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Observer;
@@ -16,10 +16,19 @@ use Magento\Framework\Event\ObserverInterface;
  */
 class RealTimeAdminSubscriber implements ObserverInterface
 {
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
+    /**
+     * @var \Magento\Customer\Model\CustomerFactory
+     */
     protected $customerFactory;
 
+    /**
+     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     */
     protected $customerResourceModel;
 
     /**
@@ -40,7 +49,8 @@ class RealTimeAdminSubscriber implements ObserverInterface
         \Magento\Framework\App\Request\Http $request,
         \Emarsys\Emarsys\Helper\Data $dataHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel
-    ) {
+    )
+    {
         $this->logger = $logger;
         $this->subscriberModel = $subscriberModel;
         $this->_storeManager = $storeManager;
@@ -55,13 +65,19 @@ class RealTimeAdminSubscriber implements ObserverInterface
         $pageHandle = $this->_request->getFullActionName();
         $subscriberId = $observer->getEvent()->getSubscriber()->getId();
         $storeId = $observer->getEvent()->getSubscriber()->getStoreId();
-        $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
-        $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig('contacts_synchronization/emarsys_emarsys/realtime_sync', \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE, $websiteId);
+
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->_storeManager->getStore($storeId);
+        if ($this->dataHelper->isEmarsysEnabled($store->getWebsiteId()) == 'false') {
+            return;
+        }
+
+        $realtimeStatus = $store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_REALTIME_SYNC);
         if ($realtimeStatus == 1) {
             $frontendFlag = '';
-            $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag, $pageHandle, $websiteId);
+            $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag, $pageHandle, $store->getWebsiteId());
         } else {
-            $this->dataHelper->syncFail($subscriberId, $websiteId, $storeId, 0, 2);
+            $this->dataHelper->syncFail($subscriberId, $store->getWebsiteId(), $storeId, 0, 2);
         }
     }
 }

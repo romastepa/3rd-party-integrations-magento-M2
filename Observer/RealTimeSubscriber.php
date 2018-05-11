@@ -2,8 +2,9 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
@@ -67,7 +68,8 @@ class RealTimeSubscriber implements ObserverInterface
         Http $request,
         Data $dataHelper,
         Session $customerSession
-    ) {
+    )
+    {
         $this->subscriberModel = $subscriberModel;
         $this->storeManager = $storeManager;
         $this->customerResourceModel = $customerResourceModel;
@@ -89,6 +91,10 @@ class RealTimeSubscriber implements ObserverInterface
         $websiteId = $store->getWebsiteId();
         $pageHandle = $this->request->getFullActionName();
 
+        if ($this->dataHelper->isEmarsysEnabled($websiteId) == 'false') {
+            return;
+        }
+
         $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig(
             'contacts_synchronization/emarsys_emarsys/realtime_sync',
             \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
@@ -98,7 +104,7 @@ class RealTimeSubscriber implements ObserverInterface
         $subscriberObjEmailSaved = $subscriber->getSubscriberEmail();
 
         $subscriberEmailChangeFlag = false;
-        if (method_exists($subscriber, 'getOrigData') && $subscriberObjEmailSaved != $subscriber->getOrigData('subscriber_email')){
+        if (method_exists($subscriber, 'getOrigData') && $subscriberObjEmailSaved != $subscriber->getOrigData('subscriber_email')) {
             $subscriberEmailChangeFlag = true;
         }
 

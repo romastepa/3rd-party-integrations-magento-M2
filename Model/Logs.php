@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -23,52 +23,44 @@ use Emarsys\Emarsys\Helper\Logs\Proxy as EmarsysLogs;
 class Logs extends \Magento\Framework\Model\AbstractModel
 {
     /**
+     * @var EmarsysLogs
+     */
+    protected $emarsysLog;
+    /**
      * @var StoreManagerInterface
      */
     protected $storeManager;
-
     /**
      * @var ManagerInterface
      */
     protected $messageManagerInterface;
 
     /**
-     * @var DateTime
-     */
-    protected $dateTime;
-
-    /**
-     * @var EmarsysLogs
-     */
-    protected $emarsysLog;
-
-    /**
      * Logs constructor.
-     * @param StoreManagerInterface $storeManager
-     * @param ManagerInterface $managerInterface
-     * @param DateTime $dateTime
-     * @param EmarsysLogs $emarsysLog
      * @param Context $context
      * @param Registry $registry
+     * @param StoreManagerInterface $storeManager
+     * @param ManagerInterface $managerInterface
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
+        Context $context,
+        Registry $registry,
         StoreManagerInterface $storeManager,
         ManagerInterface $managerInterface,
         DateTime $dateTime,
         EmarsysLogs $emarsysLog,
-        Context $context,
-        Registry $registry,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
-    ) {
+    )
+    {
+        $this->emarsysLog = $emarsysLog;
         $this->storeManager = $storeManager;
         $this->messageManagerInterface = $managerInterface;
         $this->dateTime = $dateTime;
-        $this->emarsysLog = $emarsysLog;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -83,6 +75,11 @@ class Logs extends \Magento\Framework\Model\AbstractModel
         $this->_init('Emarsys\Emarsys\Model\ResourceModel\Logs');
     }
 
+    /**
+     * @param $messages
+     * @param $storeId
+     * @param $info
+     */
     public function addErrorLog($messages, $storeId, $info)
     {
         try {
@@ -95,7 +92,6 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             $logsArray['auto_log'] = '';
             $logsArray['store_id'] = $storeId;
             $logId = $this->emarsysLog->manualLogs($logsArray);
-
             if ($logId) {
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = $info;
