@@ -24,7 +24,6 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
 use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class Order
@@ -158,7 +157,6 @@ class Order extends AbstractModel
         TimeZone $timezone,
         ApiExport $apiExport,
         DirectoryList $directoryList,
-        ScopeConfigInterface $scopeConfig,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -178,7 +176,6 @@ class Order extends AbstractModel
         $this->timezone = $timezone;
         $this->apiExport = $apiExport;
         $this->directoryList = $directoryList;
-        $this->scopeConfig = $scopeConfig;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -722,20 +719,11 @@ class Order extends AbstractModel
     public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection, $sameFile = false)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
         $emasysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
 
-        $guestOrderExportStatus = $this->scopeConfig->getValue(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS,
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $guestOrderExportStatus = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
 
-        $emailAsIdentifierStatus = $this->scopeConfig->getValue(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $emailAsIdentifierStatus = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
 
         $taxIncluded = $this->emarsysDataHelper->isIncludeTax();
         $useBaseCurrency = $this->emarsysDataHelper->isUseBaseCurrency();
@@ -1001,14 +989,8 @@ class Order extends AbstractModel
      */
     public function getSalesCsvHeader($storeId = 0)
     {
-
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $emailAsIdentifierStatus = (bool)$this->scopeConfig->getValue(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $emailAsIdentifierStatus = (bool)$store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
 
         if (!isset($this->salesCsvHeader[$storeId])) {
             //default header
@@ -1045,12 +1027,7 @@ class Order extends AbstractModel
     public function getOrderCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $orderStatuses = $this->scopeConfig->getValue(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS,
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $orderStatuses = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS);
         $orderStatuses = explode(',', $orderStatuses);
         $orderCollection = [];
 
@@ -1115,12 +1092,7 @@ class Order extends AbstractModel
     public function getCreditMemoCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {
         $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $orderStatuses = $this->scopeConfig->getValue(
-            EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS,
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $orderStatuses = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS);
         $orderStatuses = explode(',', $orderStatuses);
         $creditMemoCollection = [];
 
