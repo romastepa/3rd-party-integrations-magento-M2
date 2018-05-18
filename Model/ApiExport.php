@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
 use Magento\Framework\HTTP\ZendClient;
@@ -88,7 +89,8 @@ class ApiExport extends ZendClient
         JsonHelper $jsonHelper,
         OrderResourceModel $orderResourceModel,
         ProductResourceModel $productResourceModel
-    ) {
+    )
+    {
         $this->emarsysHelper = $emarsysHelper;
         $this->resultRawFactory = $resultRawFactory;
         $this->csvWriter = $csvWriter;
@@ -153,8 +155,8 @@ class ApiExport extends ZendClient
                 if ($response->getStatus() == 200) {
                     $result['result'] = 1;
                 }
-                $result['status'] =  $response->getStatus();
-                $result['resultBody'] =  $response->getBody();
+                $result['status'] = $response->getStatus();
+                $result['resultBody'] = $response->getBody();
             }
         } else {
             $this->emarsysHelper->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
@@ -179,7 +181,7 @@ class ApiExport extends ZendClient
         $response = '';
 
         try {
-            if ($method == "GET" && ! (empty($data))) {
+            if ($method == "GET" && !(empty($data))) {
                 $this->setParameterGet($data);
             } else {
                 if (!empty($data)) {
@@ -237,7 +239,7 @@ class ApiExport extends ZendClient
     }
 
     /**
-     * get Static Export Array for Emarsys
+     * Get Static Export Array for Emarsys
      * @return array
      */
     public function getCatalogExportCsvHeader()
@@ -255,6 +257,7 @@ class ApiExport extends ZendClient
 
     /**
      * Sample Data for Catalog full export test connection.
+     *
      * @param array $headers
      * @return array
      */
@@ -278,43 +281,28 @@ class ApiExport extends ZendClient
             }
             array_push($sampleResult, $itemVal);
         }
+
         return $sampleResult;
     }
 
     /**
      * Get Sales Order Sample Data for Test Connection Button.
      *
-     * @param int $store
      * @param array $headers
      * @return array
      */
-    public function sampleDataSmartInsightExport($store = 0, $headers)
+    public function sampleDataSmartInsightExport($headers)
     {
-        /** @var \Magento\Store\Model\Store $store */
-        $store = $this->storeManagerInterface->getStore($store);
-
-        $emailAsIdentifierStatus = (bool)$store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
-        if ($emailAsIdentifierStatus) {
-            //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
-            $sampleData = [
-                '00000',
-                '2017-07-07T07:07:07Z',
-                'sample@data.com',
-                'test_product_item_1',
-                '0.00',
-                '0'
-            ];
-        } else {
-            //header ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
-            $sampleData = [
-                '00000',
-                '2017-07-07T07:07:07Z',
-                'customer_id',
-                'test_product_item_1',
-                '0.00',
-                '0'
-            ];
-        }
+        $sampleResult = [];
+        $sampleData =  [
+            'order' => '00000',
+            'timestamp' => '2017-07-07T07:07:07Z',
+            'customer' => 'customer_id',
+            'email' => 'sample@data.com',
+            'item' => 'test_product_item_1',
+            'price' => '0.00',
+            'quantity' => '0'
+        ];
 
         foreach ($headers as $item) {
             $itemVal = '';
@@ -323,7 +311,8 @@ class ApiExport extends ZendClient
             }
             array_push($sampleResult, $itemVal);
         }
-        return $sampleData;
+
+        return $sampleResult;
     }
 
     /**
@@ -386,7 +375,7 @@ class ApiExport extends ZendClient
         $fileName = $entityType . '_test_api_export.csv';
         $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath('testconnections');
         $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-        $filePath =  $fileDirectory . "/" . $fileName;
+        $filePath = $fileDirectory . "/" . $fileName;
 
         $this->csvWriter
             ->setEnclosure('"')
