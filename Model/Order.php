@@ -832,7 +832,7 @@ class Order extends AbstractModel
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         $magentoColumnName = trim($field['magento_column_name']);
                         if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
-                            $values[] = $order->getData($magentoColumnName);
+                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $order->getData($magentoColumnName));
                         }
                     }
                     if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $order->getCustomerIsGuest() == 1)) {
@@ -914,7 +914,7 @@ class Order extends AbstractModel
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         $magentoColumnName = trim($field['magento_column_name']);
                         if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
-                            $values[] = $creditMemo->getData($magentoColumnName);
+                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemo->getData($magentoColumnName));
                         }
                     }
                     if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $creditMemoOrder->getCustomerIsGuest() == 1)) {
@@ -1222,5 +1222,19 @@ class Order extends AbstractModel
         }
 
         return;
+    }
+
+    /**
+     * @param $emarsysAttribute
+     * @param $value
+     * @return mixed
+     */
+    protected function getValueForType($emarsysAttribute, $value)
+    {
+        if (substr($emarsysAttribute, 0, 2 ) === "s_") {
+            $value = trim(preg_replace('/\s+/', ' ', $value));
+        }
+
+        return $value;
     }
 }
