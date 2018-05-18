@@ -20,6 +20,7 @@ class OrderStatuses
      * @var
      */
     protected $connection;
+    protected $statusCollectionFactory;
 
     /**
      * @param \Magento\Framework\App\ResourceConnection $resource
@@ -28,12 +29,14 @@ class OrderStatuses
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Config\Model\ResourceModel\Config $config,
         \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory $statusCollectionFactory
     ) {
         $this->_resource = $resource;
         $this->storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
         $this->config = $config;
+        $this->statusCollectionFactory = $statusCollectionFactory;
     }
 
     /**
@@ -41,10 +44,9 @@ class OrderStatuses
      */
     public function toOptionArray()
     {
-        $connection = $this->_resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
-        $sql = "SELECT order_status.*, order_state.state, order_state.is_default, order_state.visible_on_front FROM " . $this->config->getTable('sales_order_status') . " as order_status INNER JOIN " . $this->config->getTable('sales_order_status_state') . " AS order_state ON order_state.status = order_status.status WHERE order_state.state IN ('closed', 'complete', 'processing')";
         try {
-            $orderStatusesCollection = $connection->fetchAll($sql);
+            $orderStatusesCollection = $this->statusCollectionFactory->create()->joinStates()
+            ->addFieldToFilter('state', ['in' => ['closed', 'complete', 'processing']]);
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'toOptionArray(orderStatus)');
