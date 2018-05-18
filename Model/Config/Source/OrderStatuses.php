@@ -42,7 +42,7 @@ class OrderStatuses
     public function toOptionArray()
     {
         $connection = $this->_resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
-        $sql = "SELECT * FROM " . $this->config->getTable('sales_order_status');
+        $sql = "SELECT order_status.*, order_state.state, order_state.is_default, order_state.visible_on_front FROM " . $this->config->getTable('sales_order_status') . " as order_status INNER JOIN " . $this->config->getTable('sales_order_status_state') . " AS order_state ON order_state.status = order_status.status WHERE order_state.state IN ('closed', 'complete', 'processing')";
         try {
             $orderStatusesCollection = $connection->fetchAll($sql);
         } catch (\Exception $e) {
