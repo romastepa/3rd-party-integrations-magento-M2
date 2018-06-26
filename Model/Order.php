@@ -1087,7 +1087,7 @@ class Order extends AbstractModel
      * @param $storeId
      * @param $exportFromDate
      * @param $exportTillDate
-     * @return array
+     * @return $this|array
      */
     public function getCreditMemoCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {

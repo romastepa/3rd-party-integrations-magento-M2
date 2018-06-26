@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Helper;
 
@@ -38,6 +38,8 @@ class Cron extends AbstractHelper
     //product related
     const CRON_JOB_CATALOG_BULK_EXPORT = 'emarsys_catalog_bulk_export';
 
+    const CRON_JOB_CATALOG_SYNC = 'emarsys_product_sync';
+
     //smart insight related
     const CRON_JOB_SI_SYNC_QUEUE = 'emarsys_smartinsight_sync_queue';
 
@@ -71,13 +73,13 @@ class Cron extends AbstractHelper
     /**
      * @var DateTime
      */
-    protected $datetime;
+    protected $dateTime;
 
     /**
      * Cron constructor.
      * @param Context $context
      * @param ScheduleFactory $scheduleFactory
-     * @param DateTime $datetime
+     * @param DateTime $dateTime
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
      * @param JsonHelper $jsonHelper
      * @param Logs $emarsysLogs
@@ -86,7 +88,7 @@ class Cron extends AbstractHelper
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
-        DateTime $datetime,
+        DateTime $dateTime,
         EmarsysCronDetailsFactory $emarsysCronDetails,
         JsonHelper $jsonHelper,
         Emarsyslogs $emarsysLogs,
@@ -94,7 +96,7 @@ class Cron extends AbstractHelper
     ) {
         $this->context = $context;
         $this->scheduleFactory = $scheduleFactory;
-        $this->datetime = $datetime;
+        $this->dateTime = $dateTime;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->jsonHelper = $jsonHelper;
         $this->emarsysLogs = $emarsysLogs;
@@ -222,8 +224,8 @@ class Cron extends AbstractHelper
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt($this->datetime->gmtDate())
-            ->setScheduledAt($this->datetime->gmtDate());
+            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))
+            ->setScheduledAt(strftime('%Y-%m-%d %H:%M', $this->dateTime->gmtTimestamp()));
         $cron->save();
 
         return $result;
@@ -256,8 +258,6 @@ class Cron extends AbstractHelper
                 $this->storeManager->getStore()->getId(),
                 'Cron::getCurrentCronInformation()'
             );
-
-            return false;
         }
 
         return false;

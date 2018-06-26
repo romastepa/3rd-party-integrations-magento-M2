@@ -10,7 +10,6 @@ use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class ProductBulkExport
@@ -39,31 +38,23 @@ class ProductBulkExport
     protected $emarsysLogs;
 
     /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager ;
-
-    /**
      * ProductBulkExport constructor.
      *
      * @param EmarsysCronHelper $cronHelper
      * @param JsonHelper $jsonHelper
      * @param EmarsysProductModel $emarsysProductModel
      * @param Logs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
         JsonHelper $jsonHelper,
         EmarsysProductModel $emarsysProductModel,
-        Logs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
         $this->jsonHelper = $jsonHelper;
         $this->emarsysProductModel =  $emarsysProductModel;
         $this->emarsysLogs = $emarsysLogs;
-        $this->storeManager = $storeManager;
     }
 
     public function execute()
@@ -74,17 +65,20 @@ class ProductBulkExport
                 \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CATALOG_BULK_EXPORT
             );
 
-            if ($currentCronInfo) {
-                $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
-                $includeBundle = $data['includeBundle'];
-                $excludedCategories = $data['excludeCategories'];
-
-                $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL, $includeBundle, $excludedCategories);
+            if (!$currentCronInfo) {
+                return;
             }
+
+            $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
+            $includeBundle = $data['includeBundle'];
+            $excludedCategories = $data['excludeCategories'];
+
+            $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL, $includeBundle, $excludedCategories);
+
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'ProductBulkExport::execute()'
             );
         }

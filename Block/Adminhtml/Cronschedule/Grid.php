@@ -46,13 +46,14 @@ class Grid extends Extended
     protected function _prepareCollection()
     {
         $cronJobs = $this->scheduleFactory->create()->getCollection();
-        $cronJobs->addFieldToFilter('job_code', array('like' => '%emarsys%'));
+        $cronJobs->addFieldToFilter('job_code', ['like' => '%emarsys%']);
         $cronJobs->getSelect()
             ->joinLeft(
                 ['ecd' => 'emarsys_cron_details'],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
             );
+        $cronJobs->setOrder('schedule_id', 'DESC');
 
         $this->setCollection($cronJobs);
 
