@@ -179,7 +179,7 @@ class ApiExport extends ZendClient
         $response = '';
 
         try {
-            if ($method == "GET" && ! (empty($data))) {
+            if ($method == "GET" && !(empty($data))) {
                 $this->setParameterGet($data);
             } else {
                 if (!empty($data)) {
@@ -237,7 +237,7 @@ class ApiExport extends ZendClient
     }
 
     /**
-     * get Static Export Array for Emarsys
+     * Get Static Export Array for Emarsys
      * @return array
      */
     public function getCatalogExportCsvHeader()
@@ -386,7 +386,7 @@ class ApiExport extends ZendClient
         $fileName = $entityType . '_test_api_export.csv';
         $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath('testconnections');
         $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-        $filePath =  $fileDirectory . "/" . $fileName;
+        $filePath = $fileDirectory . "/" . $fileName;
 
         $this->csvWriter
             ->setEnclosure('"')
