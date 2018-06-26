@@ -206,540 +206,16 @@ class Product extends AbstractModel
     }
 
     /**
-     * @param $storeId
-     * @param $mode
+     * @param string $mode
      * @param null $includeBundle
      * @param null $excludedCategories
+     * @return bool
      */
-    public function syncProducts($storeId, $mode, $includeBundle = null, $excludedCategories = null)
-    {
-        $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
-
-        $logsArray['job_code'] = 'product';
-        $logsArray['status'] = 'started';
-        $logsArray['messages'] = __('Bulk product export started');
-        $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $logsArray['run_mode'] = $mode;
-        $logsArray['auto_log'] = 'Complete';
-        $logsArray['store_id'] = $storeId;
-        $logsArray['website_id'] = $websiteId;
-        $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $logId = $this->logsHelper->manualLogs($logsArray, 1);
-        $logsArray['id'] = $logId;
-        $logsArray['log_action'] = 'sync';
-        $logsArray['action'] = 'synced to emarsys';
-        $errorCount = false;
-
-        //check emarsys enabled for the website
-        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
-
-            //check feed export enabled for the website
-            if ($this->emarsysHelper->isCatalogExportEnabled($websiteId)) {
-
-                //get method of catalog export from admin configuration
-                $apiExportEnabled = $this->customerResourceModel->getDataFromCoreConfig(
-                    EmarsysDataHelper::XPATH_PREDICT_API_ENABLED,
-                    $scope,
-                    $websiteId
-                );
-
-                //export products based on admin configuration
-                if ($apiExportEnabled) {
-                    //export data using api
-                    $this->exportUsingApi($storeId, $mode, $includeBundle, $excludedCategories, $logsArray);
-                } else {
-                    //export data using ftp
-                    $this->exportUsingFtp($storeId, $mode, $includeBundle, $excludedCategories, $logsArray);
-                }
-            } else {
-                $errorCount = true;
-                $logsArray['emarsys_info'] = __('Catalog Feed Export is Disabled');
-                $logsArray['description'] = __('Catalog Feed Export is Disabled for the store %1.', $store->getName());
-                $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
-            }
-        } else {
-            $errorCount = true;
-            $logsArray['emarsys_info'] = __('Emarsys is disabled');
-            $logsArray['description'] = __('Emarsys is disabled for the website %1', $websiteId);
-            $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
-        }
-
-        if ($errorCount) {
-            $logsArray['status'] = 'error';
-            $logsArray['messages'] = __('Product export have an error. Please check');
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->manualLogsUpdate($logsArray);
-        }
-
-        return;
-    }
-
-    /**
-     * @param $storeId
-     * @param $mode
-     * @param $includeBundle
-     * @param $excludedCategories
-     * @param $logsArray
-     */
-    public function exportUsingApi($storeId, $mode, $includeBundle, $excludedCategories, $logsArray)
-    {
-        $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
-        $errorCount = true;
-
-        //get merchant id from admin configuration
-        $merchantId = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID,
-            $scope,
-            $websiteId
-        );
-        //get token from admin configuration
-        $token = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysDataHelper::XPATH_PREDICT_TOKEN,
-            $scope,
-            $websiteId
-        );
-
-        if ($merchantId != '' && $token != '') {
-            //get product mapped attributes
-            $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
-            if (isset($mappedAttributes) && count($mappedAttributes) != '') {
-                $mappingField = 0;
-                foreach ($mappedAttributes as $mapAttribute) {
-                    $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-                    if ($emarsysFieldId != 0) {
-                        $mappingField = 1;
-                    }
-                }
-
-                //check if mapping have values
-                if ($mappingField == 1) {
-                    $outputFile = $this->getCatalogProductCsvFileName($store->getCode());
-                    $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(
-                        \Magento\Catalog\Model\Product::ENTITY
-                    );
-
-                    //Check and create directory for csv generation
-                    $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-                    $filePath =  $fileDirectory . "/" . $outputFile;
-
-                    //Generate Catalog CSV
-                    $this->generateProductCsv($storeId, $mappedAttributes, $filePath, $includeBundle, $excludedCategories);
-
-                    //Assign API Credentials
-                    $this->apiExport->assignApiCredentials($merchantId, $token);
-
-                    //Get catalog API Url
-                    $apiUrl = $this->apiExport->getApiUrl(\Magento\Catalog\Model\Product::ENTITY);
-
-                    //Export CSV to API
-                    $apiExportResult = $this->apiExport->apiExport($apiUrl, $filePath);
-
-                    if ($apiExportResult['result'] == 1) {
-                        //successfully uploaded file on Emarsys
-                        $logsArray['emarsys_info'] = __('File uploaded to Emarsys');
-                        $logsArray['description'] = __('File uploaded to Emarsys. File Name: %1. API Export result: %2', $filePath, $apiExportResult['resultBody']);
-
-                        $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
-                        $errorCount = false;
-                        if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                            $this->messageManager->addSuccessMessage(
-                                __("File uploaded to Emarsys successfully !!!")
-                            );
-                        }
-                    } else {
-                        //Failed to export file on Emarsys
-                        $msg = $apiExportResult['resultBody'];
-                        $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
-                        $logsArray['description'] = __('Failed to upload file on Emarsys. %1' , $msg);
-                        $logsArray['message_type'] = 'Error';
-                        $this->logsHelper->logs($logsArray);
-                        if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                            $this->messageManager->addErrorMessage(
-                                __("Failed to upload file on Emarsys !!! " . $msg)
-                            );
-                        }
-                    }
-                    //remove csv after export
-                    unlink($filePath);
-                } else {
-                    //Attributes are not mapped
-                    $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                    $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                    $logsArray['message_type'] = 'Error';
-                    $this->logsHelper->logs($logsArray);
-                    if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                        $this->messageManager->addErrorMessage(
-                            __("Attributes are not mapped !!!")
-                        );
-                    }
-                }
-            } else {
-                //Attributes are not mapped
-                $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                    $this->messageManager->addErrorMessage(
-                        __("Product Attributes are not mapped !!!")
-                    );
-                }
-            }
-        } else {
-            //either merchant Id or Token not present
-            $logsArray['emarsys_info'] = __('Invalid API credentials');
-            $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
-            $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                $this->messageManager->addErrorMessage(
-                    __('Invalid API credential. Please check your settings and try again !!!')
-                );
-            }
-        }
-
-        if ($errorCount) {
-            $logsArray['status'] = 'error';
-            $logsArray['messages'] = __('Product export have an error. Please check');
-        } else {
-            $logsArray['status'] = 'success';
-            $logsArray['messages'] = __('Product export completed');
-        }
-        $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
-
-        return;
-    }
-
-    /**
-     * @param $storeId
-     * @param $mode
-     * @param $includeBundle
-     * @param $excludedCategories
-     * @param $logsArray
-     */
-    public function exportUsingFtp($storeId, $mode, $includeBundle, $excludedCategories, $logsArray)
-    {
-        $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
-        $logsArray['action'] = 'synced to FTP';
-        $errorCount = true;
-
-        //Collect FTP Credentials
-        $hostname = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_HOSTNAME, $scope, $websiteId);
-        $port = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PORT, $scope, $websiteId);
-        $username = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USERNAME, $scope, $websiteId);
-        $password = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_PASSWORD, $scope, $websiteId);
-        $bulkDir = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR, $scope, $websiteId);
-        $ftpSsl = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USEFTP_OVER_SSL, $scope, $websiteId);
-        $passiveMode = $this->customerResourceModel->getDataFromCoreConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_USE_PASSIVE_MODE, $scope, $websiteId);
-
-        //check if all credentials are present
-        if ($hostname != '' && $port != '' && $username != '' && $password != '') {
-            //check ftp connection using ftp credentials
-            $checkFtpConnection = $this->emarsysHelper->checkFtpConnection(
-                $hostname,
-                $username,
-                $password,
-                $port,
-                $ftpSsl,
-                $passiveMode
-            );
-
-            if ($checkFtpConnection) {
-                //ftp connection established using credentials
-                $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
-                if (isset($mappedAttributes) && count($mappedAttributes) != '') {
-                    $mappingField = 0;
-                    foreach ($mappedAttributes as $mapAttribute) {
-                        $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-                        if ($emarsysFieldId != 0) {
-                            $mappingField = 1;
-                        }
-                    }
-                    if ($mappingField == 1) {
-                        $outputFile = $this->getCatalogProductCsvFileName($store->getCode());
-                        $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Catalog\Model\Product::ENTITY);
-
-                        //Check and create directory for csv generation
-                        $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-                        $filePath =  $fileDirectory . "/" . $outputFile;
-
-                        //Generate Catalog CSV
-                        $this->generateProductCsv($storeId, $mappedAttributes, $filePath, $includeBundle, $excludedCategories);
-
-                        //CSV upload to FTP process starts
-                        $fileOpen = fopen($filePath, "r");
-                        $remoteDirPath = $bulkDir;
-                        if ($remoteDirPath == '/') {
-                            $remoteFileName = $outputFile;
-                        } else {
-                            $remoteDirPath = rtrim($remoteDirPath, '/');
-                            $remoteFileName = $remoteDirPath . "/" . $outputFile;
-                        }
-
-                        if ($ftpSsl == 1) {
-                            $ftpConnection = @ftp_ssl_connect($hostname, $port);
-                        } else {
-                            $ftpConnection = @ftp_connect($hostname, $port);
-                        }
-
-                        //Login to FTP
-                        $ftpLogin = @ftp_login($ftpConnection, $username, $password);
-                        if ($passiveMode == 1) {
-                            @ftp_pasv($ftpConnection, true);
-                        }
-
-                        //Create remote directory if not present
-                        if (!@ftp_chdir($ftpConnection, $remoteDirPath)) {
-                            @ftp_mkdir($ftpConnection, $remoteDirPath);
-                        }
-                        @ftp_chdir($ftpConnection, '/');
-
-                        //Upload CSV to FTP
-                        if (@ftp_put($ftpConnection, $remoteFileName, $filePath, FTP_ASCII)) {
-                            //successfully uploaded the file on ftp
-                            $errorCount = false;
-                            $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
-                            $logsArray['description'] = $remoteFileName;
-                            $logsArray['message_type'] = 'Success';
-                            $this->logsHelper->logs($logsArray);
-                            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                                $this->messageManager->addSuccessMessage(
-                                    __("File uploaded to FTP server successfully !!!")
-                                );
-                            }
-                        } else {
-                            //failed to upload file on FTP server
-                            $errorMessage = error_get_last();
-                            $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
-                            $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
-                            $logsArray['description'] = __('Failed to upload file on FTP server %1' , $msg);
-                            $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
-                            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                                $this->messageManager->addErrorMessage(
-                                    __("Failed to upload file on FTP server !!! " . $msg)
-                                );
-                            }
-                        }
-                        //remove csv after export
-                        unlink($filePath);
-                    } else {
-                        //product attributes are not mapped
-                        $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                        $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                        $logsArray['message_type'] = 'Error';
-                        $this->logsHelper->logs($logsArray);
-                        if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                            $this->messageManager->addErrorMessage(
-                                __("Attributes are not mapped !!!")
-                            );
-                        }
-                    }
-                } else {
-                    //product attributes are not mapped
-                    $logsArray['emarsys_info'] = __('Attributes are not mapped');
-                    $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped');
-                    $logsArray['message_type'] = 'Error';
-                    $this->logsHelper->logs($logsArray);
-                    if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                        $this->messageManager->addErrorMessage(
-                            __("Product Attributes are not mapped !!!")
-                        );
-                    }
-                }
-            } else {
-                //ftp connection failed using credentials
-                $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
-                $logsArray['description'] = __('Failed to connect with FTP server.');
-                $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                    $this->messageManager->addErrorMessage(
-                        __("Failed to connect with FTP server. Please check your settings and try again !!!")
-                    );
-                }
-            }
-        } else {
-            //missing credentials
-            $logsArray['emarsys_info'] = __('Invalid FTP credentials');
-            $logsArray['description'] = __('Invalid FTP credential. Please check your settings and try again');
-            $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                $this->messageManager->addErrorMessage(
-                    __('Invalid FTP credential. Please check your settings and try again !!!')
-                );
-            }
-        }
-
-        if ($errorCount) {
-            $logsArray['status'] = 'error';
-            $logsArray['messages'] = __('Product export have an error. Please check.');
-        } else {
-            $logsArray['status'] = 'success';
-            $logsArray['messages'] = __('Product export completed');
-        }
-        $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
-
-        return;
-    }
-
-    /**
-     * @param $storeId
-     * @param $mappedAttributes
-     * @param $filePath
-     * @param $includeBundle
-     * @param $excludedCategories
-     */
-    public function generateProductCsv($storeId, $mappedAttributes, $filePath, $includeBundle, $excludedCategories)
-    {
-        $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
-
-        $emarsysFieldNames = [];
-        $magentoAttributeNames = [];
-
-        foreach ($mappedAttributes as $mapAttribute) {
-            $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-            $emarsysFieldNames[] = $this->productResourceModel->getEmarsysFieldName($storeId, $emarsysFieldId);
-            $magentoAttributeNames[] = $mapAttribute['magento_attr_code'];
-        }
-
-        $productCollection = $this->productCollectionFactory->create()->getCollection()
-            ->addStoreFilter($storeId)
-            ->addWebsiteFilter($websiteId)
-            ->addAttributeToFilter('visibility', ["neq" => 1]);
-
-        if (is_null($includeBundle)) {
-            $includeBundle = $this->scopeConfig->getValue(
-                EmarsysDataHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT,
-                $scope,
-                $websiteId
-            );
-        }
-        if (is_null($excludedCategories)) {
-            $excludedCategories = $this->scopeConfig->getValue(
-                EmarsysDataHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES,
-                $scope,
-                $websiteId
-            );
-        }
-        $excludeCategories = explode(',', $excludedCategories);
-
-        $productAttributes = [];
-        foreach ($productCollection as $product) {
-            $excludeCatFlag = 0;
-            $productData = $this->productCollectionFactory->create()->setStoreId($storeId)->load($product['entity_id']);
-            $productType = $productData->getTypeId();
-            $catIds = $productData->getCategoryIds();
-            $categoryNames = [];
-            foreach ($catIds as $catId) {
-                if (in_array($catId, $excludeCategories)) {
-                    $excludeCatFlag = 1;
-                    break;
-                }
-                $cateData = $this->categoryFactory->create()->load($catId);
-                $categoryPath = $cateData->getPath();
-                $categoryPathIds = explode('/', $categoryPath);
-                $childCats = [];
-                if (count($categoryPathIds) > 2) {
-                    $pathIndex = 0;
-                    foreach ($categoryPathIds as $categoryPathId) {
-                        if ($pathIndex <= 1) {
-                            $pathIndex++;
-                            continue;
-                        }
-                        $childCateData = $this->categoryFactory->create()->load($categoryPathId);
-                        $childCats[] = $childCateData->getName();
-                    }
-                    $categoryNames[] = implode(" > ", $childCats);
-                }
-            }
-            if (($includeBundle == 0 && $productType == 'bundle') || $excludeCatFlag == 1) {
-                continue;
-            }
-
-            $attributeData = [];
-            foreach ($magentoAttributeNames as $attributeName) {
-                $attributeOption = $productData->getData($attributeName);
-                if (!is_array($attributeOption)) {
-                    $attribute = $this->eavConfig->getAttribute('catalog_product', $attributeName);
-                    if ($attribute->getFrontendInput() == 'boolean' || $attribute->getFrontendInput() == 'select'  || $attribute->getFrontendInput() == 'multiselect' ) {
-                        $attributeOption = $productData->getAttributeText($attributeName);
-                    }
-                }
-                if (isset($attributeOption) && $attributeOption != '') {
-                    if (is_array($attributeOption)) {
-                        if ($attributeName == 'category_ids') {
-                            $attributeData[] = implode('|', $categoryNames);
-                        } elseif ($attributeName == 'quantity_and_stock_status') {
-                            if ($productData->getData('quantity_and_stock_status')['is_in_stock'] == 1) {
-                                $attributeData[] =  'TRUE';
-                            } else {
-                                $attributeData[] = 'FALSE';
-                            }
-                        } else {
-                            $attributeData[] = implode(',', $attributeOption);
-                        }
-                    } else {
-                        if ($attributeName == 'image') {
-                            $mediaUrl = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
-                            $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
-                            $attributeData[] = str_replace('pub/', '', $imgUrl);
-                        } elseif ($attributeName == 'url_key') {
-                            $attributeData[] = $productData->getProductUrl();
-                        } else {
-                            $attributeData[] = $attributeOption;
-                        }
-                    }
-                } else {
-                    if ($attributeName == 'url_key') {
-                        $attributeData[] = $productData->getProductUrl();
-                    } else {
-                        $attributeData[] = '';
-                    }
-                }
-            }
-            $productAttributes[] = $attributeData;
-        }
-
-        //Added Header
-        array_unshift($productAttributes, $emarsysFieldNames);
-
-        //Write catalog data into CSV
-        $this->csvWriter
-            ->setEnclosure('"')
-            ->setDelimiter(',')
-            ->saveData($filePath, $productAttributes);
-
-        return;
-    }
-
-    /**
-     * @param $suffix
-     * @return string
-     */
-    public function getCatalogProductCsvFileName($suffix)
-    {
-        return "products_" . $this->date->date('YmdHis', time()) . "_" . $suffix . ".csv";
-    }
-
-
     public function consolidatedCatalogExport($mode = EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
     {
         set_time_limit(0);
+
+        $result = false;
 
         $logsArray['job_code'] = 'product';
         $logsArray['status'] = 'started';
@@ -785,6 +261,7 @@ class Product extends AbstractModel
                     if (!$defaultStoreID) {
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
                     }
+
                     $currentPageNumber = 1;
                     $collection = $this->productExportModel->getCatalogExportProductCollection(
                         $storeId,
@@ -816,13 +293,14 @@ class Product extends AbstractModel
                         foreach ($collection as $product) {
                             $catIds = $product->getCategoryIds();
                             $categoryNames = $this->getCategoryNames($catIds, $storeId);
+                            $product->setStoreId($storeId);
                             $products[$product->getId()] = [
                                 'entity_id' => $product->getId(),
                                 'params' => serialize(array(
                                     'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
                                     'store' => $store['store']->getCode(),
                                     'store_id' => $store['store']->getId(),
-                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames),
+                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames, $store['store']),
                                     'header' => $header,
                                     'currency_code' => $currencyStoreCode,
                                 ))
@@ -841,6 +319,11 @@ class Product extends AbstractModel
                 }
 
                 if (!empty($store)) {
+                    $logsArray['emarsys_info'] = __('Starting data uploading');
+                    $logsArray['description'] = __('Starting data uploading');
+                    $logsArray['message_type'] = 'Success';
+                    $this->logsHelper->logs($logsArray);
+
                     list($csvFilePath, $outputFile) = $this->productExportModel->saveToCsv($websiteId, $logsArray);
                     $bulkDir = $this->customerResourceModel->getDataFromCoreConfig(
                         EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR, 
@@ -849,7 +332,17 @@ class Product extends AbstractModel
                     );
 
                     $outputFile = $bulkDir . $outputFile;
-                    $this->moveFile($store['store'], $outputFile, $csvFilePath, $logsArray, $mode);
+                    $uploaded = $this->moveFile($store['store'], $outputFile, $csvFilePath, $logsArray, $mode);
+                    if ($uploaded) {
+                        $logsArray['emarsys_info'] = __('Data for was uploaded');
+                        $logsArray['description'] = __('Data for was uploaded');
+                        $logsArray['message_type'] = 'Success';
+                    } else {
+                        $logsArray['emarsys_info'] = __('Error during data uploading');
+                        $logsArray['description'] = __('Error during data uploading');
+                        $logsArray['message_type'] = 'Error';
+                    }
+                    $this->logsHelper->logs($logsArray);
                 }
             }
 
@@ -861,19 +354,28 @@ class Product extends AbstractModel
                 $logsArray['messages'] = __('Product export completed');
             }
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogsUpdate($logsArray);
+            $result = true;
         } catch (\Exception $e) {
             $msg = $e->getMessage();
+            $logsArray['messages'] = __('consolidatedCatalogExport Exception');
+            $logsArray['status'] = 'error';
+            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+            $this->logsHelper->manualLogsUpdate($logsArray);
+
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
             $logsArray['description'] = __("Exception " . $msg);
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
+
             if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __("Exception " . $msg)
                 );
             }
         }
+
+        return $result;
     }
 
     /**
@@ -882,9 +384,11 @@ class Product extends AbstractModel
      * @param string $csvFilePath
      * @param array $logsArray
      * @param string $mode
+     * @return bool
      */
     public function moveFile($store, $outputFile, $csvFilePath, $logsArray, $mode)
     {
+        $result = true;
         $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED);
 
         if ($apiExportEnabled) {
@@ -916,7 +420,7 @@ class Product extends AbstractModel
             } else {
                 //Failed to export file on Emarsys
                 $this->_errorCount = true;
-                $msg = $apiExportResult['resultBody'];
+                $msg = isset($apiExportResult['resultBody']) ? $apiExportResult['resultBody'] : '';
                 $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
                 $logsArray['description'] = __('Failed to upload file on Emarsys. %1' , $msg);
                 $logsArray['message_type'] = 'Error';
@@ -926,6 +430,7 @@ class Product extends AbstractModel
                         __("Failed to upload file on Emarsys !!! " . $msg)
                     );
                 }
+                $result = false;
             }
         } else {
             if ($this->emarsysHelper->moveFileToFtp($store, $csvFilePath, $outputFile)) {
@@ -954,9 +459,14 @@ class Product extends AbstractModel
                         __("Failed to upload file on FTP server !!! " . $msg)
                     );
                 }
+                $result = false;
             }
         }
-        unlink($csvFilePath);
+        if (file_exists($csvFilePath)) {
+            unlink($csvFilePath);
+        }
+
+        return $result;
     }
 
     /**
@@ -1118,10 +628,11 @@ class Product extends AbstractModel
      * @param $magentoAttributeNames
      * @param \Magento\Catalog\Model\Product $productData
      * @param $categoryNames
+     * @param \Magento\Store\Model\Store $store
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    protected function _getProductData($magentoAttributeNames, $productData, $categoryNames)
+    protected function _getProductData($magentoAttributeNames, $productData, $categoryNames, $store)
     {
         $attributeData = [];
         foreach ($magentoAttributeNames as $attributeName) {
@@ -1146,19 +657,19 @@ class Product extends AbstractModel
                 } elseif (is_array($attributeOption)) {
                     $attributeData[] = implode(',', $attributeOption);
                 } elseif ($attributeName == 'image') {
-                    $mediaUrl = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+                    $mediaUrl = $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
                     $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
                     $attributeData[] = str_replace('pub/', '', $imgUrl);
                 } elseif ($attributeName == 'url_key') {
-                    $attributeData[] = $productData->getProductUrl();
+                    $attributeData[] = $store->getBaseUrl() . $productData->getRequestPath();
                 } else {
                     $attributeData[] = $attributeOption;
                 }
             } else {
                 if ($attributeName == 'url_key') {
-                    $attributeData[] = $productData->getProductUrl();
+                    $attributeData[] = $store->getBaseUrl() . $productData->getRequestPath();
                 } elseif ($attributeName == 'image') {
-                    $mediaUrl = $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+                    $mediaUrl = $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
                     $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
                     $attributeData[] = str_replace('pub/', '', $imgUrl);
                 } else {

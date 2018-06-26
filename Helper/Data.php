@@ -8,10 +8,7 @@ namespace Emarsys\Emarsys\Helper;
 
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Config\Model\ResourceModel\Config;
 use Magento\Framework\Stdlib\DateTime\Timezone;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\ResourceModel\Customer as ModelResourceModelCustomer;
