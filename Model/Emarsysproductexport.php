@@ -75,11 +75,6 @@ class Emarsysproductexport extends AbstractModel
     protected $dir;
 
     /**
-     * @var \Magento\CatalogInventory\Helper\Stock
-     */
-    protected $stockFilter;
-
-    /**
      * Emarsysproductexport constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -89,7 +84,6 @@ class Emarsysproductexport extends AbstractModel
      * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
      * @param \Magento\Framework\Filesystem\DirectoryList $dir,
-     * @param \Magento\CatalogInventory\Helper\Stock $stockFilter,
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -104,7 +98,6 @@ class Emarsysproductexport extends AbstractModel
         \Magento\Framework\Filesystem\Io\File $ioFile,
         \Magento\Framework\File\Csv $csvWriter,
         \Magento\Framework\Filesystem\DirectoryList $dir,
-        \Magento\CatalogInventory\Helper\Stock $stockFilter,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -119,7 +112,6 @@ class Emarsysproductexport extends AbstractModel
         $this->ioFile = $ioFile;
         $this->csvWriter = $csvWriter;
         $this->dir = $dir;
-        $this->stockFilter = $stockFilter;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -169,7 +161,29 @@ class Emarsysproductexport extends AbstractModel
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 
-            $this->stockFilter->addInStockFilterToCollection($collection);
+            $manageStock = $store->getConfig(\Magento\CatalogInventory\Model\Configuration::XML_PATH_MANAGE_STOCK);
+            $cond = [
+                '{{table}}.use_config_manage_stock = 0 AND {{table}}.manage_stock=1 AND {{table}}.is_in_stock=1',
+                '{{table}}.use_config_manage_stock = 0 AND {{table}}.manage_stock=0'
+            ];
+
+            if ($manageStock) {
+                $cond[] = '{{table}}.use_config_manage_stock = 1 AND {{table}}.is_in_stock=1';
+            } else {
+                $cond[] = '{{table}}.use_config_manage_stock = 1';
+            }
+
+            //If we have multistock (custom module) we have to add AND {{table}}.website_id = $store->getWebsiteId()
+            //to condition
+            $collection->joinField(
+                'inventory_in_stock',
+                'cataloginventory_stock_item',
+                'is_in_stock',
+                'product_id=entity_id',
+                '(' . join(') OR (', $cond) . ')',
+                'left'
+            );
+
             return $collection;
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
