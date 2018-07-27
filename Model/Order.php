@@ -215,30 +215,6 @@ class Order extends AbstractModel
         $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
         $errorCount = false;
 
-        //validate date range (Bulk export)
-        if (isset($exportFromDate) && $exportFromDate != '') {
-            $toTimezone = $this->timezone->getDefaultTimezone();
-            $fromDate = $this->timezone->date($exportFromDate)
-                ->setTimezone(new \DateTimeZone($toTimezone))
-                ->format('Y-m-d H:i:s');
-            $magentoTime = $this->date->date('Y-m-d H:i:s');
-            $currentTime = new \DateTime($magentoTime);
-            $currentTime->format('Y-m-d H:i:s');
-            $datetime2 = new \DateTime($fromDate);
-            $interval = $currentTime->diff($datetime2);
-            if ($interval->y > 2 || ($interval->y == 2 && $interval->m >= 1) || ($interval->y == 2 && $interval->d >= 1)) {
-                $logsArray['emarsys_info'] = __('The Time frame cannot be more than 2 years');
-                $logsArray['description'] = __('The Time frame cannot be more than 2 years');
-                $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
-                $logsArray['status'] = 'error';
-                $logsArray['messages'] = __('Smart Insight export have an error. Please check');
-                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $this->logsHelper->manualLogsUpdate($logsArray);
-                return;
-            }
-        }
-
         //check emarsys enabled for the website
         if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
             //check smart insight enabled for the website

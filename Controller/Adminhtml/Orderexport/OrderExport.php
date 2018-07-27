@@ -129,24 +129,6 @@ class OrderExport extends Action
             $resultRedirect = $this->resultRedirectFactory->create();
             $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
 
-            //validate date range (Bulk export)
-            if (isset($exportFromDate) && $exportFromDate != '') {
-                $toTimezone = $this->timezone->getDefaultTimezone();
-                $fromDate = $this->timezone->date($exportFromDate)
-                    ->setTimezone(new \DateTimeZone($toTimezone))
-                    ->format('Y-m-d H:i:s');
-                $magentoTime = $this->date->date('Y-m-d H:i:s');
-                $currentTime = new \DateTime($magentoTime);
-                $currentTime->format('Y-m-d H:i:s');
-                $datetime2 = new \DateTime($fromDate);
-                $interval = $currentTime->diff($datetime2);
-                if ($interval->y > 2 || ($interval->y == 2 && $interval->m >= 1) || ($interval->y == 2 && $interval->d >= 1)) {
-                    $this->messageManager->addErrorMessage(__('The time frame cannot be more than 2 years.'));
-
-                    return $resultRedirect->setPath($url);
-                }
-            }
-
             //check emarsys enabled for the website
             if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
 
