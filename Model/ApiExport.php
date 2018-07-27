@@ -292,6 +292,7 @@ class ApiExport extends ZendClient
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManagerInterface->getStore($store);
+        $sampleResult = array();
 
         $emailAsIdentifierStatus = (bool)$store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {
@@ -375,7 +376,7 @@ class ApiExport extends ZendClient
             if (empty($emptyFileHeader)) {
                 $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
             }
-            $sampleData = $this->sampleDataSmartInsightExport($emptyFileHeader);
+            $sampleData = $this->sampleDataSmartInsightExport($storeId, $emptyFileHeader);
         }
 
         $data = [
