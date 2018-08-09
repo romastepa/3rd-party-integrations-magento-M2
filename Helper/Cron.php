@@ -22,8 +22,6 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Cron extends AbstractHelper
 {
-    const CRON_JOB_INITIAL_DB_LOAD = 'emarsys_initial_db_load';
-
     const CRON_JOB_CUSTOMER_SYNC_QUEUE = 'emarsys_customer_sync_queue';
 
     const CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV = 'emarsys_customer_bulk_export_webdav';
@@ -272,10 +270,6 @@ class Cron extends AbstractHelper
         $jobDetails = [];
 
         switch ($exportMode) {
-            case self::CRON_JOB_INITIAL_DB_LOAD:
-                $jobDetails['job_code'] = 'initialdbload';
-                $jobDetails['job_title'] = 'Initial DB Load';
-                break;
             case self::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV:
                 $jobDetails['job_code'] = 'customer';
                 $jobDetails['job_title'] = 'Customer Bulk Export';

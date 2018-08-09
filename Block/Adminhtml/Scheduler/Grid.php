@@ -116,7 +116,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'Order Mapping' => 'Order Mapping',
                 'Product Mapping' => 'Product Mapping',
                 'Event Mapping' => 'Event Mapping',
-                'initialdbload' => 'Initial Load',
                 'transactional_mail' => 'Transactional Mail',
                 'Backgroud Time Based Optin Sync' => 'Background Time Based Optin Sync',
                 'Sync contact Export' => 'Sync contact Export',

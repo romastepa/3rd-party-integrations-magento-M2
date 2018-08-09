@@ -67,7 +67,7 @@
             </group>
             <group id="webdav_setting" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>WebDAV Settings</label>
-                <comment>Used for bulk contact synchronisation / initial load of your contacts.</comment>
+                <comment>Used for bulk contact synchronisation</comment>
                 <field id="webdav_url" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>WebDAV URL</label>
@@ -161,18 +161,6 @@
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="1"
                        showInWebsite="0" showInStore="0">
                     <label>Notification secret key</label>
-                </field>
-            </group>
-            <group id="initial_db_load" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Initial DB Load</label>
-                <field id="initial_db_load" translate="label" type="text" sortOrder="10" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\InitialLoadDb</frontend_model>
-                </field>
-                <field id="upload_initial_data" translate="button_label" sortOrder="11" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <button_label>Export</button_label>
-                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\UploadInitialDataButton</frontend_model>
                 </field>
             </group>
         </section>

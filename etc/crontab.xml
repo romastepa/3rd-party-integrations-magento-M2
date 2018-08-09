@@ -9,9 +9,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
         <!-- Customer Related Jobs -->
-        <job name="emarsys_initial_db_load" instance="Emarsys\Emarsys\Cron\UploadInitialDb" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
         <job name="emarsys_customer_sync_queue" instance="Emarsys\Emarsys\Cron\CustomerSyncQueue" method="execute">
             <config_path>crontab/default/jobs/emarsys_customer_sync_queue/schedule/cron_expr</config_path>
         </job>
