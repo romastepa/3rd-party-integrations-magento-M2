@@ -10,10 +10,7 @@
       "homepage": "https://www.emarsys.com"
     }
   ],
-  "license": [
-    "OSL-3.0",
-    "AFL-3.0"
-  ],
+  "license": "MIT",
   "require": {
     "sabre/dav": "~3.2.0"
   },
