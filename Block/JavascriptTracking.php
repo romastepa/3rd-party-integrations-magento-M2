@@ -295,7 +295,20 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     public function getAjaxUpdateUrl()
     {
         return $this->getUrl(
-            'emarsys/index/ajaxupdate',
+            'emarsys/index/ajaxUpdate',
+            ['_secure' => true]
+        );
+    }
+
+    /**
+     * Get Ajax Update Url
+     *
+     * @return string
+     */
+    public function getAjaxUpdateCartUrl()
+    {
+        return $this->getUrl(
+            'emarsys/index/ajaxUpdateCart',
             ['_secure' => true]
         );
     }
@@ -451,8 +464,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                     if ($item->getParentItemId()) {
                         continue;
                     }
-                    $productSku = $this->getLoadProduct($item->getProductId())->getSku();
-                    $price = $useBaseCurrency? $item->getBaseRowTotal() : $item->getRowTotal();
+                    $price = $useBaseCurrency ? $item->getBaseRowTotal() : $item->getRowTotal();
                     $uniqueIdentifier = $this->emarsysHelper->getUniqueIdentifier();
 
                     if ($uniqueIdentifier == "product_id") {
@@ -461,6 +473,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                         $sku = addslashes($item->getSku());
                     }
                     $qty = $item->getQty();
+
                     $jsData[] = "{item: '" . addslashes($sku) . "', price: $price, quantity: $qty}";
                 }
 
