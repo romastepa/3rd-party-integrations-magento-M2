@@ -18,6 +18,5 @@
                 </block>
             </container>
         </referenceContainer>
-        <!--<move element="emarsys.wrapper" destination="page.bottom.container" after="-" />-->
     </body>
 </page>
