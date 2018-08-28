@@ -364,7 +364,7 @@ class Product extends AbstractModel
             $this->logsHelper->manualLogsUpdate($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception " . $msg);
+            $logsArray['description'] = __("Exception " . json_encode(error_get_last()));
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
 

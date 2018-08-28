@@ -162,26 +162,14 @@ class Emarsysproductexport extends AbstractModel
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 
-            $manageStock = $store->getConfig(\Magento\CatalogInventory\Model\Configuration::XML_PATH_MANAGE_STOCK);
-            $cond = [
-                '{{table}}.use_config_manage_stock = 0 AND {{table}}.manage_stock=1 AND {{table}}.is_in_stock=1',
-                '{{table}}.use_config_manage_stock = 0 AND {{table}}.manage_stock=0'
-            ];
-
-            if ($manageStock) {
-                $cond[] = '{{table}}.use_config_manage_stock = 1 AND {{table}}.is_in_stock=1';
-            } else {
-                $cond[] = '{{table}}.use_config_manage_stock = 1';
-            }
-
-            //If we have multistock (custom module) we have to add AND {{table}}.website_id = $store->getWebsiteId()
-            //to condition
+            //If we have multistock (custom module) we have to add
+            //{{table}}.website_id = $store->getWebsiteId() to condition
             $collection->joinField(
                 'inventory_in_stock',
                 'cataloginventory_stock_item',
                 'is_in_stock',
                 'product_id=entity_id',
-                '(' . join(') OR (', $cond) . ')',
+                null,
                 'left'
             );
 
@@ -282,7 +270,7 @@ class Emarsysproductexport extends AbstractModel
                                     $value = $value * $rate;
                                 }
                             }
-                            $this->_preparedData[$productId][$map[$key]] = $value;
+                            $this->_preparedData[$productId][$map[$key]] = nl2br($value);
                         }
                     }
                 }
