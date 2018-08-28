@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
@@ -83,7 +84,7 @@ class Emarsysproductexport extends AbstractModel
      * @param CurrencyFactory $currencyFactory
      * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
-     * @param \Magento\Framework\Filesystem\DirectoryList $dir,
+     * @param \Magento\Framework\Filesystem\DirectoryList $dir ,
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
