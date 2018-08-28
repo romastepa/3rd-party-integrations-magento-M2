@@ -2,8 +2,9 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
 use Magento\Framework\HTTP\ZendClient;
@@ -153,8 +154,8 @@ class ApiExport extends ZendClient
                 if ($response->getStatus() == 200) {
                     $result['result'] = 1;
                 }
-                $result['status'] =  $response->getStatus();
-                $result['resultBody'] =  $response->getBody();
+                $result['status'] = $response->getStatus();
+                $result['resultBody'] = $response->getBody();
             }
         } else {
             $this->emarsysHelper->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
@@ -238,6 +239,7 @@ class ApiExport extends ZendClient
 
     /**
      * Get Static Export Array for Emarsys
+     *
      * @return array
      */
     public function getCatalogExportCsvHeader()
@@ -255,6 +257,7 @@ class ApiExport extends ZendClient
 
     /**
      * Sample Data for Catalog full export test connection.
+     *
      * @param array $headers
      * @return array
      */
@@ -278,6 +281,7 @@ class ApiExport extends ZendClient
             }
             array_push($sampleResult, $itemVal);
         }
+
         return $sampleResult;
     }
 
@@ -324,7 +328,8 @@ class ApiExport extends ZendClient
             }
             array_push($sampleResult, $itemVal);
         }
-        return $sampleData;
+
+        return $sampleResult;
     }
 
     /**
