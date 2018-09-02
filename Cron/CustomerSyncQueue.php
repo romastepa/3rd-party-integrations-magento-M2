@@ -7,7 +7,6 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Magento\Framework\Json\Helper\Data;
 use Emarsys\Emarsys\Model\Api\Contact;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
@@ -22,11 +21,6 @@ class CustomerSyncQueue
      * @var EmarsysCronHelper
      */
     protected $cronHelper;
-
-    /**
-     * @var Data
-     */
-    protected $jsonHelper;
 
     /**
      * @var Contact
@@ -46,20 +40,17 @@ class CustomerSyncQueue
     /**
      * CustomerSyncQueue constructor.
      * @param EmarsysCronHelper $cronHelper
-     * @param Data $jsonHelper
      * @param Contact $contactModel
      * @param StoreManagerInterface $storeManagerInterface
      * @param EmarsysModelLogs $emarsysLogs
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
-        Data $jsonHelper,
         Contact $contactModel,
         StoreManagerInterface $storeManagerInterface,
         EmarsysModelLogs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
-        $this->jsonHelper = $jsonHelper;
         $this->contactModel = $contactModel;
         $this->storeManagerInterface = $storeManagerInterface;
         $this->emarsysLogs = $emarsysLogs;
