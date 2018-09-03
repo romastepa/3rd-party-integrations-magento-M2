@@ -265,7 +265,6 @@ class Order extends AbstractModel
                 $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_SIEXPORT_API_ENABLED);
 
                 //check method of data exort from admin configuration
-                $apiExportEnabled = 0;
                 if ($apiExportEnabled) {
                     //export data using api
                     $logsArray['action'] = 'synced to API';
@@ -482,13 +481,12 @@ class Order extends AbstractModel
 
             //prepare order collection
             /** @var \Magento\Sales\Model\ResourceModel\Order\Collection $orderCollection */
-            /*$orderCollection = $this->getOrderCollection(
+            $orderCollection = $this->getOrderCollection(
                 $mode,
                 $storeId,
                 $exportFromDate,
                 $exportTillDate
-            );*/
-            $orderCollection = false;
+            );
             $orderCollectionClone = false;
 
             //Generate Sales CSV
@@ -525,7 +523,7 @@ class Order extends AbstractModel
                 $creditMemoCollection->setPageSize(self::BATCH_SIZE);
                 $pages = $creditMemoCollection->getLastPageNumber();
                 for ($i = 1; $i <= $pages; $i++) {
-                    echo "$i/$pages => " . date('Y-m-d H:i:s') . "\n";
+                    //echo "$i/$pages => " . date('Y-m-d H:i:s') . "\n";
                     $creditMemoCollection->clear();
                     $creditMemoCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
                     $creditMemoCollectionClone = clone $creditMemoCollection;
