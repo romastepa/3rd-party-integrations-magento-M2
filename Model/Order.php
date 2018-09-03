@@ -911,6 +911,7 @@ class Order extends AbstractModel
                     $rowTotal = 0;
                     if ($qty > 0) {
                         $rowTotal = $price;
+                        $qty = '-' . $qty;
                     }
 
                     if ($rowTotal != '') {
