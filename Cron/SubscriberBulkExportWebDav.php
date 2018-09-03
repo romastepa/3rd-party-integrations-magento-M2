@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Magento\Framework\Json\Helper\Data;
+use Magento\Framework\Serialize\Serializer\Json as JsonHelper;
 use Emarsys\Emarsys\Model\WebDav\WebDav;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
@@ -24,7 +24,7 @@ class SubscriberBulkExportWebDav
     protected $cronHelper;
 
     /**
-     * @var Data
+     * @var JsonHelper
      */
     protected $jsonHelper;
 
@@ -46,12 +46,12 @@ class SubscriberBulkExportWebDav
     /**
      * CustomerBulkExportWebDav constructor.
      * @param EmarsysCronHelper $cronHelper
-     * @param Data $jsonHelper
+     * @param JsonHelper $jsonHelper
      * @param WebDav $webDavModel
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
-        Data $jsonHelper,
+        JsonHelper $jsonHelper,
         WebDav $webDavModel,
         Logs $emarsysLogs,
         StoreManagerInterface $storeManager
@@ -70,9 +70,11 @@ class SubscriberBulkExportWebDav
                 EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV
             );
 
-            if (!$currentCronInfo) return;
+            if (!$currentCronInfo) {
+                return;
+            }
 
-            $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
+            $data = $this->jsonHelper->unserialize($currentCronInfo->getParams());
 
             $this->webDavModel->syncFullContactUsingWebDav(
                 EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV,

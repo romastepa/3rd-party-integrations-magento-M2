@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Support;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Backend\Block\Widget\Context;
 use Emarsys\Emarsys\Helper\Data;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
+use Magento\Framework\Serialize\Serializer\Json as JsonHelper;
 use Magento\AdminNotification\Model\Inbox;
 use Magento\AdminNotification\Model\ResourceModel\Inbox\Collection;
 use Magento\AdminNotification\Model\InboxFactory;
@@ -125,7 +125,7 @@ class About extends MagentoBackendBlockWidgetForm
             $notificationMessage = '';
             $errorStatus = false;
             $emarsysLatestVersionInfo = $this->emarsysHelper->getEmarsysLatestVersionInfo();
-            $emarsysLatestVersionInfo = $this->jsonHelper->jsonDecode($emarsysLatestVersionInfo, TRUE);
+            $emarsysLatestVersionInfo = $this->jsonHelper->unserialize($emarsysLatestVersionInfo);
 
             if (!empty($emarsysLatestVersionInfo)) {
                 if (isset($emarsysLatestVersionInfo['tag_name'])) {

@@ -19,7 +19,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     public $_username;
     public $_password;
     public $jasonHelper;
-    public $config = [];
 
     /**
      * @param $params

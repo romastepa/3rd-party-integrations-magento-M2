@@ -2147,12 +2147,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         try {
             $emarsysTime = '';
             $emarsysDate = '';
-            $scopeId = $this->storeManager->getStore($subscriber->getStoreId())->getWebsiteId();
-            $configkeyId = $this->scopeConfigInterface->getValue(
-                self::XPATH_EMARSYS_UNIQUE_FIELD,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
-                $scopeId
-            );
+            $srore = $this->storeManager->getStore($subscriber->getStoreId());
+            $configkeyId = $srore->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
 
             $fieldId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $subscriber->getStoreId());
 
@@ -2251,16 +2247,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $logsArray['auto_log'] = 'Complete';
             $logsArray['store_id'] = $storeId;
             $logId = $this->logHelper->manualLogs($logsArray);
-            $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
+            $store = $this->storeManager->getStore($storeId);
             $fieldId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $storeId);
             $subscribersCollection = $this->newsLetterCollectionFactory->create()
                 ->addFieldToFilter('subscriber_id', ['in' => $subscriberIdsArray]);
             $magLastModifiedStatus = [];
-            $configkeyId = $this->scopeConfigInterface->getValue(
-                self::XPATH_EMARSYS_UNIQUE_FIELD,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
-                $websiteId
-            );
+            $configkeyId = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
 
             if ($configkeyId == 'email') {
                 $keyId = $this->customerResourceModel->getEmarsysFieldId('Email', $storeId);
@@ -2327,7 +2319,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                             $logsArray['action'] = 'Backgroud Time Based Optin Sync';
                             $logsArray['message_type'] = 'Success';
                             $logsArray['log_action'] = 'True';
-                            $logsArray['website_id'] = $websiteId;
+                            $logsArray['website_id'] = $store->getWebsiteId();
                             $this->logHelper->logs($logsArray);
                         }
                     }

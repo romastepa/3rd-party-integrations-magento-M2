@@ -364,7 +364,7 @@ class Product extends AbstractModel
             $this->logsHelper->manualLogsUpdate($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception " . $msg);
+            $logsArray['description'] = __("Exception " . json_encode(error_get_last()));
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
 
@@ -639,14 +639,18 @@ class Product extends AbstractModel
             $attributeOption = $productData->getData($attributeName);
             if (!is_array($attributeOption)) {
                 $attribute = $this->eavConfig->getAttribute('catalog_product', $attributeName);
-                if ($attribute->getFrontendInput() == 'boolean' || $attribute->getFrontendInput() == 'select'  || $attribute->getFrontendInput() == 'multiselect' ) {
+                if ($attribute->getFrontendInput() == 'boolean'
+                    || $attribute->getFrontendInput() == 'select'
+                    || $attribute->getFrontendInput() == 'multiselect'
+                ) {
                     $attributeOption = $productData->getAttributeText($attributeName);
                 }
             }
             if (isset($attributeOption) && $attributeOption != '') {
                 if ($attributeName == 'quantity_and_stock_status') {
-                    if ($productData->getData('inventory_in_stock') == 1
-                        && $productData->getData('visibility') != 1
+                    if ($productData->getStatus() == \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED
+                        && $productData->getData('inventory_in_stock') == 1
+                        && $productData->getVisibility() != \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE
                     ) {
                         $attributeData[] = 'TRUE';
                     } else {
