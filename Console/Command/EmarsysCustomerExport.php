@@ -60,18 +60,18 @@ class EmarsysCustomerExport extends Command
                 'from',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'from="Y-m-d" [2017-12-31]'
+                '--from="Y-m-d" (2017-12-31)'
             ),
             new InputOption(
                 'to',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'to="Y-m-d" [2017-12-31]'
+                '--to="Y-m-d" (2017-12-31)'
             ),
         ];
 
         $this->setName('emarsys:export:customer')
-            ->setDescription('Customer bulk export (from=\'Y-m-d\' to=\'Y-m-d\')')
+            ->setDescription('Customer bulk export (--from=\'Y-m-d\' (2016-01-31) --to=\'Y-m-d\' (2017-12-31))')
             ->setDefinition($options);
         parent::configure();
     }

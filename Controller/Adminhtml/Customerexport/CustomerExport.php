@@ -129,8 +129,8 @@ class CustomerExport extends Action
             //check emarsys enable for website
             if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
                 if (isset($data['fromDate']) && $data['fromDate'] != '') {
-                    $data['fromDate'] = $this->date->date('Y-m-d H:i:s', strtotime($data['fromDate']));
-                    $data['toDate'] = $this->date->date('Y-m-d H:i:s', strtotime($data['toDate']));
+                    $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
+                    $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
                 }
 
                 //get customer collection
@@ -139,7 +139,7 @@ class CustomerExport extends Action
                     $cronJobScheduled = false;
                     $cronJobName = '';
 
-                    if (count($customerCollection) <= self::MAX_CUSTOMER_RECORDS) {
+                    if ($customerCollection->getSize() <= self::MAX_CUSTOMER_RECORDS) {
                         //export customers through API
                         $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
                         if (!$isCronjobScheduled) {

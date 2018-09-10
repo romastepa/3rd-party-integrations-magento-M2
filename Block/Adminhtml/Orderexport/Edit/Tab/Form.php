@@ -7,51 +7,47 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Orderexport\Edit\Tab;
 
-use Magento\Backend\Block\Widget\Grid\Extended;
-use Magento\Store\Model\ScopeInterface;
+use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\Data\FormFactory;
+use Magento\Framework\App\Request\Http;
+use Magento\Backend\Block\Widget\Form\Generic;
+use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 
 /**
  * Class Form
  * @package Emarsys\Emarsys\Block\Adminhtml\Orderexport\Edit\Tab
  */
-class Form extends \Magento\Backend\Block\Widget\Form\Generic
+class Form extends Generic
 {
     /**
-     * @var \Magento\ImportExport\Model\Source\Export\FormatFactory
+     * @var \Magento\Store\Model\StoreManagerInterface
      */
-    protected $_formatFactory;
+    protected $storeManager;
+
+    /**
+     * @var Http
+     */
+    protected $request;
 
     /**
      * Form constructor.
-     * @param \Magento\Backend\Block\Widget\Context $context
-     * @param \Magento\Backend\Model\Auth\Session $session
-     * @param \Magento\Framework\Data\FormFactory $formFactory
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\ImportExport\Model\Source\Export\FormatFactory $formatFactory
-     * @param \Magento\Framework\App\Request\Http $request
-     * @param Extended $extended
+     * @param Context $context
+     * @param Registry $registry
+     * @param FormFactory $formFactory
      * @param array $data
+     * @param Http $request
      */
     public function __construct(
-        \Magento\Backend\Block\Widget\Context $context,
-        \Magento\Backend\Model\Auth\Session $session,
-        \Magento\Framework\Data\FormFactory $formFactory,
-        \Magento\Framework\Registry $registry,
-        \Magento\ImportExport\Model\Source\Export\FormatFactory $formatFactory,
-        \Magento\Framework\App\Request\Http $request,
-        Extended $extended,
-        array $data = []
+        Context $context,
+        Registry $registry,
+        FormFactory $formFactory,
+        array $data = [],
+        Http $request
     ) {
         parent::__construct($context, $registry, $formFactory, $data);
-        $this->session = $session;
-        $this->admin = $context->getBackendSession();
         $this->storeManager = $context->getStoreManager();
-        $this->_formFactory = $formFactory;
-        $this->_registry = $registry;
-        $this->extended = $extended;
-        $this->getRequest = $request;
-        $this->scopeConfigInterface = $context->getScopeConfig();
-        $this->_formatFactory = $formatFactory;
+        $this->request = $request;
     }
 
     /**
@@ -60,10 +56,9 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
      */
     protected function _prepareForm()
     {
-        $params = $this->getRequest->getParams();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
+        $params = $this->request->getParams();
         $storeId = $params['store'];
-        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
+        $store = $this->storeManager->getStore($storeId);
 
         $form = $this->_formFactory->create();
         $this->setForm($form);
@@ -71,19 +66,11 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         $values = [];
         $values['customer'] = 'Customer';
         $values['subscriber'] = 'Subscriber';
-        $smartInsightEnable = $this->scopeConfigInterface->getValue(
-            'smart_insight/smart_insight/smartinsight_enabled',
-            $scope,
-            $websiteId
-        );
+        $smartInsightEnable = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_ENABLED);
         if ($smartInsightEnable == 1) {
             $values['order'] = 'Order';
         }
-        $productExportStatus = $this->scopeConfigInterface->getValue(
-            'emarsys_predict/feed_export/enable_nightly_product_feed',
-            $scope,
-            $websiteId
-        );
+        $productExportStatus = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED);
         if ($productExportStatus == 1 || $smartInsightEnable == 1) {
             $values['product'] = 'Product';
         }
