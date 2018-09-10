@@ -64,9 +64,14 @@
             </api_settings>
         </smart_insight>
         <emarsys_predict>
-            <feed_export>
-                <enable_nightly_product_feed>0</enable_nightly_product_feed>
-            </feed_export>
+            <enable>
+                <product_feed>0</product_feed>
+            </enable>
+            <availability>
+                <status>1</status>
+                <in_stock>1</in_stock>
+                <visibility>1</visibility>
+            </availability>
         </emarsys_predict>
         <web_extend>
             <recommended_product_pages>

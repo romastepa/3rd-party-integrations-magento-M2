@@ -6,30 +6,47 @@
  */
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Framework\Model\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Catalog\Model\ProductFactory as ProductModelFactory;
-use Magento\Catalog\Model\Product as ProductModel;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
-use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
-use Magento\Catalog\Model\CategoryFactory;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Eav\Model\Config as EavConfig;
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\File\Csv;
-use Magento\Store\Model\ScopeInterface;
 
-use Emarsys\Emarsys\Model\Emarsysproductexport as ProductExportModel;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel;
+use Magento\Framework\{
+    Model\AbstractModel,
+    Model\Context,
+    Model\ResourceModel\AbstractResource,
+    Registry,
+    Message\ManagerInterface as MessageManagerInterface,
+    Data\Collection\AbstractDb,
+    Stdlib\DateTime\DateTime,
+    App\Config\ScopeConfigInterface,
+    App\Filesystem\DirectoryList,
+    File\Csv
+};
 
-use Magento\Framework\Model\AbstractModel;
+use Magento\Catalog\{
+    Helper\Image,
+    Model\Product\Attribute\Source\Status,
+    Model\Product\Visibility,
+    Model\CategoryFactory,
+    Model\ProductFactory as ProductModelFactory,
+    Model\Product as ProductModel
+};
+
+
+use Magento\Store\Model\{
+    StoreManagerInterface,
+    ScopeInterface
+};
+
+use Emarsys\Emarsys\Helper\{
+    Logs as EmarsysHelperLogs,
+    Data as EmarsysDataHelper
+};
+
+use Emarsys\Emarsys\Model\{
+    ResourceModel\Customer as EmarsysResourceModelCustomer,
+    ResourceModel\Product as ProductResourceModel,
+    ResourceModel\Emarsysproductexport as ProductExportResourceModel,
+    Emarsysproductexport as ProductExportModel
+};
 
 /**
  * Class Product
@@ -122,10 +139,19 @@ class Product extends AbstractModel
      */
     protected $apiExport;
 
+    /**
+     * @var Image
+     */
+    protected $imageHelper;
+
     protected $_errorCount = false;
     protected $_mode = false;
     protected $_credentials = [];
     protected $_websites = [];
+    /**
+     * @var State
+     */
+    protected $state;
 
     /**
      * Product constructor.
@@ -148,6 +174,7 @@ class Product extends AbstractModel
      * @param Csv $csvWriter
      * @param DirectoryList $directoryList
      * @param ApiExport $apiExport
+     * @param Image $imageHelper
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
@@ -172,6 +199,7 @@ class Product extends AbstractModel
         Csv $csvWriter,
         DirectoryList $directoryList,
         ApiExport $apiExport,
+        Image $imageHelper,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -193,6 +221,7 @@ class Product extends AbstractModel
         $this->csvWriter = $csvWriter;
         $this->directoryList = $directoryList;
         $this->apiExport = $apiExport;
+        $this->imageHelper = $imageHelper;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -224,6 +253,7 @@ class Product extends AbstractModel
         $logsArray['run_mode'] = $mode;
         $logsArray['auto_log'] = 'Complete';
         $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
+        $logsArray['store_id'] = 0;
         $logId = $this->logsHelper->manualLogs($logsArray, 1);
         $logsArray['id'] = $logId;
         $logsArray['log_action'] = 'sync';
@@ -626,58 +656,85 @@ class Product extends AbstractModel
 
     /**
      * @param $magentoAttributeNames
-     * @param \Magento\Catalog\Model\Product $productData
+     * @param \Magento\Catalog\Model\Product $productObject
      * @param $categoryNames
      * @param \Magento\Store\Model\Store $store
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    protected function _getProductData($magentoAttributeNames, $productData, $categoryNames, $store)
+    protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store)
     {
         $attributeData = [];
         foreach ($magentoAttributeNames as $attributeName) {
-            $attributeOption = $productData->getData($attributeName);
+            $attributeOption = $productObject->getData($attributeName);
             if (!is_array($attributeOption)) {
                 $attribute = $this->eavConfig->getAttribute('catalog_product', $attributeName);
                 if ($attribute->getFrontendInput() == 'boolean'
                     || $attribute->getFrontendInput() == 'select'
                     || $attribute->getFrontendInput() == 'multiselect'
                 ) {
-                    $attributeOption = $productData->getAttributeText($attributeName);
+                    $attributeOption = $productObject->getAttributeText($attributeName);
                 }
             }
             if (isset($attributeOption) && $attributeOption != '') {
-                if ($attributeName == 'quantity_and_stock_status') {
-                    if ($productData->getStatus() == \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED
-                        && $productData->getData('inventory_in_stock') == 1
-                        && $productData->getVisibility() != \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE
-                    ) {
-                        $attributeData[] = 'TRUE';
-                    } else {
-                        $attributeData[] = 'FALSE';
-                    }
-                } elseif ($attributeName == 'category_ids') {
-                    $attributeData[] = implode('|', $categoryNames);
-                } elseif (is_array($attributeOption)) {
-                    $attributeData[] = implode(',', $attributeOption);
-                } elseif ($attributeName == 'image') {
-                    $mediaUrl = $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
-                    $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
-                    $attributeData[] = str_replace('pub/', '', $imgUrl);
-                } elseif ($attributeName == 'url_key') {
-                    $attributeData[] = $store->getBaseUrl() . $productData->getRequestPath();
-                } else {
-                    $attributeData[] = $attributeOption;
+                switch ($attributeName) {
+                    case 'quantity_and_stock_status':
+                        $status = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_STATUS)
+                            ? ($productObject->getStatus() == Status::STATUS_ENABLED)
+                            : true
+                        ;
+                        $inStock = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK)
+                            ? ($productObject->getData('inventory_in_stock') == 1)
+                            : true
+                        ;
+                        $visibility = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY)
+                            ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
+                            : true
+                        ;
+
+                        if ($status && $inStock && $visibility) {
+                            $attributeData[] = 'TRUE';
+                        } else {
+                            $attributeData[] = 'FALSE';
+                        }
+                        break;
+                    case 'category_ids':
+                        $attributeData[] = implode('|', $categoryNames);
+                        break;
+                    case is_array($attributeOption):
+                        $attributeData[] = implode(',', $attributeOption);
+                        break;
+                    case 'image':
+                        /** @var \Magento\Catalog\Helper\Image $helper */
+                        $url = $this->imageHelper
+                            ->init($productObject, 'product_base_image')
+                            ->setImageFile($attributeOption)
+                            ->getUrl();
+                        $attributeData[] = $url;
+                        break;
+                    case 'url_key':
+                        $attributeData[] = $store->getBaseUrl() . $productObject->getRequestPath();
+                        break;
+                    default:
+                        $attributeData[] = $attributeOption;
+                        break;
+
                 }
             } else {
-                if ($attributeName == 'url_key') {
-                    $attributeData[] = $store->getBaseUrl() . $productData->getRequestPath();
-                } elseif ($attributeName == 'image') {
-                    $mediaUrl = $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
-                    $imgUrl = $mediaUrl . 'catalog/product' . $attributeOption;
-                    $attributeData[] = str_replace('pub/', '', $imgUrl);
-                } else {
-                    $attributeData[] = '';
+                switch ($attributeName) {
+                    case 'image':
+                        $url = $this->imageHelper
+                            ->init($productObject, 'product_base_image')
+                            ->setImageFile($attributeOption)
+                            ->getUrl();
+                        $attributeData[] = $url;
+                        break;
+                    case 'url_key':
+                        $attributeData[] = $store->getBaseUrl() . $productObject->getRequestPath();
+                        break;
+                    default:
+                        $attributeData[] = $attributeOption;
+                        break;
                 }
             }
         }

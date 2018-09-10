@@ -15,7 +15,7 @@
             <class>separator-top</class>
             <label>Connections</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="emarsys_setting" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>API Settings</label>
                 <comment>Used for contact synchronisation, Event triggering etc.</comment>
@@ -133,7 +133,7 @@
             <class>separator-top</class>
             <label>Contact Synchronization</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="emarsys_emarsys" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization Settings</label>
                 <field id="realtime_sync" translate="label comment" sortOrder="24" type="select" showInDefault="1"
@@ -168,7 +168,7 @@
             <class>separator-top</class>
             <label>Opt-In</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="optin_enable" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Enable Opt In</label>
                 <field id="enable_optin" translate="label" type="select" sortOrder="20" showInDefault="1"
@@ -205,7 +205,7 @@
             <class>separator-top</class>
             <label>Transaction Emails</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="transactionmail" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Transaction Email</label>
                 <field id="enable_customer" translate="label" type="select" sortOrder="20" showInDefault="1"
@@ -235,7 +235,7 @@
             <class>separator-top</class>
             <label>Smart Insight</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Smart Insight API Settings</label>
                 <field id="enableapi" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
@@ -333,7 +333,39 @@
             <class>separator-top</class>
             <label>Product Catalog</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
+            <group id="enable" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Emarsys Product Export</label>
+                <field id="product_feed" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="availability" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Availability</label>
+                <field id="status" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Product</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If YES, - will be exported all products except of DISABLED</comment>
+                </field>
+                <field id="in_stock" translate="label comment" type="select" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Is In Stock</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If YES, - will be exported all products except of OUT OF STOCK</comment>
+                </field>
+                <field id="visibility" translate="label comment" type="select" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Visibility</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If YES, - will be exported all products except of NOT VISIBLE INDIVIDUALLY</comment>
+                </field>
+                <depends>
+                    <field id="emarsys_predict/enable/product_feed">1</field>
+                </depends>
+            </group>
             <group id="catalog_api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Feed Export API Settings</label>
                 <field id="enable_catalog_api" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -363,15 +395,13 @@
                         <field id="enable_catalog_api">1</field>
                     </depends>
                 </field>
+                <depends>
+                    <field id="emarsys_predict/enable/product_feed">1</field>
+                </depends>
             </group>
             <group id="feed_export" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
                    showInStore="0">
                 <label>Feed Export</label>
-                <field id="enable_nightly_product_feed" translate="label comment" type="select" sortOrder="20"
-                       showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable nightly product feed export?</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
                 <field id="include_bundle_product" translate="label comment" type="select" sortOrder="21"
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Include Bundle Product</label>
@@ -390,9 +420,6 @@
                 <field id="execute_at" translate="label comment" sortOrder="23" type="time" showInDefault="1"
                        showInWebsite="0" showInStore="0">
                     <label>Execute and Export at</label>
-                    <depends>
-                        <field id="enable_nightly_product_feed">1</field>
-                    </depends>
                 </field>
                 <field id="productexportfrequency" translate="label comment" sortOrder="24" type="select"
                        showInDefault="1" showInWebsite="0" showInStore="0">
@@ -401,17 +428,17 @@
                     <source_model>Emarsys\Emarsys\Model\Config\Source\ProductExportFrequency</source_model>
                     <backend_model>Emarsys\Emarsys\Model\Config\ProductExportCronConfig</backend_model>
                     <comment>For hours only minutes will be applicable.</comment>
-                    <depends>
-                        <field id="enable_nightly_product_feed">1</field>
-                    </depends>
                 </field>
+                <depends>
+                    <field id="emarsys_predict/enable/product_feed">1</field>
+                </depends>
             </group>
         </section>
         <section id="web_extend" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
             <label>Web Extend</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="recommended_product_pages" translate="label" type="text" sortOrder="5" showInDefault="1"
                    showInWebsite="1" showInStore="0">
                 <label>Recommended product on pages</label>
@@ -506,13 +533,13 @@
             <class>separator-top</class>
             <label>Landing Pages</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
         </section>
         <section id="logs" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Logs</label>
             <tab>emarsys_connect</tab>
-            <resource>Emarsys_Emarsys::emarsys</resource>
+            <resource>Emarsys_Emarsys::settings</resource>
             <group id="log_setting" translate="label" type="text" sortOrder="16" showInDefault="1" showInWebsite="1"
                    showInStore="0">
                 <label>Log Setting</label>

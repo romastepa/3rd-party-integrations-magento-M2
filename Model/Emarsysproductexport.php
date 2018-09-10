@@ -7,18 +7,21 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
-use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Directory\Model\CurrencyFactory;
 
-use Magento\Framework\Model\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\{App\Config\ScopeConfigInterface,
+    Registry,
+    Model\Context,
+    Model\ResourceModel\AbstractResource,
+    Data\Collection\AbstractDb,
+    Model\AbstractModel
+};
 
-use Magento\Framework\Model\AbstractModel;
+use Magento\{
+    Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
+    Directory\Model\CurrencyFactory,
+    Store\Model\StoreManagerInterface
+};
 
 /**
  * Class Emarsysproductexport
@@ -131,6 +134,8 @@ class Emarsysproductexport extends AbstractModel
      * @param int|object $storeId
      * @param int $currentPageNumber
      * @param array $attributes
+     * @param $includeBundle
+     * @param $excludedCategories
      * @return object
      */
     public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle, $excludedCategories)

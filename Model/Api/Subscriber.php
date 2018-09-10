@@ -255,6 +255,7 @@ class Subscriber
      * @param $params
      * @param null $logId
      * @return bool
+     * @throws \Exception
      */
     public function syncMultipleSubscriber($exportMode, $params, $logId = null)
     {

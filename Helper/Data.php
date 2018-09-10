@@ -129,7 +129,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const XPATH_EMARSYS_CATALOG_EXPORT_API_URL_KEY = 'smart_insight/api_settings/smartinsight_product_api_url_key';
 
     //Product Catalog
-    const XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED = 'emarsys_predict/feed_export/enable_nightly_product_feed';
+    const XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED = 'emarsys_predict/enable/product_feed';
+
+    const XPATH_PREDICT_AVAILABILITY_STATUS = 'emarsys_predict/availability/status';
+
+    const XPATH_PREDICT_AVAILABILITY_IN_STOCK = 'emarsys_predict/availability/in_stock';
+
+    const XPATH_PREDICT_AVAILABILITY_VISIBILITY = 'emarsys_predict/availability/visibility';
 
     const XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT = 'emarsys_predict/feed_export/include_bundle_product';
 
@@ -1253,6 +1259,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $storeId
      * @param $cron
      * @param $entityType
+     * @throws \Exception
      */
     public function syncFail($customerId, $websiteId, $storeId, $cron, $entityType)
     {
@@ -2529,16 +2536,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             if (!$username || !$password || !$hostname || !$port) {
                 return $result;
             }
-            $result = $this->ftp->open(
-                array(
-                    'host' => $hostname,
-                    'port' => $port,
-                    'user' => $username,
-                    'password' => $password,
-                    'ssl' => $ftpSsl ? true : false,
-                    'passive' => $passiveMode ? true : false
-                )
-            );
+            $result = $this->ftp->open([
+                'host' => $hostname,
+                'port' => $port,
+                'user' => $username,
+                'password' => $password,
+                'ssl' => $ftpSsl ? true : false,
+                'passive' => $passiveMode ? true : false
+            ]);
         } catch (\Exception $e) {
             $this->addErrorLog($e->getMessage(), $store->getId(), 'checkFtpConnection');
         }

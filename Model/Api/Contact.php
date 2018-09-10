@@ -119,7 +119,7 @@ class Contact
      * @param StoreManagerInterface $storeManager
      * @param QueueFactory $queueModel
      * @param MessageManagerInterface $messageManager
-     * @param EmarsysCronHelper $cronhelper
+     * @param EmarsysCronHelper $cronHelper
      * @param Subscriber $subscriberApi
      * @param EmarsysLogger $emarsysLogger
      */
@@ -136,7 +136,7 @@ class Contact
         StoreManagerInterface $storeManager,
         QueueFactory $queueModel,
         MessageManagerInterface $messageManager,
-        EmarsysCronHelper $cronhelper,
+        EmarsysCronHelper $cronHelper,
         Subscriber $subscriberApi,
         EmarsysLogger $emarsysLogger
     ) {
@@ -152,7 +152,7 @@ class Contact
         $this->storeManager = $storeManager;
         $this->queueModel = $queueModel;
         $this->messageManager = $messageManager;
-        $this->cronHelper = $cronhelper;
+        $this->cronHelper = $cronHelper;
         $this->subscriberApi = $subscriberApi;
         $this->emarsysLogger = $emarsysLogger;
     }
@@ -162,9 +162,11 @@ class Contact
      * @param $websiteId
      * @param $storeId
      * @param int $cron
+     * @param bool $forceMagentoIDAsKeyID
+     * @param int $subscriberId
+     * @throws \Exception
      */
-    public function syncContact($customerId, $websiteId, $storeId, $cron = 0, $forceMagentoIDAsKeyID = false,
-                                 $subscriberId = 0)
+    public function syncContact($customerId, $websiteId, $storeId, $cron = 0, $forceMagentoIDAsKeyID = false, $subscriberId = 0)
     {
         $objCustomer = $this->customer->load($customerId);
         $arrCustomer = $objCustomer->getData();
@@ -298,7 +300,7 @@ class Contact
      * @param $storeId
      * @param $mode
      * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Exception
      */
     public function syncMultipleContacts($customer, $storeId, $mode)
     {
@@ -504,7 +506,7 @@ class Contact
      * @param $data
      * @param null $logId
      * @return bool
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Exception
      */
     public function preparePayloadAndSyncMultipleContacts($exportMode, $data, $logId = null)
     {
@@ -515,8 +517,8 @@ class Contact
         } else {
             $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
         }
-        $fromDate = isset($data['fromDate']) ? $data['fromDate'] : '';
-        $toDate = isset($data['toDate']) ? $data['toDate'] : '';
+        $fromDate = isset($data['fromDate']) ? $data['fromDate'] . ' 00:00:01' : '';
+        $toDate = isset($data['toDate']) ? $data['toDate'] . ' 23:59:59' :  $this->date->date('Y-m-d') . ' 23:59:59';
 
         $params = [
             'website' => $websiteId,
@@ -578,7 +580,6 @@ class Contact
                 $customerChunks = array_chunk($allCustomersPayload, self::BATCH_SIZE);
                 foreach ($customerChunks as $customerChunk) {
                     //prepare customers payload
-                    $buildRequest = [];
                     $buildRequest = $this->prepareCustomerPayload($customerChunk, $storeId);
                     if (count($buildRequest) > 0) {
                         $logsArray['emarsys_info'] = 'Send customers to Emarsys';
@@ -698,8 +699,8 @@ class Contact
         } else {
             $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
         }
-        $fromDate = isset($data['fromDate']) ? $data['fromDate'] : '';
-        $toDate = isset($data['toDate']) ? $data['toDate'] : '';
+        $fromDate = isset($data['fromDate']) ? $data['fromDate'] . ' 00:00:01' : '';
+        $toDate = isset($data['toDate']) ? $data['toDate'] . ' 23:59:59' :  $this->date->date('Y-m-d') . ' 23:59:59';
 
         $params = [
             'website' => $websiteId,
@@ -755,8 +756,8 @@ class Contact
 
         switch ($exportMode) {
             case EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE:
-                $subscriberExportStatus = $this->subscriberApi->syncMultipleSubscriber($exportMode, $data, $logId);
                 $customerExportStatus = $this->preparePayloadAndSyncMultipleContacts($exportMode, $data, $logId);
+                $subscriberExportStatus = $this->subscriberApi->syncMultipleSubscriber($exportMode, $data, $logId);
 
                 if ($subscriberExportStatus && $customerExportStatus) {
                     $errorStatus = false;
