@@ -432,6 +432,7 @@ class Contact
      * @param $customerId
      * @param $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getCustomerPayload($customerId, $storeId)
     {

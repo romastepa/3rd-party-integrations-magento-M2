@@ -343,24 +343,24 @@
                 </field>
             </group>
             <group id="availability" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Availability</label>
+                <label>Settings for product availability:</label>
                 <field id="status" translate="label comment" type="select" sortOrder="10"
                        showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Product</label>
+                    <label>Product Status (Enable/Disable)</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If YES, - will be exported all products except of DISABLED</comment>
+                    <comment>Consider Status [ YES / NO  ] if NO, status will be ignored</comment>
                 </field>
                 <field id="in_stock" translate="label comment" type="select" sortOrder="20"
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Is In Stock</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If YES, - will be exported all products except of OUT OF STOCK</comment>
+                    <comment>Consider Stock Level [ YES / NO  ] if NO, in stock will be ignored</comment>
                 </field>
                 <field id="visibility" translate="label comment" type="select" sortOrder="30"
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Visibility</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If YES, - will be exported all products except of NOT VISIBLE INDIVIDUALLY</comment>
+                    <comment>Consider Visibility [ YES / NO ] If NO, product visibility will be ignored</comment>
                 </field>
                 <depends>
                     <field id="emarsys_predict/enable/product_feed">1</field>
