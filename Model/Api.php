@@ -52,7 +52,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
      * @param string $method
      * @param array $data
      * @param bool $jsonDecode
-     * @return string
+     * @return array
      * @throws \Exception
      * @throws \Zend_Http_Client_Exception
      */
@@ -64,7 +64,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
             'Accept-encoding' => 'utf-8',
             'X-WSSE' => $this->_getWSSEHeader()
         ]);
-        $response = '';
+        $response = [];
         try {
             if ($method == "GET" && !(empty($data))) {
                 $this->setParameterGet($data);
@@ -76,7 +76,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
             $responseObject = $this->request($method);
             $response = $responseObject->getBody();
             if ($jsonDecode) {
-                $response = json_decode($response);
+                $response = json_decode($response, true);
             }
         } catch (\Exception $e) {
             
@@ -87,7 +87,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     /**
      * @param $apiCall
      * @param array $data
-     * @return string
+     * @return array
      * @throws \Exception
      */
     public function post($apiCall, $data = [])
@@ -101,7 +101,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     /**
      * @param $apiCall
      * @param array $data
-     * @return string
+     * @return array
      * @throws \Exception
      */
     public function put($apiCall, $data = [])
@@ -116,7 +116,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
      * @param $apiCall
      * @param array $data
      * @param bool $jsonDecode
-     * @return string
+     * @return array
      * @throws \Exception
      */
     public function get($apiCall, $data = [], $jsonDecode = true)
@@ -125,7 +125,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     }
 
     /**
-     * @return string
+     * @return array
      * @throws \Exception
      */
     public function ping()
