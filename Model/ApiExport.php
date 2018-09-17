@@ -7,14 +7,20 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Framework\HTTP\ZendClient;
-use Emarsys\Emarsys\Helper\Data;
-use Magento\Framework\Controller\Result\RawFactory;
-use Magento\Framework\File\Csv;
+use Magento\Framework\{
+    HTTP\ZendClient,
+    Controller\Result\RawFactory,
+    File\Csv,
+    Serialize\Serializer\Json
+};
+
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Order as OrderResourceModel;
-use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
+
+use Emarsys\Emarsys\{
+    Helper\Data,
+    Model\ResourceModel\Order as OrderResourceModel,
+    Model\ResourceModel\Product as ProductResourceModel
+};
 
 /**
  * Class ApiExport
@@ -57,9 +63,9 @@ class ApiExport extends ZendClient
     protected $storeManagerInterface;
 
     /**
-     * @var JsonHelper
+     * @var Json
      */
-    protected $jasonHelper;
+    protected $json;
 
     /**
      * @var OrderResourceModel
@@ -77,7 +83,7 @@ class ApiExport extends ZendClient
      * @param RawFactory $resultRawFactory
      * @param Csv $csvWriter
      * @param StoreManagerInterface $storeManagerInterface
-     * @param JsonHelper $jsonHelper
+     * @param Json $json
      * @param OrderResourceModel $orderResourceModel
      * @param ProductResourceModel $productResourceModel
      */
@@ -86,7 +92,7 @@ class ApiExport extends ZendClient
         RawFactory $resultRawFactory,
         Csv $csvWriter,
         StoreManagerInterface $storeManagerInterface,
-        JsonHelper $jsonHelper,
+        Json $json,
         OrderResourceModel $orderResourceModel,
         ProductResourceModel $productResourceModel
     ) {
@@ -94,7 +100,7 @@ class ApiExport extends ZendClient
         $this->resultRawFactory = $resultRawFactory;
         $this->csvWriter = $csvWriter;
         $this->storeManagerInterface = $storeManagerInterface;
-        $this->jasonHelper = $jsonHelper;
+        $this->json = $json;
         $this->orderResourceModel = $orderResourceModel;
         $this->productResourceModel = $productResourceModel;
     }
@@ -137,6 +143,7 @@ class ApiExport extends ZendClient
      * @param $apiUrl
      * @param $filePath
      * @return array
+     * @throws \Zend_Http_Client_Exception
      */
     public function apiExport($apiUrl, $filePath)
     {
@@ -191,7 +198,7 @@ class ApiExport extends ZendClient
             $responseObject = $this->request($method);
             $response = $responseObject;
             if ($jsonDecode) {
-                $response = $this->jasonHelper->jsonDecode($response);
+                $response = $this->json->unserialize($response);
             }
         } catch (\Exception $e) {
             $storeId = $this->storeManagerInterface->getStore()->getId();
@@ -209,6 +216,7 @@ class ApiExport extends ZendClient
      * @param $apiCall
      * @param array $data
      * @return mixed|string|\Zend_Http_Response
+     * @throws \Zend_Http_Client_Exception
      */
     public function post($apiCall, $data = [])
     {
@@ -336,7 +344,10 @@ class ApiExport extends ZendClient
      * Test Smart Insight API Credentials
      *
      * @param $storeId
-     * @return string
+     * @return array
+     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Http_Client_Exception
      */
     public function testSIExportApi($storeId)
     {
@@ -348,6 +359,9 @@ class ApiExport extends ZendClient
      *
      * @param $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Http_Client_Exception
      */
     public function testCatalogExportApi($storeId)
     {
@@ -359,6 +373,9 @@ class ApiExport extends ZendClient
      *
      * @param $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Http_Client_Exception
      */
     private function testApiExport($entityType, $storeId)
     {
@@ -401,7 +418,10 @@ class ApiExport extends ZendClient
 
         $this->_apiUrl = $apiUrl = $this->getApiUrl($entityType);
         $result = $this->apiExport($apiUrl, $filePath);
-        unlink($filePath);
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
 
         if (!$result['result'] && $result['status'] == 400) {
             $result['result'] = 1;

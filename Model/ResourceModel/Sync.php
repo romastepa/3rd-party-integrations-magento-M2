@@ -103,21 +103,30 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $connection = $this->getConnection();
 
+        $table = false;
         if ($entity == 'product') {
-            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_product_attributes')  . " where store_id =" . $storeId);
+            $table = $this->getTable('emarsys_emarsys_product_attributes');
         }
         if ($entity == 'customer') {
-            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_customer_attributes') . " where store_id =" . $storeId);
+            $table = $this->getTable('emarsys_emarsys_customer_attributes');
         }
         if ($entity == 'order') {
-            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_order_attributes') . " where store_id =" . $storeId);
+            $table = $this->getTable('emarsys_emarsys_order_attributes');
         }
 
         if ($entity == 'customproductattributes') {
-            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_custom_product_attributes') . " where store_id =" . $storeId);
+            $table = $this->getTable('emarsys_custom_product_attributes');
         }
 
-        return $results;
+        if ($table) {
+            $select = $connection->getSelect()
+                ->from($table)
+                ->where('store_id = ?', $storeId);
+
+            return $connection->fetchAll($select);
+        }
+
+        return [];
     }
 
     /**
@@ -131,9 +140,18 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         if ($storeId == null) {
             $storeId = 1;
         }
-        $sql = "SELECT  DATE_FORMAT(max(`finished_at`),'%Y-%m-%d %H:%i:%s') as syncdate FROM " . $this->getTable('emarsys_syncstatus') . " WHERE `id` = ( SELECT MAX(`id`) FROM " . $this->getTable('emarsys_syncstatus') . "  WHERE `status`='SUCCESS' and  `sync_id` = " . $syncId . " and `store_id` = " . $storeId . ")";
+        $subselect = $this->getConnection()->select()
+            ->from($this->getTable('emarsys_syncstatus'), 'SELECT MAX(id)')
+            ->where('status = ?', 'SUCCESS')
+            ->where('sync_id = ?', '$syncId')
+            ->where('store_id = ?', $storeId);
+
+        $select = $this->getConnection()->select()
+            ->from($this->getTable('emarsys_syncstatus'), ['syncdate' => 'DATE_FORMAT(MAX(finished_at), "%Y-%m-%d %H:%i:%s")'])
+            ->where('id in (?)', $subselect);
+
         try {
-            $lastsyncDate = $this->getConnection()->fetchOne($sql);
+            $lastsyncDate = $this->getConnection()->fetchOne($select);
             if ($lastsyncDate == null || $lastsyncDate == '') {
                 $lastsyncDate = $this->date->date('Y-m-d H:i:s', strtotime('-5 days'));
             }

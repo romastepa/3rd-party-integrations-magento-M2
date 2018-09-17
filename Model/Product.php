@@ -16,7 +16,6 @@ use Magento\Framework\{
     Message\ManagerInterface as MessageManagerInterface,
     Data\Collection\AbstractDb,
     Stdlib\DateTime\DateTime,
-    App\Config\ScopeConfigInterface,
     App\Filesystem\DirectoryList,
     File\Csv
 };
@@ -31,10 +30,7 @@ use Magento\Catalog\{
 };
 
 
-use Magento\Store\Model\{
-    StoreManagerInterface,
-    ScopeInterface
-};
+use Magento\Store\Model\StoreManagerInterface;
 
 use Emarsys\Emarsys\Helper\{
     Logs as EmarsysHelperLogs,
@@ -120,11 +116,6 @@ class Product extends AbstractModel
     protected $emarsysHelper;
 
     /**
-     * @var ScopeConfigInterface
-     */
-    protected $scopeConfig;
-
-    /**
      * @var Csv
      */
     protected $csvWriter;
@@ -170,7 +161,6 @@ class Product extends AbstractModel
      * @param StoreManagerInterface $storeManager
      * @param EavConfig $eavConfig
      * @param EmarsysDataHelper $emarsysHelper
-     * @param ScopeConfigInterface $scopeConfig
      * @param Csv $csvWriter
      * @param DirectoryList $directoryList
      * @param ApiExport $apiExport
@@ -195,7 +185,6 @@ class Product extends AbstractModel
         StoreManagerInterface $storeManager,
         EavConfig $eavConfig,
         EmarsysDataHelper $emarsysHelper,
-        ScopeConfigInterface $scopeConfig,
         Csv $csvWriter,
         DirectoryList $directoryList,
         ApiExport $apiExport,
@@ -217,7 +206,6 @@ class Product extends AbstractModel
         $this->categoryFactory = $categoryFactory;
         $this->eavConfig =  $eavConfig;
         $this->emarsysHelper =  $emarsysHelper;
-        $this->scopeConfig = $scopeConfig;
         $this->csvWriter = $csvWriter;
         $this->directoryList = $directoryList;
         $this->apiExport = $apiExport;
@@ -354,14 +342,9 @@ class Product extends AbstractModel
                     $logsArray['message_type'] = 'Success';
                     $this->logsHelper->logs($logsArray);
 
-                    list($csvFilePath, $outputFile) = $this->productExportModel->saveToCsv($websiteId, $logsArray);
-                    $bulkDir = $this->customerResourceModel->getDataFromCoreConfig(
-                        EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR, 
-                        ScopeInterface::SCOPE_WEBSITES, 
-                        $websiteId
-                    );
-
-                    $outputFile = $bulkDir . $outputFile;
+                    $csvFilePath = $this->productExportModel->saveToCsv($websiteId, $logsArray);
+                    $bulkDir = $store['store']->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
+                    $outputFile = $bulkDir . 'products_' . $websiteId . '.csv';
                     $uploaded = $this->moveFile($store['store'], $outputFile, $csvFilePath, $logsArray, $mode);
                     if ($uploaded) {
                         $logsArray['emarsys_info'] = __('Data for was uploaded');
@@ -420,7 +403,7 @@ class Product extends AbstractModel
     {
         $result = true;
         $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED);
-
+        $url = $this->emarsysHelper->getEmarsysMediaUrlPath('product', $csvFilePath);
         if ($apiExportEnabled) {
             $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
             //get token from admin configuration
@@ -434,11 +417,10 @@ class Product extends AbstractModel
 
             //Export CSV to API
             $apiExportResult = $this->apiExport->apiExport($apiUrl, $csvFilePath);
-
             if ($apiExportResult['result'] == 1) {
                 //successfully uploaded file on Emarsys
                 $logsArray['emarsys_info'] = __('File uploaded to Emarsys');
-                $logsArray['description'] = __('File uploaded to Emarsys. File Name: %1. API Export result: %2', $csvFilePath, $apiExportResult['resultBody']);
+                $logsArray['description'] = __('File uploaded to Emarsys. File Name: %1. API Export result: %2', $url, $apiExportResult['resultBody']);
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
                 $this->_errorCount = false;
@@ -452,7 +434,7 @@ class Product extends AbstractModel
                 $this->_errorCount = true;
                 $msg = isset($apiExportResult['resultBody']) ? $apiExportResult['resultBody'] : '';
                 $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
-                $logsArray['description'] = __('Failed to upload file on Emarsys. %1' , $msg);
+                $logsArray['description'] = __('Failed to upload %1 on Emarsys. %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
                 if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
@@ -467,7 +449,7 @@ class Product extends AbstractModel
                 //successfully uploaded the file on ftp
                 $this->_errorCount = false;
                 $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
-                $logsArray['description'] = $outputFile;
+                $logsArray['description'] = $url . ' > ' . $outputFile;
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
                 if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
@@ -481,7 +463,7 @@ class Product extends AbstractModel
                 $errorMessage = error_get_last();
                 $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
                 $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
-                $logsArray['description'] = __('Failed to upload file on FTP server %1' , $msg);
+                $logsArray['description'] = __('Failed to upload %1 on FTP server %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
                 if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
@@ -492,9 +474,8 @@ class Product extends AbstractModel
                 $result = false;
             }
         }
-        if (file_exists($csvFilePath)) {
-            unlink($csvFilePath);
-        }
+
+        $this->emarsysHelper->removeFilesInFolder($this->emarsysDataHelper->getEmarsysMediaDirectoryPath('product'));
 
         return $result;
     }

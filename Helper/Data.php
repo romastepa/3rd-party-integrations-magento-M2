@@ -6,38 +6,47 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Stdlib\DateTime\Timezone;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as ModelResourceModelCustomer;
-use Emarsys\Emarsys\Model\Queue;
-use Magento\Framework\App\ProductMetadataInterface;
-use Emarsys\Emarsys\Model\QueueFactory as EmarsysQueueFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory;
-use Emarsys\Emarsys\Model\PlaceholdersFactory;
-use Emarsys\Emarsys\Controller\Adminhtml\Email\Template;
+use Magento\Framework\{
+    App\Filesystem\DirectoryList,
+    App\Helper\Context,
+    App\ProductMetadataInterface,
+    Filesystem\Io\File as FilesystemIoFile,
+    Filesystem\Io\Ftp,
+    Stdlib\DateTime\DateTime,
+    Stdlib\DateTime\Timezone,
+    Module\ModuleListInterface
+};
+use Magento\Store\{
+    Model\StoreManagerInterface,
+    Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory,
+    Model\ScopeInterface
+};
+use Magento\Newsletter\Model\{
+    ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory,
+    Subscriber,
+    SubscriberFactory
+};
 use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory;
-use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory;
-use Emarsys\Emarsys\Model\Api as EmarsysApi;
-use Emarsys\Emarsys\Model\Emarsysevents;
-use Emarsys\Emarsys\Model\ResourceModel\Event as ModelResourceModelEvent;
 use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
 use Magento\Backend\Model\Session as BackendSession;
-use Emarsys\Emarsys\Model\EmarsyseventsFactory;
-use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Magento\Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
-use Magento\Framework\Module\ModuleListInterface;
-use Magento\Newsletter\Model\ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory;
-use Magento\Newsletter\Model\Subscriber;
-use Magento\Newsletter\Model\SubscriberFactory;
-use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\Filesystem\Io\File as FilesystemIoFile;
-use Magento\Store\Model\ScopeInterface;
-use Magento\Framework\Filesystem\Io\Ftp;
+
+use Emarsys\Emarsys\Model\{
+    ResourceModel\Customer as ModelResourceModelCustomer,
+    Queue,
+    QueueFactory as EmarsysQueueFactory,
+    ResourceModel\Emarsysmagentoevents\CollectionFactory,
+    PlaceholdersFactory,
+    EmarsyseventmappingFactory,
+    ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory,
+    Api as EmarsysApi,
+    Emarsysevents,
+    ResourceModel\Event as ModelResourceModelEvent,
+    EmarsyseventsFactory,
+    Api\Api as EmarsysApiApi,
+    Logs as EmarsysModelLogs
+};
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Controller\Adminhtml\Email\Template;
 
 /**
  * Class Data
@@ -101,6 +110,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const XPATH_OPTIN_EVERYPAGE_STRATEGY = 'opt_in/optin_enable/opt_in_strategy';
 
     const XPATH_OPTIN_FORCED_CONFIRMATION = 'opt_in/optin_enable/force_optin_confirmation';
+
+    const XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS = 'opt_in/subscription_checkout_process/newsletter_sub_checkout_yes_no';
 
     //Smart Insight
     const XPATH_SMARTINSIGHT_ENABLED = 'smart_insight/smart_insight/smartinsight_enabled';
@@ -627,20 +638,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @return \Magento\Framework\HTTP\ZendClient
+     * @return EmarsysApi
      */
     public function getClient()
     {
-        $url = $this->_emarsysApiUrl;
-        $username = $this->_username;
-        $password = $this->_secret;
-        $config = [
-            'api_url' => $url,
-            'api_username' => $username,
-            'api_password' => $password,
-        ];
+        $this->modelApi->setParams([
+            'api_url' => $this->_emarsysApiUrl,
+            'api_username' => $this->_username,
+            'api_password' => $this->_secret,
+        ]);
 
-        return $this->modelApi->setParams($config);
+        return $this->modelApi;
     }
 
     /**
@@ -2175,8 +2183,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 'field_id' => $fieldId
             ];
             $this->getEmarsysAPIDetails($subscriber->getStoreId());
-            $this->getClient();
-            $response = $this->modelApi->get('contact/last_change', $payload);
+            $response =  $this->getClient()->get('contact/last_change', $payload);
 
             if (isset($response['data']['time'])) {
                 $emarsysTime = $response['data']['time'];
@@ -2289,8 +2296,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 'fieldId' => $fieldId
             ];
             $this->getEmarsysAPIDetails($storeId);
-            $this->getClient();
-            $response = $this->modelApi->post('contact/last_change', $payload);
+            $response = $this->getClient()->post('contact/last_change', $payload);
 
             if (isset($response['data']['result'])) {
                 $emarsysSubscribers = $response['data']['result'];
@@ -2344,6 +2350,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @param array $websiteIds
      * @param bool $isTimeBased
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function importSubscriptionUpdates(array $websiteIds, $isTimeBased = false)
     {
@@ -2360,7 +2367,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $logsArray['store_id'] = $this->storeManager->getWebsite(current($websiteIds))->getDefaultStore()->getId();
             $logId = $this->logHelper->manualLogs($logsArray);
             $this->getEmarsysAPIDetails(current($websiteIds));
-            $this->getClient();
 
             if ($this->isEmarsysEnabled(current($websiteIds))) {
                 $offset = 0;
@@ -2374,7 +2380,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
                     $apiCall = sprintf('export/%s/data/offset=%s&limit=%s', $exportId, $offset, $limit);
                     $mesage = "Request "  . $apiCall;
-                    $response = $this->modelApi->get($apiCall, [], false);
+                    $response = $this->getClient()->get($apiCall, [], false);
                     $mesage .= "Response "  . $response;
 
                     $this->logHelper->childLogs($logId, $mesage, current($websiteIds));
@@ -2592,6 +2598,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @param $folderName
      * @return bool
+     * @throws \Exception
      */
     public function checkAndCreateFolder($folderName)
     {
@@ -2607,10 +2614,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @param $folderName
      * @return string
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function getEmarsysMediaDirectoryPath($folderName)
     {
         return $this->directoryList->getPath(DirectoryList::MEDIA) . '/emarsys/' . $folderName;
+    }
+
+    /**
+     * @param $folderName
+     * @param $csvFilePath
+     * @return string
+     */
+    public function getEmarsysMediaUrlPath($folderName, $csvFilePath)
+    {
+        return $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
+            . '/emarsys/' . $folderName . '/' . basename($csvFilePath);
     }
 
     /**
@@ -2684,5 +2703,27 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function addErrorLog($messages, $storeId, $info)
     {
         return $this->emarsysLogs->addErrorLog($messages, $storeId, $info);
+    }
+
+    /**
+     * @param string $fileDirectory
+     * @return bool
+     */
+    public function removeFilesInFolder($fileDirectory)
+    {
+        if ($handle = opendir($fileDirectory)) {
+            while (false !== ($file = readdir($handle))) {
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
+                $filePath = $fileDirectory . '/' . $file;
+                $fileLastModified = filemtime($filePath);
+                if ((time() - $fileLastModified) > 3*24*3600) {
+                    unlink($filePath);
+                }
+            }
+            closedir($handle);
+        }
+        return true;
     }
 }

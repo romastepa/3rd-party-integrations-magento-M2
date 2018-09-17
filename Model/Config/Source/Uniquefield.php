@@ -19,7 +19,7 @@ class Uniquefield implements \Magento\Framework\Option\ArrayInterface
     {
         return [
             ['value' => 'email', 'label' => __('Email')],
-            ['value' => 'magento_id', 'label' => __('Magento Id')],
+            ['value' => 'magento_id', 'label' => __('Email#WebsiteId')],
             ['value' => 'unique_id', 'label' => __('Email#WebsiteId#StoreId')]
         ];
     }

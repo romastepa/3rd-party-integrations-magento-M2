@@ -207,6 +207,7 @@ class Customer extends AbstractDb
      * @param $storeId
      * @param $entityType
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function checkSelectedField($magentoAttributeCode, $emarsysContactId, $storeId, $entityType)
     {
@@ -375,6 +376,7 @@ class Customer extends AbstractDb
     /**
      * @param $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function fetchMappedFields($storeId)
     {
@@ -394,8 +396,8 @@ class Customer extends AbstractDb
                 ['eav.attribute_code', 'eav.frontend_label', 'eav.frontend_input', 'eav.source_model']
             )
             ->where('ecfm.store_id = ?', $storeId);
-        $mappedFields = $this->getConnection()->fetchAll($select);
-        return $mappedFields;
+
+        return $this->getConnection()->fetchAll($select);
     }
 
     /**
@@ -445,7 +447,8 @@ class Customer extends AbstractDb
             }
         }
         $customCollection->setOrder('main_table.entity_type_id', 'asc');
-        return $customCollection->getData();
+
+        return $customCollection;
     }
 
     /**
@@ -476,11 +479,7 @@ class Customer extends AbstractDb
             }
         }
 
-        if ($customers) {
-            return $customers->getData();
-        }
-
-        return false;
+        return $customers;
     }
 
     /**

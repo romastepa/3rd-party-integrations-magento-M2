@@ -166,40 +166,18 @@ class SendEmail extends AbstractModel
                             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
                             $buildRequest[$buildRequest['key_id']] = $externalId;
                         } elseif ($keyField == 'magento_id') {
-                            //check customer exists in magento
-                            $customerId = $this->customerResourceModel->checkCustomerExistsInMagento(
-                                $externalId,
-                                $websiteId,
-                                $storeId
-                            );
-
-                            $data = [
-                                'email' => $externalId,
-                                'storeId' => $storeId
-                            ];
-                            $subscribeId = $this->customerResourceModel->getSubscribeIdFromEmail($data);
-
-                            //if customer exists
                             if (!empty($customerId)) {
                                 $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
-                                $buildRequest[$buildRequest['key_id']] = $customerId;
                             } elseif (!empty($subscribeId)) {
                                 $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId);
-                                $buildRequest[$buildRequest['key_id']] = $subscribeId;
                             } else {
                                 $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
-                                $buildRequest[$buildRequest['key_id']] = $externalId;
                             }
+                            $buildRequest[$buildRequest['key_id']] = $externalId . "#" . $websiteId;
                         } elseif ($keyField == 'unique_id') {
                             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
                             $buildRequest[$buildRequest['key_id']] = $externalId . "#" . $websiteId . "#" . $storeId;
                         }
-
-                        $emailKeyId = $this->customerResourceModel->getKeyId('Email', $storeId);
-                        $buildRequest[$emailKeyId] = $externalId;
-
-			            $uniqueKeyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
-                        $buildRequest[$uniqueKeyId] = $externalId . "#" . $websiteId . "#" . $storeId;
 
                         //log information that is about to send for contact sync
                         $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);

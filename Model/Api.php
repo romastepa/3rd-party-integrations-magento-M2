@@ -7,8 +7,6 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Framework\Json\Helper\Data as JsonHelperData;
-
 /**
  * Class Api
  * @package Emarsys\Emarsys\Model
@@ -18,22 +16,6 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     public $_apiUrl;
     public $_username;
     public $_password;
-    public $jasonHelper;
-
-    /**
-     * @param $params
-     * @param JsonHelperData $jasonHelper
-     * @return \Magento\Framework\HTTP\ZendClient
-     */
-    public function _construct($params, JsonHelperData $jasonHelper)
-    {
-        $this->jasonHelper = $jasonHelper;
-        $this->_apiUrl = $params['api_url'];
-        $this->_username = $params['api_username'];
-        $this->_password = $params['api_password'];
-        $this->config['timeout'] = 60;
-        return parent::__construct($this->_apiUrl, $config = null);
-    }
 
     /**
      * @param $params
@@ -77,29 +59,27 @@ class Api extends \Magento\Framework\HTTP\ZendClient
     protected function _request($apiCall, $method = 'GET', $data = [], $jsonDecode = true)
     {
         $this->setUri($this->_apiUrl . $apiCall);
-        $this->setHeaders(
-            [
-                'Content-Type' => 'application/json',
-                'Accept-encoding' => 'utf-8',
-                'X-WSSE' => $this->_getWSSEHeader()
-            ]
-        );
+        $this->setHeaders([
+            'Content-Type' => 'application/json',
+            'Accept-encoding' => 'utf-8',
+            'X-WSSE' => $this->_getWSSEHeader()
+        ]);
         $response = '';
         try {
             if ($method == "GET" && !(empty($data))) {
                 $this->setParameterGet($data);
             } else {
                 if (!empty($data)) {
-                    $this->setRawData($this->jasonHelper->jsonEncode($data));
+                    $this->setRawData(json_encode($data));
                 }
             }
             $responseObject = $this->request($method);
             $response = $responseObject->getBody();
             if ($jsonDecode) {
-                $response = $this->jasonHelper->jsonDecode($response);
+                $response = json_decode($response);
             }
         } catch (\Exception $e) {
-            throw $e;
+            
         }
         return $response;
     }
@@ -146,11 +126,10 @@ class Api extends \Magento\Framework\HTTP\ZendClient
 
     /**
      * @return string
+     * @throws \Exception
      */
     public function ping()
     {
-        $result = 1;
-        $response = $this->get('settings');
-        return $response;
+        return $this->get('settings');
     }
 }

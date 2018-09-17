@@ -6,17 +6,19 @@
  */
 namespace Emarsys\Emarsys\Controller\Index;
 
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\Json\Helper\Data;
+use Magento\{
+    Framework\App\Action\Context,
+    Framework\Serialize\Serializer\Json,
+    Store\Model\StoreManagerInterface
+};
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Store\Model\StoreManagerInterface;
 
 class AjaxUpdateCart extends \Magento\Framework\App\Action\Action
 {
     /**
-     * @var Data
+     * @var Json
      */
-    protected $jsonHelper;
+    protected $json;
 
     /**
      * @var Logs
@@ -31,17 +33,17 @@ class AjaxUpdateCart extends \Magento\Framework\App\Action\Action
     /**
      * AjaxUpdate constructor.
      * @param Context $context
-     * @param Data $jsonHelper
+     * @param Json $json
      * @param Logs $emarsysLogs
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
-        Data $jsonHelper,
+        Json $json,
         Logs $emarsysLogs,
         StoreManagerInterface $storeManager
     ) {
-        $this->jsonHelper = $jsonHelper;
+        $this->json = $json;
         $this->storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
         parent::__construct($context);
@@ -75,7 +77,7 @@ class AjaxUpdateCart extends \Magento\Framework\App\Action\Action
         }
 
         $this->getResponse()->setHeader('Content-type', 'application/json');
-        $this->getResponse()->setBody($this->jsonHelper->jsonEncode($result));
+        $this->getResponse()->setBody($this->json->serialize($result));
     }
 }
 

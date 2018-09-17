@@ -6,10 +6,13 @@
  */
 namespace Emarsys\Emarsys\Plugin\Checkout\Model\Checkout;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Customer\Model\Session;
-use Magento\Newsletter\Model\SubscriberFactory;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\{
+    Framework\App\Config\ScopeConfigInterface,
+    Store\Model\StoreManagerInterface,
+    Customer\Model\Session,
+    Newsletter\Model\SubscriberFactory
+};
 
 /**
  * Class LayoutProcessor
@@ -67,13 +70,7 @@ class LayoutProcessor
     ) {
         $flag = 0;
         $store = $this->storeManagerInterface->getStore();
-        $storeCode = $store->getCode();
-        $websiteId = $store->getWebsiteId();
-        $newsLetterConfValue = $this->scopeConfigInterface->getValue(
-            'opt_in/subscription_checkout_process/newsletter_sub_checkout_yes_no',
-            $storeCode,
-            $websiteId
-        );
+        $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS);
         if ($this->session->isLoggedIn()) {
             $customerEmail = $this->session->getCustomer()->getEmail();
             $subColl = $this->subscriberFactory->create()->getCollection()

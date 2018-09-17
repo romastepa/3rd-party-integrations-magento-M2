@@ -6,13 +6,17 @@
  */
 namespace Emarsys\Emarsys\Model\WebDav;
 
-use Emarsys\Emarsys\Helper\Data;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Backend\App\Action\Context;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Helper\Logs;
-use Magento\Store\Model\ScopeInterface;
+use Magento\{
+    Framework\Stdlib\DateTime\DateTime,
+    Backend\App\Action\Context,
+    Store\Model\StoreManagerInterface,
+    Store\Model\ScopeInterface
+};
+use Emarsys\Emarsys\{
+    Model\ResourceModel\Customer,
+    Helper\Data,
+    Helper\Logs
+};
 
 /**
  * Class Subscriber
@@ -86,6 +90,8 @@ class Subscriber extends \Magento\Framework\DataObject
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
 
+        $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
+
         $store = $this->storeManager->getStore($storeId);
         $storeCode = $store->getCode();
         $data['storeId'] = $storeId;
@@ -121,13 +127,13 @@ class Subscriber extends \Magento\Framework\DataObject
             $emarsysFieldNames[] = 'Opt-In';
         }
 
-        $customervalues = $this->customerResourceModel->getSubscribedCustomerCollection(
+        $customerValues = $this->customerResourceModel->getSubscribedCustomerCollection(
             $data,
             implode(',', $websiteStoreIds),
             1
         );
 
-        if ($customervalues) {
+        if ($customerValues) {
             //webDav credentials from admin configurations
             $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($scope, $websiteId);
             if ($webDavCredentials && !empty($webDavCredentials)) {
@@ -149,11 +155,19 @@ class Subscriber extends \Magento\Framework\DataObject
                     //write header to subscribers csv
                     fputcsv($handle, $emarsysFieldNames);
 
-                    foreach ($customervalues as $value) {
+                    foreach ($customerValues as $value) {
                         $values = [];
                         $values[] = $value['subscriber_email'];
                         $values[] = $value['subscriber_id'];
-                        $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
+
+                        if ($keyField == 'email') {
+                            $values[] = $value['subscriber_email'];
+                        } elseif ($keyField == 'magento_id') {
+                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#";
+                        } elseif ($keyField == 'unique_id') {
+                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
+                        }
+
                         if ($optInStatus == 'true') {
                             $values[] = '1';
                         } elseif ($optInStatus == 'empty') {

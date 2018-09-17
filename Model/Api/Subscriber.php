@@ -6,19 +6,24 @@
  */
 namespace Emarsys\Emarsys\Model\Api;
 
-use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\App\ResourceConnection;
-use Emarsys\Emarsys\Model\QueueFactory;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Magento\Framework\Registry as Registry;
+use Emarsys\Emarsys\Model\{
+    ResourceModel\Customer as customerResourceModel,
+    QueueFactory
+};
+use Emarsys\Emarsys\Helper\{
+    Data as EmarsysHelperData,
+    Logs,
+    Cron as EmarsysCronHelper
+};
 use Emarsys\Emarsys\Logger\Logger as EmarsysLogger;
+use Magento\Framework\{
+    Stdlib\DateTime\DateTime,
+    Message\ManagerInterface as MessageManagerInterface,
+    App\ResourceConnection,
+    Registry as Registry
+};
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\Newsletter\Model\SubscriberFactory;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 
 /**
  * Class Subscriber
@@ -40,12 +45,12 @@ class Subscriber
     protected $api;
 
     /**
-     * @var
+     * @var customerResourceModel
      */
     protected $customerResourceModel;
 
     /**
-     * @var
+     * @var EmarsysHelperData
      */
     protected $dataHelper;
 
@@ -70,12 +75,7 @@ class Subscriber
     protected $queueModel;
 
     /**
-     * @var EmarsysModelLogs
-     */
-    protected $emarsysLogs;
-
-    /**
-     * @var
+     * @var Registry
      */
     protected $_registry;
 
@@ -90,6 +90,16 @@ class Subscriber
     protected $subscriberFactory;
 
     /**
+     * @var Logs
+     */
+    protected $logsHelper;
+
+    /**
+     * @var DateTime
+     */
+    protected $date;
+
+    /**
      * Subscriber constructor.
      * @param Api $api
      * @param customerResourceModel $customerResourceModel
@@ -100,7 +110,6 @@ class Subscriber
      * @param MessageManagerInterface $messageManager
      * @param ResourceConnection $resourceConnection
      * @param QueueFactory $queueModel
-     * @param EmarsysModelLogs $emarsysLogs
      * @param Registry $registry
      * @param EmarsysLogger $emarsysLogger
      * @param SubscriberFactory $subscriberFactory
@@ -115,7 +124,6 @@ class Subscriber
         MessageManagerInterface $messageManager,
         ResourceConnection $resourceConnection,
         QueueFactory $queueModel,
-        EmarsysModelLogs $emarsysLogs,
         Registry $registry,
         EmarsysLogger $emarsysLogger,
         SubscriberFactory $subscriberFactory
@@ -129,7 +137,6 @@ class Subscriber
         $this->messageManager = $messageManager;
         $this->resourceConnection = $resourceConnection;
         $this->queueModel = $queueModel;
-        $this->emarsysLogs = $emarsysLogs;
         $this->_registry = $registry;
         $this->emarsysLogger = $emarsysLogger;
         $this->subscriberFactory = $subscriberFactory;
@@ -140,10 +147,21 @@ class Subscriber
      * @param $storeId
      * @param null $frontendFlag
      * @param null $pageHandle
+     * @param int $websiteId
+     * @param int $cron
+     * @param bool $subscriberEmailChangeFlag
      * @return array
+     * @throws \Exception
      */
-    public function syncSubscriber($subscribeId, $storeId, $frontendFlag = null, $pageHandle = null, $websiteId = 1, $cron = 0, $subscriberEmailChangeFlag = false)
-    {
+    public function syncSubscriber(
+        $subscribeId,
+        $storeId,
+        $frontendFlag = null,
+        $pageHandle = null,
+        $websiteId = 1,
+        $cron = 0,
+        $subscriberEmailChangeFlag = false
+    ) {
         $_customerId = $this->_registry->registry('NewCustomerIdSet');
 
         $logsArray['job_code'] = 'subscriber';
@@ -169,25 +187,13 @@ class Subscriber
         if ($keyField == 'email') {
             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
             $buildRequest[$buildRequest['key_id']] = $arrCustomer['subscriber_email'];
-        } elseif ($keyField == 'magento_id' && isset($_customerId)) {
-            $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
-            $buildRequest[$buildRequest['key_id']] = $_customerId;
         } elseif ($keyField == 'magento_id') {
             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId);
-            $buildRequest[$buildRequest['key_id']] = $subscribeId;
+            $buildRequest[$buildRequest['key_id']] = $arrCustomer['subscriber_email'] . "#" . $websiteId;
         } elseif ($keyField == 'unique_id') {
             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
             $buildRequest[$buildRequest['key_id']] = $arrCustomer['subscriber_email'] . "#" . $websiteId . "#" . $storeId;
         }
-
-        $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
-        $buildRequest[$keyId] = $arrCustomer['subscriber_email'];
-
-        $keyId = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId);
-        $buildRequest[$keyId] = $subscribeId;
-
-        $keyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
-        $buildRequest[$keyId] = $arrCustomer['subscriber_email'] . "#" . $websiteId . "#" . $storeId;
 
         // Query to get opt-in Id in emarsys from magento table
         $optInEmarsysId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $storeId);
@@ -484,7 +490,7 @@ class Subscriber
                 $currentPageNumber = $currentPageNumber + 1;
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'updateLastModifiedContacts($collection,$storeId)');
+            $this->dataHelper->addErrorLog($e->getMessage(), $storeId, 'updateLastModifiedContacts($collection,$storeId)');
         }
     }
 }

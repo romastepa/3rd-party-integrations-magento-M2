@@ -6,18 +6,22 @@
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Orderexport;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\App\Request\Http;
-use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Emarsys\Emarsys\Model\EmarsysCronDetails;
-use Emarsys\Emarsys\Model\Logs;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Framework\App\Request\Http,
+    Framework\Message\ManagerInterface as MessageManagerInterface,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\Stdlib\DateTime\Timezone as TimeZone,
+    Store\Model\StoreManagerInterface
+};
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysDataHelper,
+    Helper\Cron as EmarsysCronHelper,
+    Model\Order as EmarsysOrderModel,
+    Model\EmarsysCronDetails,
+    Model\Logs
+};
 
 /**
  * Class OrderExport
@@ -152,7 +156,7 @@ class OrderExport extends Action
                     );
 
                     //check sales collection exist
-                    if ((!empty($orderCollection) && $orderCollection->getSize()) || ((!empty($creditMemoCollection)) && $creditMemoCollection->getSize())) {
+                    if ((!empty($orderCollection) && $orderCollection->getSize()) || (!empty($creditMemoCollection) && $creditMemoCollection->getSize())) {
                         $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
                         if (!$isCronjobScheduled) {
                             //no cron job scheduled yet, schedule a new cron job

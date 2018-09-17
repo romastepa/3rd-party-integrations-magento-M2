@@ -9,7 +9,8 @@ namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 
-use Magento\Framework\{App\Config\ScopeConfigInterface,
+use Magento\Framework\{
+    App\Config\ScopeConfigInterface,
     Registry,
     Model\Context,
     Model\ResourceModel\AbstractResource,
@@ -69,14 +70,9 @@ class Emarsysproductexport extends AbstractModel
     protected $csvWriter;
 
     /**
-     * @var \Magento\Framework\Filesystem\Io\File
+     * @var EmarsysDataHelper
      */
-    protected $ioFile;
-
-    /**
-     * @var \Magento\Framework\Filesystem\DirectoryList
-     */
-    protected $dir;
+    protected $emarsysDataHelper;
 
     /**
      * Emarsysproductexport constructor.
@@ -85,13 +81,12 @@ class Emarsysproductexport extends AbstractModel
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CurrencyFactory $currencyFactory
-     * @param \Magento\Framework\Filesystem\Io\File $ioFile
      * @param \Magento\Framework\File\Csv $csvWriter
-     * @param \Magento\Framework\Filesystem\DirectoryList $dir ,
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
+     * @param EmarsysDataHelper $emarsysDataHelper
      * @param array $data
      */
     public function __construct(
@@ -99,13 +94,12 @@ class Emarsysproductexport extends AbstractModel
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig,
         CurrencyFactory $currencyFactory,
-        \Magento\Framework\Filesystem\Io\File $ioFile,
         \Magento\Framework\File\Csv $csvWriter,
-        \Magento\Framework\Filesystem\DirectoryList $dir,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
+        EmarsysDataHelper $emarsysDataHelper,
         array $data = []
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
@@ -113,9 +107,8 @@ class Emarsysproductexport extends AbstractModel
         $this->scopeConfig = $scopeConfig;
         $this->logger = $context->getLogger();
         $this->currencyFactory = $currencyFactory;
-        $this->ioFile = $ioFile;
         $this->csvWriter = $csvWriter;
-        $this->dir = $dir;
+        $this->emarsysDataHelper = $emarsysDataHelper;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -188,7 +181,7 @@ class Emarsysproductexport extends AbstractModel
      * Save CSV for Website
      *
      * @param $websiteId
-     * @return array
+     * @return string
      * @throws \Exception
      */
     public function saveToCsv($websiteId)
@@ -197,14 +190,11 @@ class Emarsysproductexport extends AbstractModel
         $this->_preparedData = array();
         $this->_prepareData();
 
-        $path = $this->dir->getPath(\Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR) . '/export';
+        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath('product');
+        $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
 
-        if (!is_dir($path)) {
-            $this->ioFile->mkdir($path, 0775);
-        }
-
-        $name = 'products_' . $websiteId . '.csv';
-        $file = $path . '/' . $name;
+        $name = 'products_' . $websiteId . '_' . date('YmdHis') . '.csv';
+        $file = $fileDirectory . '/' . $name;
 
         $columnCount = count($this->_mapHeader);
         $emptyArray = array_fill(0, $columnCount, "");
@@ -220,7 +210,7 @@ class Emarsysproductexport extends AbstractModel
             ->setDelimiter(',')
             ->saveData($file, ([$this->_mapHeader] + $this->_preparedData));
 
-        return array($file, $name);
+        return $file;
     }
 
     /**

@@ -35,6 +35,11 @@ class Event extends AbstractHelper
     protected $dataHelper;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * Event constructor.
      * @param Data $dataHelper
      * @param EmarsysResourceModelEvent $resourceModelEvent
