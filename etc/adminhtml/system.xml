@@ -346,9 +346,9 @@
                 <label>Settings for product availability:</label>
                 <field id="status" translate="label comment" type="select" sortOrder="10"
                        showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Product Status (Enable/Disable)</label>
+                    <label>Product Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Consider Status [ YES / NO  ] if NO, status will be ignored</comment>
+                    <comment>Consider Product Enable [ YES / NO  ] if NO, product enable will be ignored</comment>
                 </field>
                 <field id="in_stock" translate="label comment" type="select" sortOrder="20"
                        showInDefault="1" showInWebsite="1" showInStore="0">
