@@ -2,14 +2,16 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
-use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\{
+    Model\Product as EmarsysProductModel,
+    Helper\Cron as EmarsysCronHelper,
+    Model\Logs
+};
+use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * Class ProductBulkExport
@@ -23,9 +25,9 @@ class ProductBulkExport
     protected $cronHelper;
 
     /**
-     * @var JsonHelper
+     * @var Json
      */
-    protected $jsonHelper;
+    protected $json;
 
     /**
      * @var EmarsysProductModel
@@ -41,18 +43,18 @@ class ProductBulkExport
      * ProductBulkExport constructor.
      *
      * @param EmarsysCronHelper $cronHelper
-     * @param JsonHelper $jsonHelper
+     * @param Json $json
      * @param EmarsysProductModel $emarsysProductModel
      * @param Logs $emarsysLogs
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
-        JsonHelper $jsonHelper,
+        Json $json,
         EmarsysProductModel $emarsysProductModel,
         Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
-        $this->jsonHelper = $jsonHelper;
+        $this->json = $json;
         $this->emarsysProductModel =  $emarsysProductModel;
         $this->emarsysLogs = $emarsysLogs;
     }
@@ -69,7 +71,7 @@ class ProductBulkExport
                 return;
             }
 
-            $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
+            $data = $this->json->unserialize($currentCronInfo->getParams());
             $includeBundle = $data['includeBundle'];
             $excludedCategories = $data['excludeCategories'];
 

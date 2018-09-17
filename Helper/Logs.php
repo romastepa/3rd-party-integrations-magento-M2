@@ -204,6 +204,7 @@ class Logs extends AbstractHelper
     /**
      * For saving Logs
      * @param array $logsArray
+     * @throws \Exception
      */
     public function logs($logsArray = [])
     {

@@ -80,7 +80,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
      * @param $storeId
      * @param $info
      */
-    public function addErrorLog($messages, $storeId, $info)
+    public function addErrorLog($messages = '', $storeId = 0, $info = '')
     {
         try {
             $logsArray['job_code'] = 'Exception';

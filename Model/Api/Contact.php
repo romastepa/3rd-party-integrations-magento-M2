@@ -6,18 +6,26 @@
  */
 namespace Emarsys\Emarsys\Model\Api;
 
-use Magento\Customer\Model\Customer;
-use Magento\Customer\Model\CustomerFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs;
-use Magento\Customer\Model\ResourceModel\Customer\Collection as CustomerCollection;
-use Emarsys\Emarsys\Helper\Country as EmarsysCountryHelper;
+use Magento\Customer\Model\{
+    Customer,
+    CustomerFactory,
+    ResourceModel\Customer\Collection as CustomerCollection
+};
+use Magento\Framework\{
+    Stdlib\DateTime\DateTime,
+    Message\ManagerInterface as MessageManagerInterface
+};
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\QueueFactory;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Helper\{
+    Data as EmarsysHelperData,
+    Logs,
+    Cron as EmarsysCronHelper,
+    Country as EmarsysCountryHelper
+};
+use Emarsys\Emarsys\Model\{
+    QueueFactory,
+    ResourceModel\Customer as customerResourceModel
+};
 use Emarsys\Emarsys\Logger\Logger as EmarsysLogger;
 
 /**
@@ -192,26 +200,16 @@ class Contact
             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
             $buildRequest[$buildRequest['key_id']] = $objCustomer->getEmail();
         } elseif ($keyField == 'magento_id') {
-            if($subscriberId > 0){
+            if ($subscriberId > 0){
                 $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId);
-                $buildRequest[$buildRequest['key_id']] = $subscriberId; // $subscriber->getId();
             } else {
                 $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
-                $buildRequest[$buildRequest['key_id']] = $customerId;
             }
+            $buildRequest[$buildRequest['key_id']] = $objCustomer->getEmail() . "#" . $websiteId;
         } elseif ($keyField == 'unique_id') {
             $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
             $buildRequest[$buildRequest['key_id']] = $objCustomer->getEmail() . "#" . $websiteId . "#" . $storeId;
         }
-
-        $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
-        $buildRequest[$keyId] = $objCustomer->getEmail();
-
-        $keyId = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
-        $buildRequest[$keyId] = $customerId;
-
-        $keyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
-        $buildRequest[$keyId] = $objCustomer->getEmail() . "#" . $websiteId . "#" . $storeId;
 
         $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
 
@@ -444,14 +442,18 @@ class Contact
         $arrCustomer = $objCustomer->getData();
         $customerData = [];
 
-        $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
-        $customerData[$keyId] = $objCustomer->getEmail();
+        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
 
-        $keyId = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
-        $customerData[$keyId] = $customerId;
-
-        $keyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
-        $customerData[$keyId] = $objCustomer->getEmail() . "#" . $websiteId . "#" . $storeId;
+        if ($keyField == 'email') {
+            $customerData['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
+            $customerData[$customerData['key_id']] = $objCustomer->getEmail();
+        } elseif ($keyField == 'magento_id') {
+            $customerData['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
+            $customerData[$customerData['key_id']] = $objCustomer->getEmail() . "#";
+        } elseif ($keyField == 'unique_id') {
+            $customerData['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
+            $customerData[$customerData['key_id']] = $objCustomer->getEmail() . "#" . $websiteId . "#" . $storeId;
+        }
 
         $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
 

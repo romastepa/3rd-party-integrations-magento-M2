@@ -6,18 +6,21 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysCustomerResourceModel;
-use Emarsys\Emarsys\Model\Api as EmarsysModelApi;
-use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysDataHelper,
+    Helper\Logs,
+    Model\ResourceModel\Customer as EmarsysCustomerResourceModel,
+    Model\Logs as EmarsysModelLogs
+};
+use Magento\Framework\{
+    App\Cache\TypeListInterface,
+    App\Config\ScopeConfigInterface,
+    App\Request\Http,
+    Stdlib\DateTime\DateTime,
+    Registry
+};
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\App\Request\Http;
-use Emarsys\Emarsys\Helper\Logs;
 use Magento\Config\Model\ResourceModel\Config;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Registry;
-use Magento\Framework\App\Cache\TypeListInterface;
 
 /**
  * Class SyncContactsSubscriptionData
@@ -61,11 +64,6 @@ class SyncContactsSubscriptionData
     protected $customerResourceModel;
 
     /**
-     * @var EmarsysModelApi
-     */
-    protected $modelApi;
-
-    /**
      * @var Http
      */
     protected $request;
@@ -94,7 +92,6 @@ class SyncContactsSubscriptionData
      * @param EmarsysModelLogs $emarsysLogs
      * @param EmarsysDataHelper $emarsysDataHelper
      * @param EmarsysCustomerResourceModel $customerResourceModel
-     * @param EmarsysModelApi $modelApi
      * @param Http $request
      * @param Registry $registry
      * @param Config $resourceConfig
@@ -108,7 +105,6 @@ class SyncContactsSubscriptionData
         EmarsysModelLogs $emarsysLogs,
         EmarsysDataHelper $emarsysDataHelper,
         EmarsysCustomerResourceModel $customerResourceModel,
-        EmarsysModelApi $modelApi,
         Http $request,
         Registry $registry,
         Config $resourceConfig,
@@ -121,7 +117,6 @@ class SyncContactsSubscriptionData
         $this->emarsysLogs = $emarsysLogs;
         $this->emarsysDataHelper = $emarsysDataHelper;
         $this->customerResourceModel = $customerResourceModel;
-        $this->modelApi = $modelApi;
         $this->request = $request;
         $this->registry = $registry;
         $this->resourceConfig = $resourceConfig;
@@ -188,7 +183,6 @@ class SyncContactsSubscriptionData
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['log_action'] = 'sync';
             $logsArray['emarsys_info'] = 'subscription information';
-            $client = $this->emarsysDataHelper->getClient();
 
             $dt = (new \Zend_Date());
             if ($isTimeBased) {
@@ -212,8 +206,8 @@ class SyncContactsSubscriptionData
             $this->logsHelper->logs($logsArray);
 
             $this->emarsysDataHelper->getEmarsysAPIDetails($storeId);
-            $this->emarsysDataHelper->getClient();
-            $response = $this->modelApi->post('contact/getchanges', $payload);
+            $client = $this->emarsysDataHelper->getClient();
+            $response = $client->post('contact/getchanges', $payload);
 
             $logsArray['description'] = print_r($response,true);
             $logsArray['message_type'] = 'Success';

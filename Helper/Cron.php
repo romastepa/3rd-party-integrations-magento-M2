@@ -6,16 +6,21 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\Framework\App\Helper\Context;
-use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Cron\Model\Schedule;
-use Emarsys\Emarsys\Model\EmarsysCronDetailsFactory;
-use Magento\Cron\Model\ScheduleFactory;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
-use Emarsys\Emarsys\Model\Logs as Emarsyslogs;
+use Magento\Framework\{
+    App\Helper\AbstractHelper,
+    App\Helper\Context,
+    Stdlib\DateTime\DateTime,
+    Serialize\Serializer\Json
+};
+use Magento\Cron\Model\{
+    Schedule,
+    ScheduleFactory
+};
 use Magento\Store\Model\StoreManagerInterface;
-
+use Emarsys\Emarsys\Model\{
+    EmarsysCronDetailsFactory,
+    Logs as Emarsyslogs
+};
 /**
  * Class Cron
  * @package Emarsys\Emarsys\Helper
@@ -54,9 +59,9 @@ class Cron extends AbstractHelper
     protected $emarsysCronDetails;
 
     /**
-     * @var JsonHelper
+     * @var Json
      */
-    protected $jsonHelper;
+    protected $json;
 
     /**
      * @var Logs
@@ -79,8 +84,8 @@ class Cron extends AbstractHelper
      * @param ScheduleFactory $scheduleFactory
      * @param DateTime $dateTime
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
-     * @param JsonHelper $jsonHelper
-     * @param Logs $emarsysLogs
+     * @param Json $json
+     * @param Emarsyslogs $emarsysLogs
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
@@ -88,7 +93,7 @@ class Cron extends AbstractHelper
         ScheduleFactory $scheduleFactory,
         DateTime $dateTime,
         EmarsysCronDetailsFactory $emarsysCronDetails,
-        JsonHelper $jsonHelper,
+        Json $json,
         Emarsyslogs $emarsysLogs,
         StoreManagerInterface $storeManager
     ) {
@@ -96,7 +101,7 @@ class Cron extends AbstractHelper
         $this->scheduleFactory = $scheduleFactory;
         $this->dateTime = $dateTime;
         $this->emarsysCronDetails = $emarsysCronDetails;
-        $this->jsonHelper = $jsonHelper;
+        $this->json = $json;
         $this->emarsysLogs = $emarsysLogs;
         $this->storeManager = $storeManager;
         parent::__construct($context);
@@ -128,7 +133,7 @@ class Cron extends AbstractHelper
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = $this->jsonHelper->jsonDecode($job->getParams());
+                    $jobsParams = $this->json->unserialize($job->getParams());
 
                     if (is_null($websiteBasedChecking)) {
                         $jobsStoreId = $jobsParams['storeId'];
@@ -183,7 +188,7 @@ class Cron extends AbstractHelper
                     ['in' => [Schedule::STATUS_PENDING]]
                 );
 
-            $cronJobs->getSelect()->join(
+            $cronJobs->getSelect()->joinLeft(
                 ['ecd' => 'emarsys_cron_details'],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
@@ -191,7 +196,7 @@ class Cron extends AbstractHelper
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = $this->jsonHelper->jsonDecode($job->getParams());
+                    $jobsParams = $this->json->unserialize($job->getParams());
 
                     if (is_null($websiteBasedChecking)) {
                         $jobsStoreId = $jobsParams['storeId'];
@@ -219,11 +224,14 @@ class Cron extends AbstractHelper
             $cron = $this->scheduleFactory->create();
         }
 
+        $time = $this->dateTime->gmtTimestamp();
+
+        /** @var ScheduleFactory $cron */
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))
-            ->setScheduledAt(strftime('%Y-%m-%d %H:%M', $this->dateTime->gmtTimestamp()));
+            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $time))
+            ->setScheduledAt(strftime('%Y-%m-%d %H:%M:%S', $time + 60));
         $cron->save();
 
         return $result;

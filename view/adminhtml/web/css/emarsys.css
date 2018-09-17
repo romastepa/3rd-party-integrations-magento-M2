@@ -127,7 +127,7 @@ em {
     margin-top: 4px;
 }
 /* Emarsys LOGO css*/
-.admin__menu #menu-emarsys-emarsys-parent > a:before {
+.admin__menu #menu-emarsys-emarsys-emarsys > a:before {
     opacity: 1;
     content: '';
     font-size: 2.4rem;
