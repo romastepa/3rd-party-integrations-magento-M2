@@ -3,7 +3,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -27,10 +27,8 @@
     </type>
     <preference for="\Magento\Framework\Mail\TransportInterface" type="Emarsys\Emarsys\Model\Transport"/>
     <preference for="\Magento\Framework\Mail\Message" type="Emarsys\Emarsys\Model\Message"/>
-    <preference for="\Magento\Framework\Mail\Template\TransportBuilder"
-                type="Emarsys\Emarsys\Model\Template\TransportBuilder"/>
-    <preference for="\Magento\Email\Model\Template\Filter"
-                type="Emarsys\Emarsys\Model\Template\Filter"/>
+    <preference for="\Magento\Framework\Mail\Template\TransportBuilder" type="Emarsys\Emarsys\Model\Template\TransportBuilder"/>
+    <preference for="\Magento\Email\Model\Template\Filter" type="Emarsys\Emarsys\Model\Template\Filter"/>
     <preference for="Magento\Email\Model\Template" type="Emarsys\Emarsys\Model\Template"/>
     <preference for="Magento\Newsletter\Model\Subscriber" type="Emarsys\Emarsys\Model\Subscriber"/>
     <type name="Magento\Framework\Console\CommandListInterface">

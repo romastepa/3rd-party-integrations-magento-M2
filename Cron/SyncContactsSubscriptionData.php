@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Cron;
 
@@ -12,15 +12,15 @@ use Emarsys\Emarsys\{
     Model\ResourceModel\Customer as EmarsysCustomerResourceModel,
     Model\Logs as EmarsysModelLogs
 };
-use Magento\Framework\{
-    App\Cache\TypeListInterface,
-    App\Config\ScopeConfigInterface,
-    App\Request\Http,
-    Stdlib\DateTime\DateTime,
-    Registry
+use Magento\{
+    Framework\App\Cache\TypeListInterface,
+    Framework\App\Config\ScopeConfigInterface,
+    Framework\App\Request\Http,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\Registry,
+    Store\Model\StoreManagerInterface,
+    Config\Model\ResourceModel\Config
 };
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Config\Model\ResourceModel\Config;
 
 /**
  * Class SyncContactsSubscriptionData
@@ -189,8 +189,8 @@ class SyncContactsSubscriptionData
                 $timeRange = [$dt->subHour(1)->toString('YYYY-MM-dd'), $dt->addHour(1)->toString('YYYY-MM-dd')];
             }
             $storeId = $this->storeManager->getWebsite(current($websiteId))->getDefaultStore()->getId();
-            $key_id = $this->customerResourceModel->getEmarsysFieldId('Magento Subscriber ID', $storeId);
-            $optinFiledId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $storeId);
+            $key_id = $this->customerResourceModel->getKeyId(EmarsysDataHelper::SUBSCRIBER_ID, $storeId);
+            $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysDataHelper::OPT_IN, $storeId);
             $payload = [
                 'distribution_method' => 'local',
                 'origin' => 'all',

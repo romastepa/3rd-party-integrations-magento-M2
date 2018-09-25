@@ -9,16 +9,14 @@ namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 
-use Magento\Framework\{
-    App\Config\ScopeConfigInterface,
-    Registry,
-    Model\Context,
-    Model\ResourceModel\AbstractResource,
-    Data\Collection\AbstractDb,
-    Model\AbstractModel
-};
-
 use Magento\{
+    Framework\App\Config\ScopeConfigInterface,
+    Framework\File\Csv,
+    Framework\Registry,
+    Framework\Model\Context,
+    Framework\Model\ResourceModel\AbstractResource,
+    Framework\Data\Collection\AbstractDb,
+    Framework\Model\AbstractModel,
     Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
     Directory\Model\CurrencyFactory,
     Store\Model\StoreManagerInterface
@@ -65,7 +63,7 @@ class Emarsysproductexport extends AbstractModel
     protected $currencyFactory;
 
     /**
-     * @var \Magento\Framework\File\Csv
+     * @var Csv
      */
     protected $csvWriter;
 
@@ -81,7 +79,7 @@ class Emarsysproductexport extends AbstractModel
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CurrencyFactory $currencyFactory
-     * @param \Magento\Framework\File\Csv $csvWriter
+     * @param Csv $csvWriter
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -94,12 +92,12 @@ class Emarsysproductexport extends AbstractModel
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig,
         CurrencyFactory $currencyFactory,
-        \Magento\Framework\File\Csv $csvWriter,
+        Csv $csvWriter,
+        EmarsysDataHelper $emarsysDataHelper,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
-        EmarsysDataHelper $emarsysDataHelper,
         array $data = []
     ) {
         $this->productCollectionFactory = $productCollectionFactory;

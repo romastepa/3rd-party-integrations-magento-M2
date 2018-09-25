@@ -6,21 +6,20 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\Framework\{
-    App\Helper\AbstractHelper,
-    App\Helper\Context,
-    Stdlib\DateTime\DateTime,
-    Serialize\Serializer\Json
+use Magento\{
+    Framework\App\Helper\AbstractHelper,
+    Framework\App\Helper\Context,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\Serialize\Serializer\Json,
+    Cron\Model\Schedule,
+    Cron\Model\ScheduleFactory,
+    Store\Model\StoreManagerInterface
 };
-use Magento\Cron\Model\{
-    Schedule,
-    ScheduleFactory
+use Emarsys\Emarsys\{
+    Model\EmarsysCronDetailsFactory,
+    Model\Logs as Emarsyslogs
 };
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\{
-    EmarsysCronDetailsFactory,
-    Logs as Emarsyslogs
-};
+
 /**
  * Class Cron
  * @package Emarsys\Emarsys\Helper
@@ -126,7 +125,7 @@ class Cron extends AbstractHelper
                 );
 
             $cronJobs->getSelect()->join(
-                ['ecd' => 'emarsys_cron_details'],
+                ['ecd' => $cronJobs->getTable('emarsys_cron_details')],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
             );
@@ -189,7 +188,7 @@ class Cron extends AbstractHelper
                 );
 
             $cronJobs->getSelect()->joinLeft(
-                ['ecd' => 'emarsys_cron_details'],
+                ['ecd' => $cronJobs->getTable('emarsys_cron_details')],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
             );

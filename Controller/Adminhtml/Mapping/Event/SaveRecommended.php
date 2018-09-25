@@ -2,23 +2,27 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Event;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory;
-use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory;
-use Emarsys\Emarsys\Model\Api\Api;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Framework\View\Result\PageFactory,
+    Framework\App\Config\ScopeConfigInterface,
+    Store\Model\StoreManagerInterface,
+    Framework\Stdlib\DateTime\DateTime
+};
+use Emarsys\Emarsys\{
+    Model\ResourceModel\Event,
+    Helper\Data,
+    Model\ResourceModel\Emarsysevents\CollectionFactory,
+    Helper\Logs,
+    Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory,
+    Model\Api\Api
+};
 
 class SaveRecommended extends Action
 {
@@ -91,6 +95,7 @@ class SaveRecommended extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Exception
      */
     public function execute()
     {
@@ -114,7 +119,7 @@ class SaveRecommended extends Action
             $logId = $this->logHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
 
-            if ($this->emarsysHelper->isEmarsysEnabled($websiteId) == 'false') {
+            if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 $logsArray['messages'] = 'Emarsys is Disabled for this Store';
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
                 $logsArray['description'] = 'Recommended Mapping was not Successful';

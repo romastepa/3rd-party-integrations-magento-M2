@@ -2,57 +2,54 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\Framework\{
-    App\Filesystem\DirectoryList,
-    App\Helper\Context,
-    App\ProductMetadataInterface,
-    Filesystem\Io\File as FilesystemIoFile,
-    Filesystem\Io\Ftp,
-    Stdlib\DateTime\DateTime,
-    Stdlib\DateTime\Timezone,
-    Module\ModuleListInterface
+use Magento\{
+    Framework\App\Filesystem\DirectoryList,
+    Framework\App\Helper\AbstractHelper,
+    Framework\App\Helper\Context,
+    Framework\App\ProductMetadataInterface,
+    Framework\Filesystem\Io\File as FilesystemIoFile,
+    Framework\Filesystem\Io\Ftp,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\Stdlib\DateTime\Timezone,
+    Framework\Module\ModuleListInterface,
+    Store\Model\StoreManagerInterface,
+    Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory,
+    Store\Model\ScopeInterface,
+    Newsletter\Model\ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory,
+    Newsletter\Model\Subscriber,
+    Newsletter\Model\SubscriberFactory,
+    Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory,
+    Email\Model\TemplateFactory as EmailTemplateFactory,
+    Backend\Model\Session as BackendSession
 };
-use Magento\Store\{
-    Model\StoreManagerInterface,
-    Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory,
-    Model\ScopeInterface
-};
-use Magento\Newsletter\Model\{
-    ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory,
-    Subscriber,
-    SubscriberFactory
-};
-use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory;
-use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
-use Magento\Backend\Model\Session as BackendSession;
 
-use Emarsys\Emarsys\Model\{
-    ResourceModel\Customer as ModelResourceModelCustomer,
-    Queue,
-    QueueFactory as EmarsysQueueFactory,
-    ResourceModel\Emarsysmagentoevents\CollectionFactory,
-    PlaceholdersFactory,
-    EmarsyseventmappingFactory,
-    ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory,
-    Api as EmarsysApi,
-    Emarsysevents,
-    ResourceModel\Event as ModelResourceModelEvent,
-    EmarsyseventsFactory,
-    Api\Api as EmarsysApiApi,
-    Logs as EmarsysModelLogs
+use Emarsys\Emarsys\{
+    Model\ResourceModel\Customer as ModelResourceModelCustomer,
+    Model\Queue,
+    Model\QueueFactory as EmarsysQueueFactory,
+    Model\ResourceModel\Emarsysmagentoevents\CollectionFactory,
+    Model\PlaceholdersFactory,
+    Model\EmarsyseventmappingFactory,
+    Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory,
+    Model\Api as EmarsysApi,
+    Model\Emarsysevents,
+    Model\ResourceModel\Event as ModelResourceModelEvent,
+    Model\EmarsyseventsFactory,
+    Model\Api\Api as EmarsysApiApi,
+    Model\Logs as EmarsysModelLogs,
+    Helper\Logs as EmarsysHelperLogs,
+    Controller\Adminhtml\Email\Template
 };
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Emarsys\Emarsys\Controller\Adminhtml\Email\Template;
 
 /**
  * Class Data
  * @package Emarsys\Emarsys\Helper
  */
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+class Data extends AbstractHelper
 {
     const MODULE_NAME = 'Emarsys_Emarsys';
 
@@ -192,6 +189,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const ENTITY_EXPORT_MODE_MANUAL = 'Manual';
 
     const EMARSYS_RELEASE_URL = 'about_emarsys/emarsys_release/release_url';
+
+    const CUSTOMER_EMAIL = 'Email';
+
+    const SUBSCRIBER_ID = 'Magento Subscriber ID';
+
+    const CUSTOMER_ID = 'Magento Customer ID';
+
+    const CUSTOMER_UNIQUE_ID = 'Magento Customer Unique ID';
+
+    const OPT_IN = 'Opt-In';
+
+    const BATCH_SIZE = 1000;
 
     /**
      * @var Context
@@ -1300,6 +1309,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $websiteId
      * @param $storeId
      * @param $cron
+     * @throws \Exception
      */
     public function syncSuccess($customerId, $websiteId, $storeId, $cron)
     {
@@ -1320,6 +1330,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param $mappingId
      * @param $storeId
      * @return string
+     * @throws \Exception
      */
     public function insertFirstimeMappingPlaceholders($mappingId, $storeId)
     {
@@ -2107,11 +2118,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Checks whether emarsys is enabled or not.
      * @param null $websiteId
-     * @return string
+     * @return bool
      */
     public function isEmarsysEnabled($websiteId = null)
     {
-        $emarsysEnabled = 'false';
+        $emarsysEnabled = false;
 
         if ($websiteId) {
             $emarsysUserName = $this->scopeConfigInterface->getValue(
@@ -2131,7 +2142,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             );
 
             if ($emarsysUserName && $emarsysPassword && $emarsysFlag) {
-                $emarsysEnabled = 'true';
+                $emarsysEnabled = true;
             }
         } else {
             $emarsysUserName = $this->scopeConfigInterface->getValue(self::XPATH_EMARSYS_API_USER);
@@ -2139,7 +2150,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $emarsysFlag = $this->scopeConfigInterface->getValue(self::XPATH_EMARSYS_ENABLED);
 
             if ($emarsysUserName && $emarsysPassword && $emarsysFlag) {
-                $emarsysEnabled = 'true';
+                $emarsysEnabled = true;
             }
         }
 
@@ -2160,28 +2171,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function realtimeTimeBasedOptinSync($subscriber)
     {
         try {
-            $emarsysTime = '';
-            $emarsysDate = '';
-            $srore = $this->storeManager->getStore($subscriber->getStoreId());
-            $configkeyId = $srore->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
+            $store = $this->storeManager->getStore($subscriber->getStoreId());
+            $keyField = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
+            $fieldId = $this->customerResourceModel->getKeyId('Opt-In', $subscriber->getStoreId());
 
-            $fieldId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $subscriber->getStoreId());
-
-            if ($configkeyId == 'email') {
-                $keyId = $this->customerResourceModel->getEmarsysFieldId('Email', $subscriber->getStoreId());
+            if ($keyField == 'email') {
                 $keyValue = $subscriber->getSubscriberEmail();
+            } elseif ($keyField == 'magento_id') {
+                $keyValue = $subscriber->getSubscriberEmail() . "#" . $store->getWebsiteId();
             } else {
-                $keyId = $keyId = $this->customerResourceModel->getEmarsysFieldId(
-                    'Magento Subscriber ID',
-                    $subscriber->getStoreId()
-                );
-                $keyValue = $subscriber->getSubscriberId();
+                $keyValue = $subscriber->getSubscriberEmail() . "#" . $store->getWebsiteId() . "#" . $subscriber->getStoreId();
             }
+
             $payload = [
-                'key_id' => $keyId,
+                'key_id' => $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $subscriber->getStoreId()),
                 'key_value' => $keyValue,
                 'field_id' => $fieldId
             ];
+
             $this->getEmarsysAPIDetails($subscriber->getStoreId());
             $response =  $this->getClient()->get('contact/last_change', $payload);
 
@@ -2262,14 +2269,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $logsArray['store_id'] = $storeId;
             $logId = $this->logHelper->manualLogs($logsArray);
             $store = $this->storeManager->getStore($storeId);
-            $fieldId = $this->customerResourceModel->getEmarsysFieldId('Opt-In', $storeId);
+            $fieldId = $this->customerResourceModel->getKeyId('Opt-In', $storeId);
             $subscribersCollection = $this->newsLetterCollectionFactory->create()
                 ->addFieldToFilter('subscriber_id', ['in' => $subscriberIdsArray]);
             $magLastModifiedStatus = [];
             $configkeyId = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
 
             if ($configkeyId == 'email') {
-                $keyId = $this->customerResourceModel->getEmarsysFieldId('Email', $storeId);
+                $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
                 $keyValue = $subscribersCollection->getColumnValues('subscriber_email');
 
                 foreach ($subscribersCollection as $_subscriber) {
@@ -2279,7 +2286,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                     ];
                 }
             } else {
-                $keyId = $keyId = $this->customerResourceModel->getEmarsysFieldId('Magento Subscriber ID', $storeId );
+                $keyId = $keyId = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId );
                 $keyValue = $subscriberIdsArray;
 
                 foreach ($subscribersCollection as $_subscriber) {

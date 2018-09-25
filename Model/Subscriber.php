@@ -2,12 +2,27 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelperData;
+use Magento\{
+    Customer\Api\AccountManagementInterface,
+    Customer\Api\CustomerRepositoryInterface,
+    Customer\Model\Session,
+    Framework\App\Config\ScopeConfigInterface,
+    Framework\Data\Collection\AbstractDb,
+    Framework\Mail\Template\TransportBuilder,
+    Framework\Model\Context,
+    Framework\Model\ResourceModel\AbstractResource,
+    Framework\Registry,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\Translate\Inline\StateInterface,
+    Newsletter\Helper\Data,
+    Store\Model\StoreManagerInterface
+};
 
 /**
  * Class Subscriber
@@ -23,40 +38,39 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
     /**
      * Subscriber constructor.
      * @param EmarsysHelperData $emarsysHelperData
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Newsletter\Helper\Data $newsletterData
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
-     * @param \Magento\Customer\Api\AccountManagementInterface $customerAccountManagement
-     * @param \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation
-     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime|null $dateTime
+     * @param Context $context
+     * @param Registry $registry
+     * @param Data $newsletterData
+     * @param ScopeConfigInterface $scopeConfig
+     * @param TransportBuilder $transportBuilder
+     * @param StoreManagerInterface $storeManager
+     * @param Session $customerSession
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param AccountManagementInterface $customerAccountManagement
+     * @param StateInterface $inlineTranslation
+     * @param AbstractResource|null $resource
+     * @param AbstractDb|null $resourceCollection
+     * @param DateTime|null $dateTime
      * @param array $data
      */
     public function __construct
     (
         EmarsysHelperData $emarsysHelperData,
-        \Magento\Framework\Model\Context $context,
-        \Magento\Framework\Registry $registry,
-        \Magento\Newsletter\Helper\Data $newsletterData,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
-        \Magento\Customer\Api\AccountManagementInterface $customerAccountManagement,
-        \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation,
-        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
-        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime = null,
+        Context $context,
+        Registry $registry,
+        Data $newsletterData,
+        ScopeConfigInterface $scopeConfig,
+        TransportBuilder $transportBuilder,
+        StoreManagerInterface $storeManager,
+        Session $customerSession,
+        CustomerRepositoryInterface $customerRepository,
+        AccountManagementInterface $customerAccountManagement,
+        StateInterface $inlineTranslation,
+        AbstractResource $resource = null,
+        AbstractDb $resourceCollection = null,
+        DateTime $dateTime = null,
         array $data = []
-    )
-    {
+    ) {
         $this->emarsysHelperData = $emarsysHelperData;
         parent::__construct(
             $context,
@@ -83,7 +97,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
     public function subscribe($email)
     {
         $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-        if ($this->emarsysHelperData->isEmarsysEnabled($websiteId) == 'false') {
+        if ($this->emarsysHelperData->isEmarsysEnabled($websiteId)) {
             return parent::subscribe($email);
         } else {
             return $this->subscribeByEmarsys($email);

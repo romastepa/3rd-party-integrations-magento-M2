@@ -2,46 +2,36 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Eav\Model\Config as EavConfig;
-
-use Magento\Framework\{
-    Model\AbstractModel,
-    Model\Context,
-    Model\ResourceModel\AbstractResource,
-    Registry,
-    Message\ManagerInterface as MessageManagerInterface,
-    Data\Collection\AbstractDb,
-    Stdlib\DateTime\DateTime,
-    App\Filesystem\DirectoryList,
-    File\Csv
+use Magento\{
+    Eav\Model\Config as EavConfig,
+    Framework\Model\AbstractModel,
+    Framework\Model\Context,
+    Framework\Model\ResourceModel\AbstractResource,
+    Framework\Registry,
+    Framework\Message\ManagerInterface as MessageManagerInterface,
+    Framework\Data\Collection\AbstractDb,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\App\Filesystem\DirectoryList,
+    Framework\File\Csv,
+    Catalog\Helper\Image,
+    Catalog\Model\Product\Attribute\Source\Status,
+    Catalog\Model\Product\Visibility,
+    Catalog\Model\CategoryFactory,
+    Catalog\Model\Product as ProductModel,
+    Store\Model\StoreManagerInterface
 };
 
-use Magento\Catalog\{
-    Helper\Image,
-    Model\Product\Attribute\Source\Status,
-    Model\Product\Visibility,
-    Model\CategoryFactory,
-    Model\ProductFactory as ProductModelFactory,
-    Model\Product as ProductModel
-};
-
-
-use Magento\Store\Model\StoreManagerInterface;
-
-use Emarsys\Emarsys\Helper\{
-    Logs as EmarsysHelperLogs,
-    Data as EmarsysDataHelper
-};
-
-use Emarsys\Emarsys\Model\{
-    ResourceModel\Customer as EmarsysResourceModelCustomer,
-    ResourceModel\Product as ProductResourceModel,
-    ResourceModel\Emarsysproductexport as ProductExportResourceModel,
-    Emarsysproductexport as ProductExportModel
+use Emarsys\Emarsys\{
+    Helper\Logs as EmarsysHelperLogs,
+    Helper\Data as EmarsysDataHelper,
+    Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
+    Model\ResourceModel\Product as ProductResourceModel,
+    Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel,
+    Model\Emarsysproductexport as ProductExportModel
 };
 
 /**
@@ -50,11 +40,6 @@ use Emarsys\Emarsys\Model\{
  */
 class Product extends AbstractModel
 {
-    /**
-     * @var ProductModelFactory
-     */
-    protected $productCollectionFactory;
-
     /**
      * @var StoreManagerInterface
      */
@@ -146,16 +131,13 @@ class Product extends AbstractModel
 
     /**
      * Product constructor.
-     * @param Context $context
-     * @param Registry $registry
      * @param MessageManagerInterface $messageManager
-     * @param ProductModelFactory $productCollectionFactory
      * @param ProductModel $productModel
      * @param DateTime $date
      * @param EmarsysHelperLogs $logsHelper
      * @param EmarsysResourceModelCustomer $customerResourceModel
      * @param ProductResourceModel $productResourceModel
-     * @param ProductExportModel $productExportModel
+     * @param Emarsysproductexport $productExportModel
      * @param ProductExportResourceModel $productExportResourceModel
      * @param CategoryFactory $categoryFactory
      * @param StoreManagerInterface $storeManager
@@ -165,15 +147,14 @@ class Product extends AbstractModel
      * @param DirectoryList $directoryList
      * @param ApiExport $apiExport
      * @param Image $imageHelper
+     * @param Context $context
+     * @param Registry $registry
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
-        Context $context,
-        Registry $registry,
         MessageManagerInterface $messageManager,
-        ProductModelFactory $productCollectionFactory,
         ProductModel $productModel,
         DateTime $date,
         EmarsysHelperLogs $logsHelper,
@@ -189,21 +170,22 @@ class Product extends AbstractModel
         DirectoryList $directoryList,
         ApiExport $apiExport,
         Image $imageHelper,
+        Context $context,
+        Registry $registry,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
     ) {
-        $this->productCollectionFactory = $productCollectionFactory;
-        $this->storeManager = $storeManager;
         $this->messageManager = $messageManager;
+        $this->productModel = $productModel;
+        $this->date = $date;
+        $this->logsHelper = $logsHelper;
         $this->customerResourceModel = $customerResourceModel;
         $this->productResourceModel = $productResourceModel;
         $this->productExportModel = $productExportModel;
         $this->productExportResourceModel = $productExportResourceModel;
-        $this->productModel = $productModel;
-        $this->logsHelper = $logsHelper;
-        $this->date = $date;
         $this->categoryFactory = $categoryFactory;
+        $this->storeManager = $storeManager;
         $this->eavConfig =  $eavConfig;
         $this->emarsysHelper =  $emarsysHelper;
         $this->csvWriter = $csvWriter;
@@ -227,6 +209,7 @@ class Product extends AbstractModel
      * @param null $includeBundle
      * @param null $excludedCategories
      * @return bool
+     * @throws \Exception
      */
     public function consolidatedCatalogExport($mode = EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
     {
@@ -398,6 +381,7 @@ class Product extends AbstractModel
      * @param array $logsArray
      * @param string $mode
      * @return bool
+     * @throws \Zend_Http_Client_Exception
      */
     public function moveFile($store, $outputFile, $csvFilePath, $logsArray, $mode)
     {
@@ -504,6 +488,7 @@ class Product extends AbstractModel
      *
      * @param \Magento\Store\Model\Store $store
      * @param array $logsArray
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function setCredentials($store, $logsArray)
     {

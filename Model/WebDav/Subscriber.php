@@ -2,11 +2,12 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Magento\{
+    Framework\DataObject,
     Framework\Stdlib\DateTime\DateTime,
     Backend\App\Action\Context,
     Store\Model\StoreManagerInterface,
@@ -22,7 +23,7 @@ use Emarsys\Emarsys\{
  * Class Subscriber
  * @package Emarsys\Emarsys\Model\WebDav
  */
-class Subscriber extends \Magento\Framework\DataObject
+class Subscriber extends DataObject
 {
     /**
      * @var Data
@@ -164,7 +165,7 @@ class Subscriber extends \Magento\Framework\DataObject
                             $values[] = $value['subscriber_email'];
                         } elseif ($keyField == 'magento_id') {
                             $values[] = $value['subscriber_email'] . "#" . $websiteId . "#";
-                        } elseif ($keyField == 'unique_id') {
+                        } else {
                             $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
                         }
 
@@ -189,7 +190,9 @@ class Subscriber extends \Magento\Framework\DataObject
                     );
 
                     //remove csv file after export
-                    unlink($filePath);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
 
                     if ($exportStatus['status']) {
                         //Subscriber file uploaded to server successfully
