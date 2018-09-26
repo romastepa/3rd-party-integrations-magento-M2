@@ -7,19 +7,20 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Emarsys\Emarsys\Model\ProductFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory;
-use Emarsys\Emarsys\Helper\Data;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\Logs;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Model\ResourceModel\Product;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Store\Model\StoreManagerInterface,
+    Framework\Stdlib\DateTime\DateTime
+};
+use Emarsys\Emarsys\{
+    Model\ProductFactory,
+    Model\ResourceModel\Product\CollectionFactory,
+    Helper\Data,
+    Model\Logs,
+    Helper\Logs as EmarsysHelperLogs,
+    Model\ResourceModel\Product
+};
 
 /**
  * Class SaveRecommended
@@ -129,7 +130,6 @@ class SaveRecommended extends Action
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
             $logId = $this->logHelper->manualLogs($logsArray);
-            $model = $this->productFactory->create();
             /**
              *Here We need set the recommended attribute values
              */

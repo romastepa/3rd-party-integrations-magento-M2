@@ -2,20 +2,22 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
-use Magento\Framework\Model\ResourceModel\Db\Context;
-use Magento\Eav\Model\Entity\Type;
-use Magento\Eav\Model\Entity\Attribute;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Customer\Model\CustomerFactory;
+use Magento\{
+    Framework\Model\ResourceModel\Db\AbstractDb,
+    Framework\Model\ResourceModel\Db\Context,
+    Eav\Model\Entity\Type,
+    Eav\Model\Entity\Attribute,
+    Framework\Stdlib\DateTime\TimezoneInterface,
+    Customer\Model\CustomerFactory,
+    Store\Model\StoreManagerInterface,
+    Framework\App\Config\ScopeConfigInterface
+};
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLog;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class Customer
@@ -302,6 +304,7 @@ class Customer extends AbstractDb
     /**
      * @param $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getCustomMappedCustomerAttribute($storeId)
     {
@@ -324,9 +327,9 @@ class Customer extends AbstractDb
     }
 
     /**
-     *
      * @param int $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getMappedCustomerAttribute($storeId)
     {
@@ -405,7 +408,7 @@ class Customer extends AbstractDb
      * @param $storeId
      * @return string
      */
-    public function getEmarsysFieldId($fieldName, $storeId)
+    public function getKeyId($fieldName, $storeId)
     {
         $select = $this->getConnection()
             ->select()
@@ -470,13 +473,9 @@ class Customer extends AbstractDb
 
             $customers->addFieldToFilter('created_at', ['from' => $fromDateUTC, 'to' => $toDateUTC])
                 ->addFieldToFilter('website_id', ['eq' => $data['website']]);
-            if ($storeId) {
-                $customers->addFieldToFilter('store_id', ['eq' => $data['storeId']]);
-            }
-        } else {
-            if ($storeId) {
-                $customers->addFieldToFilter('store_id', ['eq' => $data['storeId']]);
-            }
+        }
+        if ($storeId) {
+            $customers->addFieldToFilter('store_id', ['eq' => $data['storeId']]);
         }
 
         return $customers;
@@ -517,9 +516,9 @@ class Customer extends AbstractDb
             ->select()
             ->from($this->getTable('newsletter_subscriber'), 'subscriber_id')
             ->where('subscriber_email = ?', @$data['email'])
-            ->where('store_id = ?', @$data['storeId']);
+            ->where('store_id = ?', @$data['store_id']);
 
-        return $this->getConnection()->fetchOne($select);;
+        return $this->getConnection()->fetchOne($select);
     }
 
     /**
@@ -537,26 +536,9 @@ class Customer extends AbstractDb
 
     /**
      *
-     * @param type $attributeName
-     * @param type $storeId
-     * @return array
-     */
-    public function getKeyId($attributeName, $storeId)
-    {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_contact_field'), 'emarsys_field_id')
-            ->where('name = ?', $attributeName)
-            ->where('store_id = ?', $storeId);
-
-        return $this->getConnection()->fetchOne($select);
-    }
-
-    /**
-     *
      * @param type $email
      * @param type $websiteId
-     * @return array
+     * @return string
      */
     public function checkCustomerExistsInMagento($email, $websiteId)
     {

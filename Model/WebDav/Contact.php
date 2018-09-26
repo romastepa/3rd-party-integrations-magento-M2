@@ -15,7 +15,7 @@ use Magento\{
 };
 use Emarsys\Emarsys\{
     Model\ResourceModel\Customer,
-    Helper\Data as EmarsysHelper,
+    Helper\Data as EmarsysHelperData,
     Helper\Logs,
     Helper\Country as EmarsysCountryHelper
 };
@@ -27,7 +27,7 @@ use Emarsys\Emarsys\{
 class Contact extends \Magento\Framework\DataObject
 {
     /**
-     * @var EmarsysHelper
+     * @var EmarsysHelperData
      */
     protected $emarsysHelper;
 
@@ -72,7 +72,7 @@ class Contact extends \Magento\Framework\DataObject
 
     /**
      * Contact constructor.
-     * @param EmarsysHelper $emarsysHelper
+     * @param EmarsysHelperData $emarsysHelper
      * @param CustomerFactory $customer
      * @param Context $context
      * @param DateTime $date
@@ -84,7 +84,7 @@ class Contact extends \Magento\Framework\DataObject
      * @param array $data
      */
     public function __construct(
-        EmarsysHelper $emarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         CustomerFactory $customer,
         Context $context,
         DateTime $date,
@@ -111,6 +111,7 @@ class Contact extends \Magento\Framework\DataObject
      * @param $data
      * @param null $logId
      * @return bool
+     * @throws \Exception
      */
     public function exportCustomerDataWebDav($data, $logId = null)
     {
@@ -149,7 +150,6 @@ class Contact extends \Magento\Framework\DataObject
         //get customer collection for the store
         $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
         if ($customerCollection) {
-
             //webDav credentials from admin configurations
             $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($scope, $websiteId);
             if ($webDavCredentials && !empty($webDavCredentials)) {
@@ -173,20 +173,20 @@ class Contact extends \Magento\Framework\DataObject
                             if ($att['emarsys_contact_field'] == NULL)
                                 continue;
                             $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($att, $storeId);
-                            $headers["$att[magento_custom_attribute_id]"] = $emarsysField['name'];
+                            $headers[$att['magento_custom_attribute_id']] = $emarsysField['name'];
                             $headerIndex[$indexCount] = $att['magento_custom_attribute_id'];
                             $indexCount++;
                         }
 
-                        $headers['magento_customer_id'] = 'Magento Customer ID';
+                        $headers['magento_customer_id'] = EmarsysHelperData::CUSTOMER_ID;
                         $headerIndex[$indexCount] = 'magento_customer_id';
-                        $headers['magento_customer_unique_id'] = 'Magento Customer Unique ID';
+                        $headers['magento_customer_unique_id'] = EmarsysHelperData::CUSTOMER_UNIQUE_ID;
                         $indexCount = $indexCount + 1;
                         $headerIndex[$indexCount] = 'magento_customer_unique_id';
                         if (!in_array('Email', $headers)) {
-                            $headers['customer_email'] = 'Customer Email';
+                            $headers['email'] = EmarsysHelperData::CUSTOMER_EMAIL;
                             $indexCount = $indexCount + 1;
-                            $headerIndex[$indexCount] = 'customer_email';
+                            $headerIndex[$indexCount] = 'email';
                         }
 
                         $outputFile = $this->emarsysHelper->getCustomerCsvFileName(
@@ -211,13 +211,19 @@ class Contact extends \Magento\Framework\DataObject
                                 $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($key, $storeId);
 
                                 //code for the custom defined attributes in the array starts
-                                if ($value == "Magento Customer ID") {
+                                if ($value == EmarsysHelperData::CUSTOMER_ID) {
                                     $index = array_search($key, $headerIndex);
-                                    $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId();
-                                } elseif ($value == "Magento Customer Unique ID") {
+                                    $customerValues[$index] = $customerLoad->getId();
+                                } elseif ($value == EmarsysHelperData::CUSTOMER_UNIQUE_ID) {
                                     $index = array_search($key, $headerIndex);
-                                    $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId() . "#" . $customerLoad->getStoreId();
-                                } elseif ($value == "Customer Email") {
+                                    if ($keyField == 'email') {
+                                        $customerValues[$index] = $customerLoad->getEmail();
+                                    } elseif ($keyField == 'magento_id') {
+                                        $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId();
+                                    } else {
+                                        $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId() . "#" . $customerLoad->getStoreId();
+                                    }
+                                } elseif ($value == EmarsysHelperData::CUSTOMER_EMAIL) {
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerLoad->getEmail();
                                 } elseif ($attributeCode['entity_type_id'] == 1) {
@@ -269,7 +275,9 @@ class Contact extends \Magento\Framework\DataObject
                         );
 
                         //remove csv file after export
-                        unlink($filePath);
+                        if (file_exists($filePath)) {
+                            unlink($filePath);
+                        }
 
                         if ($exportStatus['status']) {
                             //customer file uploaded to server successfully

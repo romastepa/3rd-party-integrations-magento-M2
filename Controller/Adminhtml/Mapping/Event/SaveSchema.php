@@ -2,20 +2,24 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Event;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Model\ResourceModel\Event as EmarsysResourceModelEvent;
-use Emarsys\Emarsys\Helper\Logs;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Framework\View\Result\PageFactory,
+    Framework\Stdlib\DateTime\DateTime,
+    Store\Model\StoreManagerInterface
+};
+use Emarsys\Emarsys\{
+    Helper\Event,
+    Helper\Data,
+    Model\ResourceModel\Event as EmarsysResourceModelEvent,
+    Helper\Logs
+};
 
 /**
  * Class SaveSchema
@@ -83,6 +87,7 @@ class SaveSchema extends Action
     /**
      * SaveSchema Action
      * @return $this
+     * @throws \Exception
      */
     public function execute()
     {
@@ -103,7 +108,7 @@ class SaveSchema extends Action
             $logId = $this->logHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
 
-            if ($this->emarsysHelper->isEmarsysEnabled($websiteId) == 'true') {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 $errorStatus = false;
                 $this->emarsysHelper->importEvents($logId);
                 $this->messageManager->addSuccessMessage('Event schema added/updated successfully');

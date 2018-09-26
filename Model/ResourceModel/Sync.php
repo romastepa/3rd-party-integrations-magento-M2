@@ -3,18 +3,23 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Symfony\Component\Config\Definition\Exception\Exception;
+use Emarsys\Emarsys\Model\Logs;
+use Magento\Framework\{
+    App\Config\ScopeConfigInterface,
+    Model\ResourceModel\Db\AbstractDb,
+    Model\ResourceModel\Db\Context,
+    Stdlib\DateTime\DateTime
+};
 
 /**
  * Class Sync
  * @package Emarsys\Emarsys\Model\ResourceModel
  */
-class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+class Sync extends AbstractDb
 {
     /**
      * @var int
@@ -60,20 +65,18 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     protected $scopeConfigInterface;
 
-
     /**
-     * 
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
+     * @param Context $context
      * @param DateTime $date
-     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
+     * @param Logs $emarsysLogs
+     * @param ScopeConfigInterface $scopeConfigInterface
      * @param null $connectionName
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
+        Context $context,
         DateTime $date,
-        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
+        Logs $emarsysLogs,
+        ScopeConfigInterface $scopeConfigInterface,
         $connectionName = null
     ) {
     
@@ -119,7 +122,7 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         }
 
         if ($table) {
-            $select = $connection->getSelect()
+            $select = $connection->select()
                 ->from($table)
                 ->where('store_id = ?', $storeId);
 
@@ -141,7 +144,7 @@ class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             $storeId = 1;
         }
         $subselect = $this->getConnection()->select()
-            ->from($this->getTable('emarsys_syncstatus'), 'SELECT MAX(id)')
+            ->from($this->getTable('emarsys_syncstatus'), 'MAX(id)')
             ->where('status = ?', 'SUCCESS')
             ->where('sync_id = ?', '$syncId')
             ->where('store_id = ?', $storeId);

@@ -49,7 +49,7 @@ class Grid extends Extended
         $cronJobs->addFieldToFilter('job_code', ['like' => '%emarsys%']);
         $cronJobs->getSelect()
             ->joinLeft(
-                ['ecd' => 'emarsys_cron_details'],
+                ['ecd' => $cronJobs->getTable('emarsys_cron_details')],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
             );

@@ -2,21 +2,26 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Observer;
 
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Event\ObserverInterface;
-use Magento\Customer\Model\CustomerFactory;
-use Magento\Framework\Registry;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\Api\Contact;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Model\Logs;
-use Magento\Newsletter\Model\Subscriber;
+use Magento\{
+    Customer\Model\CustomerFactory,
+    Framework\Event\Observer,
+    Framework\Event\ObserverInterface,
+    Framework\Registry,
+    Newsletter\Model\Subscriber,
+    Store\Model\StoreManagerInterface
+};
+use Emarsys\Emarsys\{
+    Model\Api\Contact,
+    Model\ResourceModel\Customer,
+    Model\Logs,
+    Helper\Data as EmarsysDataHelper
+};
 
 /**
  * Class RealTimeCustomer
@@ -25,9 +30,9 @@ use Magento\Newsletter\Model\Subscriber;
 class RealTimeCustomer implements ObserverInterface
 {
     /**
-     * @var Data
+     * @var EmarsysDataHelper
      */
-    private $dataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var LoggerInterface
@@ -76,9 +81,10 @@ class RealTimeCustomer implements ObserverInterface
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
      * @param Contact $contactModel
-     * @param Data $dataHelper
+     * @param EmarsysDataHelper $emarsysHelper
      * @param Customer $customerResourceModel
      * @param Logs $emarsysLogs
+     * @param Subscriber $subscriber
      */
     public function __construct(
         LoggerInterface $logger,
@@ -86,12 +92,12 @@ class RealTimeCustomer implements ObserverInterface
         Registry $registry,
         StoreManagerInterface $storeManager,
         Contact $contactModel,
-        Data $dataHelper,
+        EmarsysDataHelper $emarsysHelper,
         Customer $customerResourceModel,
         Logs $emarsysLogs,
         Subscriber $subscriber
     ) {
-        $this->dataHelper = $dataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->logger = $logger;
         $this->registry = $registry;
         $this->contactModel = $contactModel;
@@ -100,66 +106,47 @@ class RealTimeCustomer implements ObserverInterface
         $this->customerFactory = $customerFactory;
         $this->emarsysLogs = $emarsysLogs;
         $this->subscriber = $subscriber;
-
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    /**
+     * @param Observer $observer
+     */
+    public function execute(Observer $observer)
     {
         try {
-            $data = $observer->getEvent();
-            $customer = $data->getCustomer();
+            $customer = $observer->getEvent()->getCustomer();
             $storeId = $customer->getStoreId();
+            $store = $this->storeManager->getStore($storeId);
             $websiteId = $customer->getWebsiteId();
 
-            if ($this->dataHelper->isEmarsysEnabled($websiteId) == 'false') {
+            if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 return;
             }
 
             $subscriberId = 0;
-            $isNewCustomer = true;
-            if (method_exists($observer->getEvent()->getCustomer(), 'getOrigData')) {
-                $isNewCustomer = $observer->getEvent()->getCustomer()->getOrigData('NewCustomerCheck');
-            }
+            $isNewCustomer = $customer->getOrigData('NewCustomerCheck');
             if ($isNewCustomer) {
                 $this->registry->unregister('NewCustomerIdSet');
-                $this->registry->register('NewCustomerIdSet',$customer->getId());
+                $this->registry->register('NewCustomerIdSet', $customer->getId());
 
                 $checkSubscriber = $this->subscriber->loadByEmail($customer->getEmail());
                 $subscriberId = $checkSubscriber->getId();
             }
 
-            $forceMagentoIDAsKeyID = $beforeSaveEmailAddress = false;
-            if (method_exists($observer->getEvent()->getCustomer(),'getOrigData')) {
-                $beforeSaveEmailAddress = $observer->getEvent()->getCustomer()->getOrigData('customer_email');
-            }
-            if ($beforeSaveEmailAddress != $observer->getEvent()->getCustomer()->getEmail()) {
+            $forceMagentoIDAsKeyID = false;
+            if ($customer->getOrigData('customer_email') != $customer->getEmail()) {
                 $forceMagentoIDAsKeyID = true;
             }
-
-            $realtimeStatus = $this->customerResourceModel->getDataFromCoreConfig(
-                'contacts_synchronization/emarsys_emarsys/realtime_sync',
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
-                $websiteId
-            );
-
-            if (isset($data['email'])) {
-                $customerData = $this->customerFactory->create()->setWebsiteId($websiteId)->loadByEmail($data['email']);
-                $customerId = $customerData->getEntityId();
-                $websiteId = $customerData->getWebsiteId();
-            } else {
-                $customerId = $customer->getId();
-            }
-
-            if ($realtimeStatus == 1) {
+            $customerId = $customer->getId();
+            if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {
                     return;
                 }
-                $this->contactModel->syncContact($customerId, $websiteId, $storeId, 0, $forceMagentoIDAsKeyID,
-                    $subscriberId);
+                $this->contactModel->syncContact($customerId, $websiteId, $storeId, 0, $forceMagentoIDAsKeyID, $subscriberId);
                 $this->registry->register($customerVar, 'created');
             } else {
-                $this->dataHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);
+                $this->emarsysHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(

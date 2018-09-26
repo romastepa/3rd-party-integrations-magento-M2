@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -16,25 +16,23 @@ use Emarsys\Emarsys\{
     Model\ResourceModel\OrderExport\CollectionFactory as EmarsysOrderExportFactory,
     Model\ResourceModel\CreditmemoExport\CollectionFactory as EmarsysCreditmemoExportFactory
 };
-use Magento\Framework\{
-    Model\AbstractModel,
-    Model\Context,
-    Registry,
-    Message\ManagerInterface as MessageManagerInterface,
-    Model\ResourceModel\AbstractResource,
-    Data\Collection\AbstractDb,
-    Stdlib\DateTime\DateTime,
-    Model\ResourceModel\Db\VersionControl\SnapshotFactory,
-    Stdlib\DateTime\Timezone as TimeZone,
-    App\Filesystem\DirectoryList
+use Magento\{
+    Framework\Model\AbstractModel,
+    Framework\Model\Context,
+    Framework\Registry,
+    Framework\Message\ManagerInterface as MessageManagerInterface,
+    Framework\Model\ResourceModel\AbstractResource,
+    Framework\Data\Collection\AbstractDb,
+    Framework\Stdlib\DateTime\DateTime,
+    Framework\Model\ResourceModel\Db\VersionControl\SnapshotFactory,
+    Framework\Stdlib\DateTime\Timezone as TimeZone,
+    Framework\App\Filesystem\DirectoryList,
+    Sales\Model\OrderFactory,
+    Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory,
+    Sales\Model\ResourceModel\Order\Creditmemo\Item\CollectionFactory as CreditmemoItemCollectionFactory,
+    ConfigurableProduct\Model\Product\Type\Configurable,
+    Store\Model\StoreManagerInterface
 };
-use Magento\Sales\Model\{
-    OrderFactory,
-    ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory,
-    ResourceModel\Order\Creditmemo\Item\CollectionFactory as CreditmemoItemCollectionFactory
-};
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Order
@@ -470,6 +468,7 @@ class Order extends AbstractModel
      * @param $exportTillDate
      * @param $logsArray
      * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function exportOrdersDataUsingFtp($storeId, $mode, $exportFromDate, $exportTillDate, $logsArray)
     {
@@ -760,6 +759,7 @@ class Order extends AbstractModel
      * @param $orderCollection
      * @param $creditMemoCollection
      * @param bool $sameFile
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection, $sameFile = false)
     {
@@ -980,23 +980,10 @@ class Order extends AbstractModel
                     $values[] = 1;
 
                     foreach ($emasysFields as $field) {
-                        $emarsysOrderFieldValueAdjustment = trim($field['emarsys_order_field']);
-                        if ($emarsysOrderFieldValueAdjustment != '' && $emarsysOrderFieldValueAdjustment != "'") {
-                            $orderExpValues = $this->orderResourceModel->getOrderColValue(
-                                $emarsysOrderFieldValueAdjustment,
-                                $orderEntityId,
-                                $storeId
-                            );
-
-                            if (isset($orderExpValues['created_at'])) {
-                                $createdAt = $this->emarsysHelper->getDateTimeInLocalTimezone($orderExpValues['created_at']);
-                                $values[] = $createdAt;
-                            } elseif (isset($orderExpValues['updated_at'])) {
-                                $updatedAt = $this->emarsysHelper->getDateTimeInLocalTimezone($orderExpValues['updated_at']);
-                                $values[] = $updatedAt;
-                            } else {
-                                $values[] = $orderExpValues['magento_column_value'];
-                            }
+                        $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
+                        $magentoColumnName = trim($field['magento_column_name']);
+                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
+                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemoOrder->getData($magentoColumnName));
                         }
                     }
                     if (!(($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0) && $creditMemoOrder->getCustomerIsGuest() == 1)) {
@@ -1026,7 +1013,9 @@ class Order extends AbstractModel
 
     /**
      * Get Sales CSV Header
+     * @param int $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getSalesCsvHeader($storeId = 0)
     {
