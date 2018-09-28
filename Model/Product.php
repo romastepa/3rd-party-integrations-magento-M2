@@ -381,6 +381,7 @@ class Product extends AbstractModel
      * @param array $logsArray
      * @param string $mode
      * @return bool
+     * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Zend_Http_Client_Exception
      */
     public function moveFile($store, $outputFile, $csvFilePath, $logsArray, $mode)
@@ -459,7 +460,7 @@ class Product extends AbstractModel
             }
         }
 
-        $this->emarsysHelper->removeFilesInFolder($this->emarsysDataHelper->getEmarsysMediaDirectoryPath('product'));
+        $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY));
 
         return $result;
     }

@@ -6,17 +6,17 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Webapi\Soap;
-use Magento\Config\Model\ResourceModel\Config;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Emarsys\Emarsys\Model\ResourceModel\Event as EmarsysResourceModelEvent;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Magento\AdminNotification\Model\InboxFactory;
-use Emarsys\Emarsys\Model\EmarsyseventsFactory;
+use Magento\{
+    Framework\App\Helper\AbstractHelper,
+    Framework\App\Helper\Context,
+    Store\Model\StoreManagerInterface,
+    AdminNotification\Model\InboxFactory
+};
+use Emarsys\Emarsys\{
+    Model\ResourceModel\Event as EmarsysResourceModelEvent,
+    Model\Logs as EmarsysModelLogs,
+    Model\EmarsyseventsFactory
+};
 
 /**
  * Class Event
@@ -116,6 +116,7 @@ class Event extends AbstractHelper
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'saveEmarsysEventSchemaNotification');
             return false;
         }
+        return true;
     }
 
     /**
@@ -124,20 +125,24 @@ class Event extends AbstractHelper
      */
     public function getLocalEmarsysEvents($websiteId)
     {
+        $emarsysLocalIds = [];
         try {
-            $emarsysLocalIds = [];
-            $defaultStore = $this->storeManager->getWebsite($websiteId)->getDefaultStore()->getId();
+            $defaultStore = $this->storeManager->getWebsite($websiteId)->getDefaultStore();
+            if ($defaultStore) {
+                $defaultStore = $defaultStore->getId();
+            } else {
+                throw new \Exception(__('There is no default store selected for website id %1', $websiteId));
+            }
             $emarsysContactFields = $this->resourceModelEvent->getEmarsysEvents($defaultStore);
 
             foreach ($emarsysContactFields as $_emarsysContactField) {
                 $emarsysLocalIds[] = $_emarsysContactField['event_id'];
             }
-            return $emarsysLocalIds;
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getLocalEmarsysEvents');
-            return false;
         }
+        return $emarsysLocalIds;
     }
 
     /**
