@@ -452,14 +452,12 @@ class Contact
         } else {
             $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
         }
-        $fromDate = isset($data['fromDate']) ? $data['fromDate'] . ' 00:00:01' : '';
-        $toDate = isset($data['toDate']) ? $data['toDate'] . ' 23:59:59' :  $this->date->date('Y-m-d') . ' 23:59:59';
 
         $params = [
             'website' => $websiteId,
             'storeId' => $storeId,
-            'fromDate' => $fromDate,
-            'toDate' => $toDate
+            'fromDate' => $data['fromDate'],
+            'toDate' => $data['toDate']
         ];
         $errorStatus = true;
         $jobDetails = $this->cronHelper->getJobDetail($exportMode);
@@ -653,8 +651,8 @@ class Contact
         } else {
             $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
         }
-        $fromDate = isset($data['fromDate']) ? $data['fromDate'] . ' 00:00:01' : '';
-        $toDate = isset($data['toDate']) ? $data['toDate'] . ' 23:59:59' :  $this->date->date('Y-m-d') . ' 23:59:59';
+        $fromDate = (isset($data['fromDate']) && !empty($data['fromDate'])) ? $data['fromDate'] . ' 00:00:01' : '';
+        $toDate = (isset($data['toDate']) && !empty($data['toDate'])) ? $data['toDate'] . ' 23:59:59' :  $this->date->date('Y-m-d') . ' 23:59:59';
 
         $params = [
             'website' => $websiteId,

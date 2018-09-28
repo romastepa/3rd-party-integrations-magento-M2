@@ -95,26 +95,24 @@ class EmarsysCustomerExport extends Command
                 $data['website'] = $store->getWebsiteId();
                 $data['storeId'] = $storeId;
                 $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
-                if (!empty($customerCollection)) {
-                    if (count($customerCollection) <= 100000) {
-                        try {
-                            \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Api\Contact::class)->syncFullContactUsingApi(
-                                \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
-                                $data
-                            );
-                        } catch (\Exception $e) {
-                            $output->writeln($e->getMessage());
-                            $output->writeln($e->getTrace());
-                        }
-                    } else {
-                        try {
-                            \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\WebDav\WebDav::class)->syncFullContactUsingWebDav(
-                                \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV,
-                                $data
-                            );
-                        } catch (\Exception $e) {
-                            $output->writeln($e->getMessage());
-                        }
+                if ($customerCollection->getSize() <= 100000) {
+                    try {
+                        \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Api\Contact::class)->syncFullContactUsingApi(
+                            \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
+                            $data
+                        );
+                    } catch (\Exception $e) {
+                        $output->writeln($e->getMessage());
+                        $output->writeln($e->getTrace());
+                    }
+                } else {
+                    try {
+                        \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\WebDav\WebDav::class)->syncFullContactUsingWebDav(
+                            \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV,
+                            $data
+                        );
+                    } catch (\Exception $e) {
+                        $output->writeln($e->getMessage());
                     }
                 }
             }

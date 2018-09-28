@@ -465,15 +465,24 @@ class Customer extends AbstractDb
             ->getCollection()
             ->addFieldToFilter('website_id', ['eq' => $data['website']]);
 
-        if (isset($data['fromDate']) && isset($data['toDate']) && $data['fromDate'] != '' && $data['toDate'] != '') {
+        if (isset($data['fromDate']) &&  !empty($data['fromDate'])) {
             date_default_timezone_set($this->_timezoneInterface->getConfigTimezone());
             $fromDateUTC = gmdate("Y-m-d H:i:s", strtotime($data['fromDate']));
+            date_default_timezone_set($this->_timezoneInterface->getDefaultTimezone());
+
+            $customers->addFieldToFilter('created_at', ['from' => $fromDateUTC]);
+        }
+
+        if (isset($data['toDate']) && !empty($data['toDate'])) {
+            date_default_timezone_set($this->_timezoneInterface->getConfigTimezone());
             $toDateUTC = gmdate("Y-m-d H:i:s", strtotime($data['toDate']));
             date_default_timezone_set($this->_timezoneInterface->getDefaultTimezone());
 
-            $customers->addFieldToFilter('created_at', ['from' => $fromDateUTC, 'to' => $toDateUTC])
-                ->addFieldToFilter('website_id', ['eq' => $data['website']]);
+            $customers->addFieldToFilter('created_at', ['to' => $toDateUTC]);
         }
+
+        $customers->addFieldToFilter('website_id', ['eq' => $data['website']]);
+
         if ($storeId) {
             $customers->addFieldToFilter('store_id', ['eq' => $data['storeId']]);
         }

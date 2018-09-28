@@ -32,7 +32,7 @@ class SendEmail extends AbstractModel
     /**
      * @var EmarsysHelperData
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * @var DateTime
@@ -73,7 +73,7 @@ class SendEmail extends AbstractModel
      * SendEmail constructor.
      * @param Context $context
      * @param Registry $registry
-     * @param EmarsysHelperData $emarsysHelperData
+     * @param EmarsysHelperData $emarsysHelper
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param MessageInterface $message
@@ -88,7 +88,7 @@ class SendEmail extends AbstractModel
     public function __construct(
         Context $context,
         Registry $registry,
-        EmarsysHelperData $emarsysHelperData,
+        EmarsysHelperData $emarsysHelper,
         customerResourceModel $customerResourceModel,
         DateTime $date,
         MessageInterface $message,
@@ -100,7 +100,7 @@ class SendEmail extends AbstractModel
         AbstractDb $resourceCollection = null,
         array $data = []
     ) {
-        $this->emarsysHelperData = $emarsysHelperData;
+        $this->emarsysHelper = $emarsysHelper;
         $this->date = $date;
         $this->customerResourceModel = $customerResourceModel;
         $this->_message = $message;
@@ -144,7 +144,7 @@ class SendEmail extends AbstractModel
             $logsArray['id'] = $logId;
 
             //check emarsys module status
-            if ($this->emarsysHelperData->isEmarsysEnabled($websiteId)) {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
 
                 //check emarsys transaction emails enable
                 if ($this->checkTransactionalMailEnabled($websiteId)) {
@@ -190,7 +190,7 @@ class SendEmail extends AbstractModel
                             $buildRequest[$subscriberIdKey] = $subscribeId;
                         }
 
-                        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
+                        $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
                         $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
                         $buildRequest['key_id'] = $uniqueIdKey;
                         if ($keyField == 'email') {
@@ -348,7 +348,7 @@ class SendEmail extends AbstractModel
      */
     public function checkTransactionalMailEnabled($websiteId)
     {
-        $status = $this->emarsysHelperData->getConfigValue(
+        $status = $this->emarsysHelper->getConfigValue(
             'transaction_mail/transactionmail/enable_customer', 'websites', $websiteId
         );
 

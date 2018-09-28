@@ -17,6 +17,7 @@ use Magento\{
     Framework\Model\ResourceModel\AbstractResource,
     Framework\Data\Collection\AbstractDb,
     Framework\Model\AbstractModel,
+    Catalog\Model\Product as ProductModel,
     Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
     Directory\Model\CurrencyFactory,
     Store\Model\StoreManagerInterface
@@ -80,11 +81,11 @@ class Emarsysproductexport extends AbstractModel
      * @param ScopeConfigInterface $scopeConfig
      * @param CurrencyFactory $currencyFactory
      * @param Csv $csvWriter
+     * @param EmarsysDataHelper $emarsysDataHelper
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
-     * @param EmarsysDataHelper $emarsysDataHelper
      * @param array $data
      */
     public function __construct(
@@ -188,7 +189,7 @@ class Emarsysproductexport extends AbstractModel
         $this->_preparedData = array();
         $this->_prepareData();
 
-        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath('product');
+        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY);
         $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
 
         $name = 'products_' . $websiteId . '_' . date('YmdHis') . '.csv';
