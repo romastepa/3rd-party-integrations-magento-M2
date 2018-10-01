@@ -63,7 +63,10 @@ class SmartInsightApiTestConnection extends TestConnection
 
     /**
      * Emarsys test connection api credentials
-     * @return \Magento\Framework\App\ResponseInterface
+     * @return bool
+     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Http_Client_Exception
      */
     public function execute()
     {
@@ -146,5 +149,6 @@ class SmartInsightApiTestConnection extends TestConnection
 
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogs($logsArray);
+        return true;
     }
 }

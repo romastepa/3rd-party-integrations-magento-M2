@@ -136,6 +136,13 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareColumns()
     {
+        $this->addColumn("id", [
+            "header" => __("Id"),
+            "align" => "left",
+            'width' => '10',
+            "index" => "id"
+        ]);
+
         $this->addColumn("created_at", [
             "header" => __("Creation Date"),
             "align" => "left",

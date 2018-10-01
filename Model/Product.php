@@ -124,6 +124,11 @@ class Product extends AbstractModel
     protected $_mode = false;
     protected $_credentials = [];
     protected $_websites = [];
+    protected $_attributeCache = [];
+    protected $_categoryNames = [];
+    protected $_mapHeader = ['item'];
+    protected $_processedStores = [];
+
     /**
      * @var State
      */
@@ -256,7 +261,8 @@ class Product extends AbstractModel
                 $this->productExportResourceModel->truncateTable();
 
                 $defaultStoreID = false;
-
+                $this->_mapHeader = ['item'];
+                $this->_processedStores = [];
                 foreach ($website as $storeId => $store) {
                     $currencyStoreCode = $store['store']->getDefaultCurrencyCode();
                     if (!$defaultStoreID) {
@@ -274,6 +280,14 @@ class Product extends AbstractModel
 
                     $lastPageNumber = $collection->getLastPageNumber();
                     $header = $emarsysFieldNames[$storeId];
+                    $this->_categoryNames = [];
+
+                    $this->prepareHeader(
+                        $store['store']->getCode(),
+                        $header,
+                        ($storeId == $defaultStoreID) ? $storeId : 0,
+                        $currencyStoreCode
+                    );
 
                     while ($currentPageNumber <= $lastPageNumber) {
                         if ($currentPageNumber != 1) {
@@ -290,22 +304,21 @@ class Product extends AbstractModel
                         $logsArray['message_type'] = 'Success';
                         $this->logsHelper->logs($logsArray);
 
-                        $products = array();
+                        $products = [];
                         foreach ($collection as $product) {
                             $catIds = $product->getCategoryIds();
                             $categoryNames = $this->getCategoryNames($catIds, $storeId);
                             $product->setStoreId($storeId);
                             $products[$product->getId()] = [
                                 'entity_id' => $product->getId(),
-                                'params' => serialize(array(
+                                'params' => serialize([
                                     'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
                                     'store' => $store['store']->getCode(),
                                     'store_id' => $store['store']->getId(),
                                     'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames, $store['store']),
                                     'header' => $header,
                                     'currency_code' => $currencyStoreCode,
-                                ))
-                            ];
+                            ])];
                         }
 
                         if (!empty($products)) {
@@ -325,10 +338,14 @@ class Product extends AbstractModel
                     $logsArray['message_type'] = 'Success';
                     $this->logsHelper->logs($logsArray);
 
-                    $csvFilePath = $this->productExportModel->saveToCsv($websiteId, $logsArray);
-                    $bulkDir = $store['store']->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
-                    $outputFile = $bulkDir . 'products_' . $websiteId . '.csv';
-                    $uploaded = $this->moveFile($store['store'], $outputFile, $csvFilePath, $logsArray, $mode);
+                    $csvFilePath = $this->productExportModel->saveToCsv(
+                        $websiteId,
+                        $this->_mapHeader,
+                        $this->_processedStores,
+                        $logsArray
+                    );
+
+                    $uploaded = $this->moveFile($store['store'], $csvFilePath, $logsArray, $mode);
                     if ($uploaded) {
                         $logsArray['emarsys_info'] = __('Data for was uploaded');
                         $logsArray['description'] = __('Data for was uploaded');
@@ -375,8 +392,57 @@ class Product extends AbstractModel
     }
 
     /**
+     * Prepare Global Header and Mapping
+     *
+     * @param string $storeCode
+     * @param array $header
+     * @param bool $isDefault
+     * @param string $currencyCode
+     * @return mixed
+     */
+    public function prepareHeader($storeCode, $header, $isDefault = false, $currencyCode)
+    {
+        if (!array_key_exists($storeCode, $this->_processedStores)) {
+            // $this->_processedStores[$storeCode] = array(oldKey => newKey);
+            $this->_processedStores[$storeCode] = [];
+            foreach ($header as $key => &$value) {
+                if (strtolower($value) == 'item') {
+                    unset($header[$key]);
+                    $this->_processedStores[$storeCode][$key] = 0;
+                    continue;
+                }
+
+                if (!$isDefault) {
+                    if (strtolower($value) == 'price' || strtolower($value) == 'msrp') {
+                        $newValue = $value . '_' . $currencyCode;
+                        $existingKey = array_search($newValue, $this->_mapHeader);
+                        if ($existingKey) {
+                            unset($header[$key]);
+                            $this->_processedStores[$storeCode][$key] = $existingKey;
+                            continue;
+                        } else {
+                            $value = $newValue;
+                        }
+                    } else {
+                        $value = $value . '_' . $storeCode;
+                    }
+                }
+            }
+            $headers = array_flip($header);
+
+            foreach ($headers as $head => $key) {
+                $this->_mapHeader[] = $head;
+                $renewedHead = array_keys($this->_mapHeader);
+                $lastElementKey = array_pop($renewedHead);
+                $this->_processedStores[$storeCode][$key] = $lastElementKey;
+            }
+        }
+
+        return $this->_processedStores[$storeCode];
+    }
+
+    /**
      * @param \Magento\Store\Model\Store $store
-     * @param string $outputFile
      * @param string $csvFilePath
      * @param array $logsArray
      * @param string $mode
@@ -384,12 +450,15 @@ class Product extends AbstractModel
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Zend_Http_Client_Exception
      */
-    public function moveFile($store, $outputFile, $csvFilePath, $logsArray, $mode)
+    public function moveFile($store, $csvFilePath, $logsArray, $mode)
     {
         $result = true;
         $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED);
-        $url = $this->emarsysHelper->getEmarsysMediaUrlPath('product', $csvFilePath);
-        if ($apiExportEnabled) {
+        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY, $csvFilePath);
+
+        $isBig = filesize($csvFilePath) / pow(1024, 2) > 100;
+
+        if ($apiExportEnabled && !$isBig) {
             $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
             //get token from admin configuration
             $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
@@ -398,7 +467,7 @@ class Product extends AbstractModel
             $this->apiExport->assignApiCredentials($merchantId, $token);
 
             //Get catalog API Url
-            $apiUrl = $this->apiExport->getApiUrl(\Magento\Catalog\Model\Product::ENTITY);
+            $apiUrl = $this->apiExport->getApiUrl(ProductModel::ENTITY);
 
             //Export CSV to API
             $apiExportResult = $this->apiExport->apiExport($apiUrl, $csvFilePath);
@@ -430,6 +499,8 @@ class Product extends AbstractModel
                 $result = false;
             }
         } else {
+            $bulkDir = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
+            $outputFile = $bulkDir . 'products_' . $store->getWebsiteId() . '.csv';
             if ($this->emarsysHelper->moveFileToFtp($store, $csvFilePath, $outputFile)) {
                 //successfully uploaded the file on ftp
                 $this->_errorCount = false;
@@ -594,31 +665,34 @@ class Product extends AbstractModel
      */
     public function getCategoryNames($catIds, $storeId)
     {
-        $categoryNames = [];
-        foreach ($catIds as $catId) {
-            $cateData = $this->categoryFactory->create()
-                ->setStoreId($storeId)
-                ->load($catId);
-            $categoryPath = $cateData->getPath();
-            $categoryPathIds = explode('/', $categoryPath);
-            $childCats = [];
-            if (count($categoryPathIds) > 2) {
-                $pathIndex = 0;
-                foreach ($categoryPathIds as $categoryPathId) {
-                    if ($pathIndex <= 1) {
-                        $pathIndex++;
-                        continue;
+        $key = $storeId . '-' . serialize($catIds);
+        if (!isset($this->_categoryNames[$key])) {
+            $this->_categoryNames[$key] = [];
+            foreach ($catIds as $catId) {
+                $cateData = $this->categoryFactory->create()
+                    ->setStoreId($storeId)
+                    ->load($catId);
+                $categoryPath = $cateData->getPath();
+                $categoryPathIds = explode('/', $categoryPath);
+                $childCats = [];
+                if (count($categoryPathIds) > 2) {
+                    $pathIndex = 0;
+                    foreach ($categoryPathIds as $categoryPathId) {
+                        if ($pathIndex <= 1) {
+                            $pathIndex++;
+                            continue;
+                        }
+                        $childCateData = $this->categoryFactory->create()
+                            ->setStoreId($storeId)
+                            ->load($categoryPathId);
+                        $childCats[] = $childCateData->getName();
                     }
-                    $childCateData = $this->categoryFactory->create()
-                        ->setStoreId($storeId)
-                        ->load($categoryPathId);
-                    $childCats[] = $childCateData->getName();
+                    $this->_categoryNames[$key][] = implode(" > ", $childCats);
                 }
-                $categoryNames[] = implode(" > ", $childCats);
             }
         }
 
-        return $categoryNames;
+        return $this->_categoryNames[$key];
     }
 
     /**
@@ -632,19 +706,19 @@ class Product extends AbstractModel
     protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store)
     {
         $attributeData = [];
-        foreach ($magentoAttributeNames as $attributeName) {
-            $attributeOption = $productObject->getData($attributeName);
+        foreach ($magentoAttributeNames as $attributeCode) {
+            $attributeOption = $productObject->getData($attributeCode);
             if (!is_array($attributeOption)) {
-                $attribute = $this->eavConfig->getAttribute('catalog_product', $attributeName);
+                $attribute = $this->getEavAttribute($attributeCode);
                 if ($attribute->getFrontendInput() == 'boolean'
                     || $attribute->getFrontendInput() == 'select'
                     || $attribute->getFrontendInput() == 'multiselect'
                 ) {
-                    $attributeOption = $productObject->getAttributeText($attributeName);
+                    $attributeOption = $productObject->getAttributeText($attributeCode);
                 }
             }
             if (isset($attributeOption) && $attributeOption != '') {
-                switch ($attributeName) {
+                switch ($attributeCode) {
                     case 'quantity_and_stock_status':
                         $status = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_STATUS)
                             ? ($productObject->getStatus() == Status::STATUS_ENABLED)
@@ -688,7 +762,7 @@ class Product extends AbstractModel
 
                 }
             } else {
-                switch ($attributeName) {
+                switch ($attributeCode) {
                     case 'image':
                         $url = $this->imageHelper
                             ->init($productObject, 'product_base_image')
@@ -707,5 +781,18 @@ class Product extends AbstractModel
         }
 
         return $attributeData;
+    }
+
+    /**
+     * @param $attributeCode
+     * @return  AbstractAttribute
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function getEavAttribute($attributeCode)
+    {
+        if (!isset($this->_attributeCache[$attributeCode])) {
+            $this->_attributeCache[$attributeCode] = $this->eavConfig->getAttribute('catalog_product', $attributeCode);
+        }
+        return $this->_attributeCache[$attributeCode];
     }
 }

@@ -67,8 +67,9 @@ class EmarsysSchemaCheck
                 $response = $this->api->sendRequest('GET', 'event');
 
                 if ($response['body']['data']) {
-                    foreach ($response['body']['data'] as $eventInfo)
+                    foreach ($response['body']['data'] as $eventInfo) {
                         $emarsysApiIds[] = $eventInfo['id'];
+                    }
                 }
 
                 $emarsysLocalIds = $this->eventHelper->getLocalEmarsysEvents($websiteId);

@@ -764,6 +764,7 @@ class Data extends AbstractHelper
 
     /**
      * @param $storeId
+     * @throws \Exception
      */
     public function insertFirstime($storeId)
     {
@@ -803,6 +804,7 @@ class Data extends AbstractHelper
 
     /**
      * @param null $logId
+     * @throws \Exception
      */
     public function importEvents($logId = null)
     {
@@ -871,6 +873,7 @@ class Data extends AbstractHelper
      * @param $storeId
      * @param null $logId
      * @return array|void
+     * @throws \Exception
      */
     public function getEvents($storeId, $logId=null)
     {
@@ -2636,7 +2639,7 @@ class Data extends AbstractHelper
     public function getEmarsysMediaUrlPath($folderName, $csvFilePath)
     {
         return $this->storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
-            . '/emarsys/' . $folderName . '/' . basename($csvFilePath);
+            . 'emarsys/' . $folderName . '/' . basename($csvFilePath);
     }
 
     /**
@@ -2685,9 +2688,7 @@ class Data extends AbstractHelper
      */
     public function getContactCsvGenerationPath($outputFile)
     {
-        $path = BP . '/var/' . $outputFile;
-
-        return $path;
+        return BP . '/var/' . $outputFile;;
     }
 
     /**
@@ -2725,7 +2726,7 @@ class Data extends AbstractHelper
                 }
                 $filePath = $fileDirectory . '/' . $file;
                 $fileLastModified = filemtime($filePath);
-                if ((time() - $fileLastModified) > 3*24*3600) {
+                if ((time() - $fileLastModified) > 1*24*3600) {
                     unlink($filePath);
                 }
             }

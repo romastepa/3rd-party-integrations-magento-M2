@@ -145,16 +145,16 @@ class ApiExport extends ZendClient
      * @return array
      * @throws \Zend_Http_Client_Exception
      */
-    public function apiExport($apiUrl, $filePath)
+    public function apiExport($apiUrl = false, $filePath = false)
     {
         $this->_apiUrl = $apiUrl;
         $storeId = $this->storeManagerInterface->getStore()->getId();
         $result = [];
         $result['result'] = 0;
         $result['status'] = '';
-        $result['resultBody'] = 'Api Export Failed. API URL or CSV File Not Found.';
+        $result['resultBody'] = 'Api Export Failed.';
 
-        if (!empty($apiUrl) && !empty($filePath) && (file_exists($filePath))) {
+        if ($apiUrl && $filePath && file_exists($filePath)) {
             $data = file_get_contents($filePath);
             $response = $this->post($apiUrl, $data);
             if (($response != '')) {
@@ -163,6 +163,8 @@ class ApiExport extends ZendClient
                 }
                 $result['status'] = $response->getStatus();
                 $result['resultBody'] = $response->getBody();
+            } else {
+                $result['resultBody'] = 'Api Export Failed. Empty response';
             }
         } else {
             $this->emarsysHelper->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
@@ -306,26 +308,26 @@ class ApiExport extends ZendClient
         $store = $this->storeManagerInterface->getStore($store);
         $sampleResult = array();
 
-        $emailAsIdentifierStatus = (bool)$store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
+        $emailAsIdentifierStatus = (bool)$store->getConfig(DATA::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {
             //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
             $sampleData = [
-                '00000',
-                '2017-07-07T07:07:07Z',
-                'sample@data.com',
-                'test_product_item_1',
-                '0.00',
-                '0'
+                'order' => '00000',
+                'timestamp' => '2017-07-07T07:07:07Z',
+                'email' => 'sample@data.com',
+                'item' => 'test_product_item_1',
+                'price' => '0.00',
+                'quantity' => '0'
             ];
         } else {
             //header ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
             $sampleData = [
-                '00000',
-                '2017-07-07T07:07:07Z',
-                'customer_id',
-                'test_product_item_1',
-                '0.00',
-                '0'
+                'order' => '00000',
+                'timestamp' => '2017-07-07T07:07:07Z',
+                'customer' => 'cutomer_id',
+                'item' => 'test_product_item_1',
+                'price' => '0.00',
+                'quantity' => '0'
             ];
         }
 
