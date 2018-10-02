@@ -90,8 +90,8 @@ class EmarsysCustomerExport extends Command
         foreach ($this->storeManager->getStores() as $storeId => $store) {
             if ($store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED) && $store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED)) {
                 $data = [];
-                $data['fromDate'] = $input->getOption('from');
-                $data['toDate'] = $input->getOption('to');
+                $data['fromDate'] = ($input->getOption('from') && !empty($input->getOption('from'))) ? $input->getOption('from') . ' 00:00:01' : '';
+                $data['toDate'] = ($input->getOption('to') && !empty($input->getOption('to'))) ? $input->getOption('to') . ' 23:59:59' : '';
                 $data['website'] = $store->getWebsiteId();
                 $data['storeId'] = $storeId;
                 $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);

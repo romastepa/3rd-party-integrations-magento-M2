@@ -651,8 +651,8 @@ class Contact
         } else {
             $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
         }
-        $fromDate = (isset($data['fromDate']) && !empty($data['fromDate'])) ? $data['fromDate'] . ' 00:00:01' : '';
-        $toDate = (isset($data['toDate']) && !empty($data['toDate'])) ? $data['toDate'] . ' 23:59:59' :  $this->date->date('Y-m-d') . ' 23:59:59';
+        $fromDate = (isset($data['fromDate']) && !empty($data['fromDate'])) ? $data['fromDate'] : '';
+        $toDate = (isset($data['toDate']) && !empty($data['toDate'])) ? $data['toDate'] : $this->date->date('Y-m-d') . ' 23:59:59';
 
         $params = [
             'website' => $websiteId,
