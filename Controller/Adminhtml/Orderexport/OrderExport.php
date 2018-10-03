@@ -122,22 +122,29 @@ class OrderExport extends Action
      */
     public function execute()
     {
+        //collect params
+        $data = $this->request->getParams();
+        $storeId = $data['storeId'];
+        $store = $this->storeManager->getStore($storeId);
+        $websiteId = $store->getWebsiteId();
+        $exportFromDate = '';
+        $exportTillDate = '';
+        $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
         try {
-            //collect params
-            $data = $this->request->getParams();
-            $storeId = $data['storeId'];
-            $store = $this->storeManager->getStore($storeId);
-            $websiteId = $store->getWebsiteId();
-            $exportFromDate = $data['fromDate'];
-            $exportTillDate = $data['toDate'];
-            $resultRedirect = $this->resultRedirectFactory->create();
-            $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
-
             //check emarsys enabled for the website
             if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
 
                 //check smart insight enabled for the website
                 if ($this->emarsysDataHelper->getCheckSmartInsight($websiteId)) {
+                    if (isset($data['fromDate']) && $data['fromDate'] != '') {
+                        $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
+                        $exportFromDate = $data['fromDate'];
+                    }
+
+                    if (isset($data['toDate']) && $data['toDate'] != '') {
+                        $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
+                        $exportTillDate = $data['toDate'];
+                    }
 
                     //collect order collection
                     $orderCollection = $this->emarsysOrderModel->getOrderCollection(
@@ -201,6 +208,6 @@ class OrderExport extends Action
             $this->messageManager->addErrorMessage(__('There was a problem while orders export. %1', $e->getMessage()));
         }
 
-        return $resultRedirect->setPath($url);
+        return $this->resultRedirectFactory->create()->setPath($url);
     }
 }

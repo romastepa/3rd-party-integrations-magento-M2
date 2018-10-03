@@ -130,6 +130,9 @@ class CustomerExport extends Action
             if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
                 if (isset($data['fromDate']) && $data['fromDate'] != '') {
                     $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
+                }
+
+                if (isset($data['toDate']) && $data['toDate'] != '') {
                     $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
                 }
 
