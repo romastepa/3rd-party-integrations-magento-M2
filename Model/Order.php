@@ -314,6 +314,7 @@ class Order extends AbstractModel
      * @param $exportFromDate
      * @param $exportTillDate
      * @param $logsArray
+     * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Zend_Http_Client_Exception
@@ -374,14 +375,21 @@ class Order extends AbstractModel
                 if ($maxRecordExport) {
                     //export data in chunks based on max record set in admin configuration
                     if (!empty($orderCollection) && (is_object($orderCollection)) && ($orderCollection->getSize())) {
-                        $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
-                            \Magento\Sales\Model\Order::ENTITY,
-                            $orderCollection,
-                            $mode,
-                            $storeId,
-                            $maxRecordExport,
-                            $logsArray
-                        );
+                        try {
+                            $orderSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
+                                \Magento\Sales\Model\Order::ENTITY,
+                                $orderCollection,
+                                $mode,
+                                $storeId,
+                                $maxRecordExport,
+                                $logsArray
+                            );
+                        } catch (\Exception $e) {
+                            $logsArray['emarsys_info'] = __('Export Orders Data Using Api');
+                            $logsArray['description'] = __($e->getMessage());
+                            $logsArray['message_type'] = 'Error';
+                            $this->logsHelper->logs($logsArray);
+                        }
                     } else {
                         $logsArray['emarsys_info'] = __('Export Orders Data Using Api');
                         $logsArray['description'] = __('No orders for store: %1', $storeId);
@@ -389,14 +397,21 @@ class Order extends AbstractModel
                         $this->logsHelper->logs($logsArray);
                     }
                     if (!empty($creditMemoCollection) && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
-                        $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
-                            \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
-                            $creditMemoCollection,
-                            $mode,
-                            $storeId,
-                            $maxRecordExport,
-                            $logsArray
-                        );
+                        try {
+                            $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
+                                \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
+                                $creditMemoCollection,
+                                $mode,
+                                $storeId,
+                                $maxRecordExport,
+                                $logsArray
+                            );
+                        } catch (\Exception $e) {
+                            $logsArray['emarsys_info'] = __('Export CreditMemos Data Using Api');
+                            $logsArray['description'] = __($e->getMessage());
+                            $logsArray['message_type'] = 'Error';
+                            $this->logsHelper->logs($logsArray);
+                        }
                     } else {
                         $logsArray['emarsys_info'] = __('Export CreditMemos Data Using Api');
                         $logsArray['description'] = __('No CreditMemos for store: %1', $storeId);
@@ -408,31 +423,35 @@ class Order extends AbstractModel
                         $errorCount = false;
                     }
                 } else {
-                    //export full data to emarsys
-                    $outputFile = $this->getSalesCsvFileName($store->getCode());
-                    $filePath = $fileDirectory . "/" . $outputFile;
-                    $this->generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection);
+                    try {
+                        //export full data to emarsys
+                        $outputFile = $this->getSalesCsvFileName($store->getCode());
+                        $filePath = $fileDirectory . "/" . $outputFile;
+                        $this->generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection);
 
-                    //sync data to emarsys using API
-                    $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray);
-                    $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
-                    if ($syncResponse['status']) {
-                        $errorCount = false;
-                        $logsArray['emarsys_info'] = __('File uploaded to Emarsys successfully.');
-                        $logsArray['description'] = $url . ' > ' . $outputFile;
-                        $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
-                    } else {
+                        //sync data to emarsys using API
+                        $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray);
+                        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
+                        if ($syncResponse['status']) {
+                            $errorCount = false;
+                            $logsArray['emarsys_info'] = __('File uploaded to Emarsys successfully.');
+                            $logsArray['description'] = $url . ' > ' . $outputFile;
+                            $logsArray['message_type'] = 'Success';
+                            $this->logsHelper->logs($logsArray);
+                        } else {
+                            $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
+                            $logsArray['description'] = __('Failed to upload %1 on Emarsys %2', $url, $outputFile);
+                            $logsArray['message_type'] = 'Error';
+                            $this->logsHelper->logs($logsArray);
+                        }
+                    } catch (\Exception $e) {
                         $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
-                        $logsArray['description'] = __('Failed to upload %1 on Emarsys %2', $url, $outputFile);
+                        $logsArray['description'] = __($e->getMessage());
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
                     }
                     //unset file handle
                     $this->unsetFileHandle();
-
-                    //remove file after sync
-                    $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
                 }
             } else {
                 //smart insight api test connection is failed
@@ -456,6 +475,16 @@ class Order extends AbstractModel
             }
         }
 
+        try {
+            //remove file after sync
+            $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
+        } catch (\Exception $e) {
+            $logsArray['emarsys_info'] = __('Failed to remove exported files.');
+            $logsArray['description'] = __($e->getMessage());
+            $logsArray['message_type'] = 'Error';
+            $this->logsHelper->logs($logsArray);
+        }
+
         if ($errorCount) {
             $logsArray['status'] = 'error';
             $logsArray['messages'] = __('Order export has an error. Please check.');
@@ -469,7 +498,7 @@ class Order extends AbstractModel
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogsUpdate($logsArray);
 
-        return;
+        return true;
     }
 
     /**
@@ -478,8 +507,7 @@ class Order extends AbstractModel
      * @param $exportFromDate
      * @param $exportTillDate
      * @param $logsArray
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Exception
      */
     public function exportOrdersDataUsingFtp($storeId, $mode, $exportFromDate, $exportTillDate, $logsArray)
     {
@@ -489,124 +517,144 @@ class Order extends AbstractModel
         $bulkDir = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
 
         if ($this->emarsysHelper->checkFtpConnectionByStore($store)) {
-            //ftp connection established successfully
-            $outputFile = $this->getSalesCsvFileName($store->getCode());
-            $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(
-                \Magento\Sales\Model\Order::ENTITY
-            );
+            try {
+                //ftp connection established successfully
+                $outputFile = $this->getSalesCsvFileName($store->getCode());
+                $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(
+                    \Magento\Sales\Model\Order::ENTITY
+                );
+                $moveFile = false;
 
-            //Check and create directory for csv generation
-            $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-            $filePath = $fileDirectory . "/" . $outputFile;
+                //Check and create directory for csv generation
+                $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
+                $filePath = $fileDirectory . "/" . $outputFile;
 
-            $moveFile = false;
+                //prepare order collection
+                /** @var \Magento\Sales\Model\ResourceModel\Order\Collection $orderCollection */
+                $orderCollection = $this->getOrderCollection(
+                    $mode,
+                    $storeId,
+                    $exportFromDate,
+                    $exportTillDate
+                );
+                $orderCollectionClone = false;
 
-            //prepare order collection
-            /** @var \Magento\Sales\Model\ResourceModel\Order\Collection $orderCollection */
-            $orderCollection = $this->getOrderCollection(
-                $mode,
-                $storeId,
-                $exportFromDate,
-                $exportTillDate
-            );
-            $orderCollectionClone = false;
+                //Generate Sales CSV
+                if ($orderCollection && (is_object($orderCollection)) && ($orderCollection->getSize())) {
+                    $orderCollection->setPageSize(self::BATCH_SIZE);
+                    $moveFile = true;
+                    $pages = $orderCollection->getLastPageNumber();
+                    for ($i = 1; $i <= $pages; $i++) {
+                        //echo "$i/$pages => " . date('Y-m-d H:i:s') . "\n";
+                        $orderCollection->clear();
+                        $orderCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
+                        $orderCollectionClone = clone $orderCollection;
+                        $this->generateOrderCsv($storeId, $filePath, $orderCollection, false, true);
 
-            //Generate Sales CSV
-            if ($orderCollection && (is_object($orderCollection)) && ($orderCollection->getSize())) {
-                $orderCollection->setPageSize(self::BATCH_SIZE);
-                $moveFile = true;
-                $pages = $orderCollection->getLastPageNumber();
-                for ($i = 1; $i <= $pages; $i++) {
-                    //echo "$i/$pages => " . date('Y-m-d H:i:s') . "\n";
-                    $orderCollection->clear();
-                    $orderCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
-                    $orderCollectionClone = clone $orderCollection;
-                    $this->generateOrderCsv($storeId, $filePath, $orderCollection, false, true);
-
-                    $logsArray['emarsys_info'] = __('Order\'s iteration %1 of %2', $i, $pages);
-                    $logsArray['description'] = __('Order\'s iteration %1 of %2', $i, $pages);
-                    $logsArray['message_type'] = 'Success';
-                    $this->logsHelper->logs($logsArray);
+                        $logsArray['emarsys_info'] = __('Order\'s iteration %1 of %2', $i, $pages);
+                        $logsArray['description'] = __('Order\'s iteration %1 of %2', $i, $pages);
+                        $logsArray['message_type'] = 'Success';
+                        $this->logsHelper->logs($logsArray);
+                    }
                 }
+            } catch (\Exception $e) {
+                $logsArray['emarsys_info'] = __('Export Orders Data Using FTP');
+                $logsArray['description'] = __($e->getMessage());
+                $logsArray['message_type'] = 'Error';
+                $this->logsHelper->logs($logsArray);
             }
 
-            //prepare credit-memo collection
-            /** @var  $creditMemoCollection */
-            $creditMemoCollection = $this->getCreditMemoCollection(
-                $mode,
-                $storeId,
-                $exportFromDate,
-                $exportTillDate
-            );
-            $creditMemoCollectionClone = false;
+            try {
+                //prepare credit-memo collection
+                /** @var  $creditMemoCollection */
+                $creditMemoCollection = $this->getCreditMemoCollection(
+                    $mode,
+                    $storeId,
+                    $exportFromDate,
+                    $exportTillDate
+                );
+                $creditMemoCollectionClone = false;
 
-            if ($creditMemoCollection && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
-                $moveFile = true;
-                $creditMemoCollection->setPageSize(self::BATCH_SIZE);
-                $pages = $creditMemoCollection->getLastPageNumber();
-                for ($i = 1; $i <= $pages; $i++) {
-                    //echo "$i/$pages => " . date('Y-m-d H:i:s') . "\n";
-                    $creditMemoCollection->clear();
-                    $creditMemoCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
-                    $creditMemoCollectionClone = clone $creditMemoCollection;
-                    $this->generateOrderCsv($storeId, $filePath, false, $creditMemoCollection, true);
+                if ($creditMemoCollection && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
+                    $moveFile = true;
+                    $creditMemoCollection->setPageSize(self::BATCH_SIZE);
+                    $pages = $creditMemoCollection->getLastPageNumber();
+                    for ($i = 1; $i <= $pages; $i++) {
+                        //echo "$i/$pages => " . date('Y-m-d H:i:s') . "\n";
+                        $creditMemoCollection->clear();
+                        $creditMemoCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
+                        $creditMemoCollectionClone = clone $creditMemoCollection;
+                        $this->generateOrderCsv($storeId, $filePath, false, $creditMemoCollection, true);
 
-                    $logsArray['emarsys_info'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
-                    $logsArray['description'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
-                    $logsArray['message_type'] = 'Success';
-                    $this->logsHelper->logs($logsArray);
+                        $logsArray['emarsys_info'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
+                        $logsArray['description'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
+                        $logsArray['message_type'] = 'Success';
+                        $this->logsHelper->logs($logsArray);
+                    }
                 }
+            } catch (\Exception $e) {
+                $logsArray['emarsys_info'] = __('Export CreditMemos Data Using FTP');
+                $logsArray['description'] = __($e->getMessage());
+                $logsArray['message_type'] = 'Error';
+                $this->logsHelper->logs($logsArray);
             }
 
             //CSV upload to FTP process starts
 
-            $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
+            try {
+                $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
 
-            if ($moveFile) {
-                $remoteDirPath = $bulkDir;
-                if ($remoteDirPath == '/') {
-                    $remoteFileName = $outputFile;
-                } else {
-                    $remoteDirPath = rtrim($remoteDirPath, '/');
-                    $remoteFileName = $remoteDirPath . "/" . $outputFile;
-                }
-
-                //Upload CSV to FTP
-                if ($this->emarsysHelper->moveFileToFtp($store, $filePath, $remoteFileName)) {
-                    //file uploaded to FTP server successfully
-                    $errorCount = false;
-                    $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
-                    $logsArray['description'] = $url . ' > ' . $remoteFileName;
-                    $logsArray['message_type'] = 'Success';
-                    $this->logsHelper->logs($logsArray);
-                    if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                        $this->messageManager->addSuccessMessage(
-                            __("File uploaded to FTP server successfully !!!")
-                        );
+                if ($moveFile) {
+                    $remoteDirPath = $bulkDir;
+                    if ($remoteDirPath == '/') {
+                        $remoteFileName = $outputFile;
+                    } else {
+                        $remoteDirPath = rtrim($remoteDirPath, '/');
+                        $remoteFileName = $remoteDirPath . "/" . $outputFile;
                     }
+
+                    //Upload CSV to FTP
+                    if ($this->emarsysHelper->moveFileToFtp($store, $filePath, $remoteFileName)) {
+                        //file uploaded to FTP server successfully
+                        $errorCount = false;
+                        $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
+                        $logsArray['description'] = $url . ' > ' . $remoteFileName;
+                        $logsArray['message_type'] = 'Success';
+                        $this->logsHelper->logs($logsArray);
+                        if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                            $this->messageManager->addSuccessMessage(
+                                __("File uploaded to FTP server successfully !!!")
+                            );
+                        }
+                    } else {
+                        //Failed to upload file on FTP server
+                        $errorMessage = error_get_last();
+                        $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
+                        $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
+                        $logsArray['description'] = __('Failed to upload %1 on FTP server. %2', $url, $msg);
+                        $logsArray['message_type'] = 'Error';
+                        $this->logsHelper->logs($logsArray);
+                        if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                            $this->messageManager->addErrorMessage(
+                                __("Failed to upload file on FTP server !!! %1", $msg)
+                            );
+                        }
+                    }
+                    //unset file handle
+                    $this->unsetFileHandle();
+
+                    //remove file after sync
+                    $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
                 } else {
-                    //Failed to upload file on FTP server
-                    $errorMessage = error_get_last();
-                    $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
-                    $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
-                    $logsArray['description'] = __('Failed to upload %1 on FTP server. %2', $url, $msg);
+                    //no sales data found for the store
+                    $logsArray['emarsys_info'] = __('No Sales Data found for the store . ' . $store->getCode());
+                    $logsArray['description'] = __('No Sales Data found for the store . ' . $store->getCode());
                     $logsArray['message_type'] = 'Error';
                     $this->logsHelper->logs($logsArray);
-                    if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                        $this->messageManager->addErrorMessage(
-                            __("Failed to upload file on FTP server !!! %1", $msg)
-                        );
-                    }
                 }
-                //unset file handle
-                $this->unsetFileHandle();
-
-                //remove file after sync
-                $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
-            } else {
-                //no sales data found for the store
-                $logsArray['emarsys_info'] = __('No Sales Data found for the store . ' . $store->getCode());
-                $logsArray['description'] = __('No Sales Data found for the store . ' . $store->getCode());
+            } catch (\Exception $e) {
+                $logsArray['emarsys_info'] = __('Failed to Upload CSV to FTP.');
+                $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
             }
