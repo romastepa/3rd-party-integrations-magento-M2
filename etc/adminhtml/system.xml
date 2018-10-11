@@ -547,10 +547,10 @@
                     <button_label>Clear Logs</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\LogCleanerButton</frontend_model>
                 </field>
-                <field id="clearcrondetails" translate="button_label" sortOrder="13" showInDefault="1" showInWebsite="0" showInStore="0">
+                <!--field id="clearcrondetails" translate="button_label" sortOrder="13" showInDefault="1" showInWebsite="0" showInStore="0">
                     <button_label>Clear Cron Details</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\CronDetailsCleanerButton</frontend_model>
-                </field>
+                </field-->
             </group>
         </section>
     </system>

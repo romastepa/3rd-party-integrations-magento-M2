@@ -182,20 +182,22 @@ class Emarsysproductexport extends AbstractModel
      *
      * @param int $websiteId
      * @param array $header
+     * @param array $processedStores
+     * @param string $merchantId
      * @param array $logsArray
      * @return string
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Exception
      */
-    public function saveToCsv($websiteId, $header, $processedStores, $logsArray)
+    public function saveToCsv($websiteId, $header, $processedStores, $merchantId, $logsArray)
     {
         $this->_mapHeader = $header;
         $this->_processedStores = $processedStores;
         $this->_preparedData = array();
 
-        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY);
+        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
         $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
 
-        $name = 'products_' . $websiteId . '_' . date('YmdHis') . '.csv';
+        $name = 'products_' . $websiteId . '.csv';
         $file = $fileDirectory . '/' . $name;
 
         $fh = fopen($file, 'a');
@@ -212,6 +214,7 @@ class Emarsysproductexport extends AbstractModel
      * @param resource $fh
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     protected function _prepareData($fh)
     {

@@ -342,10 +342,11 @@ class Product extends AbstractModel
                         $websiteId,
                         $this->_mapHeader,
                         $this->_processedStores,
+                        $store['merchant_id'],
                         $logsArray
                     );
 
-                    $uploaded = $this->moveFile($store['store'], $csvFilePath, $logsArray, $mode);
+                    $uploaded = $this->moveFile($store['store'], $csvFilePath, $logsArray, $mode, $store['merchant_id']);
                     if ($uploaded) {
                         $logsArray['emarsys_info'] = __('Data for was uploaded');
                         $logsArray['description'] = __('Data for was uploaded');
@@ -448,18 +449,17 @@ class Product extends AbstractModel
      * @param string $mode
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Zend_Http_Client_Exception
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function moveFile($store, $csvFilePath, $logsArray, $mode)
     {
         $result = true;
         $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED);
-        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY, $csvFilePath);
 
-        $isBig = filesize($csvFilePath) / pow(1024, 2) > 100;
-
+        $isBig = (filesize($csvFilePath) / pow(1024, 2)) > 100;
+        $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
+        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY . '/' . $merchantId, $csvFilePath);
         if ($apiExportEnabled && !$isBig) {
-            $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
             //get token from admin configuration
             $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
 
@@ -531,7 +531,7 @@ class Product extends AbstractModel
             }
         }
 
-        $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY));
+        $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId));
 
         return $result;
     }
@@ -560,7 +560,6 @@ class Product extends AbstractModel
      *
      * @param \Magento\Store\Model\Store $store
      * @param array $logsArray
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function setCredentials($store, $logsArray)
     {
@@ -571,8 +570,8 @@ class Product extends AbstractModel
                 //check feed export enabled for the website
                 if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)) {
                     //get method of catalog export from admin configuration
+                    $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
                     if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED)) {
-                        $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
                         $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
                         if ($merchantId == '' || $token == '') {
                             $this->_errorCount = true;
@@ -622,6 +621,7 @@ class Product extends AbstractModel
                     if ($mappingField) {
                         $this->_credentials[$websiteId][$storeId]['store'] = $store;
                         $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $mappedAttributes;
+                        $this->_credentials[$websiteId][$storeId]['merchant_id'] = $merchantId;
                     }
                 } else {
                     $this->_errorCount = true;

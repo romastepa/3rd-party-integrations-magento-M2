@@ -559,7 +559,9 @@ class Contact
                             if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {
                                 $custEmailIds = [];
                                 foreach ($customerChunk as $cust) {
-                                    $custEmailIds[] = $cust[$emailIdKey];
+                                    if (isset($cust[$emailIdKey])) {
+                                        $custEmailIds[] = $cust[$emailIdKey];
+                                    }
                                 }
                                 $customerCollFail = $this->custColl;
                                 $customerCollSuccess = $this->custColl;

@@ -163,7 +163,7 @@ class CustomerExport extends Action
 
                     if ($cronJobScheduled) {
                         //format and encode data in json to be saved in the table
-                        $params = $this->cronHelper->getFormathtedParams($data);
+                        $params = $this->cronHelper->getFormattedParams($data);
 
                         //save details in cron details table
                         $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
