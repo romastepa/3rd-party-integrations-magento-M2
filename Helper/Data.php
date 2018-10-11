@@ -2043,6 +2043,7 @@ class Data extends AbstractHelper
 
     /**
      * @return int
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getFirstStoreId()
     {
@@ -2059,6 +2060,7 @@ class Data extends AbstractHelper
     /**
      * @param $websiteId
      * @return int
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getFirstStoreIdOfWebsite($websiteId)
     {
@@ -2077,7 +2079,9 @@ class Data extends AbstractHelper
     /**
      * @param $templateId
      * @param $storeScope
+     * @param null $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getMagentoEventIdAndPath($templateId, $storeScope, $storeId = null)
     {
@@ -2176,7 +2180,7 @@ class Data extends AbstractHelper
         try {
             $store = $this->storeManager->getStore($subscriber->getStoreId());
             $keyField = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
-            $fieldId = $this->customerResourceModel->getKeyId('Opt-In', $subscriber->getStoreId());
+            $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $subscriber->getStoreId());
 
             if ($keyField == 'email') {
                 $keyValue = $subscriber->getSubscriberEmail();
@@ -2233,24 +2237,15 @@ class Data extends AbstractHelper
      */
     public function convertToUtc($emarsysTime)
     {
-        try {
-            $emarsysDate = \DateTime::createFromFormat(
-                'Y-m-d H:i:s',
-                $emarsysTime,
-                new \DateTimeZone('Europe/Vienna')
-            );
-            $acst_date = clone $emarsysDate; // we don't want PHP's default pass object by reference here
-            $acst_date->setTimeZone(new \DateTimeZone('UTC'));
+        $emarsysDate = \DateTime::createFromFormat(
+            'Y-m-d H:i:s',
+            $emarsysTime,
+            new \DateTimeZone('Europe/Vienna')
+        );
+        $acst_date = clone $emarsysDate; // we don't want PHP's default pass object by reference here
+        $acst_date->setTimeZone(new \DateTimeZone('UTC'));
 
-            return $EmarsysOptinChangeTime = $acst_date->format('Y-m-d H:i:s');  // UTC:  2011-04-27 2:exit;
-
-        } catch (\Exception $e) {
-            $this->addErrorLog(
-                htmlentities($e->getMessage()),
-                $this->storeManager->getStore()->getId(),
-                'convertToUtc'
-            );
-        }
+        return $EmarsysOptinChangeTime = $acst_date->format('Y-m-d H:i:s');  // UTC:  2011-04-27 2:exit;
     }
 
     /**
@@ -2271,33 +2266,34 @@ class Data extends AbstractHelper
             $logsArray['auto_log'] = 'Complete';
             $logsArray['store_id'] = $storeId;
             $logId = $this->logHelper->manualLogs($logsArray);
+
             $store = $this->storeManager->getStore($storeId);
-            $fieldId = $this->customerResourceModel->getKeyId('Opt-In', $storeId);
+
+            $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $storeId);
+            $keyField = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
+            $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
+            if ($keyField == 'email') {
+                $key = '';
+            } elseif ($keyField == 'magento_id') {
+                $key = "#" . $store->getWebsiteId() ;
+            } else {
+                $key = "#" . $store->getWebsiteId() . "#" . $store->getId();
+            }
+
             $subscribersCollection = $this->newsLetterCollectionFactory->create()
                 ->addFieldToFilter('subscriber_id', ['in' => $subscriberIdsArray]);
             $magLastModifiedStatus = [];
-            $configkeyId = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
+            foreach ($subscribersCollection as $_subscriber) {
+                $magLastModifiedStatus[$_subscriber->getSubscriberEmail() . $key] =  [
+                    'change_status_at' => $_subscriber->getChangeStatusAt(),
+                    'subscriber_status' => $_subscriber->getSubscriberStatus(),
+                    'subscriber_id' => $_subscriber->getId()
+                ];
+            }
 
-            if ($configkeyId == 'email') {
-                $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
-                $keyValue = $subscribersCollection->getColumnValues('subscriber_email');
-
-                foreach ($subscribersCollection as $_subscriber) {
-                    $magLastModifiedStatus[$_subscriber->getSubscriberEmail()] =  [
-                        'change_status_at' => $_subscriber->getChangeStatusAt(),
-                        'subscriber_status' => $_subscriber->getSubscriberStatus()
-                    ];
-                }
-            } else {
-                $keyId = $keyId = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId );
-                $keyValue = $subscriberIdsArray;
-
-                foreach ($subscribersCollection as $_subscriber) {
-                    $magLastModifiedStatus[$_subscriber->getSubscriberId()] =  [
-                        'change_status_at' => $_subscriber->getChangeStatusAt(),
-                        'subscriber_status' => $_subscriber->getSubscriberStatus()
-                    ];
-                }
+            $keyValue = $subscribersCollection->getColumnValues('subscriber_email');
+            foreach ($keyValue as &$val) {
+                $val = $val . $key;
             }
 
             $payload = [
@@ -2315,9 +2311,10 @@ class Data extends AbstractHelper
                     $magentoSubscriptionStatus = $magLastModifiedStatus[$emarsysSubscriberKey]['subscriber_status'];
                     $currentEmarsysSubcsriptionStatus = $emarsysSubscriberValue['current_value'];
                     $emarsysLastUpdateTime = $this->convertToUtc($emarsysSubscriberValue['time']);
+                    $subscriberId =  $magLastModifiedStatus[$emarsysSubscriberKey]['subscriber_id'];
 
                     if ($currentEmarsysSubcsriptionStatus != $magentoSubscriptionStatus) {
-                        if ($emarsysLastUpdateTime > $magentoLastUpdatedTime || ($emarsysLastUpdateTime == $magentoLastUpdatedTime && self::OPTIN_PRIORITY == 'Emarsys')) {
+                        if ($emarsysLastUpdateTime > $magentoLastUpdatedTime || $emarsysLastUpdateTime == $magentoLastUpdatedTime) {
                             if ($currentEmarsysSubcsriptionStatus == 1) {
                                 $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED;
                             } elseif ($currentEmarsysSubcsriptionStatus ==2) {
@@ -2326,11 +2323,7 @@ class Data extends AbstractHelper
                                 $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_UNSUBSCRIBED;
                             }
 
-                            if ($configkeyId == 'email') {
-                                $emarsysSubscriber = $this->subscriber->loadByEmail($emarsysSubscriberKey);
-                            } else {
-                                $emarsysSubscriber = $this->subscriber->load($emarsysSubscriberKey);
-                            }
+                            $emarsysSubscriber = $this->subscriber->load($subscriberId);
 
                             $emarsysSubscriber->setSubscriberStatus($statusToBeChanged)
                                 ->setEmarsysNoExport(true)
@@ -2585,7 +2578,10 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @param int $storeId
+     * @param bool $getAllheaders
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getSalesOrderCsvDefaultHeader($storeId = 0, $getAllheaders = false)
     {
@@ -2635,6 +2631,7 @@ class Data extends AbstractHelper
      * @param $folderName
      * @param $csvFilePath
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getEmarsysMediaUrlPath($folderName, $csvFilePath)
     {

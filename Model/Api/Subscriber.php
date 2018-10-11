@@ -158,9 +158,11 @@ class Subscriber
         $frontendFlag = null,
         $pageHandle = null,
         $websiteId = 1,
-        $cron = 0,
-        $subscriberEmailChangeFlag = false
+        $cron = 0
     ) {
+        $store = $this->storeManager->getStore($storeId);
+        $websiteId = $store->getWebsiteId();
+
         $logsArray['job_code'] = 'subscriber';
         $logsArray['status'] = 'started';
         $logsArray['messages'] = 'Subscriber is sync to Emarsys';
@@ -175,15 +177,19 @@ class Subscriber
 
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
-        $buildRequest = [];
-        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
+        $keyField = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_UNIQUE_FIELD);
 
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
-        if ($subscriberEmailChangeFlag){
-            $keyField = 'unique_id';
+        if ($keyField == 'email') {
+            $keyValue = $objSubscriber->getSubscriberEmail();
+        } elseif ($keyField == 'magento_id') {
+            $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId();
+        } else {
+            $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId() . "#" . $objSubscriber->getStoreId();
         }
-
+        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
+        $buildRequest = [];
         $buildRequest['key_id'] = $uniqueIdKey;
+        $buildRequest[$uniqueIdKey] = $keyValue;
 
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         if ($emailKey && $objSubscriber->getSubscriberEmail()) {
@@ -200,16 +206,8 @@ class Subscriber
             $buildRequest[$customerIdKey] = $objSubscriber->getCustomerId();
         }
 
-        if ($keyField == 'email') {
-            $buildRequest[$uniqueIdKey] = $objSubscriber->getSubscriberEmail();
-        } elseif ($keyField == 'magento_id') {
-            $buildRequest[$uniqueIdKey] = $objSubscriber->getSubscriberEmail() . "#" . $websiteId;
-        } else {
-            $buildRequest[$uniqueIdKey] = $objSubscriber->getSubscriberEmail() . "#" . $websiteId . "#" . $storeId;
-        }
-
         // Query to get opt-in Id in emarsys from magento table
-        $optInEmarsysId = $this->customerResourceModel->getKeyId('Opt-In', $storeId);
+        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
         $buildRequest[$optInEmarsysId] = $objSubscriber->getSubscriberStatus();
         if ($buildRequest[$optInEmarsysId] != 1) {
             $buildRequest[$optInEmarsysId] = 2;

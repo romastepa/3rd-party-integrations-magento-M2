@@ -101,11 +101,6 @@ class RealTimeSubscriber implements ObserverInterface
             return;
         }
 
-        $subscriberEmailChangeFlag = false;
-        if ($subscriber->getSubscriberEmail() != $subscriber->getOrigData('subscriber_email')) {
-            $subscriberEmailChangeFlag = true;
-        }
-
         $this->customerSession->setWebExtendCustomerEmail($subscriber->getSubscriberEmail());
 
         if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
@@ -116,9 +111,7 @@ class RealTimeSubscriber implements ObserverInterface
                 $storeId,
                 $frontendFlag,
                 $pageHandle,
-                $websiteId,
-                0,
-                $subscriberEmailChangeFlag
+                $websiteId
             );
 
             if ($result['apiResponseStatus'] == '200') {
