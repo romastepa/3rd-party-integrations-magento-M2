@@ -2,23 +2,27 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Block;
 
-use Magento\Framework\View\Element\Template\Context;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Magento\Checkout\Model\CartFactory;
-use Magento\Sales\Model\OrderFactory;
-use Magento\Framework\App\Request\Http;
-use Magento\Catalog\Model\CategoryFactory;
-use Magento\Catalog\Model\ProductFactory;
-use Magento\Customer\Model\Session as CustomerSession;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Model\Logs;
-use Magento\Framework\Registry;
-use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
-use Magento\Store\Model\ScopeInterface;
+use Magento\{
+    Framework\View\Element\Template\Context,
+    Checkout\Model\CartFactory,
+    Sales\Model\OrderFactory,
+    Framework\App\Request\Http,
+    Catalog\Model\CategoryFactory,
+    Catalog\Model\ProductFactory,
+    Customer\Model\Session as CustomerSession,
+    Framework\Registry,
+    Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory,
+    Store\Model\ScopeInterface
+};
+use Emarsys\Emarsys\{
+    Model\Logs,
+    Model\ResourceModel\Customer,
+    Helper\Data
+};
 
 /**
  * Class JavascriptTracking
@@ -100,6 +104,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * @param Data $emarsysHelper
      * @param Logs $emarsysLogs
      * @param Registry $registry
+     * @param OrderItemCollectionFactory $orderItemCollectionFactory
      * @param array $data
      */
     public function __construct(
@@ -146,6 +151,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Current Category
      *
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrentCategory()
     {
@@ -189,6 +195,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Current Product Sku
      *
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrentProductSku()
     {
@@ -221,6 +228,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Page Handle From Db
      *
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getPageHandleStatus()
     {
@@ -267,6 +275,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Search Param
      *
      * @return bool|mixed
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getSearchResult()
     {
@@ -317,6 +326,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Merchant Id from DB
      *
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getMerchantId()
     {
@@ -330,7 +340,8 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     /**
      * Get Status of Web Extended Javascript integration from DB
      *
-     * @return array
+     * @return bool
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getJsEnableStatusForAllPages()
     {
@@ -366,6 +377,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Order Information
      *
      * @return array|bool
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getOrderData()
     {
@@ -440,6 +452,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Website Id
      *
      * @return int
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getWebsiteId()
     {
@@ -450,6 +463,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Cart Items Data in Json Format
      *
      * @return bool|string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCartItemsJsonData()
     {
@@ -494,6 +508,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Customer Id
      *
      * @return bool|string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCustomerId()
     {
@@ -525,6 +540,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get logged in customer email
      *
      * @return bool|string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getLoggedInCustomerEmail()
     {
@@ -556,6 +572,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get customer email
      *
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCustomerEmailAddress()
     {
@@ -593,6 +610,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      * Get Store Code
      *
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getStoreCode()
     {

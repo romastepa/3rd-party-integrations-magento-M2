@@ -160,7 +160,7 @@ class Contact
     }
 
     /**
-     * @param $customerId
+     * @param \Magento\Customer\Model\Customer $customer
      * @param $websiteId
      * @param $storeId
      * @param int $cron
@@ -168,10 +168,8 @@ class Contact
      * @param int $subscriberId
      * @throws \Exception
      */
-    public function syncContact($customerId, $websiteId, $storeId, $cron = 0, $forceMagentoIDAsKeyID = false, $subscriberId = 0)
+    public function syncContact($customer, $websiteId, $storeId, $cron = 0, $forceMagentoIDAsKeyID = false, $subscriberId = 0)
     {
-        $objCustomer = $this->customer->load($customerId);
-
         $logsArray['job_code'] = 'customer';
         $logsArray['status'] = 'started';
         $logsArray['messages'] = 'Customer is sync to Emarsys';
@@ -187,36 +185,36 @@ class Contact
         $keyField = $this->dataHelper->getContactUniqueField($websiteId);
         $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
 
-        if ($forceMagentoIDAsKeyID) {
-            $keyField = 'unique_id';
-        }
-
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-        if ($emailKey && $objCustomer->getEmail()) {
-            $buildRequest[$emailKey] = $objCustomer->getEmail();
+        if ($emailKey && $customer->getEmail()) {
+            $buildRequest[$emailKey] = $customer->getEmail();
         }
 
         $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-        if ($customerIdKey && $objCustomer->getId()) {
-            $buildRequest[$customerIdKey] = $objCustomer->getId();
+        if ($customerIdKey && $customer->getId()) {
+            $buildRequest[$customerIdKey] = $customer->getId();
         }
 
         $buildRequest['key_id'] = $uniqueIdKey;
         if ($keyField == 'email') {
-            $buildRequest[$uniqueIdKey] = $objCustomer->getEmail();
+            $buildRequest[$uniqueIdKey] = $customer->getEmail();
         } elseif ($keyField == 'magento_id') {
-            $buildRequest[$uniqueIdKey] = $objCustomer->getEmail() . "#" . $websiteId;
+            $buildRequest[$uniqueIdKey] = $customer->getEmail() . "#" . $websiteId;
         } else {
-            $buildRequest[$uniqueIdKey] = $objCustomer->getEmail() . "#" . $websiteId . "#" . $storeId;
+            $buildRequest[$uniqueIdKey] = $customer->getEmail() . "#" . $websiteId . "#" . $storeId;
         }
-
+        $errorMsg = 0;
         $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
 
+        if (empty($getEmarsysMappedFields)) {
+            $errorMsg = 1;
+        }
+
         foreach ($getEmarsysMappedFields as $mappedField) {
-            if ($objCustomer->getData($mappedField['attribute_code']) && $mappedField['emarsys_contact_field'] != 0) {
+            if ($customer->getData($mappedField['attribute_code']) && $mappedField['emarsys_contact_field'] != 0) {
                 if (!is_null($mappedField['source_model'])) {
                     if ($mappedField['frontend_input'] != 'multiselect') {
-                        $optionId = $objCustomer->getData($mappedField['attribute_code']);
+                        $optionId = $customer->getData($mappedField['attribute_code']);
                         /**
                          * Get Mapped Emarsys OptionId
                          */
@@ -226,18 +224,17 @@ class Contact
                         }
                     }
                 } else {
-                    $buildRequest[$mappedField['emarsys_contact_field']] = $objCustomer->getData($mappedField['attribute_code']);
+                    $buildRequest[$mappedField['emarsys_contact_field']] = $customer->getData($mappedField['attribute_code']);
                 }
             }
         }
 
         //Fetch Customer's Mapped Address Attributes
-        $customerMappedAddressAttributes = $this->getMappedCustomersAddressAttributes($objCustomer, $storeId);
+        $customerMappedAddressAttributes = $this->getMappedCustomersAddressAttributes($customer, $storeId);
         foreach ($customerMappedAddressAttributes as $key => $value) {
             $buildRequest[$key] = $value;
         }
 
-        $errorMsg = 0;
         if (count($buildRequest) > 0) {
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Send Customer to Emarsys';
@@ -255,10 +252,10 @@ class Contact
             if ($result['status'] == '200') {
                 $logsArray['message_type'] = 'Success';
                 $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
-                $logsArray['description'] = 'Created customer ' . $objCustomer->getEmail() . ' in Emarsys succcessfully ' . $res;
-                $this->dataHelper->syncSuccess($customerId, $websiteId, $storeId, $cron);
+                $logsArray['description'] = 'Created customer ' . $customer->getEmail() . ' in Emarsys succcessfully ' . $res;
+                $this->dataHelper->syncSuccess($customer->getId(), $websiteId, $storeId, $cron);
             } else {
-                $this->dataHelper->syncFail($customerId, $websiteId, $storeId, $cron, 1);
+                $this->dataHelper->syncFail($customer->getId(), $websiteId, $storeId, $cron, 1);
                 $logsArray['message_type'] = 'Error';
                 $logsArray['description'] = $result['body']['replyText'];
                 $errorMsg = 1;
@@ -284,18 +281,24 @@ class Contact
         if ($errorMsg == 1) {
             $logsArray['status'] = 'error';
             $logsArray['messages'] = 'Create customer in Emarsys with ERROR !!!';
+            if (empty($getEmarsysMappedFields)) {
+                $logsArray['messages'] = 'Create customer in Emarsys with ERROR! Mapping is empty!';
+            }
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = 'Create customer in Emarsys';
+            $logsArray['messages'] = 'Customer in Emarsys created';
         }
         $this->logsHelper->manualLogsUpdate($logsArray);
     }
 
     /**
      * Fetch Customer's Mapped Address attributes values
+     *
      * @param $customer
      * @param $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Json_Exception
      */
     public function getMappedCustomersAddressAttributes($customer, $storeId)
     {
@@ -366,6 +369,8 @@ class Contact
      * @param $uniqueIdKey
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Zend_Json_Exception
      */
     public function getCustomerPayload(
         $objCustomer,
@@ -644,6 +649,11 @@ class Contact
         return $errorStatus ? false : true;
     }
 
+    /**
+     * @param $exportMode
+     * @param $data
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
     public function syncFullContactUsingApi($exportMode, $data)
     {
         $websiteId = $data['website'];

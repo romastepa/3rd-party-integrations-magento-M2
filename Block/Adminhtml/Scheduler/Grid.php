@@ -232,6 +232,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     public function decorateTime($value)
     {
-        return $this->timezone->date($value)->format('M d, Y h:i:s A');
+        return $this->timezone->date($value)->format('M d, Y H:i:s A');
     }
 }

@@ -1114,6 +1114,7 @@ class Order extends AbstractModel
      * @param $exportFromDate
      * @param $exportTillDate
      * @return $this|array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getOrderCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {

@@ -664,6 +664,7 @@ class Data extends AbstractHelper
      * Get Emarsys API Details
      *
      * @param type $storeId
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getEmarsysAPIDetails($storeId)
     {
