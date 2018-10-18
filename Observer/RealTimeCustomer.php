@@ -110,10 +110,12 @@ class RealTimeCustomer implements ObserverInterface
 
     /**
      * @param Observer $observer
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute(Observer $observer)
     {
         try {
+            /** @var \Magento\Customer\Model\Customer $customer */
             $customer = $observer->getEvent()->getCustomer();
             $storeId = $customer->getStoreId();
             $store = $this->storeManager->getStore($storeId);
@@ -126,24 +128,17 @@ class RealTimeCustomer implements ObserverInterface
             $subscriberId = 0;
             $isNewCustomer = $customer->getOrigData('NewCustomerCheck');
             if ($isNewCustomer) {
-                $this->registry->unregister('NewCustomerIdSet');
-                $this->registry->register('NewCustomerIdSet', $customer->getId());
-
                 $checkSubscriber = $this->subscriber->loadByEmail($customer->getEmail());
                 $subscriberId = $checkSubscriber->getId();
             }
 
-            $forceMagentoIDAsKeyID = false;
-            if ($customer->getOrigData('customer_email') != $customer->getEmail()) {
-                $forceMagentoIDAsKeyID = true;
-            }
             $customerId = $customer->getId();
             if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {
                     return;
                 }
-                $this->contactModel->syncContact($customerId, $websiteId, $storeId, 0, $forceMagentoIDAsKeyID, $subscriberId);
+                $this->contactModel->syncContact($customer, $websiteId, $storeId, 0, false, $subscriberId);
                 $this->registry->register($customerVar, 'created');
             } else {
                 $this->emarsysHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);

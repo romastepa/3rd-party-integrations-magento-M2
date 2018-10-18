@@ -131,7 +131,7 @@ class Customer extends AbstractDb
      */
     public function truncateMappingTable($storeId)
     {
-        $this->getConnection()->delete($this->getMainTable(), $this->getConnection()->quote('store_id = ?', $storeId));
+        $this->getConnection()->delete($this->getMainTable(), $this->getConnection()->quoteInto('store_id = ?', $storeId));
     }
 
     /**
@@ -141,7 +141,7 @@ class Customer extends AbstractDb
      */
     public function updateCustomerSchema($contactFields = [], $storeId)
     {
-        $this->getConnection()->delete($this->getTable('emarsys_contact_field'), $this->getConnection()->quote('store_id = ?', $storeId));
+        $this->getConnection()->delete($this->getTable('emarsys_contact_field'), $this->getConnection()->quoteInto('store_id = ?', $storeId));
         if (isset($contactFields['data'])) {
             foreach ($contactFields['data'] as $field) {
                 $this->getConnection()->insert($this->getTable('emarsys_contact_field'), [
@@ -602,7 +602,6 @@ class Customer extends AbstractDb
                                 'store_id' => $storeId
                             ]);
                         }
-
                     } elseif ($attribute['entity_type_id'] == 2) {
                         // if the attributes are of customer address
                         $select = $this->getConnection()

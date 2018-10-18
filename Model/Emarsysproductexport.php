@@ -200,7 +200,7 @@ class Emarsysproductexport extends AbstractModel
         $name = 'products_' . $websiteId . '.csv';
         $file = $fileDirectory . '/' . $name;
 
-        $fh = fopen($file, 'a');
+        $fh = fopen($file, 'w');
         $this->file->filePutCsv($fh, $this->_mapHeader, $this->_delimiter, $this->_enclosure);
         $this->_prepareData($fh);
         fclose($fh);

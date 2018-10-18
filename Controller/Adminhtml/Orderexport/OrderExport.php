@@ -119,6 +119,7 @@ class OrderExport extends Action
 
     /**
      * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
@@ -127,67 +128,41 @@ class OrderExport extends Action
         $storeId = $data['storeId'];
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
-        $exportFromDate = '';
-        $exportTillDate = '';
         $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
         try {
             //check emarsys enabled for the website
             if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
-
                 //check smart insight enabled for the website
                 if ($this->emarsysDataHelper->getCheckSmartInsight($websiteId)) {
                     if (isset($data['fromDate']) && $data['fromDate'] != '') {
                         $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
-                        $exportFromDate = $data['fromDate'];
                     }
 
                     if (isset($data['toDate']) && $data['toDate'] != '') {
                         $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
-                        $exportTillDate = $data['toDate'];
                     }
 
-                    //collect order collection
-                    $orderCollection = $this->emarsysOrderModel->getOrderCollection(
-                        EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL,
-                        $storeId,
-                        $exportFromDate,
-                        $exportTillDate
-                    );
-
-                    //collect creditmemo collection
-                    $creditMemoCollection = $this->emarsysOrderModel->getCreditMemoCollection(
-                        EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL,
-                        $storeId,
-                        $exportFromDate,
-                        $exportTillDate
-                    );
-
                     //check sales collection exist
-                    if ((!empty($orderCollection) && $orderCollection->getSize()) || (!empty($creditMemoCollection) && $creditMemoCollection->getSize())) {
-                        $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
-                        if (!$isCronjobScheduled) {
-                            //no cron job scheduled yet, schedule a new cron job
-                            $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
+                    $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
+                    if (!$isCronjobScheduled) {
+                        //no cron job scheduled yet, schedule a new cron job
+                        $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
 
-                            //format and encode data in json to be saved in the table
-                            $params = $this->cronHelper->getFormattedParams($data);
+                        //format and encode data in json to be saved in the table
+                        $params = $this->cronHelper->getFormattedParams($data);
 
-                            //save details cron details table
-                            $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
+                        //save details cron details table
+                        $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-                            $this->messageManager->addSuccessMessage(
-                                __(
-                                    'A cron named "%1" have been scheduled for smart insight export for the store %2.',
-                                    EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT,
-                                    $store->getName()
-                                ));
-                        } else {
-                            //cron job already scheduled
-                            $this->messageManager->addErrorMessage(__('A cron is already scheduled to export orders for the store %1 ', $store->getName()));
-                        }
+                        $this->messageManager->addSuccessMessage(
+                            __(
+                                'A cron named "%1" have been scheduled for smart insight export for the store %2.',
+                                EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT,
+                                $store->getName()
+                            ));
                     } else {
-                        //no sales data found for this store
-                        $this->messageManager->addErrorMessage(__('No sales data found for the store %1 ', $store->getName()));
+                        //cron job already scheduled
+                        $this->messageManager->addErrorMessage(__('A cron is already scheduled to export orders for the store %1 ', $store->getName()));
                     }
                 } else {
                     //smart insight is disabled for this website

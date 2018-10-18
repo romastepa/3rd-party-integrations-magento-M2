@@ -148,7 +148,7 @@ class Field extends AbstractDb
         } else {
             $entityTypeId = 1;
         }
-        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $attributeCode = $this->getConnection()->quoteInto($attributeCode);
         $select = $this->getConnection()
             ->select()
             ->from($this->getTable('eav_attribute'), 'attribute_id')

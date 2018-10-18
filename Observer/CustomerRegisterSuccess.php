@@ -51,6 +51,7 @@ class CustomerRegisterSuccess implements ObserverInterface
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {

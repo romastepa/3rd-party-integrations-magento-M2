@@ -90,6 +90,7 @@ class AfterAddressSaveObserver implements ObserverInterface
 
     /**
      * @param Observer $observer
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute(Observer $observer)
     {
@@ -124,7 +125,7 @@ class AfterAddressSaveObserver implements ObserverInterface
                 if ($this->registry->registry($customerVar) == 'created') {
                     return;
                 }
-                $this->contactModel->syncContact($customerId, $websiteId, $storeId);
+                $this->contactModel->syncContact($customer, $websiteId, $storeId);
                 $this->registry->register($customerVar, 'created');
             } else {
                 $this->dataHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);
