@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Plugin\Checkout\Model\Checkout;
 
 use Emarsys\Emarsys\Helper\Data;
@@ -16,6 +17,7 @@ use Magento\{
 
 /**
  * Class LayoutProcessor
+ *
  * @package Emarsys\Emarsys\Plugin\Checkout\Model\Checkout
  */
 class LayoutProcessor
@@ -42,6 +44,7 @@ class LayoutProcessor
 
     /**
      * LayoutProcessor constructor.
+     *
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManagerInterface
      * @param Session $session
@@ -52,7 +55,8 @@ class LayoutProcessor
         StoreManagerInterface $storeManagerInterface,
         Session $session,
         SubscriberFactory $subscriberFactory
-    ){
+    )
+    {
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->storeManagerInterface = $storeManagerInterface;
         $this->session = $session;
@@ -63,14 +67,22 @@ class LayoutProcessor
      * @param \Magento\Checkout\Block\Checkout\LayoutProcessor $subject
      * @param array $jsLayout
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function afterProcess(
         \Magento\Checkout\Block\Checkout\LayoutProcessor $subject,
         array $jsLayout
-    ) {
-        $flag = 0;
+    )
+    {
         $store = $this->storeManagerInterface->getStore();
         $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS);
+
+        if (!$newsLetterConfValue) {
+            return $jsLayout;
+        }
+
+        $flag = 0;
+
         if ($this->session->isLoggedIn()) {
             $customerEmail = $this->session->getCustomer()->getEmail();
             $subColl = $this->subscriberFactory->create()->getCollection()
@@ -81,26 +93,30 @@ class LayoutProcessor
             }
         }
 
-        if ((!$this->session->isLoggedIn() || $flag < 1) && $newsLetterConfValue) {
-            $jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
-            ['shippingAddress']['children']['shipping-address-fieldset']['children']['subscribe'] = [
-                'component' => 'Magento_Ui/js/form/element/abstract',
-                'config' => [
-                    'customScope' => 'shippingAddress',
-                    'template' => 'ui/form/field',
-                    'elementTmpl' => 'ui/form/element/checkbox',
-                    'options' => [],
-                    'id' => 'subscribe'
-                ],
-                'dataScope' => 'shippingAddress.subscribe',
-                'label' => 'Sign Up for Newsletter',
-                'provider' => 'checkoutProvider',
-                'visible' => true,
-                'validation' => [],
-                'sortOrder' => 250,
-                'id' => 'subscribe',
-                'value' => 'subscription'
-            ];
+        if ((!$this->session->isLoggedIn() || $flag < 1)) {
+            if (isset($jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
+                ['shippingAddress']['children']['shipping-address-fieldset']['children'])
+            ) {
+                $jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
+                ['shippingAddress']['children']['shipping-address-fieldset']['children']['subscribe'] = [
+                    'component' => 'Magento_Ui/js/form/element/abstract',
+                    'config' => [
+                        'customScope' => 'shippingAddress',
+                        'template' => 'ui/form/field',
+                        'elementTmpl' => 'ui/form/element/checkbox',
+                        'options' => [],
+                        'id' => 'subscribe',
+                    ],
+                    'dataScope' => 'shippingAddress.subscribe',
+                    'label' => 'Sign Up for Newsletter',
+                    'provider' => 'checkoutProvider',
+                    'visible' => true,
+                    'validation' => [],
+                    'sortOrder' => 250,
+                    'id' => 'subscribe',
+                    'value' => 'subscription',
+                ];
+            }
         }
 
         return $jsLayout;

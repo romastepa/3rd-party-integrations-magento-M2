@@ -73,8 +73,7 @@ class RealTimeSubscriber implements ObserverInterface
         Http $request,
         EmarsysDataHelper $emarsysHelper,
         Session $customerSession
-    )
-    {
+    ) {
         $this->subscriberModel = $subscriberModel;
         $this->storeManager = $storeManager;
         $this->customerResourceModel = $customerResourceModel;
@@ -85,14 +84,20 @@ class RealTimeSubscriber implements ObserverInterface
 
     /**
      * @param Observer $observer
+     * @return bool|void
      * @throws \Exception
      */
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $subscriber = $event->getSubscriber();
-        $subscriberId = $subscriber->getId();
         $store = $this->storeManager->getStore($subscriber->getStoreId());
+
+        if ($subscriber->getEmarsysNoExport() || $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) != 1) {
+            return true;
+        }
+
+        $subscriberId = $subscriber->getId();
         $storeId = $store->getStoreId();
         $websiteId = $store->getWebsiteId();
         $pageHandle = $this->request->getFullActionName();
@@ -103,23 +108,23 @@ class RealTimeSubscriber implements ObserverInterface
 
         $this->customerSession->setWebExtendCustomerEmail($subscriber->getSubscriberEmail());
 
-        if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
+        try {
             $frontendFlag = 1;
             $this->emarsysHelper->realtimeTimeBasedOptinSync($subscriber);
-            $result = $this->subscriberModel->syncSubscriber(
-                $subscriberId,
-                $storeId,
-                $frontendFlag,
-                $pageHandle,
-                $websiteId
-            );
+            $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag, $pageHandle);
 
             if ($result['apiResponseStatus'] == '200') {
-                return;
+                return true;
             }
-        } else {
+        } catch (\Exception $e) {
             $this->emarsysHelper->syncFail($subscriberId, $websiteId, $storeId, 0, 2);
+            $this->emarsysHelper->addErrorLog(
+                $e->getMessage(),
+                $storeId,
+                'RealTimeSubscriber::execute'
+            );
         }
+        return false;
     }
 }
 

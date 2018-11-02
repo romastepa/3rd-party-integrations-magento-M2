@@ -146,18 +146,15 @@ class Subscriber
      * @param $storeId
      * @param null $frontendFlag
      * @param null $pageHandle
-     * @param int $websiteId
      * @param int $cron
-     * @param bool $subscriberEmailChangeFlag
      * @return array
-     * @throws \Exception
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function syncSubscriber(
         $subscribeId,
         $storeId,
         $frontendFlag = null,
         $pageHandle = null,
-        $websiteId = 1,
         $cron = 0
     ) {
         $store = $this->storeManager->getStore($storeId);
@@ -178,7 +175,6 @@ class Subscriber
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
         $keyField = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_UNIQUE_FIELD);
-
         if ($keyField == 'email') {
             $keyValue = $objSubscriber->getSubscriberEmail();
         } elseif ($keyField == 'magento_id') {
@@ -186,6 +182,7 @@ class Subscriber
         } else {
             $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId() . "#" . $objSubscriber->getStoreId();
         }
+
         $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
         $buildRequest = [];
         $buildRequest['key_id'] = $uniqueIdKey;
@@ -208,8 +205,13 @@ class Subscriber
 
         // Query to get opt-in Id in emarsys from magento table
         $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
-        $buildRequest[$optInEmarsysId] = $objSubscriber->getSubscriberStatus();
-        if ($buildRequest[$optInEmarsysId] != 1) {
+        $subscriberStatus = $objSubscriber->getSubscriberStatus();
+
+        if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
+            $buildRequest[$optInEmarsysId] = '';
+        } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+            $buildRequest[$optInEmarsysId] = 1;
+        } else {
             $buildRequest[$optInEmarsysId] = 2;
         }
 
@@ -223,7 +225,7 @@ class Subscriber
             $logsArray['log_action'] = 'sync';
             $this->logsHelper->logs($logsArray);
 
-            $optInResult = $this->api->sendRequest('PUT', 'contact/?create_if_not_exists=1', $buildRequest);
+            $optInResult = $this->api->createContactInEmarsys($buildRequest);
 
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
@@ -310,7 +312,7 @@ class Subscriber
         $keyField = $this->dataHelper->getContactUniqueField($websiteId);
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
         $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
         $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
 
@@ -333,7 +335,7 @@ class Subscriber
             $subscriberChunks = array_chunk($subscriberData, EmarsysHelperData::BATCH_SIZE);
             foreach ($subscriberChunks as $subscriberChunk) {
                 //prepare subscribers payload
-                $buildRequest = $this->prepareSubscribersPayload($subscriberChunk, $uniqueIdKey);
+                $buildRequest = $this->prepareSubscribersPayload($subscriberChunk, $emailKey);
 
                 if (count($buildRequest) > 0) {
                     $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
@@ -484,11 +486,16 @@ class Subscriber
                     $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId . "#" . $storeId;
                 }
 
-                if ($subscriber['subscriber_status'] != 1) {
-                    $values[$optInEmarsysId] = '2';
+                $subscriberStatus = $subscriber->getSubscriberStatus();
+
+                if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
+                    $values[$optInEmarsysId] = '';
+                } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+                    $values[$optInEmarsysId] = 1;
                 } else {
-                    $values[$optInEmarsysId] = '1';
+                    $values[$optInEmarsysId] = 2;
                 }
+
                 $subscriberData[] = $values;
             }
         }

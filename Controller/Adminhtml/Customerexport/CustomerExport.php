@@ -2,22 +2,26 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
-use Magento\Backend\App\Action;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
-use Magento\Backend\App\Action\Context;
-use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Magento\Framework\Stdlib\DateTime\Timezone;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Framework\App\Request\Http;
-use Emarsys\Emarsys\Model\EmarsysCronDetails;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysHelperData,
+    Model\ResourceModel\Customer,
+    Model\EmarsysCronDetails,
+    Helper\Cron as EmarsysCronHelper,
+    Model\Logs
+};
+use Magento\{
+    Backend\App\Action,
+    Framework\Stdlib\DateTime\DateTime,
+    Backend\App\Action\Context,
+    Store\Model\StoreManagerInterface,
+    Framework\Stdlib\DateTime\Timezone,
+    Framework\Stdlib\DateTime\TimezoneInterface,
+    Framework\App\Request\Http
+};
 
 /**
  * Class CustomerExport
@@ -113,7 +117,8 @@ class CustomerExport extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface
+     * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
