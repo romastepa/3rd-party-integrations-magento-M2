@@ -80,7 +80,9 @@ class Email extends AbstractHelper
 
     /**
      * Return store
+     *
      * @return \Magento\Store\Api\Data\StoreInterface
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getStore()
     {
@@ -88,10 +90,13 @@ class Email extends AbstractHelper
     }
 
     /**
+     * Send Email
+     *
      * @param int $storeId
      * @param $templateParams
      * @param $sender
      * @param $reciever
+     * @throws \Magento\Framework\Exception\MailException
      */
     public function sendEmail($storeId = 1, $templateParams, $sender, $reciever)
     {
@@ -105,12 +110,13 @@ class Email extends AbstractHelper
         $to = $reciever;
 
         $this->inlineTranslation->suspend();
-        $transport = $this->_transportBuilder->setTemplateIdentifier('help_email_template_id')
-                                ->setTemplateOptions($templateOptions)
-                                ->setTemplateVars($templateVars)
-                                ->setFrom($from)
-                                ->addTo($to)
-                                ->getTransport();
+        $transport = $this->_transportBuilder
+            ->setTemplateIdentifier('help_email_template_id')
+            ->setTemplateOptions($templateOptions)
+            ->setTemplateVars($templateVars)
+            ->setFrom($from)
+            ->addTo($to)
+            ->getTransport();
         $transport->sendMessage();
         $this->inlineTranslation->resume();
     }

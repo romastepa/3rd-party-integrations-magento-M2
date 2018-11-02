@@ -514,7 +514,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     {
         try {
             if ($this->customerSession->isLoggedIn()) {
-                return $this->getLoggedInCustomerEmail();
+                return $this->getLoggedInCustomerEmail('customer_id');
             } else {
                 $customerId = $this->customerSession->getWebExtendCustomerId();
 
@@ -537,22 +537,21 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     }
 
     /**
-     * Get logged in customer email
+     * Get logged in customer email or id
      *
+     * @param 'customer_id'|'email_address' $customerBy
      * @return bool|string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getLoggedInCustomerEmail()
+    public function getLoggedInCustomerEmail($customerBy)
     {
         $loggedInCustomerEmail = false;
         try {
-            $customerBy = $this->emarsysHelper->getIdentityRegistered();
-
             if ($this->customerSession->isLoggedIn()) {
                 $customer = $this->customerSession->getCustomer();
 
                 if ($customerBy == "customer_id") {
-                    $loggedInCustomerEmail = $customer->getEntityId();
+                    $loggedInCustomerEmail = $customer->getId();
                 } else {
                     $loggedInCustomerEmail = addslashes($customer->getEmail());
                 }
@@ -577,21 +576,13 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
     public function getCustomerEmailAddress()
     {
         $customerEmail = false;
-        if ($this->emarsysHelper->getIdentityRegistered() != 'email_address') {
-            return $customerEmail;
-        }
         try {
             $sessionEmail = $this->customerSession->getWebExtendCustomerEmail();
 
             if ($this->customerSession->isLoggedIn()) {
-                $loggedInCustomerEmail = $this->getLoggedInCustomerEmail();
-                if (\Zend_Validate::is($loggedInCustomerEmail, 'EmailAddress')) {
-                    $customerEmail = $loggedInCustomerEmail;
-                }
-            } elseif (isset($sessionEmail)) {
-                if (!empty($sessionEmail) && \Zend_Validate::is($sessionEmail, 'EmailAddress')) {
-                    $customerEmail = $sessionEmail;
-                }
+                $customerEmail = $this->getLoggedInCustomerEmail('email_address');
+            } elseif (isset($sessionEmail) && !empty($sessionEmail)) {
+                $customerEmail = addslashes($sessionEmail);
             }
             $this->customerSession->setWebExtendCustomerEmail('');
             $this->customerSession->setWebExtendCustomerId('');

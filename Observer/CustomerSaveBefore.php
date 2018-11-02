@@ -64,9 +64,9 @@ class CustomerSaveBefore implements ObserverInterface
         try {
             $customer = $observer->getEvent()->getCustomer();
             if ($customer->getId()) {
-                $observer->getEvent()->getCustomer()->setOrigData('customer_email', $customer->getEmail());
+                $customer->setOrigData('customer_email', $customer->getEmail());
             } else {
-                $observer->getEvent()->getCustomer()->setOrigData('NewCustomerCheck', true);
+                $customer->setOrigData('NewCustomerCheck', true);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(

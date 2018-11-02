@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Helper;
 
 use Magento\{
@@ -47,6 +48,7 @@ use Emarsys\Emarsys\{
 
 /**
  * Class Data
+ *
  * @package Emarsys\Emarsys\Helper
  */
 class Data extends AbstractHelper
@@ -543,6 +545,7 @@ class Data extends AbstractHelper
 
     /**
      * Smart Insight Merchant Id
+     *
      * @return bool
      */
     public function isSIAPIExportEnabled()
@@ -555,6 +558,7 @@ class Data extends AbstractHelper
 
     /**
      * Smart Insight Merchant Id
+     *
      * @return mixed
      */
     public function getSIExportMerchantId()
@@ -567,6 +571,7 @@ class Data extends AbstractHelper
 
     /**
      * Smart Insight API token
+     *
      * @return mixed
      */
     public function getSIExportToken()
@@ -579,6 +584,7 @@ class Data extends AbstractHelper
 
     /**
      * Smart Insight API url
+     *
      * @return mixed
      */
     public function getEmarsysApiUrl()
@@ -591,6 +597,7 @@ class Data extends AbstractHelper
 
     /**
      * Smart Insight Order API url key
+     *
      * @return mixed
      */
     public function getOrderApiUrlKey()
@@ -603,6 +610,7 @@ class Data extends AbstractHelper
 
     /**
      * Smart Insight Product API url key
+     *
      * @return mixed
      */
     public function getProductApiUrlKey()
@@ -791,6 +799,7 @@ class Data extends AbstractHelper
 
     /**
      * Checking readonly magento events
+     *
      * @param int $id
      * @return bool
      */
@@ -822,7 +831,7 @@ class Data extends AbstractHelper
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $apiEvents = $this->getEvents($storeId, $logId);
 
-            if (count($apiEvents) == 0) {
+            if (!count($apiEvents)) {
                 return;
             }
 
@@ -873,27 +882,26 @@ class Data extends AbstractHelper
     /**
      * @param $storeId
      * @param null $logId
-     * @return array|void
+     * @return array
      * @throws \Exception
      */
-    public function getEvents($storeId, $logId=null)
+    public function getEvents($storeId, $logId = null)
     {
         $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $logsArray['id'] = $logId;
         $logsArray['store_id'] = $storeId;
         $logsArray['emarsys_info'] = 'Update Schema';
-
+        $result = [];
         try {
-            $result = [];
             $this->api->setWebsiteId($websiteId);
             $response = $this->api->sendRequest('GET', 'event');
 
-            if ($response['status']==200) {
-                if (!empty($response['body']['data'])) {
+            if ($response['status'] == 200) {
+                if (isset($response['body']['data'])) {
                     foreach ($response['body']['data'] as $item) {
                         $result[$item['id']] = $item['name'];
                     }
-                    $logsArray['description'] = print_r($result,true);
+                    $logsArray['description'] = print_r($result, true);
                     $logsArray['action'] = 'Update Schema';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'True';
@@ -901,17 +909,13 @@ class Data extends AbstractHelper
                     $this->logHelper->logs($logsArray);
                 }
             } else {
-                $logsArray['description'] = $response['body']['replyText'];
+                $logsArray['description'] = @$response['body']['replyText'];
                 $logsArray['action'] = 'Update Schema';
                 $logsArray['message_type'] = 'Error';
                 $logsArray['log_action'] = 'True';
                 $logsArray['website_id'] = $websiteId;
                 $this->logHelper->logs($logsArray);
-
-                return;
             }
-
-            return $result;
         } catch (\Exception $e) {
             $logsArray['description'] = $e->getMessage();
             $logsArray['action'] = 'Mail Sent';
@@ -921,6 +925,8 @@ class Data extends AbstractHelper
 
             $this->logHelper->logs($logsArray);
         }
+
+        return $result;
     }
 
     /**
@@ -980,7 +986,7 @@ class Data extends AbstractHelper
                     "\n" . '<tr><td>PHP Egg</td><td>$1</td></tr>',
                     '<tr><td>PHP Credits Egg</td><td>$1</td></tr>',
                     '<tr><td>Zend Engine</td><td>$2</td></tr>' . "\n" .
-                    '<tr><td>Zend Egg</td><td>$1</td></tr>', ' ', '%S%', '%E%'
+                    '<tr><td>Zend Egg</td><td>$1</td></tr>', ' ', '%S%', '%E%',
                 ],
                 ob_get_clean()
             );
@@ -1019,7 +1025,7 @@ class Data extends AbstractHelper
         return [
             //'memory_limit' => $this->getMemoryLimit(),
             'max_execution_time' => @ini_get('max_execution_time'),
-            'phpinfo' => $this->getPhpInfoArray()
+            'phpinfo' => $this->getPhpInfoArray(),
         ];
     }
 
@@ -1038,8 +1044,10 @@ class Data extends AbstractHelper
         switch (strtolower(substr($memoryLimit, -1))) {
             case 'm':
             case 'g':
-            case 'k': return (int)$memoryLimit * 1024;
-            default: return (int)$memoryLimit;
+            case 'k':
+                return (int)$memoryLimit * 1024;
+            default:
+                return (int)$memoryLimit;
         }
 
         if ($inMegabytes) {
@@ -1077,6 +1085,7 @@ class Data extends AbstractHelper
     /**
      * @param null $storeId
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getRequirementsInfo($storeId = null)
     {
@@ -1094,40 +1103,40 @@ class Data extends AbstractHelper
 
         $clientPhpData = $this->getPhpSettings();
 
-        if ($clientPhpData['phpinfo']['soap'] ['Soap Client'] == 'enabled') :
+        if ($clientPhpData['phpinfo']['soap'] ['Soap Client'] == 'enabled') {
             $soapenable = 'Yes';
-        else :
+        } else {
             $soapenable = 'No';
-        endif;
+        }
 
-        if ($clientPhpData['phpinfo']['curl'] ['cURL support'] == 'enabled') :
+        if ($clientPhpData['phpinfo']['curl'] ['cURL support'] == 'enabled') {
             $curlenable = 'Yes';
-        else :
+        } else {
             $curlenable = 'No';
-        endif;
+        }
 
         $requirements = [
             'php_version' => [
                 'title' => 'PHP Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '5.6.0'
+                    'value' => '5.6.0',
                 ],
                 'current' => [
                     'value' => $this->getPhpVersion(),
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'memory_limit' => [
                 'title' => 'Memory Limit',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '512 MB'
+                    'value' => '512 MB',
                 ],
                 'current' => [
                     'value' => ini_get('memory_limit'),
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'magento_version' => [
                 'title' => 'Magento Version',
@@ -1137,8 +1146,8 @@ class Data extends AbstractHelper
                 ],
                 'current' => [
                     'value' => $this->getVersion(false),
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'emarsys_extension_version' => [
                 'title' => 'Emarsys Extension Version',
@@ -1148,8 +1157,8 @@ class Data extends AbstractHelper
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'curl_enabled' => [
                 'title' => 'Curl Enabled',
@@ -1159,63 +1168,63 @@ class Data extends AbstractHelper
                 ],
                 'current' => [
                     'value' => $curlenable,
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'tcp_21' => [
                 'title' => 'TCP21,TCP32000-35000Open',
                 'condition' => [
                     'sign' => '',
-                    'value' => 'Yes'
+                    'value' => 'Yes',
                 ],
                 'current' => [
                     'value' => $aggregatePortStatus,
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'soap_enabled' => [
                 'title' => 'SOAP Enabled',
                 'condition' => [
                     'sign' => '',
-                    'value' => 'Yes'
+                    'value' => 'Yes',
                 ],
                 'current' => [
                     'value' => $soapenable,
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'smart_insight' => [
                 'title' => 'Smart Insight',
                 'condition' => [
                     'sign' => '',
-                    'value' => 'Enable'
+                    'value' => 'Enable',
                 ],
                 'current' => [
                     'value' => $smartInsight,
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'real_tome_sync' => [
                 'title' => 'Realtime Synchronization',
                 'condition' => [
                     'sign' => '',
-                    'value' => 'Enable'
+                    'value' => 'Enable',
                 ],
                 'current' => [
                     'value' => $this->getRealTimeSync($websiteId),
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
             'emarsys_connection_setting' => [
                 'title' => 'Emarsys Connection Setting',
                 'condition' => [
                     'sign' => '',
-                    'value' => 'Enable'
+                    'value' => 'Enable',
                 ],
                 'current' => [
                     'value' => $emarsysModuleStatus,
-                    'status' => true
-                ]
+                    'status' => true,
+                ],
             ],
         ];
 
@@ -1238,6 +1247,7 @@ class Data extends AbstractHelper
     /**
      * @param $storeID
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function openPortStatus($storeID)
     {
@@ -1336,7 +1346,7 @@ class Data extends AbstractHelper
      * @return string
      * @throws \Exception
      */
-    public function insertFirstimeMappingPlaceholders($mappingId, $storeId)
+    public function insertFirstTimeMappingPlaceholders($mappingId, $storeId)
     {
         $magentoPlaceholderarray = [];
         $emarsysEventMappingColl = $this->emarsysEventMapping->create()->getCollection()
@@ -1394,7 +1404,6 @@ class Data extends AbstractHelper
                 $emarsysVariable = $this->getPlaceholderName($variable);
             }
 
-
             if (!empty($emarsysVariable)) {
                 $array[$i]["event_mapping_id"] = $mappingId;
                 $array[$i]["magento_placeholder_name"] = $variable;
@@ -1414,7 +1423,7 @@ class Data extends AbstractHelper
             $placeholderModel->setMagentoPlaceholderName($value['magento_placeholder_name']);
             $placeholderModel->setEmarsysPlaceholderName($value['emarsys_placeholder_name']);
             $placeholderModel->setStoreId($value['store_id']);
-            $magentoPlaceholderarray[] =$value['magento_placeholder_name'];
+            $magentoPlaceholderarray[] = $value['magento_placeholder_name'];
             $placeholderModel->save();
         }
 
@@ -1423,8 +1432,10 @@ class Data extends AbstractHelper
 
     /**
      * Refresh Placeholders
+     *
      * @param $mappingId
      * @param $storeId
+     * @throws \Exception
      */
     public function refreshPlaceholders($mappingId, $storeId)
     {
@@ -1535,6 +1546,7 @@ class Data extends AbstractHelper
      * @param string $start
      * @param string $end
      * @return bool|string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function substringBetween($haystack, $start = "{{", $end = "}}")
     {
@@ -1561,6 +1573,7 @@ class Data extends AbstractHelper
      * @param string $start
      * @param string $end
      * @return bool|string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function substringBetweenTransVar($haystack, $start = "=$", $end = "}}")
     {
@@ -1585,6 +1598,7 @@ class Data extends AbstractHelper
     /**
      * @param string $variable
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getPlaceholderName($variable = '')
     {
@@ -1596,36 +1610,36 @@ class Data extends AbstractHelper
                 return;
             }
             $findReplace = [
-                " "     => "_",
-                ".get"  => "_",
-                "."     => "_",
-                "{{"    => "_",
-                "}}"    => "_",
-                "()"    => "_",
-                "("     => "_",
-                ")"     => "_",
-                "["     => "_",
-                "]"     => "_",
-                "<"     => "_",
-                ">"     => "_",
-                "=$"    => "_",
-                "="     => "_",
-                "/"     => "_",
-                "\\"    => "_",
-                "\n"    => "_",
-                "$"     => "_",
-                "%"     => "_",
-                ","     => "_",
-                ":"     => "_",
-                "|"     => "_",
-                "'"     => "",
-                '"'     => "",
-                "var"   => "",
+                " " => "_",
+                ".get" => "_",
+                "." => "_",
+                "{{" => "_",
+                "}}" => "_",
+                "()" => "_",
+                "(" => "_",
+                ")" => "_",
+                "[" => "_",
+                "]" => "_",
+                "<" => "_",
+                ">" => "_",
+                "=$" => "_",
+                "=" => "_",
+                "/" => "_",
+                "\\" => "_",
+                "\n" => "_",
+                "$" => "_",
+                "%" => "_",
+                "," => "_",
+                ":" => "_",
+                "|" => "_",
+                "'" => "",
+                '"' => "",
+                "var" => "",
                 "trans" => "",
                 "_____" => "_",
-                "____"  => "_",
-                "___"   => "_",
-                "__"    => "_",
+                "____" => "_",
+                "___" => "_",
+                "__" => "_",
             ];
             $emarsysVariable = str_replace(array_keys($findReplace), $findReplace, strtolower($variable));
             return trim(trim($emarsysVariable, "_"));
@@ -1637,6 +1651,7 @@ class Data extends AbstractHelper
 
     /**
      * @return mixed
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function emarsysDefaultPlaceholders()
     {
@@ -1690,7 +1705,7 @@ class Data extends AbstractHelper
      * @param $store_id
      * @return string
      */
-    public function insertFirstimeHeaderMappingPlaceholders($mapping_id, $store_id)
+    public function insertFirstTimeHeaderMappingPlaceholders($mapping_id, $store_id)
     {
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
@@ -1700,7 +1715,7 @@ class Data extends AbstractHelper
                 ->addFieldToFilter('magento_event_id', $magentoEventsCollection->getData()[0]['id']);
             $emarsysEventMappingColl->addFieldToFilter('store_id', $store_id);
 
-            return $this->insertFirstimeMappingPlaceholders(
+            return $this->insertFirstTimeMappingPlaceholders(
                 $emarsysEventMappingColl->getFirstItem()->getMagentoEventId(),
                 $store_id
             );
@@ -1708,7 +1723,7 @@ class Data extends AbstractHelper
             $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $store_id,
-                'insertFirstimeHeaderMappingPlaceholders'
+                'insertFirstTimeHeaderMappingPlaceholders'
             );
         }
     }
@@ -1718,7 +1733,7 @@ class Data extends AbstractHelper
      * @param $store_id
      * @return string
      */
-    public function insertFirstimeFooterMappingPlaceholders($mapping_id, $store_id)
+    public function insertFirstTimeFooterMappingPlaceholders($mapping_id, $store_id)
     {
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
@@ -1731,7 +1746,7 @@ class Data extends AbstractHelper
                 );
             $emarsysEventMappingColl->addFieldToFilter('store_id', $store_id);
 
-            return $this->insertFirstimeMappingPlaceholders(
+            return $this->insertFirstTimeMappingPlaceholders(
                 $emarsysEventMappingColl->getFirstItem()->getMagentoEventId(),
                 $store_id
             );
@@ -1739,7 +1754,7 @@ class Data extends AbstractHelper
             $this->addErrorLog(
                 htmlentities($e->getMessage()),
                 $store_id,
-                'insertFirstimeFooterMappingPlaceholders'
+                'insertFirstTimeFooterMappingPlaceholders'
             );
         }
     }
@@ -2037,7 +2052,7 @@ class Data extends AbstractHelper
     {
         $data = [
             'name' => 'Technical Support',
-            'email' => 'support@emarsys.com'
+            'email' => 'support@emarsys.com',
         ];
         return $data;
     }
@@ -2125,6 +2140,7 @@ class Data extends AbstractHelper
 
     /**
      * Checks whether emarsys is enabled or not.
+     *
      * @param null $websiteId
      * @return bool
      */
@@ -2194,11 +2210,11 @@ class Data extends AbstractHelper
             $payload = [
                 'key_id' => $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $subscriber->getStoreId()),
                 'key_value' => $keyValue,
-                'field_id' => $fieldId
+                'field_id' => $fieldId,
             ];
 
             $this->getEmarsysAPIDetails($subscriber->getStoreId());
-            $response =  $this->getClient()->get('contact/last_change', $payload);
+            $response = $this->getClient()->get('contact/last_change', $payload);
 
             if (isset($response['data']['time'])) {
                 $emarsysTime = $response['data']['time'];
@@ -2210,17 +2226,23 @@ class Data extends AbstractHelper
                 }
                 $magentoOptinValue = $subscriber->getSubscriberStatus();
 
-                if ((($EmarsysOptinChangeTime == $magentoOptinChangeTime && self::OPTIN_PRIORITY =='Emarsys') || ($EmarsysOptinChangeTime >= $magentoOptinChangeTime)) && $emarsysOptinValue != $magentoOptinValue) {
+                if ((($EmarsysOptinChangeTime == $magentoOptinChangeTime) || ($EmarsysOptinChangeTime >= $magentoOptinChangeTime))
+                    && $emarsysOptinValue != $magentoOptinValue
+                ) {
                     if ($emarsysOptinValue == 1) {
                         $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED;
                     } elseif ($emarsysOptinValue == 2) {
                         $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_UNSUBSCRIBED;
                     } else {
-                        $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_UNSUBSCRIBED;
+                        $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED;
                     }
-                    $subscriber->setSubscriberStatus($statusToBeChanged)
-                        ->setEmarsysNoExport(true)
-                        ->save();
+                    if (!in_array($magentoOptinValue, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])
+                        && !in_array($statusToBeChanged, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED]
+                        )) {
+                        $subscriber->setSubscriberStatus($statusToBeChanged)
+                            ->setEmarsysNoExport(true)
+                            ->save();
+                    }
                 }
             }
         } catch (\Exception $e) {
@@ -2272,11 +2294,12 @@ class Data extends AbstractHelper
 
             $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $storeId);
             $keyField = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
+            $uniqueIdKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_UNIQUE_ID, $storeId);
             $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
             if ($keyField == 'email') {
                 $key = '';
             } elseif ($keyField == 'magento_id') {
-                $key = "#" . $store->getWebsiteId() ;
+                $key = "#" . $store->getWebsiteId();
             } else {
                 $key = "#" . $store->getWebsiteId() . "#" . $store->getId();
             }
@@ -2285,23 +2308,19 @@ class Data extends AbstractHelper
                 ->addFieldToFilter('subscriber_id', ['in' => $subscriberIdsArray]);
             $magLastModifiedStatus = [];
             foreach ($subscribersCollection as $_subscriber) {
-                $magLastModifiedStatus[$_subscriber->getSubscriberEmail() . $key] =  [
+                $magLastModifiedStatus[$_subscriber->getSubscriberEmail() . $key] = [
                     'change_status_at' => $_subscriber->getChangeStatusAt(),
                     'subscriber_status' => $_subscriber->getSubscriberStatus(),
-                    'subscriber_id' => $_subscriber->getId()
+                    'subscriber_id' => $_subscriber->getId(),
                 ];
             }
 
-            $keyValue = $subscribersCollection->getColumnValues('subscriber_email');
-            foreach ($keyValue as &$val) {
-                $val = $val . $key;
-            }
-
             $payload = [
-                'keyId' => $keyId,
-                'keyValues' => $keyValue,
-                'fieldId' => $fieldId
+                'keyId' => $uniqueIdKey,
+                'keyValues' => array_keys($magLastModifiedStatus),
+                'fieldId' => $fieldId,
             ];
+
             $this->getEmarsysAPIDetails($storeId);
             $response = $this->getClient()->post('contact/last_change', $payload);
 
@@ -2312,16 +2331,16 @@ class Data extends AbstractHelper
                     $magentoSubscriptionStatus = $magLastModifiedStatus[$emarsysSubscriberKey]['subscriber_status'];
                     $currentEmarsysSubcsriptionStatus = $emarsysSubscriberValue['current_value'];
                     $emarsysLastUpdateTime = $this->convertToUtc($emarsysSubscriberValue['time']);
-                    $subscriberId =  $magLastModifiedStatus[$emarsysSubscriberKey]['subscriber_id'];
+                    $subscriberId = $magLastModifiedStatus[$emarsysSubscriberKey]['subscriber_id'];
 
                     if ($currentEmarsysSubcsriptionStatus != $magentoSubscriptionStatus) {
-                        if ($emarsysLastUpdateTime > $magentoLastUpdatedTime || $emarsysLastUpdateTime == $magentoLastUpdatedTime) {
+                        if ($emarsysLastUpdateTime >= $magentoLastUpdatedTime) {
                             if ($currentEmarsysSubcsriptionStatus == 1) {
                                 $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED;
-                            } elseif ($currentEmarsysSubcsriptionStatus ==2) {
+                            } elseif ($currentEmarsysSubcsriptionStatus == 2) {
                                 $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_UNSUBSCRIBED;
                             } else {
-                                $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_UNSUBSCRIBED;
+                                $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE;
                             }
 
                             $emarsysSubscriber = $this->subscriber->load($subscriberId);
@@ -2383,12 +2402,12 @@ class Data extends AbstractHelper
                     );
 
                     $apiCall = sprintf('export/%s/data/offset=%s&limit=%s', $exportId, $offset, $limit);
-                    $mesage = "Request "  . $apiCall;
+                    $mesage = "Request " . $apiCall;
                     $response = $this->getClient()->get($apiCall, [], false);
-                    $mesage .= "Response "  . $response;
+                    $mesage .= "Response " . $response;
 
                     $this->logHelper->childLogs($logId, $mesage, current($websiteIds));
-                    $offset+=$limit;
+                    $offset += $limit;
                 } while ($this->_processSubscriptionUpdates($response, $isTimeBased));
             }
         } catch (\Exception $e) {
@@ -2428,10 +2447,6 @@ class Data extends AbstractHelper
                     if ($userSubscriberId && $model->getId()) {
                         $subscriberIds[] = $model->getId();
                         $storeId = $model->getStoreId();
-                    }
-                } else {
-                    if (count($changedOptinArray) <= 2) {
-                        return false;
                     }
                 }
             }
@@ -2552,7 +2567,7 @@ class Data extends AbstractHelper
                 'user' => $username,
                 'password' => $password,
                 'ssl' => $ftpSsl ? true : false,
-                'passive' => $passiveMode ? true : false
+                'passive' => $passiveMode ? true : false,
             ]);
         } catch (\Exception $e) {
             $this->addErrorLog($e->getMessage(), $store->getId(), 'checkFtpConnection');
@@ -2724,7 +2739,7 @@ class Data extends AbstractHelper
                 }
                 $filePath = $fileDirectory . '/' . $file;
                 $fileLastModified = filemtime($filePath);
-                if ((time() - $fileLastModified) > 1*24*3600) {
+                if ((time() - $fileLastModified) > 1 * 24 * 3600) {
                     unlink($filePath);
                 }
             }

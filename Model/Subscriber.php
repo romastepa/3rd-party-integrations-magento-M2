@@ -97,7 +97,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
     public function subscribe($email)
     {
         $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-        if ($this->emarsysHelperData->isEmarsysEnabled($websiteId)) {
+        if (!$this->emarsysHelperData->isEmarsysEnabled($websiteId)) {
             return parent::subscribe($email);
         } else {
             return $this->subscribeByEmarsys($email);
