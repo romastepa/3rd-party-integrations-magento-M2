@@ -67,7 +67,7 @@ class EmarsysSchemaCheck
                 $this->api->setWebsiteId($websiteId);
                 $response = $this->api->sendRequest('GET', 'event');
 
-                if ($response['body']['data']) {
+                if (isset($response['body']['data'])) {
                     foreach ($response['body']['data'] as $eventInfo) {
                         $emarsysApiIds[] = $eventInfo['id'];
                     }

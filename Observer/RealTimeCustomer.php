@@ -7,7 +7,6 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Psr\Log\LoggerInterface;
 use Magento\{
     Customer\Model\CustomerFactory,
     Framework\Event\Observer,
@@ -19,7 +18,6 @@ use Magento\{
 use Emarsys\Emarsys\{
     Model\Api\Contact,
     Model\ResourceModel\Customer,
-    Model\Logs,
     Helper\Data as EmarsysDataHelper
 };
 
@@ -33,11 +31,6 @@ class RealTimeCustomer implements ObserverInterface
      * @var EmarsysDataHelper
      */
     protected $emarsysHelper;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
 
     /**
      * @var Registry
@@ -65,46 +58,36 @@ class RealTimeCustomer implements ObserverInterface
     private $customerFactory;
 
     /**
-     * @var Logs
-     */
-    protected $emarsysLogs;
-
-    /**
      * @var Subscriber
      */
     protected $subscriber;
 
     /**
      * RealTimeCustomer constructor.
-     * @param LoggerInterface $logger
+     *
      * @param CustomerFactory $customerFactory
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
      * @param Contact $contactModel
      * @param EmarsysDataHelper $emarsysHelper
      * @param Customer $customerResourceModel
-     * @param Logs $emarsysLogs
      * @param Subscriber $subscriber
      */
     public function __construct(
-        LoggerInterface $logger,
         CustomerFactory $customerFactory,
         Registry $registry,
         StoreManagerInterface $storeManager,
         Contact $contactModel,
         EmarsysDataHelper $emarsysHelper,
         Customer $customerResourceModel,
-        Logs $emarsysLogs,
         Subscriber $subscriber
     ) {
         $this->emarsysHelper = $emarsysHelper;
-        $this->logger = $logger;
         $this->registry = $registry;
         $this->contactModel = $contactModel;
         $this->storeManager = $storeManager;
         $this->customerResourceModel = $customerResourceModel;
         $this->customerFactory = $customerFactory;
-        $this->emarsysLogs = $emarsysLogs;
         $this->subscriber = $subscriber;
     }
 
@@ -114,37 +97,31 @@ class RealTimeCustomer implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        try {
-            /** @var \Magento\Customer\Model\Customer $customer */
-            $customer = $observer->getEvent()->getCustomer();
-            $storeId = $customer->getStoreId();
-            $store = $this->storeManager->getStore($storeId);
-            $websiteId = $customer->getWebsiteId();
+        /** @var \Magento\Customer\Model\Customer $customer */
+        $customer = $observer->getEvent()->getCustomer();
+        $customerId = $customer->getId();
+        $storeId = $customer->getStoreId();
+        $store = $this->storeManager->getStore($storeId);
+        $websiteId = $customer->getWebsiteId();
 
+        try {
             if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 return;
             }
 
-            $subscriberId = 0;
-            $isNewCustomer = $customer->getOrigData('NewCustomerCheck');
-            if ($isNewCustomer) {
-                $checkSubscriber = $this->subscriber->loadByEmail($customer->getEmail());
-                $subscriberId = $checkSubscriber->getId();
-            }
-
-            $customerId = $customer->getId();
             if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {
                     return;
                 }
-                $this->contactModel->syncContact($customer, $websiteId, $storeId, 0, false, $subscriberId);
+                $this->contactModel->syncContact($customer, $websiteId, $storeId);
                 $this->registry->register($customerVar, 'created');
             } else {
                 $this->emarsysHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->emarsysHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);
+            $this->emarsysHelper->addErrorLog(
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'RealTimeCustomer::execute()'

@@ -62,7 +62,8 @@ class Api extends \Magento\Framework\HTTP\ZendClient
         $this->setHeaders([
             'Content-Type' => 'application/json',
             'Accept-encoding' => 'utf-8',
-            'X-WSSE' => $this->_getWSSEHeader()
+            'X-WSSE' => $this->_getWSSEHeader(),
+            'Extension-Version' => '1.0.13',
         ]);
         $response = [];
         try {

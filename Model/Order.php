@@ -1011,7 +1011,7 @@ class Order extends AbstractModel
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemo->getData($magentoColumnName));
                         }
                     }
-                    if (!($order->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
+                    if (!($creditMemoOrder->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
                         fputcsv($this->handle, $values);
                     }
                 }
@@ -1047,7 +1047,7 @@ class Order extends AbstractModel
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemoOrder->getData($magentoColumnName));
                         }
                     }
-                    if (!($order->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
+                    if (!($creditMemoOrder->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
                         fputcsv($this->handle, $values);
                     }
                 }
