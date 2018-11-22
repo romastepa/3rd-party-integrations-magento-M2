@@ -1118,9 +1118,6 @@ class Order extends AbstractModel
      */
     public function getOrderCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {
-        $store = $this->storeManager->getStore($storeId);
-        $orderStatuses = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS);
-        $orderStatuses = explode(',', $orderStatuses);
         $orderCollection = [];
 
         if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
@@ -1141,10 +1138,6 @@ class Order extends AbstractModel
             $orderCollection = $this->emarsysOrderExportFactory->create()
                 ->addFieldToFilter('store_id', ['eq' => $storeId])
                 ->addOrder('created_at', 'ASC');
-
-            if ($orderStatuses != '') {
-                $orderCollection->addFieldToFilter('status', ['in' => $orderStatuses]);
-            }
 
             if (isset($exportFromDate) && isset($exportTillDate) && $exportFromDate != '' && $exportTillDate != '') {
                 $toTimezone = $this->timezone->getDefaultTimezone();
