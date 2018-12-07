@@ -33,7 +33,6 @@ use Magento\{
     ConfigurableProduct\Model\Product\Type\Configurable,
     Store\Model\StoreManagerInterface
 };
-use MEQP2\Tests\NamingConventions\true\false;
 
 /**
  * Class Order
