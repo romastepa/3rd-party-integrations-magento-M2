@@ -450,6 +450,7 @@ class Product extends AbstractModel
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Zend_Http_Client_Exception
      */
     public function moveFile($store, $csvFilePath, $logsArray, $mode)
     {
@@ -560,80 +561,74 @@ class Product extends AbstractModel
      *
      * @param \Magento\Store\Model\Store $store
      * @param array $logsArray
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function setCredentials($store, $logsArray)
     {
         $storeId = $store->getId();
         $websiteId = $this->getWebsiteId($store);
         if (!isset($this->_credentials[$websiteId][$storeId])) {
-            if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_ENABLED)) {
-                //check feed export enabled for the website
-                if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)) {
-                    //get method of catalog export from admin configuration
-                    $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
-                    if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED)) {
-                        $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
-                        if ($merchantId == '' || $token == '') {
-                            $this->_errorCount = true;
-                            $logsArray['emarsys_info'] = __('Invalid API credentials');
-                            $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
-                            $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
-                            if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                                $this->messageManager->addErrorMessage(
-                                    __('Invalid API credential. Please check your settings and try again !!!')
-                                );
-                            }
-                            return;
-                        }
-                        $logsArray['emarsys_info'] = __('Set API credentials');
-                        $logsArray['description'] = __('Set API credentials for store %1', $storeId);
-                        $logsArray['message_type'] = 'Success';
+            if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_ENABLED)
+                && $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)
+            ) {
+                //get method of catalog export from admin configuration
+                $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
+                if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED)) {
+                    $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
+                    if ($merchantId == '' || $token == '') {
+                        $this->_errorCount = true;
+                        $logsArray['emarsys_info'] = __('Invalid API credentials');
+                        $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
+                        $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
-                    } else {
-                        if (!$this->emarsysHelper->checkFtpConnectionByStore($store)) {
-                            $this->_errorCount = true;
-                            $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
-                            $logsArray['description'] = __('Failed to connect with FTP server.');
-                            $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
-                            if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                                $this->messageManager->addErrorMessage(
-                                    __("Failed to connect with FTP server. Please check your settings and try again !!!")
-                                );
-                            }
-                            return;
+                        if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                            $this->messageManager->addErrorMessage(
+                                __('Invalid API credential. Please check your settings and try again !!!')
+                            );
                         }
-                        $logsArray['emarsys_info'] = __('Set FTP credentials');
-                        $logsArray['description'] = __('Set FTP credentials for store %1', $storeId);
-                        $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
+                        return;
                     }
-
-                    $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
-                    $mappingField = 0;
-                    foreach ($mappedAttributes as $mapAttribute) {
-                        $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-                        if ($emarsysFieldId != 0) {
-                            $mappingField = 1;
-                        }
-                    }
-                    if ($mappingField) {
-                        $this->_credentials[$websiteId][$storeId]['store'] = $store;
-                        $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $mappedAttributes;
-                        $this->_credentials[$websiteId][$storeId]['merchant_id'] = $merchantId;
-                    }
-                } else {
-                    $this->_errorCount = true;
-                    $logsArray['emarsys_info'] = __('Catalog Feed Export is Disabled');
-                    $logsArray['description'] = __('Catalog Feed Export is Disabled for the store %1.', $store->getName());
-                    $logsArray['message_type'] = 'Error';
+                    $logsArray['emarsys_info'] = __('Set API credentials');
+                    $logsArray['description'] = __('Set API credentials for store %1', $storeId);
+                    $logsArray['message_type'] = 'Success';
                     $this->logsHelper->logs($logsArray);
+                } else {
+                    if (!$this->emarsysHelper->checkFtpConnectionByStore($store)) {
+                        $this->_errorCount = true;
+                        $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
+                        $logsArray['description'] = __('Failed to connect with FTP server.');
+                        $logsArray['message_type'] = 'Error';
+                        $this->logsHelper->logs($logsArray);
+                        if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                            $this->messageManager->addErrorMessage(
+                                __("Failed to connect with FTP server. Please check your settings and try again !!!")
+                            );
+                        }
+                        return;
+                    }
+                    $logsArray['emarsys_info'] = __('Set FTP credentials');
+                    $logsArray['description'] = __('Set FTP credentials for store %1', $storeId);
+                    $logsArray['message_type'] = 'Success';
+                    $this->logsHelper->logs($logsArray);
+                }
+
+                $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
+                $mappingField = 0;
+                foreach ($mappedAttributes as $mapAttribute) {
+                    $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
+                    if ($emarsysFieldId != 0) {
+                        $mappingField = 1;
+                    }
+                }
+                if ($mappingField) {
+                    $this->_credentials[$websiteId][$storeId]['store'] = $store;
+                    $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $mappedAttributes;
+                    $this->_credentials[$websiteId][$storeId]['merchant_id'] = $merchantId;
                 }
             } else {
                 $this->_errorCount = true;
-                $logsArray['emarsys_info'] = __('Emarsys is disabled');
-                $logsArray['description'] = __('Emarsys is disabled for the website %1', $websiteId);
+                $logsArray['emarsys_info'] = __('Catalog Feed Export is Disabled');
+                $logsArray['description'] = __('Catalog Feed Export is Disabled for the store %1.', $store->getName());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
             }

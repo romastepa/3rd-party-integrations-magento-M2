@@ -115,8 +115,6 @@ class Data extends AbstractHelper
     //Smart Insight
     const XPATH_SMARTINSIGHT_ENABLED = 'smart_insight/smart_insight/smartinsight_enabled';
 
-    const XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS = 'smart_insight/smart_insight/orderexportforstatus';
-
     const XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS = 'smart_insight/smart_insight/exportguest_checkoutorders';
 
     const XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER = 'smart_insight/smart_insight/exportusing_emailidentifier';

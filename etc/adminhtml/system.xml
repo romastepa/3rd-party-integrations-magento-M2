@@ -284,13 +284,6 @@
                         <field id="smartinsight_enabled">1</field>
                     </depends>
                 </field>
-                <field id="orderexportforstatus" translate="label comment" sortOrder="25" type="multiselect" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Order Export for Statuses</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\OrderStatuses</source_model>
-                    <depends>
-                        <field id="smartinsight_enabled">1</field>
-                    </depends>
-                </field>
             </group>
         </section>
         <section id="emarsys_predict" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">

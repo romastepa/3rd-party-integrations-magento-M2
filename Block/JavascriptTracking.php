@@ -416,9 +416,9 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                         }
                     } else {
                         if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                            $price = $useBaseCurrency ? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
                         } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
                         }
                     }
 
@@ -433,7 +433,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                 $result[$order->getIncrementId()] = $orderData;
             }
 
-            if (count($result) > 0) {
+            if (count($result)) {
                 $this->customerSession->setWebExtendNewOrderIds([]);
                 return $result;
             }
@@ -512,18 +512,12 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      */
     public function getCustomerId()
     {
+        $customerId = false;
         try {
             if ($this->customerSession->isLoggedIn()) {
-                return $this->getLoggedInCustomerEmail('customer_id');
+                $customerId = $this->getLoggedInCustomerEmail('customer_id');
             } else {
                 $customerId = $this->customerSession->getWebExtendCustomerId();
-
-                if (!empty($customerId)) {
-                    $this->customerSession->setWebExtendCustomerId('');
-                    $this->customerSession->setWebExtendCustomerEmail('');
-
-                    return $customerId;
-                }
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
@@ -533,7 +527,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             );
         }
 
-        return false;
+        return $customerId;
     }
 
     /**
@@ -584,8 +578,6 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             } elseif (isset($sessionEmail) && !empty($sessionEmail)) {
                 $customerEmail = addslashes($sessionEmail);
             }
-            $this->customerSession->setWebExtendCustomerEmail('');
-            $this->customerSession->setWebExtendCustomerId('');
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),

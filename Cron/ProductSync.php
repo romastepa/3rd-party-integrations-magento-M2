@@ -50,5 +50,6 @@ class ProductSync
                 'ProductSync::execute()'
             );
         }
+        return true;
     }
 }

@@ -515,7 +515,7 @@ class Contact
 
         $keyField = $this->dataHelper->getContactUniqueField($websiteId);
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
         $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
 
         //check customer attributes are mapped
