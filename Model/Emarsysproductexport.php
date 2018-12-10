@@ -259,7 +259,7 @@ class Emarsysproductexport extends AbstractModel
                                 $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();
                                 if ($item['currency_code'] != $currencyCodeTo) {
                                     $rate = $this->currencyFactory->create()->load($item['currency_code'])->getAnyRate($currencyCodeTo);
-                                    $value = $value * $rate;
+                                    $value = number_format($value * $rate, 2, '.', '');
                                 }
                             }
                             $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
