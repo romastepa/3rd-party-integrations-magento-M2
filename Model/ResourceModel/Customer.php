@@ -420,7 +420,7 @@ class Customer extends AbstractDb
     }
 
     /**
-     * @return array
+     * @return \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
      */
     public function getAllCustomerAttributes()
     {
@@ -456,7 +456,9 @@ class Customer extends AbstractDb
 
     /**
      * get all customer based on website and date
+     *
      * @param type $data
+     * @param null $storeId
      * @return array
      */
     public function getCustomerCollection($data, $storeId = null)

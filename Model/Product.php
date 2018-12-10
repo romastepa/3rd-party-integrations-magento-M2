@@ -8,6 +8,7 @@ namespace Emarsys\Emarsys\Model;
 
 use Magento\{
     Eav\Model\Config as EavConfig,
+    Framework\App\Area,
     Framework\Model\AbstractModel,
     Framework\Model\Context,
     Framework\Model\ResourceModel\AbstractResource,
@@ -22,6 +23,7 @@ use Magento\{
     Catalog\Model\Product\Visibility,
     Catalog\Model\CategoryFactory,
     Catalog\Model\Product as ProductModel,
+    Store\Model\App\Emulation,
     Store\Model\StoreManagerInterface
 };
 
@@ -120,6 +122,11 @@ class Product extends AbstractModel
      */
     protected $imageHelper;
 
+    /**
+     * @var Emulation
+     */
+    protected $appEmulation;
+
     protected $_errorCount = false;
     protected $_mode = false;
     protected $_credentials = [];
@@ -152,6 +159,7 @@ class Product extends AbstractModel
      * @param DirectoryList $directoryList
      * @param ApiExport $apiExport
      * @param Image $imageHelper
+     * @param Emulation $appEmulation
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -175,6 +183,7 @@ class Product extends AbstractModel
         DirectoryList $directoryList,
         ApiExport $apiExport,
         Image $imageHelper,
+        Emulation $appEmulation,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -197,6 +206,7 @@ class Product extends AbstractModel
         $this->directoryList = $directoryList;
         $this->apiExport = $apiExport;
         $this->imageHelper = $imageHelper;
+        $this->appEmulation = $appEmulation;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -264,6 +274,7 @@ class Product extends AbstractModel
                 $this->_mapHeader = ['item'];
                 $this->_processedStores = [];
                 foreach ($website as $storeId => $store) {
+                    $this->appEmulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
                     $currencyStoreCode = $store['store']->getDefaultCurrencyCode();
                     if (!$defaultStoreID) {
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
@@ -330,6 +341,7 @@ class Product extends AbstractModel
                     $logsArray['description'] = __('Data for store %1 prepared', $storeId);
                     $logsArray['message_type'] = 'Success';
                     $this->logsHelper->logs($logsArray);
+                    $this->appEmulation->stopEnvironmentEmulation();
                 }
 
                 if (!empty($store)) {
@@ -751,6 +763,9 @@ class Product extends AbstractModel
                     case 'url_key':
                         $attributeData[] = $store->getBaseUrl() . $productObject->getRequestPath();
                         break;
+                    case 'price':
+                        $attributeData[] = number_format($attributeOption, 2, '.', '');
+                        break;
                     default:
                         $attributeData[] = $attributeOption;
                         break;
@@ -767,6 +782,9 @@ class Product extends AbstractModel
                         break;
                     case 'url_key':
                         $attributeData[] = $store->getBaseUrl() . $productObject->getRequestPath();
+                        break;
+                    case 'price':
+                        $attributeData[] = number_format($attributeOption, 2, '.', '');
                         break;
                     default:
                         $attributeData[] = $attributeOption;
