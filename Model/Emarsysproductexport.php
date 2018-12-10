@@ -262,7 +262,7 @@ class Emarsysproductexport extends AbstractModel
                                     $value = $value * $rate;
                                 }
                             }
-                            $data[$productId][$map[$key]] = nl2br($value);
+                            $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
                         }
                     }
                 }
