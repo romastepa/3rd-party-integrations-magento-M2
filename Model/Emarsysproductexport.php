@@ -22,7 +22,6 @@ use Magento\{
     Directory\Model\CurrencyFactory,
     Store\Model\StoreManagerInterface
 };
-use MEQP2\Tests\NamingConventions\true\resource;
 
 /**
  * Class Emarsysproductexport
@@ -127,11 +126,11 @@ class Emarsysproductexport extends AbstractModel
      * @param int|object $storeId
      * @param int $currentPageNumber
      * @param array $attributes
-     * @param $includeBundle
-     * @param $excludedCategories
+     * @param null|1|0 $includeBundle
+     * @param null|string $excludedCategories
      * @return object
      */
-    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle, $excludedCategories)
+    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle = null, $excludedCategories = null)
     {
         try {
             /** @var \Magento\Store\Model\Store $store */
