@@ -112,8 +112,7 @@
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\FtpTestConnection</frontend_model>
                 </field>
-                <field id="apiurl" type="hidden" sortOrder="45" showInDefault="0" showInWebsite="0" showInStore="0">
-                </field>
+                <field id="apiurl" type="hidden" sortOrder="45" showInDefault="0" showInWebsite="0" showInStore="0" />
             </group>
         </section>
         <section id="contacts_synchronization" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -377,10 +376,10 @@
             </group>
             <group id="feed_export" translate="label" type="text" sortOrder="20" showInDefault="0" showInWebsite="1" showInStore="0">
                 <label>Feed Export</label>
-                <field id="execute_at" translate="label comment" sortOrder="21" type="time" showInDefault="0" showInWebsite="0" showInStore="0">
+                <field id="execute_at" translate="label comment" sortOrder="21" type="time" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Execute and Export at</label>
                 </field>
-                <field id="productexportfrequency" translate="label comment" sortOrder="22" type="select" showInDefault="0" showInWebsite="0" showInStore="0">
+                <field id="productexportfrequency" translate="label comment" sortOrder="22" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Frequency</label>
                     <!-- source model which we created for drop down options -->
                     <source_model>Emarsys\Emarsys\Model\Config\Source\ProductExportFrequency</source_model>
