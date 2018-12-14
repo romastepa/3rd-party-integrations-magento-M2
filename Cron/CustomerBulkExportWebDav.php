@@ -40,8 +40,7 @@ class CustomerBulkExportWebDav
     public function __construct(
         EmarsysCronHelper $cronHelper,
         WebDav $webDavModel,
-        Logs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
         $this->webDavModel = $webDavModel;
