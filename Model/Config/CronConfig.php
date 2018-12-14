@@ -103,6 +103,10 @@ class CronConfig extends \Magento\Framework\App\Config\Value
                 $cronExprString
             )->setPath(
                 self::CRON_STRING_PATH
+            )->setScope(
+                $this->getScope()
+            )->setScopeId(
+                $this->getScopeId()
             )->save();
         } catch (\Exception $e) {
             throw new \Exception(__('We can\'t save the cron expression.'));

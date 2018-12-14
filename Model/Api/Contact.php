@@ -681,6 +681,8 @@ class Contact
 
         $websiteId = $data['website'];
 
+        $website = $this->storeManager->getWebsite($websiteId);
+
         if (isset($data['storeId'])) {
             $storeId = $data['storeId'];
         } else {
@@ -713,7 +715,9 @@ class Contact
         $logsArray['action'] = 'synced to emarsys';
 
         //check if emarsys enabled for the website
-        if ($this->dataHelper->getEmarsysConnectionSetting($websiteId)) {
+        if ($this->dataHelper->getEmarsysConnectionSetting($websiteId) &&
+            $website->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
+        ) {
             $errorStatus = $this->exportDataToApi($exportMode, $params, $logId);
         } else {
             //Emarsys is disabled for the store

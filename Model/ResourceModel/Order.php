@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Emarsys\Emarsys\{
     Model\Logs,
-    Helper\Data as EmarsysDataHelper
+    Helper\Data as EmarsysHelperData
 };
 use Magento\{
     Framework\Model\ResourceModel\Db\AbstractDb,
@@ -42,9 +42,9 @@ class Order extends AbstractDb
     protected $entityType;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelperData
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelperData;
 
     /**
      * @var StoreManagerInterface
@@ -68,7 +68,7 @@ class Order extends AbstractDb
      * @param Type $entityType
      * @param Attribute $attribute
      * @param StoreRepositoryInterface $storeRepository
-     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param EmarsysHelperData $emarsysHelperData
      * @param StoreManagerInterface $storeManager
      * @param Logs $emarsysLogs
      * @param null $connectionName
@@ -78,7 +78,7 @@ class Order extends AbstractDb
         Type $entityType,
         Attribute $attribute,
         StoreRepositoryInterface $storeRepository,
-        EmarsysDataHelper $emarsysDataHelper,
+        EmarsysHelperData $emarsysHelperData,
         StoreManagerInterface $storeManager,
         Logs $emarsysLogs,
         $connectionName = null
@@ -86,7 +86,7 @@ class Order extends AbstractDb
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysHelperData = $emarsysHelperData;
         $this->_storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
         parent::__construct($context, $connectionName);
@@ -264,7 +264,7 @@ class Order extends AbstractDb
     public function getEmarsysOrderFields($storeId)
     {
         if (!isset($this->emarsysOrderFields[$storeId])) {
-            $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
+            $heading = $this->emarsysHelperData->getSalesOrderCsvDefaultHeader($storeId);
             $select = $this->getConnection()
                 ->select()
                 ->from($this->getMainTable())

@@ -48,7 +48,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
     /**
      * @var \Emarsys\Emarsys\Helper\Data
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelperData;
 
     /**
      * EmarsysOrderField constructor.
@@ -57,7 +57,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
      * @param \Magento\Backend\Helper\Data $backendHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Helper\Data $emarsysDataHelper
+     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelperData
      */
     public function __construct(
         \Magento\Backend\Model\Session $session,
@@ -65,14 +65,14 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         \Magento\Backend\Helper\Data $backendHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Helper\Data $emarsysDataHelper
+        \Emarsys\Emarsys\Helper\Data $emarsysHelperData
     ) {
         $this->session = $session;
         $this->collectionFactory = $collectionFactory;
         $this->backendHelper = $backendHelper;
         $this->resourceModelCustomer = $resourceModelCustomer;
         $this->_storeManager = $storeManager;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysHelperData = $emarsysHelperData;
     }
 
     /**
@@ -86,7 +86,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         if (isset($session['store'])) {
             $storeId = $session['store'];
         }
-        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId, true);
+        $heading = $this->emarsysHelperData->getSalesOrderCsvDefaultHeader($storeId, true);
         array_unshift($heading, 'website_id');
         $attributeCode = $row->getData('attribute_code');
         $entityTypeId = $row->getEntityTypeId();

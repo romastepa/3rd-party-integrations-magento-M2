@@ -10,8 +10,7 @@ namespace Emarsys\Emarsys\Model;
 use Magento\Framework\{
     HTTP\ZendClient,
     Controller\Result\RawFactory,
-    File\Csv,
-    Serialize\Serializer\Json
+    File\Csv
 };
 
 use Magento\Store\Model\StoreManagerInterface;
@@ -63,11 +62,6 @@ class ApiExport extends ZendClient
     protected $storeManagerInterface;
 
     /**
-     * @var Json
-     */
-    protected $json;
-
-    /**
      * @var OrderResourceModel
      */
     protected $orderResourceModel;
@@ -83,7 +77,6 @@ class ApiExport extends ZendClient
      * @param RawFactory $resultRawFactory
      * @param Csv $csvWriter
      * @param StoreManagerInterface $storeManagerInterface
-     * @param Json $json
      * @param OrderResourceModel $orderResourceModel
      * @param ProductResourceModel $productResourceModel
      */
@@ -92,7 +85,6 @@ class ApiExport extends ZendClient
         RawFactory $resultRawFactory,
         Csv $csvWriter,
         StoreManagerInterface $storeManagerInterface,
-        Json $json,
         OrderResourceModel $orderResourceModel,
         ProductResourceModel $productResourceModel
     ) {
@@ -100,7 +92,6 @@ class ApiExport extends ZendClient
         $this->resultRawFactory = $resultRawFactory;
         $this->csvWriter = $csvWriter;
         $this->storeManagerInterface = $storeManagerInterface;
-        $this->json = $json;
         $this->orderResourceModel = $orderResourceModel;
         $this->productResourceModel = $productResourceModel;
     }
@@ -200,13 +191,12 @@ class ApiExport extends ZendClient
             $responseObject = $this->request($method);
             $response = $responseObject;
             if ($jsonDecode) {
-                $response = $this->json->unserialize($response);
+                $response = \Zend_Json::decode($response);
             }
         } catch (\Exception $e) {
-            $storeId = $this->storeManagerInterface->getStore()->getId();
             $this->emarsysHelper->addErrorLog(
                 'API Test Connection Failed. ' . $e->getMessage(),
-                $storeId,
+                $this->storeManagerInterface->getStore()->getId(),
                 'ApiExport::_request()'
             );
         }

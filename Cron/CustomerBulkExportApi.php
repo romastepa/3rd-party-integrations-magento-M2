@@ -12,7 +12,6 @@ use Emarsys\Emarsys\{
     Model\Api\Contact,
     Model\Logs as EmarsysModelLogs
 };
-use Magento\Framework\Serialize\Serializer\Json as JsonHelper;
 
 /**
  * Class CustomerBulkExportApi
@@ -25,11 +24,6 @@ class CustomerBulkExportApi
      * @var EmarsysCronHelper
      */
     protected $cronHelper;
-
-    /**
-     * @var JsonHelper
-     */
-    protected $jsonHelper;
 
     /**
      * @var Contact
@@ -45,18 +39,15 @@ class CustomerBulkExportApi
      * CustomerBulkExportApi constructor.
      *
      * @param EmarsysCronHelper $cronHelper
-     * @param JsonHelper $jsonHelper
      * @param Contact $contactModel
      * @param EmarsysModelLogs $emarsysLogs
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
-        JsonHelper $jsonHelper,
         Contact $contactModel,
         EmarsysModelLogs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
-        $this->jsonHelper = $jsonHelper;
         $this->contactModel = $contactModel;
         $this->emarsysLogs = $emarsysLogs;
     }
@@ -72,7 +63,7 @@ class CustomerBulkExportApi
                 return;
             }
 
-            $data = $this->jsonHelper->unserialize($currentCronInfo->getParams());
+            $data = \Zend_Json::decode($currentCronInfo->getParams());
 
             $this->contactModel->syncFullContactUsingApi(
                 EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,

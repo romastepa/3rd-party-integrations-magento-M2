@@ -124,6 +124,13 @@
                 <label>Please switch to website level!</label>
                 <field id="emarsys_info" translate="label" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" />
             </group>
+            <group id="enable" type="text" sortOrder="1" showInDefault="0" showInWebsite="1" showInStore="0">
+                <label>Contact Synchronization</label>
+                <field id="contact_feed" translate="label comment" type="select" sortOrder="10" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
             <group id="emarsys_emarsys" type="text" sortOrder="11" showInDefault="0" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization Settings</label>
                 <field id="realtime_sync" translate="label comment" sortOrder="24" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
@@ -147,6 +154,9 @@
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="0" showInWebsite="0" showInStore="0">
                     <label>Notification secret key</label>
                 </field>
+                <depends>
+                    <field id="contacts_synchronization/enable/contact_feed">1</field>
+                </depends>
             </group>
         </section>
         <section id="opt_in" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -569,10 +579,6 @@
                     <button_label>Clear Logs</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\LogCleanerButton</frontend_model>
                 </field>
-                <!--field id="clearcrondetails" translate="button_label" sortOrder="13" showInDefault="0" showInWebsite="0" showInStore="0">
-                    <button_label>Clear Cron Details</button_label>
-                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\CronDetailsCleanerButton</frontend_model>
-                </field-->
             </group>
         </section>
     </system>

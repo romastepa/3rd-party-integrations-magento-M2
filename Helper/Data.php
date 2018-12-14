@@ -97,6 +97,8 @@ class Data extends AbstractHelper
     const XPATH_EMARSYS_FTP_USE_PASSIVE_MODE = 'emarsys_settings/ftp_settings/usepassive_mode';
 
     //Contacts Synchronization
+    const XPATH_EMARSYS_ENABLE_CONTACT_FEED = 'contacts_synchronization/enable/contact_feed';
+
     const XPATH_EMARSYS_REALTIME_SYNC = 'contacts_synchronization/emarsys_emarsys/realtime_sync';
 
     const XPATH_EMARSYS_BACKGROUND_RUNTIME = 'contacts_synchronization/emarsys_emarsys/background_runtime';

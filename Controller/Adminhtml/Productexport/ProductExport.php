@@ -36,7 +36,7 @@ class ProductExport extends Action
     /**
      * @var EmarsysHelperData
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelperData;
 
     /**
      * @var ProductFactory
@@ -83,7 +83,7 @@ class ProductExport extends Action
     ) {
         $this->request = $request;
         $this->storeManager = $storeManager;
-        $this->emarsysDataHelper = $emarsysHelper;
+        $this->emarsysHelperData = $emarsysHelper;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->productResourceModel = $productResourceModel;
         $this->cronHelper = $cronHelper;
@@ -106,10 +106,10 @@ class ProductExport extends Action
             $websiteId = $store->getWebsiteId();
 
             //check emarsys enabled for the website
-            if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelperData->getEmarsysConnectionSetting($websiteId)) {
 
                 //check feed export enabled for the website
-                if ($this->emarsysDataHelper->isCatalogExportEnabled($websiteId)) {
+                if ($this->emarsysHelperData->isCatalogExportEnabled($websiteId)) {
                     $productCollection = $this->productCollectionFactory->create()->getCollection()
                         ->addStoreFilter($storeId)
                         ->addWebsiteFilter($websiteId)

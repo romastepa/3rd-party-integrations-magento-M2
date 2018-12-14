@@ -8,7 +8,7 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysDataHelper,
+    Helper\Data as EmarsysHelperData,
     Helper\Logs,
     Model\ResourceModel\Customer as EmarsysCustomerResourceModel,
     Model\Logs as EmarsysModelLogs
@@ -56,9 +56,9 @@ class SyncContactsSubscriptionData
     protected $emarsysLogs;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelperData
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelperData;
 
     /**
      * @var EmarsysCustomerResourceModel
@@ -93,7 +93,7 @@ class SyncContactsSubscriptionData
      * @param Logs $logsHelper
      * @param ScopeConfigInterface $scopeConfig
      * @param EmarsysModelLogs $emarsysLogs
-     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param EmarsysHelperData $emarsysHelperData
      * @param EmarsysCustomerResourceModel $customerResourceModel
      * @param Http $request
      * @param Registry $registry
@@ -106,7 +106,7 @@ class SyncContactsSubscriptionData
         Logs $logsHelper,
         ScopeConfigInterface $scopeConfig,
         EmarsysModelLogs $emarsysLogs,
-        EmarsysDataHelper $emarsysDataHelper,
+        EmarsysHelperData $emarsysHelperData,
         EmarsysCustomerResourceModel $customerResourceModel,
         Http $request,
         Registry $registry,
@@ -118,7 +118,7 @@ class SyncContactsSubscriptionData
         $this->logsHelper = $logsHelper;
         $this->scopeConfig = $scopeConfig;
         $this->emarsysLogs = $emarsysLogs;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysHelperData = $emarsysHelperData;
         $this->customerResourceModel = $customerResourceModel;
         $this->request = $request;
         $this->registry = $registry;
@@ -202,8 +202,8 @@ class SyncContactsSubscriptionData
                 $timeRange = [$dt->subHour(1)->toString('YYYY-MM-dd'), $dt->addHour(1)->toString('YYYY-MM-dd')];
             }
             $storeId = $this->storeManager->getWebsite(current($websiteId))->getDefaultGroup()->getDefaultStoreId();
-            $key_id = $this->customerResourceModel->getKeyId(EmarsysDataHelper::SUBSCRIBER_ID, $storeId);
-            $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysDataHelper::OPT_IN, $storeId);
+            $key_id = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
+            $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
             $payload = [
                 'distribution_method' => 'local',
                 'origin' => 'all',
@@ -218,8 +218,8 @@ class SyncContactsSubscriptionData
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->logs($logsArray);
 
-            $this->emarsysDataHelper->getEmarsysAPIDetails($storeId);
-            $client = $this->emarsysDataHelper->getClient();
+            $this->emarsysHelperData->getEmarsysAPIDetails($storeId);
+            $client = $this->emarsysHelperData->getClient();
             $response = $client->post('contact/getchanges', $payload);
 
             $logsArray['description'] = print_r($response, true);

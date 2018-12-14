@@ -17,7 +17,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Model\Api\Subscriber,
     Model\ResourceModel\Customer,
-    Helper\Data as EmarsysDataHelper
+    Helper\Data as EmarsysHelperData
 };
 
 /**
@@ -47,7 +47,7 @@ class RealTimeSubscriber implements ObserverInterface
     protected $request;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelperData
      */
     protected $emarsysHelper;
 
@@ -63,7 +63,7 @@ class RealTimeSubscriber implements ObserverInterface
      * @param Subscriber $subscriberModel
      * @param Customer $customerResourceModel
      * @param Http $request
-     * @param EmarsysDataHelper $emarsysHelper
+     * @param EmarsysHelperData $emarsysHelper
      * @param Session $customerSession
      */
     public function __construct(
@@ -71,7 +71,7 @@ class RealTimeSubscriber implements ObserverInterface
         Subscriber $subscriberModel,
         Customer $customerResourceModel,
         Http $request,
-        EmarsysDataHelper $emarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         Session $customerSession
     ) {
         $this->subscriberModel = $subscriberModel;
@@ -93,7 +93,10 @@ class RealTimeSubscriber implements ObserverInterface
         $subscriber = $event->getSubscriber();
         $store = $this->storeManager->getStore($subscriber->getStoreId());
 
-        if ($subscriber->getEmarsysNoExport() || $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_REALTIME_SYNC) != 1) {
+        if ($subscriber->getEmarsysNoExport()
+            || !$store->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
+            || !$store->getConfig(EmarsysHelperData::XPATH_EMARSYS_REALTIME_SYNC)
+        ) {
             return true;
         }
 

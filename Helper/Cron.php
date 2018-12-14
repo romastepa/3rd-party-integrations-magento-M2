@@ -10,10 +10,8 @@ use Magento\{
     Framework\App\Helper\AbstractHelper,
     Framework\App\Helper\Context,
     Framework\Stdlib\DateTime\DateTime,
-    Framework\Serialize\Serializer\Json,
     Cron\Model\Schedule,
-    Cron\Model\ScheduleFactory,
-    Store\Model\StoreManagerInterface
+    Cron\Model\ScheduleFactory
 };
 use Emarsys\Emarsys\{
     Model\EmarsysCronDetailsFactory,
@@ -58,19 +56,9 @@ class Cron extends AbstractHelper
     protected $emarsysCronDetails;
 
     /**
-     * @var Json
-     */
-    protected $json;
-
-    /**
      * @var Logs
      */
     protected $emarsysLogs;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
 
     /**
      * @var DateTime
@@ -83,26 +71,20 @@ class Cron extends AbstractHelper
      * @param ScheduleFactory $scheduleFactory
      * @param DateTime $dateTime
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
-     * @param Json $json
      * @param Emarsyslogs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
         DateTime $dateTime,
         EmarsysCronDetailsFactory $emarsysCronDetails,
-        Json $json,
-        Emarsyslogs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        Emarsyslogs $emarsysLogs
     ) {
         $this->context = $context;
         $this->scheduleFactory = $scheduleFactory;
         $this->dateTime = $dateTime;
         $this->emarsysCronDetails = $emarsysCronDetails;
-        $this->json = $json;
         $this->emarsysLogs = $emarsysLogs;
-        $this->storeManager = $storeManager;
         parent::__construct($context);
     }
 
@@ -132,7 +114,10 @@ class Cron extends AbstractHelper
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = $this->json->unserialize($job->getParams());
+                    $jobsParams = json_decode($job->getParams(), true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        throw new \InvalidArgumentException('Unable to unserialize value.');
+                    }
 
                     if (is_null($websiteBasedChecking)) {
                         $jobsStoreId = $jobsParams['storeId'];
@@ -154,7 +139,7 @@ class Cron extends AbstractHelper
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'Cron::checkCronjobScheduled()'
             );
 
@@ -195,7 +180,7 @@ class Cron extends AbstractHelper
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = $this->json->unserialize($job->getParams());
+                    $jobsParams = \Zend_Json::decode($job->getParams());
 
                     if (is_null($websiteBasedChecking)) {
                         $jobsStoreId = $jobsParams['storeId'];
@@ -260,7 +245,7 @@ class Cron extends AbstractHelper
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'Cron::getCurrentCronInformation()'
             );
         }

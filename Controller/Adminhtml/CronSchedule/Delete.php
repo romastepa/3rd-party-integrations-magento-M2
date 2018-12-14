@@ -23,11 +23,6 @@ class Delete extends Action
     private $scheduleFactory;
 
     /**
-     * @var Data
-     */
-    private $jsonHelper;
-
-    /**
      * Params constructor.
      * @param Context $context
      * @param ScheduleFactory $scheduleFactory

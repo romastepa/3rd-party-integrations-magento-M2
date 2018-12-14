@@ -29,7 +29,7 @@ use Magento\{
 
 use Emarsys\Emarsys\{
     Helper\Logs as EmarsysHelperLogs,
-    Helper\Data as EmarsysDataHelper,
+    Helper\Data as EmarsysHelperData,
     Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
     Model\ResourceModel\Product as ProductResourceModel,
     Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel,
@@ -98,7 +98,7 @@ class Product extends AbstractModel
     protected $eavConfig;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelperData
      */
     protected $emarsysHelper;
 
@@ -154,7 +154,7 @@ class Product extends AbstractModel
      * @param CategoryFactory $categoryFactory
      * @param StoreManagerInterface $storeManager
      * @param EavConfig $eavConfig
-     * @param EmarsysDataHelper $emarsysHelper
+     * @param EmarsysHelperData $emarsysHelper
      * @param Csv $csvWriter
      * @param DirectoryList $directoryList
      * @param ApiExport $apiExport
@@ -178,7 +178,7 @@ class Product extends AbstractModel
         CategoryFactory $categoryFactory,
         StoreManagerInterface $storeManager,
         EavConfig $eavConfig,
-        EmarsysDataHelper $emarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         Csv $csvWriter,
         DirectoryList $directoryList,
         ApiExport $apiExport,
@@ -226,7 +226,7 @@ class Product extends AbstractModel
      * @return bool
      * @throws \Exception
      */
-    public function consolidatedCatalogExport($mode = EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
+    public function consolidatedCatalogExport($mode = EmarsysHelperData::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
     {
         set_time_limit(0);
 
@@ -394,7 +394,7 @@ class Product extends AbstractModel
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
 
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+            if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __("Exception " . $msg)
                 );
@@ -467,14 +467,14 @@ class Product extends AbstractModel
     public function moveFile($store, $csvFilePath, $logsArray, $mode)
     {
         $result = true;
-        $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED);
+        $apiExportEnabled = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_API_ENABLED);
 
         $isBig = (filesize($csvFilePath) / pow(1024, 2)) > 100;
-        $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
+        $merchantId = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_MERCHANT_ID);
         $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY . '/' . $merchantId, $csvFilePath);
         if ($apiExportEnabled && !$isBig) {
             //get token from admin configuration
-            $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
+            $token = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_TOKEN);
 
             //Assign API Credentials
             $this->apiExport->assignApiCredentials($merchantId, $token);
@@ -491,7 +491,7 @@ class Product extends AbstractModel
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
                 $this->_errorCount = false;
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addSuccessMessage(
                         __("File uploaded to Emarsys successfully !!!")
                     );
@@ -504,7 +504,7 @@ class Product extends AbstractModel
                 $logsArray['description'] = __('Failed to upload %1 on Emarsys. %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
                         __("Failed to upload file on Emarsys !!! " . $msg)
                     );
@@ -512,7 +512,7 @@ class Product extends AbstractModel
                 $result = false;
             }
         } else {
-            $bulkDir = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
+            $bulkDir = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
             $outputFile = $bulkDir . 'products_' . $store->getWebsiteId() . '.csv';
             if ($this->emarsysHelper->moveFileToFtp($store, $csvFilePath, $outputFile)) {
                 //successfully uploaded the file on ftp
@@ -521,7 +521,7 @@ class Product extends AbstractModel
                 $logsArray['description'] = $url . ' > ' . $outputFile;
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addSuccessMessage(
                         __("File uploaded to FTP server successfully !!!")
                     );
@@ -535,7 +535,7 @@ class Product extends AbstractModel
                 $logsArray['description'] = __('Failed to upload %1 on FTP server %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
                         __("Failed to upload file on FTP server !!! " . $msg)
                     );
@@ -580,20 +580,20 @@ class Product extends AbstractModel
         $storeId = $store->getId();
         $websiteId = $this->getWebsiteId($store);
         if (!isset($this->_credentials[$websiteId][$storeId])) {
-            if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_ENABLED)
-                && $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)
+            if ($store->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLED)
+                && $store->getConfig(EmarsysHelperData::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)
             ) {
                 //get method of catalog export from admin configuration
-                $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
-                if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED)) {
-                    $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
+                $merchantId = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_MERCHANT_ID);
+                if ($store->getConfig(EmarsysHelperData::XPATH_PREDICT_API_ENABLED)) {
+                    $token = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_TOKEN);
                     if ($merchantId == '' || $token == '') {
                         $this->_errorCount = true;
                         $logsArray['emarsys_info'] = __('Invalid API credentials');
                         $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
-                        if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                        if ($this->_mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
                                 __('Invalid API credential. Please check your settings and try again !!!')
                             );
@@ -611,7 +611,7 @@ class Product extends AbstractModel
                         $logsArray['description'] = __('Failed to connect with FTP server.');
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
-                        if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                        if ($this->_mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
                                 __("Failed to connect with FTP server. Please check your settings and try again !!!")
                             );
@@ -655,7 +655,7 @@ class Product extends AbstractModel
      */
     public function getWebsiteId($store)
     {
-        $apiUserName = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_API_USER);
+        $apiUserName = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_API_USER);
         if (!isset($this->_websites[$apiUserName])) {
             $this->_websites[$apiUserName] = $store->getWebsiteId();
         }
@@ -727,15 +727,15 @@ class Product extends AbstractModel
             if (isset($attributeOption) && $attributeOption != '') {
                 switch ($attributeCode) {
                     case 'quantity_and_stock_status':
-                        $status = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_STATUS)
+                        $status = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_AVAILABILITY_STATUS)
                             ? ($productObject->getStatus() == Status::STATUS_ENABLED)
                             : true
                         ;
-                        $inStock = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK)
+                        $inStock = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_AVAILABILITY_IN_STOCK)
                             ? ($productObject->getData('inventory_in_stock') == 1)
                             : true
                         ;
-                        $visibility = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY)
+                        $visibility = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_AVAILABILITY_VISIBILITY)
                             ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
                             : true
                         ;
