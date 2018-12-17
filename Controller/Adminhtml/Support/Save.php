@@ -13,7 +13,7 @@ use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
-use Emarsys\Emarsys\Helper\Email;
+use Emarsys\Emarsys\Helper\Email as EmarsysHelperEmail;
 use Psr\Log\LoggerInterface as Logger;
 
 /**
@@ -63,7 +63,7 @@ class Save extends Action
     protected $emarsysHelper;
 
     /**
-     * @var Email
+     * @var EmarsysHelperEmail
      */
     protected $emailHelper;
 
@@ -72,8 +72,8 @@ class Save extends Action
      * @param Session $authSession
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManager
-     * @param Data $emarsysHelper
-     * @param Email $email
+     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelperEmail $emailHelper
      * @param Context $context
      * @param Logger $logger
      */
@@ -81,8 +81,8 @@ class Save extends Action
         Session $authSession,
         ScopeConfigInterface $scopeConfigInterface,
         StoreManagerInterface $storeManager,
-        Data $emarsysHelper,
-        Email $email,
+        EmarsysHelperData $emarsysHelper,
+        EmarsysHelperEmail $emailHelper,
         Context $context,
         Logger $logger
     ) {
@@ -91,7 +91,7 @@ class Save extends Action
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->storeManager = $storeManager;
         $this->emarsysHelper = $emarsysHelper;
-        $this->emailHelper = $email;
+        $this->emailHelper = $emailHelper;
         $this->logger = $logger;
         $this->session = $context->getSession();
     }
