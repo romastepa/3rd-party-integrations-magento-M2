@@ -2402,11 +2402,11 @@ class Data extends AbstractHelper
                     );
 
                     $apiCall = sprintf('export/%s/data/offset=%s&limit=%s', $exportId, $offset, $limit);
-                    $mesage = "Request " . $apiCall;
+                    $message = "Request " . $apiCall;
                     $response = $this->getClient()->get($apiCall, [], false);
-                    $mesage .= "Response " . $response;
+                    $message .= "\nResponse: " . (\Zend_Json::encode($response));
 
-                    $this->logHelper->childLogs($logId, $mesage, current($websiteIds));
+                    $this->logHelper->childLogs($logId, $message, current($websiteIds));
                     $offset += $limit;
                 } while ($this->_processSubscriptionUpdates($response, $isTimeBased));
             }
@@ -2458,16 +2458,6 @@ class Data extends AbstractHelper
         }
 
         return false;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getBaseUrl()
-    {
-        $baseUrl = $this->storeManager->getStore()->getBaseUrl();
-
-        return str_replace('index.php/', '', $baseUrl);
     }
 
     /**

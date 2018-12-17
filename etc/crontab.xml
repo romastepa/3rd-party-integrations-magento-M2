@@ -40,14 +40,13 @@
         </job>
 
 
-        <!--job name="emarsys_customer_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\CustomerBulkExportWebDav" method="execute">
+        <job name="emarsys_customer_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\CustomerBulkExportWebDav" method="execute">
             <schedule>0 0 30 2 3</schedule>
         </job>
         <job name="emarsys_customer_bulk_export_api" instance="Emarsys\Emarsys\Cron\CustomerBulkExportApi" method="execute">
             <schedule>0 0 30 2 3</schedule>
-        </job-->
-        <!-- Subscribers Related Jobs -->
-        <!--job name="emarsys_subscriber_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportWebDav" method="execute">
+        </job>
+        <job name="emarsys_subscriber_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportWebDav" method="execute">
             <schedule>0 0 30 2 3</schedule>
         </job>
         <job name="emarsys_subscriber_bulk_export_api" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportApi" method="execute">
@@ -58,6 +57,6 @@
         </job>
         <job name="emarsys_smartinsight_bulk_export" instance="Emarsys\Emarsys\Cron\SmartInsightBulkExport" method="execute">
             <schedule>0 0 30 2 3</schedule>
-        </job-->
+        </job>
     </group>
 </config>
