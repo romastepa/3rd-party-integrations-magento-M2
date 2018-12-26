@@ -26,7 +26,7 @@ use Emarsys\Emarsys\{
 class Subscriber extends DataObject
 {
     /**
-     * @var Data
+     * @var EmarsysHelperData
      */
     protected $emarsysHelper;
 
@@ -57,15 +57,17 @@ class Subscriber extends DataObject
 
     /**
      * Subscriber constructor.
-     * @param Data $emarsysHelper
+     *
+     * @param EmarsysHelperData $emarsysHelper
      * @param Context $context
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
      * @param Customer $customerResourceModel
      * @param Logs $logsHelper
+     * @param WebDavExport $webDavExport
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         Context $context,
         DateTime $date,
         StoreManagerInterface $storeManager,
