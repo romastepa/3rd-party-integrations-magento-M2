@@ -180,9 +180,6 @@ class Contact extends \Magento\Framework\DataObject
 
                         $headers['magento_customer_id'] = EmarsysHelperData::CUSTOMER_ID;
                         $headerIndex[$indexCount] = 'magento_customer_id';
-                        $headers['magento_customer_unique_id'] = EmarsysHelperData::CUSTOMER_UNIQUE_ID;
-                        $indexCount = $indexCount + 1;
-                        $headerIndex[$indexCount] = 'magento_customer_unique_id';
                         if (!in_array('Email', $headers)) {
                             $headers['email'] = EmarsysHelperData::CUSTOMER_EMAIL;
                             $indexCount = $indexCount + 1;
@@ -214,15 +211,6 @@ class Contact extends \Magento\Framework\DataObject
                                 if ($value == EmarsysHelperData::CUSTOMER_ID) {
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerLoad->getId();
-                                } elseif ($value == EmarsysHelperData::CUSTOMER_UNIQUE_ID) {
-                                    $index = array_search($key, $headerIndex);
-                                    if ($keyField == 'email') {
-                                        $customerValues[$index] = $customerLoad->getEmail();
-                                    } elseif ($keyField == 'magento_id') {
-                                        $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId();
-                                    } else {
-                                        $customerValues[$index] = $customerLoad->getEmail() . "#" . $customerLoad->getWebsiteId() . "#" . $customerLoad->getStoreId();
-                                    }
                                 } elseif ($value == EmarsysHelperData::CUSTOMER_EMAIL) {
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerLoad->getEmail();

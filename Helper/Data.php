@@ -935,11 +935,13 @@ class Data extends AbstractHelper
      */
     public function getContactUniqueField($websiteId)
     {
+        return 'email';
+        /*
         return $this->scopeConfigInterface->getValue(
             self::XPATH_EMARSYS_UNIQUE_FIELD,
             \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
             $websiteId
-        );
+        );*/
     }
 
     /**
@@ -2196,19 +2198,13 @@ class Data extends AbstractHelper
     {
         try {
             $store = $this->storeManager->getStore($subscriber->getStoreId());
-            $keyField = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
+            $keyField = $store->getConfig(self::CUSTOMER_EMAIL);
             $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $subscriber->getStoreId());
 
-            if ($keyField == 'email') {
-                $keyValue = $subscriber->getSubscriberEmail();
-            } elseif ($keyField == 'magento_id') {
-                $keyValue = $subscriber->getSubscriberEmail() . "#" . $store->getWebsiteId();
-            } else {
-                $keyValue = $subscriber->getSubscriberEmail() . "#" . $store->getWebsiteId() . "#" . $subscriber->getStoreId();
-            }
+            $keyValue = $subscriber->getSubscriberEmail();
 
             $payload = [
-                'key_id' => $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $subscriber->getStoreId()),
+                'key_id' => $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $subscriber->getStoreId()),
                 'key_value' => $keyValue,
                 'field_id' => $fieldId,
             ];
@@ -2293,16 +2289,10 @@ class Data extends AbstractHelper
             $store = $this->storeManager->getStore($storeId);
 
             $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $storeId);
-            $keyField = $store->getConfig(self::XPATH_EMARSYS_UNIQUE_FIELD);
-            $uniqueIdKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_UNIQUE_ID, $storeId);
+            $keyField = $store->getConfig(self::CUSTOMER_EMAIL);
+            $uniqueIdKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $storeId);
             $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
-            if ($keyField == 'email') {
-                $key = '';
-            } elseif ($keyField == 'magento_id') {
-                $key = "#" . $store->getWebsiteId();
-            } else {
-                $key = "#" . $store->getWebsiteId() . "#" . $store->getId();
-            }
+            $key = '';
 
             $subscribersCollection = $this->newsLetterCollectionFactory->create()
                 ->addFieldToFilter('subscriber_id', ['in' => $subscriberIdsArray]);

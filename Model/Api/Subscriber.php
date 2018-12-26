@@ -174,16 +174,10 @@ class Subscriber
 
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
-        $keyField = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_UNIQUE_FIELD);
-        if ($keyField == 'email') {
-            $keyValue = $objSubscriber->getSubscriberEmail();
-        } elseif ($keyField == 'magento_id') {
-            $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId();
-        } else {
-            $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId() . "#" . $objSubscriber->getStoreId();
-        }
+        $keyField = $store->getConfig(EmarsysHelperData::CUSTOMER_EMAIL);
+        $keyValue = $objSubscriber->getSubscriberEmail();
 
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
+        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $buildRequest = [];
         $buildRequest['key_id'] = $uniqueIdKey;
         $buildRequest[$uniqueIdKey] = $keyValue;
@@ -313,7 +307,7 @@ class Subscriber
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
         $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
+        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
 
         $subscriberData = $this->prepareSubscribersInfo(
@@ -453,18 +447,10 @@ class Subscriber
                     $values[$customerIdKey] = $subscriber->getCustomerId();
                 }
 
-                if ($keyField == 'email') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail();
-                } elseif ($keyField == 'magento_id') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId;
-                } else {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId . "#" . $storeId;
-                }
-
                 if ($subscriber['subscriber_status'] != 1) {
-                    $values[$optInEmarsysId] = '2';
+                    $values[$optInEmarsysId] = 2;
                 } else {
-                    $values[$optInEmarsysId] = '1';
+                    $values[$optInEmarsysId] = 1;
                 }
                 $subscriberData[] = $values;
             }
@@ -477,13 +463,6 @@ class Subscriber
                 $values[$subscriberIdKey] = $subscriber->getEntityId();
                 if ($subscriber->getCustomerId()) {
                     $values[$customerIdKey] = $subscriber->getCustomerId();
-                }
-                if ($keyField == 'email') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail();
-                } elseif ($keyField == 'magento_id') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId;
-                } else {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId . "#" . $storeId;
                 }
 
                 $subscriberStatus = $subscriber->getSubscriberStatus();

@@ -15,7 +15,7 @@ use Magento\{
 };
 use Emarsys\Emarsys\{
     Model\ResourceModel\Customer,
-    Helper\Data,
+    Helper\Data as EmarsysHelperData,
     Helper\Logs
 };
 
@@ -123,9 +123,9 @@ class Subscriber extends DataObject
         if ($optInStatus == 'attribute') {
             $data['subscribeStatus'] = $data['attributevalue'];
         }
-        $emarsysFieldNames = ['Email', 'Magento Subscriber ID', 'Magento Customer Unique ID'];
+        $emarsysFieldNames = [EmarsysHelperData::CUSTOMER_EMAIL, EmarsysHelperData::SUBSCRIBER_ID];
         if ($optInStatus != '') {
-            $emarsysFieldNames[] = 'Opt-In';
+            $emarsysFieldNames[] = EmarsysHelperData::OPT_IN;
         }
 
         $customerValues = $this->customerResourceModel->getSubscribedCustomerCollection(
@@ -160,14 +160,6 @@ class Subscriber extends DataObject
                         $values = [];
                         $values[] = $value['subscriber_email'];
                         $values[] = $value['subscriber_id'];
-
-                        if ($keyField == 'email') {
-                            $values[] = $value['subscriber_email'];
-                        } elseif ($keyField == 'magento_id') {
-                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#";
-                        } else {
-                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
-                        }
 
                         if ($optInStatus == 'true') {
                             $values[] = '1';

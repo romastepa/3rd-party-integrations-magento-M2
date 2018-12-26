@@ -193,7 +193,7 @@ class Contact
 
         $buildRequest = [];
         $keyField = $this->dataHelper->getContactUniqueField($websiteId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
+        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
 
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         if ($emailKey && $customer->getEmail()) {
@@ -206,13 +206,7 @@ class Contact
         }
 
         $buildRequest['key_id'] = $uniqueIdKey;
-        if ($keyField == 'email') {
-            $buildRequest[$uniqueIdKey] = $customer->getEmail();
-        } elseif ($keyField == 'magento_id') {
-            $buildRequest[$uniqueIdKey] = $customer->getEmail() . "#" . $websiteId;
-        } else {
-            $buildRequest[$uniqueIdKey] = $customer->getEmail() . "#" . $websiteId . "#" . $storeId;
-        }
+        $buildRequest[$uniqueIdKey] = $customer->getEmail();
 
         $errorMsg = 0;
         $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
@@ -413,14 +407,6 @@ class Contact
             $customerData[$customerIdKey] = $objCustomer->getId();
         }
 
-        if ($keyField == 'email') {
-            $customerData[$uniqueIdKey] = $objCustomer->getEmail();
-        } elseif ($keyField == 'magento_id') {
-            $customerData[$uniqueIdKey] = $objCustomer->getEmail() . "#" . $websiteId;
-        } elseif ($keyField == 'unique_id') {
-            $customerData[$uniqueIdKey] = $objCustomer->getEmail() . "#" . $websiteId . "#" . $storeId;
-        }
-
         $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
 
         foreach ($getEmarsysMappedFields as $mappedField) {
@@ -516,7 +502,7 @@ class Contact
         $keyField = $this->dataHelper->getContactUniqueField($websiteId);
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
+        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
 
         //check customer attributes are mapped
         $mappedAttributes = $this->getMappedCustomerAttribute($storeId);

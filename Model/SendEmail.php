@@ -191,15 +191,9 @@ class SendEmail extends AbstractModel
                         }
 
                         $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
-                        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
+                        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
                         $buildRequest['key_id'] = $uniqueIdKey;
-                        if ($keyField == 'email') {
-                            $buildRequest[$uniqueIdKey] = $externalId;
-                        } elseif ($keyField == 'magento_id') {
-                            $buildRequest[$uniqueIdKey] = $externalId . "#" . $websiteId;
-                        } elseif ($keyField == 'unique_id') {
-                            $buildRequest[$uniqueIdKey] = $externalId . "#" . $websiteId . "#" . $storeId;
-                        }
+                        $buildRequest[$uniqueIdKey] = $externalId;
 
                         //log information that is about to send for contact sync
                         $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
