@@ -2,23 +2,19 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\{
-    Framework\App\Helper\AbstractHelper,
-    Framework\App\Helper\Context,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\Serialize\Serializer\Json,
-    Cron\Model\Schedule,
-    Cron\Model\ScheduleFactory,
-    Store\Model\StoreManagerInterface
-};
-use Emarsys\Emarsys\{
-    Model\EmarsysCronDetailsFactory,
-    Model\Logs as Emarsyslogs
-};
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Cron\Model\Schedule;
+use Emarsys\Emarsys\Model\EmarsysCronDetailsFactory;
+use Magento\Cron\Model\ScheduleFactory;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Framework\Json\Helper\Data as JsonHelper;
+use Emarsys\Emarsys\Model\Logs as Emarsyslogs;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Cron
@@ -26,6 +22,8 @@ use Emarsys\Emarsys\{
  */
 class Cron extends AbstractHelper
 {
+    const CRON_JOB_INITIAL_DB_LOAD = 'emarsys_initial_db_load';
+
     const CRON_JOB_CUSTOMER_SYNC_QUEUE = 'emarsys_customer_sync_queue';
 
     const CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV = 'emarsys_customer_bulk_export_webdav';
@@ -39,8 +37,6 @@ class Cron extends AbstractHelper
 
     //product related
     const CRON_JOB_CATALOG_BULK_EXPORT = 'emarsys_catalog_bulk_export';
-
-    const CRON_JOB_CATALOG_SYNC = 'emarsys_product_sync';
 
     //smart insight related
     const CRON_JOB_SI_SYNC_QUEUE = 'emarsys_smartinsight_sync_queue';
@@ -58,9 +54,9 @@ class Cron extends AbstractHelper
     protected $emarsysCronDetails;
 
     /**
-     * @var Json
+     * @var JsonHelper
      */
-    protected $json;
+    protected $jsonHelper;
 
     /**
      * @var Logs
@@ -70,37 +66,32 @@ class Cron extends AbstractHelper
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManager;
-
-    /**
-     * @var DateTime
-     */
-    protected $dateTime;
+    protected $storeManager ;
 
     /**
      * Cron constructor.
      * @param Context $context
      * @param ScheduleFactory $scheduleFactory
-     * @param DateTime $dateTime
+     * @param TimezoneInterface $timezone
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
-     * @param Json $json
-     * @param Emarsyslogs $emarsysLogs
+     * @param JsonHelper $jsonHelper
+     * @param Logs $emarsysLogs
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
-        DateTime $dateTime,
+        TimezoneInterface $timezone,
         EmarsysCronDetailsFactory $emarsysCronDetails,
-        Json $json,
+        JsonHelper $jsonHelper,
         Emarsyslogs $emarsysLogs,
         StoreManagerInterface $storeManager
     ) {
         $this->context = $context;
         $this->scheduleFactory = $scheduleFactory;
-        $this->dateTime = $dateTime;
+        $this->timezone = $timezone;
         $this->emarsysCronDetails = $emarsysCronDetails;
-        $this->json = $json;
+        $this->jsonHelper = $jsonHelper;
         $this->emarsysLogs = $emarsysLogs;
         $this->storeManager = $storeManager;
         parent::__construct($context);
@@ -125,14 +116,14 @@ class Cron extends AbstractHelper
                 );
 
             $cronJobs->getSelect()->join(
-                ['ecd' => $cronJobs->getTable('emarsys_cron_details')],
+                ['ecd' => 'emarsys_cron_details'],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
             );
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = $this->json->unserialize($job->getParams());
+                    $jobsParams = $this->jsonHelper->jsonDecode($job->getParams());
 
                     if (is_null($websiteBasedChecking)) {
                         $jobsStoreId = $jobsParams['storeId'];
@@ -187,15 +178,15 @@ class Cron extends AbstractHelper
                     ['in' => [Schedule::STATUS_PENDING]]
                 );
 
-            $cronJobs->getSelect()->joinLeft(
-                ['ecd' => $cronJobs->getTable('emarsys_cron_details')],
+            $cronJobs->getSelect()->join(
+                ['ecd' => 'emarsys_cron_details'],
                 'ecd.schedule_id = main_table.schedule_id',
                 ['ecd.params']
             );
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = $this->json->unserialize($job->getParams());
+                    $jobsParams = $this->jsonHelper->jsonDecode($job->getParams());
 
                     if (is_null($websiteBasedChecking)) {
                         $jobsStoreId = $jobsParams['storeId'];
@@ -223,14 +214,11 @@ class Cron extends AbstractHelper
             $cron = $this->scheduleFactory->create();
         }
 
-        $time = $this->dateTime->gmtTimestamp();
-
-        /** @var ScheduleFactory $cron */
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $time))
-            ->setScheduledAt(strftime('%Y-%m-%d %H:%M:%S', $time + 60));
+            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp()))
+            ->setScheduledAt(strftime('%Y-%m-%d %H:%M', $this->timezone->scopeTimeStamp()));
         $cron->save();
 
         return $result;
@@ -263,6 +251,8 @@ class Cron extends AbstractHelper
                 $this->storeManager->getStore()->getId(),
                 'Cron::getCurrentCronInformation()'
             );
+
+            return false;
         }
 
         return false;
@@ -277,6 +267,10 @@ class Cron extends AbstractHelper
         $jobDetails = [];
 
         switch ($exportMode) {
+            case self::CRON_JOB_INITIAL_DB_LOAD:
+                $jobDetails['job_code'] = 'initialdbload';
+                $jobDetails['job_title'] = 'Initial DB Load';
+                break;
             case self::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV:
                 $jobDetails['job_code'] = 'customer';
                 $jobDetails['job_title'] = 'Customer Bulk Export';

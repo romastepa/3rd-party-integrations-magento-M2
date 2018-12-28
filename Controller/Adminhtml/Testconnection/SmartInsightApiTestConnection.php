@@ -63,10 +63,7 @@ class SmartInsightApiTestConnection extends TestConnection
 
     /**
      * Emarsys test connection api credentials
-     * @return bool
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
+     * @return \Magento\Framework\App\ResponseInterface
      */
     public function execute()
     {
@@ -104,7 +101,7 @@ class SmartInsightApiTestConnection extends TestConnection
             }
 
             $this->apiExport->assignApiCredentials($merchantId, $token);
-            $response = $this->apiExport->testSIExportApi($storeId);
+            $response = $this->apiExport->testSIExportApi();
 
             if ($response['result'] == 1 || (in_array($response['status'], ['200', '400']))) {
                 try {
@@ -149,6 +146,5 @@ class SmartInsightApiTestConnection extends TestConnection
 
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogs($logsArray);
-        return true;
     }
 }

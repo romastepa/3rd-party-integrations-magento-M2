@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Magento\Framework\Serialize\Serializer\Json as JsonHelper;
+use Magento\Framework\Json\Helper\Data;
 use Emarsys\Emarsys\Model\Api\Contact;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
@@ -25,7 +25,7 @@ class SubscriberBulkExportApi
     protected $cronHelper;
 
     /**
-     * @var JsonHelper
+     * @var Data
      */
     protected $jsonHelper;
 
@@ -47,7 +47,7 @@ class SubscriberBulkExportApi
     /**
      * SubscriberBulkExportApi constructor.
      * @param EmarsysCronHelper $cronHelper
-     * @param JsonHelper $jsonHelper
+     * @param Data $jsonHelper
      * @param Contact $contactModel
      * @param StoreManagerInterface $storeManagerInterface
      * @param EmarsysModelLogs $emarsysLogs
@@ -55,7 +55,7 @@ class SubscriberBulkExportApi
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
-        JsonHelper $jsonHelper,
+        Data $jsonHelper,
         Contact $contactModel,
         StoreManagerInterface $storeManagerInterface,
         EmarsysModelLogs $emarsysLogs,
@@ -79,12 +79,10 @@ class SubscriberBulkExportApi
                 EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API
             );
 
-            if (!$currentCronInfo) {
-                return;
-            }
+            if (!$currentCronInfo) return;
 
             //convert json into array format
-            $data = $this->jsonHelper->unserialize($currentCronInfo->getParams());
+            $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
 
             //sync subscribers data to emarsys
             $this->subscriberEmarsysApi->syncMultipleSubscriber(

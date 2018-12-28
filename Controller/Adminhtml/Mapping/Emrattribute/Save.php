@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute;
@@ -16,7 +16,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Emrattribute\CollectionFactory;
  * Class Save
  * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute
  */
-class Save extends Action
+class Save extends \Magento\Framework\App\Action\Action
 {
     /**
      * @var EmrattributeFactory
@@ -31,18 +31,17 @@ class Save extends Action
     /**
      * Save constructor.
      * @param Context $context
-     * @param EmrattributeFactory $emrattributeFactory
-     * @param CollectionFactory $emrattributeCollectionFactory
+     * @param EmrattributeFactory $EmrattributeFactory
+     * @param CollectionFactory $EmrattributeCollectionFactory
      */
     public function __construct(
         Context $context,
-        EmrattributeFactory $emrattributeFactory,
-        CollectionFactory $emrattributeCollectionFactory
-    )
-    {
+        EmrattributeFactory $EmrattributeFactory,
+        CollectionFactory $EmrattributeCollectionFactory
+    ) {
         parent::__construct($context);
-        $this->emrattributeFactory = $emrattributeFactory;
-        $this->emrattributeCollectionFactory = $emrattributeCollectionFactory;
+        $this->emrattributeFactory = $EmrattributeFactory;
+        $this->emrattributeCollectionFactory = $EmrattributeCollectionFactory;
     }
 
     /**
@@ -61,7 +60,6 @@ class Save extends Action
                     ->addFieldToFilter('store_id', ['eq' => $storeId])
                     ->getFirstItem()
                     ->getCode();
-
                 $duplicateLabel = $attributeCollection->addFieldToFilter('label', ['eq' => $field_label])
                     ->addFieldToFilter('store_id', ['eq' => $storeId])
                     ->getFirstItem()
@@ -81,9 +79,11 @@ class Save extends Action
                 $model->save();
             }
         }
+
         $resultRedirect = $this->resultRedirectFactory->create();
         $resultRedirect->setPath('emarsys_emarsys/mapping_emrattribute', ['store' => $storeId]);
-
+        
         return $resultRedirect;
     }
+
 }

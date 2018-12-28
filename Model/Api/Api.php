@@ -2,24 +2,36 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model\Api;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Payment\Model\Method\Logger;
 use Zend_Http_Client;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Zend_Json;
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Module\ModuleListInterface;
 
 /**
  * Class Api
  * API class for Emarsys API wrappers
- *
  * @package Emarsys\Emarsys\Model\Api
  */
 class Api extends \Magento\Framework\DataObject
 {
+    protected $_config;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
+     * @var Logger
+     */
+    protected $customLogger;
+
     protected $apiUrl;
 
     /**
@@ -28,23 +40,40 @@ class Api extends \Magento\Framework\DataObject
     protected $scopeConfigInterface;
 
     /**
-     * @var EmarsysDataHelper
+     * @var ProductMetadataInterface
      */
-    protected $emarsysHelper;
+    protected $productMetadataInterface;
+
+    /**
+     * @var ModuleListInterface
+     */
+    protected $moduleListInterface;
 
     /**
      * Api constructor.
      * By default is looking for first argument as array and assigns it as object
      * attributes This behavior may change in child classes
-     *
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param Logger $customLogger
      * @param ScopeConfigInterface $scopeConfigInterface
+     * @param ProductMetadataInterface $productMetadataInterface
+     * @param ModuleListInterface $moduleListInterface
      * @param array $data
      */
     public function __construct(
+        \Psr\Log\LoggerInterface $logger,
+        Logger $customLogger,
+        //EmarsysDataHelper $emarsysHelper,
         ScopeConfigInterface $scopeConfigInterface,
+        ProductMetadataInterface $productMetadataInterface,
+        ModuleListInterface $moduleListInterface,
         array $data = []
     ) {
+        $this->_logger = $logger;
+        $this->customLogger = $customLogger;
         $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->productMetadataInterface = $productMetadataInterface;
+        $this->moduleListInterface = $moduleListInterface;
         parent::__construct($data);
     }
 
@@ -65,7 +94,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Return Emarsys Api user name based on config data
-     *
      * @return string
      */
     public function getApiUsername()
@@ -79,7 +107,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Return Emarsys Api password based on config data
-     *
      * @return string
      */
     public function getApiPassword()
@@ -93,7 +120,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * set Emarsys API URL
-     *
      * @return string
      */
     public function setApiUrl()
@@ -109,15 +135,14 @@ class Api extends \Magento\Framework\DataObject
             }
             return $this->apiUrl = rtrim($url, '/') . "/";
         } elseif ($endpoint == 'cdn') {
-            return $this->apiUrl = EmarsysDataHelper::EMARSYS_CDN_API_URL;
+            return $this->apiUrl = "https://api-cdn.emarsys.net/api/v2/";
         } elseif ($endpoint == 'default') {
-            return $this->apiUrl = EmarsysDataHelper::EMARSYS_DEFAULT_API_URL;
+            return $this->apiUrl = "https://api.emarsys.net/api/v2/";
         }
     }
 
     /**
      * Return Emarsys API URL
-     *
      * @return string
      */
     public function getApiUrl()
@@ -127,7 +152,6 @@ class Api extends \Magento\Framework\DataObject
 
     /**
      * Returns emarsys enabled based on the current scope
-     *
      * @return boolean
      */
     protected function _isEnabled()
@@ -173,7 +197,7 @@ class Api extends \Magento\Framework\DataObject
         $nonce = time();
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));
-        $client->setHeaders([
+        $header = [
             'Content-Type' => 'application/json',
             'Accept-encoding' => 'utf-8',
             'X-WSSE' => [
@@ -184,14 +208,15 @@ class Api extends \Magento\Framework\DataObject
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
             ],
-            'Extension-Version' => '1.0.13',
-        ]);
-        $response = $client->request();
-
-        return [
-            'status' => Zend_Json::decode($response->getStatus()),
-            'body' => Zend_Json::decode($response->getBody()),
+            'Extension-Version' => 'Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne('Emarsys_Emarsys')['setup_version']
         ];
+        $client->setHeaders($header);
+        $response = $client->request();
+        $returnData = [
+            'status' => Zend_Json::decode($response->getStatus()),
+            'body' => Zend_Json::decode($response->getBody())
+        ];
+        return $returnData;
     }
 
     /**
@@ -244,26 +269,31 @@ class Api extends \Magento\Framework\DataObject
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'X-WSSE: UsernameToken ' .
-            'Username="' . $this->getApiUsername() . '", ' .
-            'PasswordDigest="' . $passwordDigest . '", ' .
-            'Nonce="' . $nonce . '", ' .
-            'Created="' . $timestamp . '"',
-            'Content-type: application/json;charset="utf-8"',
-            'Extension-Version: 1.0.13',
-        ]);
+                'X-WSSE: UsernameToken ' .
+                'Username="' . $this->getApiUsername() . '", ' .
+                'PasswordDigest="' . $passwordDigest . '", ' .
+                'Nonce="' . $nonce . '", ' .
+                'Created="' . $timestamp . '"',
+                'Content-type: application/json;charset="utf-8"',
+                'Extension-Version: Magento ' . $this->productMetadataInterface->getVersion() . ' - ' . $this->moduleListInterface->getOne('Emarsys_Emarsys')['setup_version']
+            ]);
         $response = curl_exec($ch);
 
         $http_code = 200;
         if (!curl_errno($ch)) {
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        }
+		    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		}
         curl_close($ch);
+        /* Debug Log for Response */
+        #$this->_logger->addDebug('response: ');
+        #$this->_logger->addDebug(print_r($response, true));
 
-        return [
+        $returnData = [
             'status' => $http_code,
-            'body' => json_decode($response, true),
+            'body' => json_decode($response, true)
         ];
+        #$this->_logger->addDebug(print_r($returnData, true));
+        return $returnData;
     }
 
     /**
@@ -273,28 +303,8 @@ class Api extends \Magento\Framework\DataObject
      */
     public function createContactInEmarsys($arrCustomerData)
     {
-        return $this->sendRequest('PUT', 'contact/?create_if_not_exists=1', $arrCustomerData);
-    }
+        $response = $this->sendRequest('PUT', 'contact/?create_if_not_exists=1', $arrCustomerData);
 
-    /**
-     * @param $arrCustomerData
-     * {
-     *  "keyId": "12596",
-     *  "keyValues": [
-     *   "1"
-     *  ],
-     *  "fields": [
-     *   "3",
-     *   "12596",
-     *   "15912",
-     *   "12597"
-     *  ]
-     * }
-     * @return array
-     * @throws \Exception
-     */
-    public function getContactData($arrCustomerData)
-    {
-        return $this->sendRequest('POST', 'contact/getdata', $arrCustomerData);
+        return $response;
     }
 }

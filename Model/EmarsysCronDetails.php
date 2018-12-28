@@ -2,19 +2,17 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model;
 
-use Magento\{
-    Cron\Model\ScheduleFactory,
-    Cron\Model\Schedule,
-    Store\Model\StoreManagerInterface,
-    Framework\Model\Context,
-    Framework\Registry,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Data\Collection\AbstractDb
-};
+use Magento\Cron\Model\ScheduleFactory;
+use Magento\Cron\Model\Schedule;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Data\Collection\AbstractDb;
 
 /**
  * Class EmarsysCronDetails
@@ -96,10 +94,13 @@ class EmarsysCronDetails extends \Magento\Framework\Model\AbstractModel
             //get collection of successful, missed and error crons
             $processedCronJobs = $this->scheduleFactory->create()->getCollection()
                 ->addFieldToSelect('schedule_id')
-                ->addFieldToFilter('job_code', ['like'=>'emarsys%'])
                 ->addFieldToFilter(
                     'status',
                     ['in' => [Schedule::STATUS_SUCCESS, Schedule::STATUS_MISSED, Schedule::STATUS_ERROR]]
+                )->join(
+                    ['ecd' => $this->getResource()->getTable('emarsys_cron_details')],
+                    'ecd.schedule_id = main_table.schedule_id',
+                    []
                 );
 
             if ($processedCronJobs->getSize()) {
@@ -110,13 +111,11 @@ class EmarsysCronDetails extends \Magento\Framework\Model\AbstractModel
 
             //get collection of that are already removed from cron_schedule table
             $clearedCronJobs = $this->scheduleFactory->create()->getCollection()->addFieldToSelect('schedule_id');
-            $clearedCronJobs->getSelect()->reset(\Magento\Framework\DB\Select::COLUMNS)
-                ->joinRight(
-                    ['ecd' => $this->getResource()->getTable('emarsys_cron_details')],
-                    'ecd.schedule_id = main_table.schedule_id',
-                    ['ecd.schedule_id']
-                )
-                ->where('main_table.schedule_id is null');
+            $clearedCronJobs->getSelect()->reset(\Magento\Framework\DB\Select::COLUMNS)->joinRight(
+                ['ecd' => $this->getResource()->getTable('emarsys_cron_details')],
+                'ecd.schedule_id = main_table.schedule_id',
+                ['ecd.schedule_id']
+            )->where('main_table.schedule_id is null');
 
             if ($clearedCronJobs->getSize()) {
                 foreach ($clearedCronJobs as $job) {

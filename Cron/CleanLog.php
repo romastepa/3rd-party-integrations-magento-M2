@@ -194,13 +194,14 @@ class CleanLog
                     /* Delete record from log_details tables */
                     $sqlConnection = $this->_resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
                     try {
-                        $query = "SELECT id FROM " . $logTable . " WHERE DATE(created_at) <= '" . $cleanUpDate . "'";
+                        $query = "SELECT id FROM " . $this->resourceConfig->getTable($logTable) . " WHERE DATE(created_at) <= '" . $cleanUpDate . "'";
                         $queryRead = $sqlConnection->query($query);
                         $row = $queryRead->fetchAll();
 
                         if (count($row)) {
                             foreach ($row as $result) {
-                                $result['id'] = $sqlConnection->quoteInto($result['id']);
+                                $logTable = $sqlConnection->quote($logTable);
+                                $result['id'] = $sqlConnection->quote($result['id']);
                                 $sqlConnection->query("DELETE FROM " . $this->resourceConfig->getTable('emarsys_log_details') . "  WHERE id = " . $result['id']);
                             }
                         }

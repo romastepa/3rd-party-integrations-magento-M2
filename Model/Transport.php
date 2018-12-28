@@ -4,7 +4,6 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model;
 
 use Magento\Framework\Mail\MessageInterface;
@@ -36,8 +35,7 @@ class Transport extends \Zend_Mail_Transport_Sendmail implements TransportInterf
         MessageInterface $message,
         SendEmail $sendEmail,
         $parameters = null
-    )
-    {
+    ) {
         if (!$message instanceof \Zend_Mail) {
             throw new \InvalidArgumentException('The message should be an instance of \Zend_Mail');
         }

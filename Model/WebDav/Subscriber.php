@@ -2,28 +2,23 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\WebDav;
 
-use Magento\{
-    Framework\DataObject,
-    Framework\Stdlib\DateTime\DateTime,
-    Backend\App\Action\Context,
-    Store\Model\StoreManagerInterface,
-    Store\Model\ScopeInterface
-};
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Customer,
-    Helper\Data,
-    Helper\Logs
-};
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Backend\App\Action\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Helper\Logs;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Subscriber
  * @package Emarsys\Emarsys\Model\WebDav
  */
-class Subscriber extends DataObject
+class Subscriber extends \Magento\Framework\DataObject
 {
     /**
      * @var Data
@@ -91,8 +86,6 @@ class Subscriber extends DataObject
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
 
-        $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
-
         $store = $this->storeManager->getStore($storeId);
         $storeCode = $store->getCode();
         $data['storeId'] = $storeId;
@@ -128,13 +121,13 @@ class Subscriber extends DataObject
             $emarsysFieldNames[] = 'Opt-In';
         }
 
-        $customerValues = $this->customerResourceModel->getSubscribedCustomerCollection(
+        $customervalues = $this->customerResourceModel->getSubscribedCustomerCollection(
             $data,
             implode(',', $websiteStoreIds),
             1
         );
 
-        if ($customerValues) {
+        if ($customervalues) {
             //webDav credentials from admin configurations
             $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($scope, $websiteId);
             if ($webDavCredentials && !empty($webDavCredentials)) {
@@ -156,19 +149,11 @@ class Subscriber extends DataObject
                     //write header to subscribers csv
                     fputcsv($handle, $emarsysFieldNames);
 
-                    foreach ($customerValues as $value) {
+                    foreach ($customervalues as $value) {
                         $values = [];
                         $values[] = $value['subscriber_email'];
                         $values[] = $value['subscriber_id'];
-
-                        if ($keyField == 'email') {
-                            $values[] = $value['subscriber_email'];
-                        } elseif ($keyField == 'magento_id') {
-                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#";
-                        } else {
-                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
-                        }
-
+                        $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
                         if ($optInStatus == 'true') {
                             $values[] = '1';
                         } elseif ($optInStatus == 'empty') {
@@ -190,9 +175,7 @@ class Subscriber extends DataObject
                     );
 
                     //remove csv file after export
-                    if (file_exists($filePath)) {
-                        unlink($filePath);
-                    }
+                    unlink($filePath);
 
                     if ($exportStatus['status']) {
                         //Subscriber file uploaded to server successfully

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -14,7 +14,6 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs\Proxy as EmarsysLogs;
 
 /**
  * Class Logs
@@ -23,17 +22,14 @@ use Emarsys\Emarsys\Helper\Logs\Proxy as EmarsysLogs;
 class Logs extends \Magento\Framework\Model\AbstractModel
 {
     /**
-     * @var EmarsysLogs
-     */
-    protected $emarsysLog;
-    /**
      * @var StoreManagerInterface
      */
-    protected $storeManager;
+    protected $storeManager ;
+
     /**
      * @var ManagerInterface
      */
-    protected $messageManagerInterface;
+    protected $messageManagerInterface ;
 
     /**
      * Logs constructor.
@@ -51,13 +47,10 @@ class Logs extends \Magento\Framework\Model\AbstractModel
         StoreManagerInterface $storeManager,
         ManagerInterface $managerInterface,
         DateTime $dateTime,
-        EmarsysLogs $emarsysLog,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
-    )
-    {
-        $this->emarsysLog = $emarsysLog;
+    ) {
         $this->storeManager = $storeManager;
         $this->messageManagerInterface = $managerInterface;
         $this->dateTime = $dateTime;
@@ -75,13 +68,9 @@ class Logs extends \Magento\Framework\Model\AbstractModel
         $this->_init('Emarsys\Emarsys\Model\ResourceModel\Logs');
     }
 
-    /**
-     * @param $messages
-     * @param $storeId
-     * @param $info
-     */
-    public function addErrorLog($messages = '', $storeId = 0, $info = '')
+    public function addErrorLog($messages, $storeId, $info)
     {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         try {
             $logsArray['job_code'] = 'Exception';
             $logsArray['status'] = 'error';
@@ -91,7 +80,9 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             $logsArray['run_mode'] = '';
             $logsArray['auto_log'] = '';
             $logsArray['store_id'] = $storeId;
-            $logId = $this->emarsysLog->manualLogs($logsArray);
+            $logsHelper = $objectManager->create('Emarsys\Emarsys\Helper\Logs');
+            $logId = $logsHelper->manualLogs($logsArray);
+
             if ($logId) {
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = $info;
@@ -100,7 +91,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
                 $logsArray['message_type'] = 'error';
                 $logsArray['log_action'] = 'fail';
                 $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
-                $this->emarsysLog->logs($logsArray);
+                $logsHelper->logs($logsArray);
             }
         } catch (\Exception $e) {
             $this->messageManagerInterface->addErrorMessage(

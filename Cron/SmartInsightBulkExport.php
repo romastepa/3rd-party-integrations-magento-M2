@@ -8,7 +8,7 @@ namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Magento\Framework\Serialize\Serializer\Json as JsonHelper;
+use Magento\Framework\Json\Helper\Data as JsonHelper;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -75,7 +75,7 @@ class SmartInsightBulkExport
             );
 
             if ($currentCronInfo) {
-                $data = $this->jsonHelper->unserialize($currentCronInfo->getParams());
+                $data = $this->jsonHelper->jsonDecode($currentCronInfo->getParams());
                 $storeId = $data['storeId'];
                 $fromDate = $data['fromDate'];
                 $toDate = $data['toDate'];

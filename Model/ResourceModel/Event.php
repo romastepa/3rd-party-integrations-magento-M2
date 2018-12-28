@@ -2,17 +2,10 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
-
-use Magento\{
-    Eav\Model\Entity\Attribute,
-    Eav\Model\Entity\Type,
-    Framework\Model\ResourceModel\Db\Context,
-    Store\Api\StoreRepositoryInterface
-};
 
 /**
  * Class Event
@@ -21,37 +14,40 @@ use Magento\{
 class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
-     * @var StoreRepositoryInterface
+     * @var \Magento\Store\Api\StoreRepositoryInterface
      */
     protected $storeRepository;
     /**
-     * @var Attribute
+     * @var \Magento\Eav\Model\Entity\Attribute
      */
     protected $attribute;
     /**
-     * @var Type
+     * @var \Magento\Eav\Model\Entity\Type
      */
     protected $entityType;
 
     /**
      * 
-     * @param Context $context
-     * @param Type $entityType
-     * @param Attribute $attribute
-     * @param StoreRepositoryInterface $storeRepository
+     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
+     * @param \Magento\Eav\Model\Entity\Type $entityType
+     * @param \Magento\Eav\Model\Entity\Attribute $attribute
+     * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
+     * @param \Magento\Framework\Message\ManagerInterface $messageManager
      * @param null $connectionName
      */
     public function __construct(
-        Context $context,
-        Type $entityType,
-        Attribute $attribute,
-        StoreRepositoryInterface $storeRepository,
+        \Magento\Framework\Model\ResourceModel\Db\Context $context,
+        \Magento\Eav\Model\Entity\Type $entityType,
+        \Magento\Eav\Model\Entity\Attribute $attribute,
+        \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
+        \Magento\Framework\Message\ManagerInterface $messageManager,
         $connectionName = null
     ) {
     
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;
+        $this->messageManager = $messageManager;
         parent::__construct($context, $connectionName);
     }
 
@@ -65,66 +61,34 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         $this->_init('magento_event_templates', 'id');
     }
 
-    /**
-     * @param $storeId
-     * @return array
-     */
     public function getEmarsysEvents($storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_events'))
-            ->where("store_id = ?", $storeId);
-
-        return $this->getConnection()->fetchAll($select);
+        $customerAttributes = $this->getConnection()->fetchAll("SELECT * FROM " . $this->getTable('emarsys_events') . " WHERE store_id =" . $storeId);
+        return $customerAttributes;
     }
 
-    /**
-     * @param $storeId
-     * @return string
-     */
     public function getMagentoEventTemplateCount($storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_events'), 'count(*)')
-            ->where("store_id = ?", $storeId);
-
-        return $this->getConnection()->fetchOne($select);
+        $customerAttributes = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_events') . " WHERE store_id =" . $storeId);
+        return $customerAttributes;
     }
 
-    /**
-     * @param $storeId
-     * @return string
-     */
     public function checkEventMappingCount($storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_event_mapping'), 'count(*)')
-            ->where("store_id = ?", $storeId);
-
-        return $this->getConnection()->fetchOne($select);
+        $customerAttributes = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_event_mapping') . " WHERE store_id =" . $storeId);
+        return $customerAttributes;
     }
 
     /**
-     * @param array $events
-     * @param $storeId
-     * @return bool
+     * @param array $data
      */
     public function updateEventSchema($events = [], $storeId)
     {
-        $this->getConnection()->delete(
-            $this->getTable('emarsys_events'),
-            $this->getConnection()->quoteInto("store_id = ?", $storeId)
-        );
+        $this->getConnection()->query("DELETE FROM " . $this->getTable('emarsys_events') . " WHERE store_id = '" . $storeId . "' ");
         if (isset($events['data'])) {
             foreach ($events['data'] as $field) {
-                $this->getConnection()->insert($this->getTable("emarsys_events"), [
-                    'event_id' => @$field['id'],
-                    'emarsys_event' => @$field['name'],
-                    'store_id' => $storeId
-                ]);
+                $field['name'] = $this->getConnection()->quote($field['name']);
+                $this->getConnection()->query("INSERT INTO " . $this->getTable("emarsys_events") . "(`id`,`event_id`,`emarsys_event`,`store_id`) VALUES('','" . $field['id'] . "'," . $field['name'] . ",'$storeId')");
             }
             return true;
         } else {
@@ -132,97 +96,48 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         }
     }
 
-    /**
-     * @param $value
-     * @return string
-     */
     public function getEventMapping($value)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_event_mapping'))
-            ->where("magento_event_template = ?", $value['magento_event_template'])
-            ->where("store_id = ?", $value['store_id']);
-
-        return $this->getConnection()->fetchOne($select);;
+        $query = "SELECT * FROM " . $this->getTable('emarsys_event_mapping') . " WHERE magento_event_template = '" . $value['magento_event_template'] . "' and store_id = " . $value['store_id'];
+        $result = $this->getConnection()->fetchOne($query);
+        return $result;
     }
 
-    /**
-     * @param $value
-     * @return int
-     */
     public function insertEventMapping($value)
     {
-        return $this->getConnection()->insert($this->getTable("emarsys_event_mapping"), [
-            'magento_event_template' => $value['magento_event_template'],
-            'emarsys_events' => $value['emarsys_events'],
-            'store_id' => $value['store_id']
-        ]);
+        $query = "INSERT INTO " . $this->getTable('emarsys_event_mapping') . "(id,magento_event_template,emarsys_events,store_id) VALUES('','" . $value['magento_event_template'] . "','" . $value['emarsys_events'] . "','" . $value['store_id'] . "') ";
+        $result = $this->getConnection()->query($query);
+        return $result;
     }
 
-    /**
-     * @param $value
-     * @return int
-     */
     public function updateEventMapping($value)
     {
-        return $this->getConnection()->update(
-            $this->getTable('emarsys_event_mapping'),
-            ['emarsys_events' => $value['emarsys_events']],
-            ['store_id = ?' => $value['store_id'], 'magento_event_template = ?' => $value['magento_event_template']]
-        );
+        $query = "UPDATE " . $this->getTable('emarsys_event_mapping') . " SET emarsys_events='" . $value['emarsys_events'] . "' WHERE magento_event_template='" . $value['magento_event_template'] . "' AND store_id=" . $value['store_id'];
+        $result = $this->getConnection()->query($query);
+        return $result;
     }
 
-    /**
-     * @param $magentoEventTemplate
-     * @param $eventId
-     * @param $storeId
-     * @return string
-     */
-    public function checkSelectedField($magentoEventTemplate, $eventId, $storeId)
+    public function checkSelectedField($attributeCode, $eventId, $storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_event_mapping'), 'count(*)')
-            ->where("magento_event_template = ?", $magentoEventTemplate)
-            ->where("emarsys_events = ?", $eventId)
-            ->where("store_id = ?", $storeId);
-
-        return $this->getConnection()->fetchOne($select);
+        $query = "SELECT count(*) FROM " . $this->getTable('emarsys_event_mapping') . " WHERE magento_event_template = '" . $attributeCode . "' AND emarsys_events = '" . $eventId . "' AND store_id = " . $storeId;
+        $result = $this->getConnection()->fetchOne($query);
+        return $result;
     }
 
-    /**
-     * @param $storeId
-     * @return int
-     */
     public function deleteMappingTable($storeId)
     {
-        return $this->getConnection()->delete(
-            $this->getTable('emarsys_event_mapping'),
-            $this->getConnection()->quoteInto("store_id = ?", $storeId)
-        );
+        $query = "DELETE FROM " . $this->getTable('emarsys_event_mapping') . " WHERE store_id =" . $storeId;
+        $result = $this->getConnection()->query($query);
     }
 
-    /**
-     * @param $magentoEventTemplate
-     * @param $storeId
-     * @return array
-     */
-    public function getEmailAllVariables($magentoEventTemplate, $storeId)
+    public function getEmailAllVariables($attributeCode, $storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_variable_mapping'), 'count(*)')
-            ->where("magento_event_template = ?", $magentoEventTemplate)
-            ->where("store_id = ?", $storeId);
-
-        return $this->getConnection()->fetchAll($select);
+        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $query = "SELECT * FROM " . $this->getTable('emarsys_variable_mapping') . " WHERE magento_event_template = " . $attributeCode . " AND store_id = " . $storeId;
+        $result = $this->getConnection()->fetchAll($query);
+        return $result;
     }
 
-    /**
-     * @param $storeId
-     * @return array
-     */
     public function getRecommendedFields($storeId)
     {
         //recommended events
@@ -246,17 +161,14 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         return $mappings;
     }
 
-    /**
-     * @param $eventId
-     * @param $storeId
-     * @return int
-     */
     public function deleteEvent($eventId, $storeId)
     {
-        return $this->getConnection()->delete(
-            $this->getTable('emarsys_events'),
-            $this->getConnection()->quoteInto("store_id = ? AND ", $storeId)
-            .  $this->getConnection()->quoteInto("event_id = ? AND ", $eventId)
-        );
+        $query = "DELETE FROM " . $this->getTable('emarsys_events') . " WHERE event_id = '" . $eventId . "' AND store_id = " . $storeId;
+        try {
+            $result = $this->getConnection()->query($query);
+            return $result;
+        } catch (\Exception $e) {
+            $this->messageManager->addErrorMessage($e->getMessage());
+        }
     }
 }

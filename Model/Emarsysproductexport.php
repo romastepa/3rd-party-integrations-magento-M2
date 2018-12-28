@@ -4,25 +4,20 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model;
 
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Directory\Model\CurrencyFactory;
 
-use Magento\{
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\Filesystem\Driver\File,
-    Framework\Registry,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Model\AbstractModel,
-    Catalog\Model\Product as ProductModel,
-    Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
-    Directory\Model\CurrencyFactory,
-    Store\Model\StoreManagerInterface
-};
-use MEQP2\Tests\NamingConventions\true\resource;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Data\Collection\AbstractDb;
+
+use Magento\Framework\Model\AbstractModel;
 
 /**
  * Class Emarsysproductexport
@@ -33,11 +28,11 @@ class Emarsysproductexport extends AbstractModel
     CONST EMARSYS_DELIMITER = '{EMARSYS}';
     CONST BATCH_SIZE = 500;
 
-    protected $_preparedData = [];
-    protected $_mapHeader = ['item'];
-    protected $_processedStores = [];
-    protected $_delimiter = ',';
-    protected $_enclosure = '"';
+    protected $_preparedData = array();
+
+    protected $_mapHeader = array('item');
+
+    protected $_processedStores = array();
 
     /**
      * @var ProductCollectionFactory
@@ -65,14 +60,24 @@ class Emarsysproductexport extends AbstractModel
     protected $currencyFactory;
 
     /**
-     * @var File
+     * @var \Magento\Framework\File\Csv
      */
-    protected $file;
+    protected $csvWriter;
 
     /**
-     * @var EmarsysDataHelper
+     * @var \Magento\Framework\Filesystem\Io\File
      */
-    protected $emarsysDataHelper;
+    protected $ioFile;
+
+    /**
+     * @var \Magento\Framework\Filesystem\DirectoryList
+     */
+    protected $dir;
+
+    /**
+     * @var \Magento\CatalogInventory\Helper\Stock
+     */
+    protected $stockFilter;
 
     /**
      * Emarsysproductexport constructor.
@@ -81,8 +86,10 @@ class Emarsysproductexport extends AbstractModel
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CurrencyFactory $currencyFactory
-     * @param File $file
-     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param \Magento\Framework\Filesystem\Io\File $ioFile
+     * @param \Magento\Framework\File\Csv $csvWriter
+     * @param \Magento\Framework\Filesystem\DirectoryList $dir,
+     * @param \Magento\CatalogInventory\Helper\Stock $stockFilter,
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -94,8 +101,10 @@ class Emarsysproductexport extends AbstractModel
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig,
         CurrencyFactory $currencyFactory,
-        File $file,
-        EmarsysDataHelper $emarsysDataHelper,
+        \Magento\Framework\Filesystem\Io\File $ioFile,
+        \Magento\Framework\File\Csv $csvWriter,
+        \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\CatalogInventory\Helper\Stock $stockFilter,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -107,8 +116,10 @@ class Emarsysproductexport extends AbstractModel
         $this->scopeConfig = $scopeConfig;
         $this->logger = $context->getLogger();
         $this->currencyFactory = $currencyFactory;
-        $this->file = $file;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->ioFile = $ioFile;
+        $this->csvWriter = $csvWriter;
+        $this->dir = $dir;
+        $this->stockFilter = $stockFilter;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -127,8 +138,6 @@ class Emarsysproductexport extends AbstractModel
      * @param int|object $storeId
      * @param int $currentPageNumber
      * @param array $attributes
-     * @param $includeBundle
-     * @param $excludedCategories
      * @return object
      */
     public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle, $excludedCategories)
@@ -142,8 +151,7 @@ class Emarsysproductexport extends AbstractModel
                 ->setPageSize(self::BATCH_SIZE)
                 ->setCurPage($currentPageNumber)
                 ->addAttributeToSelect($attributes)
-                ->addAttributeToSelect(['visibility'])
-                ->addUrlRewrite();
+                ->addAttributeToSelect(['visibility']);
 
             if (is_null($includeBundle)) {
                 $includeBundle = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
@@ -160,17 +168,7 @@ class Emarsysproductexport extends AbstractModel
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 
-            //If we have multistock (custom module) we have to add
-            //{{table}}.website_id = $store->getWebsiteId() to condition
-            $collection->joinField(
-                'inventory_in_stock',
-                'cataloginventory_stock_item',
-                'is_in_stock',
-                'product_id = entity_id',
-                null,
-                'left'
-            );
-
+            $this->stockFilter->addInStockFilterToCollection($collection);
             return $collection;
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
@@ -180,48 +178,50 @@ class Emarsysproductexport extends AbstractModel
     /**
      * Save CSV for Website
      *
-     * @param int $websiteId
-     * @param array $header
-     * @param array $processedStores
-     * @param string $merchantId
-     * @param array $logsArray
-     * @return string
+     * @param $websiteId
+     * @return array
      * @throws \Exception
      */
-    public function saveToCsv($websiteId, $header, $processedStores, $merchantId, $logsArray)
+    public function saveToCsv($websiteId)
     {
-        $this->_mapHeader = $header;
-        $this->_processedStores = $processedStores;
+        $this->_mapHeader = array('item');
         $this->_preparedData = array();
+        $this->_prepareData();
 
-        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
-        $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
+        $path = $this->dir->getPath(\Magento\Framework\App\Filesystem\DirectoryList::VAR_DIR) . '/export';
+
+        if (!is_dir($path)) {
+            $this->ioFile->mkdir($path, 0775);
+        }
 
         $name = 'products_' . $websiteId . '.csv';
-        $file = $fileDirectory . '/' . $name;
+        $file = $path . '/' . $name;
 
-        $fh = fopen($file, 'w');
-        $this->file->filePutCsv($fh, $this->_mapHeader, $this->_delimiter, $this->_enclosure);
-        $this->_prepareData($fh);
-        fclose($fh);
+        $columnCount = count($this->_mapHeader);
+        $emptyArray = array_fill(0, $columnCount, "");
 
-        return $file;
+        foreach ($this->_preparedData as &$row) {
+            if (count($row) < $columnCount) {
+                $row = $row + $emptyArray;
+            }
+        }
+
+        $this->csvWriter
+            ->setEnclosure('"')
+            ->setDelimiter(',')
+            ->saveData($file, ([$this->_mapHeader] + $this->_preparedData));
+
+        return array($file, $name);
     }
 
     /**
      * Prepare Data for CSV
      *
-     * @param resource $fh
-     * @return bool
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return array
      */
-    protected function _prepareData($fh)
+    protected function _prepareData()
     {
         $currentPageNumber = 1;
-
-        $columnCount = count($this->_mapHeader);
-        $emptyArray = array_fill(0, $columnCount, "");
 
         $collection = $this->getCollection();
         $collection->setPageSize(self::BATCH_SIZE)
@@ -235,19 +235,23 @@ class Emarsysproductexport extends AbstractModel
                 $collection->clear();
             }
             foreach ($collection as $product) {
-                $data = [];
                 $productId = $product->getId();
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
                 foreach ($productData as $param) {
                     $item = unserialize($param);
-                    $map = $this->_processedStores[$item['store']];
+                    $map = $this->prepareHeader(
+                        $item['store'],
+                        $item['header'],
+                        $item['default_store'],
+                        $item['currency_code']
+                    );
 
-                    if (!isset($data[$productId])) {
-                        $data[$productId] = array_fill(0, count($this->_mapHeader), "");
+                    if (!isset($this->_preparedData[$productId])) {
+                        $this->_preparedData[$productId] = array_fill(0, count($this->_mapHeader), "");
                     } else {
-                        $processed = $data[$productId];
-                        $data[$productId] = array_fill(0, count($this->_mapHeader), "");
-                        $data[$productId] = $processed + $data[$productId];
+                        $processed = $this->_preparedData[$productId];
+                        $this->_preparedData[$productId] = array_fill(0, count($this->_mapHeader), "");
+                        $this->_preparedData[$productId] = $processed + $this->_preparedData[$productId];
                     }
 
                     foreach ($item['data'] as $key => $value) {
@@ -262,21 +266,66 @@ class Emarsysproductexport extends AbstractModel
                                     $value = $value * $rate;
                                 }
                             }
-                            $data[$productId][$map[$key]] = nl2br($value);
+                            $this->_preparedData[$productId][$map[$key]] = $value;
                         }
                     }
                 }
-                ksort($data[$productId]);
-
-                if (count($data[$productId]) < $columnCount) {
-                    $data[$productId] = $data[$productId] + $emptyArray;
-                }
-
-                $this->file->filePutCsv($fh, $data[$productId], $this->_delimiter, $this->_enclosure);
+                ksort($this->_preparedData[$productId]);
             }
 
             $currentPageNumber++;
         }
-        return true;
+
+        return $this->_preparedData;
+    }
+
+    /**
+     * Prepare Global Header and Mapping
+     *
+     * @param string $storeCode
+     * @param array $header
+     * @param bool $isDefault
+     * @param string $currencyCode
+     * @return mixed
+     */
+    public function prepareHeader($storeCode, $header, $isDefault = false, $currencyCode)
+    {
+        if (!array_key_exists($storeCode, $this->_processedStores)) {
+            // $this->_processedStores[$storeCode] = array(oldKey => newKey);
+            $this->_processedStores[$storeCode] = array();
+            foreach ($header as $key => &$value) {
+                if (strtolower($value) == 'item') {
+                    unset($header[$key]);
+                    $this->_processedStores[$storeCode][$key] = 0;
+                    continue;
+                }
+
+                if (!$isDefault) {
+                    if (strtolower($value) == 'price' || strtolower($value) == 'msrp') {
+                        $newValue = $value . '_' . $currencyCode;
+                        $existingKey = array_search($newValue, $this->_mapHeader);
+                        if ($existingKey) {
+                            unset($header[$key]);
+                            $this->_processedStores[$storeCode][$key] = $existingKey;
+                            continue;
+                        } else {
+                            $value = $newValue;
+                        }
+                    } else {
+                        $value = $value . '_' . $storeCode;
+                    }
+                }
+            }
+            $headers = array_flip($header);
+
+            foreach ($headers as $head => $key) {
+                $this->_mapHeader[] = $head;
+                $renewedHead = array_keys($this->_mapHeader);
+                $lastElementKey = array_pop($renewedHead);
+                $this->_processedStores[$storeCode][$key] = $lastElementKey;
+            }
+        }
+
+        return $this->_processedStores[$storeCode];
     }
 }

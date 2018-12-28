@@ -2,17 +2,15 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Emarsys\Emarsys\Model\ContactFieldOption as ModelContactFieldOption;
-use Magento\{
-    Store\Api\StoreRepositoryInterface,
-    Framework\Model\ResourceModel\Db\Context,
-    Framework\Model\ResourceModel\Db\AbstractDb
-};
+use Magento\Store\Api\StoreRepositoryInterface;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * Class Field
@@ -64,29 +62,20 @@ class Field extends AbstractDb
      *
      * @param $storeId
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function checkOptionsMapping($storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getMainTable(), 'count(*)')
-            ->where("store_id = ?", $storeId);
-
-        return $this->getConnection()->fetchOne($select);
+        $customerAttributes = $this->getConnection()->fetchOne("SELECT count(*) FROM " . $this->getTable('emarsys_option_mapping') . " WHERE store_id =" . $storeId);
+        return $customerAttributes;
     }
 
     /**
      * truncate the mapping table
      * @param $storeId
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function truncateMappingTable($storeId)
     {
-        $this->getConnection()->delete(
-            $this->getMainTable(),
-            $this->getConnection()->quoteInto("store_id = ?", $storeId)
-        );
+        $this->getConnection()->query("DELETE FROM  " . $this->getTable("emarsys_option_mapping") . " WHERE store_id = $storeId");
     }
 
     /**
@@ -96,10 +85,7 @@ class Field extends AbstractDb
      */
     public function updateOptionSchema($fieldOptions = [], $storeId)
     {
-        $this->getConnection()->delete(
-            $this->getTable("emarsys_contact_field_option"),
-            $this->getConnection()->quoteInto("store_id = ?", $storeId)
-        );
+        $this->getConnection()->query("DELETE FROM " . $this->getTable("emarsys_contact_field_option") . " WHERE store_id = " . $storeId);
         if (count($fieldOptions) > 0) {
             foreach ($fieldOptions as $fieldId => $arrOptions) {
                 foreach ($arrOptions as $option) {
@@ -148,14 +134,8 @@ class Field extends AbstractDb
         } else {
             $entityTypeId = 1;
         }
-        $attributeCode = $this->getConnection()->quoteInto($attributeCode);
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('eav_attribute'), 'attribute_id')
-            ->where('attribute_code = ?', $attributeCode)
-            ->where('entity_type_id = ?', $entityTypeId);
-
-        $attributeId = $this->getConnection()->fetchOne($select);
+        $attributeCode = $this->getConnection()->quote($attributeCode);
+        $attributeId = $this->getConnection()->fetchOne("SELECT attribute_id FROM " . $this->getTable('eav_attribute') . " where attribute_code = " . $attributeCode . " and entity_type_id = $entityTypeId ");
         if ($attributeId) {
             return $attributeId;
         } else {
@@ -172,20 +152,9 @@ class Field extends AbstractDb
      */
     public function checkSelectedOption($magentoOptionId, $emarsysOptionId, $emarsysFieldId, $storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from(['eom' => $this->getTable('emarsys_option_mapping')], ['assigned' => 'count(*)'])
-            ->join(
-                ['eao' => $this->getTable('eav_attribute_option')],
-                'eao.option_id = eom.magento_option_id',
-                []
-            )
-            ->where('eao.option_id = ?', $magentoOptionId)
-            ->where('eom.emarsys_option_id = ?', $emarsysOptionId)
-            ->where('eom.emarsys_field_id = ?', $emarsysFieldId)
-            ->where('eom.store_id = ?', $storeId);
-
-        return  $this->getConnection()->fetchOne($select);
+        $magentoSelectedOptions = $this->getConnection()->fetchOne("SELECT count(*) as assigned FROM " . $this->getTable('emarsys_option_mapping') . " eom inner join " . $this->getTable('eav_attribute_option') . " eao on eao.option_id = eom.magento_option_id WHERE eao.option_id = '$magentoOptionId' and eom.emarsys_option_id='$emarsysOptionId' and eom.emarsys_field_id ='$emarsysFieldId'
+         and eom.store_id='" . $storeId . "'");
+        return $magentoSelectedOptions;
     }
 
     /**

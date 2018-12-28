@@ -94,7 +94,6 @@ class Country extends AbstractHelper
     /**
      * @param $store
      * @return array
-     * @throws \Zend_Json_Exception
      */
     public function getMapping($store)
     {

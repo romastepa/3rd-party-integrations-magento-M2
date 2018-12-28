@@ -78,12 +78,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $filterCode = $this->getRequest()->getParam('filtercode');
 
         $storeId = $this->request->getParam('store');
-        $collection = $this->logScheduleFactory->create()
-            ->getCollection()
-            ->setOrder('created_at', 'desc');
         if ($storeId) {
-            $collection->addFieldToFilter('store_id', $storeId);
-
+            $collection = $this->logScheduleFactory->create()
+                ->getCollection()
+                ->setOrder('created_at', 'desc')
+                ->addFieldToFilter('store_id', $storeId);
+        } else {
+            $collection = $this->logScheduleFactory->create()
+                ->getCollection()
+                ->setOrder('created_at', 'desc');
         }
 
         if ($filterCode != '') {
@@ -116,6 +119,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'Order Mapping' => 'Order Mapping',
                 'Product Mapping' => 'Product Mapping',
                 'Event Mapping' => 'Event Mapping',
+                'initialdbload' => 'Initial Load',
                 'transactional_mail' => 'Transactional Mail',
                 'Backgroud Time Based Optin Sync' => 'Background Time Based Optin Sync',
                 'Sync contact Export' => 'Sync contact Export',
@@ -219,10 +223,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     public function decorateTimeFrameCallBack($value)
     {
-        if ($value && $value != '0000-00-00 00:00:00') {
-            return $this->decorateTime(strtotime($value), false, null);
-        } else {
-            return '';
+        if ($value) {
+            return $this->decorateTime($value, false, null);
         }
     }
 
@@ -232,6 +234,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     public function decorateTime($value)
     {
-        return $this->timezone->date($value)->format('M d, Y H:i:s A');
+        return $this->timezone->date($value)->format('M d, Y h:i:s A');
     }
 }

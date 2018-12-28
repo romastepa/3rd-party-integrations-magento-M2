@@ -10,22 +10,26 @@
 <?php $helper = $this->helper('Emarsys\Emarsys\Helper\Data'); ?>
 <?php $customerBy = $helper->getIdentityRegistered(); ?>
 
+<!-- This code will embeded on all pages -->
 <?php if ($customerBy == "customer_id" && $customerId = $block->getCustomerId()): ?>
     <script>ScarabQueue.push(["setCustomerId", "<?php echo $customerId; ?>"]);</script>
-<?php elseif ($customerEmail = $block->getCustomerEmailAddress()): ?>
-    <script>ScarabQueue.push(["setEmail", "<?php echo $customerEmail; ?>"]);</script>
+<?php else: ?>
+    <?php if ($customerEmail = $block->getCustomerEmailAddress()): ?>
+        <script>ScarabQueue.push(["setEmail", "<?php echo $customerEmail; ?>"]);</script>
+    <?php endif; ?>
 <?php endif; ?>
+
 <script>ScarabQueue.push(["cart", [<?php echo $block->getCartItemsJsonData() ?>]]);</script>
 
 <?php
 $triggerGoCommand = true;
 if ($orders = $block->getOrderData()) {
-    foreach ($orders as $orderIncrementId => $orderData) {
+    foreach ($orders as $orderincrementId => $orderData) {
         if (is_array($orderData)) {
             $orderPageData = implode($orderData, ',');
             if (isset($orderPageData)) {
                 echo '<script>ScarabQueue.push(["purchase", {
-                            orderId : "' . $orderIncrementId . '",
+                            orderId : "' . $orderincrementId . '",
                             items : [' . $orderPageData . ']
                         }]);</script>';
                 echo "<script>ScarabQueue.push(['go']);</script>";

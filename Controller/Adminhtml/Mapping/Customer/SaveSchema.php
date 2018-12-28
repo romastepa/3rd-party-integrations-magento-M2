@@ -2,25 +2,21 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 
-use Magento\{
-    Backend\App\Action,
-    Backend\App\Action\Context,
-    Framework\View\Result\PageFactory,
-    Framework\Stdlib\DateTime\DateTime,
-    Store\Model\StoreManagerInterface,
-    Eav\Model\Entity\Attribute
-};
-use Emarsys\Emarsys\{
-    Helper\Customer,
-    Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
-    Model\Logs,
-    Helper\Logs as EmarsysHelperLogs
-};
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Customer;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Eav\Model\Entity\Attribute;
 
 /**
  * Class SaveSchema
@@ -95,7 +91,6 @@ class SaveSchema extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {

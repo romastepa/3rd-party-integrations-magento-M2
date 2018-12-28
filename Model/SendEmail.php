@@ -2,26 +2,22 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model;
 
-use Magento\{
-    Framework\Model\AbstractModel,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Registry,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\Mail\MessageInterface,
-    Store\Model\StoreManagerInterface
-};
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
-    Helper\Logs as EmarsysLogsHelper,
-    Model\ResourceModel\Customer as customerResourceModel,
-    Model\Api\Api as EmarsysModelApiApi
-};
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Mail\MessageInterface;
+use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 
 /**
  * Class Transport
@@ -30,9 +26,9 @@ use Emarsys\Emarsys\{
 class SendEmail extends AbstractModel
 {
     /**
-     * @var EmarsysHelperData
+     * @var Data
      */
-    protected $emarsysHelper;
+    protected $dataHelper;
 
     /**
      * @var DateTime
@@ -73,7 +69,7 @@ class SendEmail extends AbstractModel
      * SendEmail constructor.
      * @param Context $context
      * @param Registry $registry
-     * @param EmarsysHelperData $emarsysHelper
+     * @param Data $dataHelper
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param MessageInterface $message
@@ -88,7 +84,7 @@ class SendEmail extends AbstractModel
     public function __construct(
         Context $context,
         Registry $registry,
-        EmarsysHelperData $emarsysHelper,
+        Data $dataHelper,
         customerResourceModel $customerResourceModel,
         DateTime $date,
         MessageInterface $message,
@@ -100,7 +96,7 @@ class SendEmail extends AbstractModel
         AbstractDb $resourceCollection = null,
         array $data = []
     ) {
-        $this->emarsysHelper = $emarsysHelper;
+        $this->dataHelper = $dataHelper;
         $this->date = $date;
         $this->customerResourceModel = $customerResourceModel;
         $this->_message = $message;
@@ -114,7 +110,6 @@ class SendEmail extends AbstractModel
     /**
      * @param \Zend_Mail $message
      * @return bool
-     * @throws \Exception
      */
     public function sendMail($message)
     {
@@ -144,7 +139,7 @@ class SendEmail extends AbstractModel
             $logsArray['id'] = $logId;
 
             //check emarsys module status
-            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
+            if ($this->dataHelper->isEmarsysEnabled($websiteId) == 'true') {
 
                 //check emarsys transaction emails enable
                 if ($this->checkTransactionalMailEnabled($websiteId)) {
@@ -166,40 +161,45 @@ class SendEmail extends AbstractModel
                         $externalId = $message->getRecipients()[0];
                         $buildRequest = [];
 
-                        $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-                        $buildRequest[$buildRequest['key_id']] = $externalId;
-
-                        $customerId = $this->customerResourceModel->checkCustomerExistsInMagento(
-                            $externalId,
-                            $websiteId
-                        );
-
-                        if (!empty($customerId)) {
-                            $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-                            $buildRequest[$customerIdKey] = $customerId;
-                        }
-
-                        $data = [
-                            'email' => $externalId,
-                            'store_id' => $storeId
-                        ];
-                        $subscribeId = $this->customerResourceModel->getSubscribeIdFromEmail($data);
-
-                        if (!empty($subscribeId)) {
-                            $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
-                            $buildRequest[$subscriberIdKey] = $subscribeId;
-                        }
-
-                        $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
-                        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
-                        $buildRequest['key_id'] = $uniqueIdKey;
+                        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
                         if ($keyField == 'email') {
-                            $buildRequest[$uniqueIdKey] = $externalId;
+                            $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
+                            $buildRequest[$buildRequest['key_id']] = $externalId;
                         } elseif ($keyField == 'magento_id') {
-                            $buildRequest[$uniqueIdKey] = $externalId . "#" . $websiteId;
+                            //check customer exists in magento
+                            $customerId = $this->customerResourceModel->checkCustomerExistsInMagento(
+                                $externalId,
+                                $websiteId,
+                                $storeId
+                            );
+
+                            $data = [
+                                'email' => $externalId,
+                                'storeId' => $storeId
+                            ];
+                            $subscribeId = $this->customerResourceModel->getSubscribeIdFromEmail($data);
+
+                            //if customer exists
+                            if (!empty($customerId)) {
+                                $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer ID', $storeId);
+                                $buildRequest[$buildRequest['key_id']] = $customerId;
+                            } elseif (!empty($subscribeId)) {
+                                $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Subscriber ID', $storeId);
+                                $buildRequest[$buildRequest['key_id']] = $subscribeId;
+                            } else {
+                                $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Email', $storeId);
+                                $buildRequest[$buildRequest['key_id']] = $externalId;
+                            }
                         } elseif ($keyField == 'unique_id') {
-                            $buildRequest[$uniqueIdKey] = $externalId . "#" . $websiteId . "#" . $storeId;
+                            $buildRequest['key_id'] = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
+                            $buildRequest[$buildRequest['key_id']] = $externalId . "#" . $websiteId . "#" . $storeId;
                         }
+
+                        $emailKeyId = $this->customerResourceModel->getKeyId('Email', $storeId);
+                        $buildRequest[$emailKeyId] = $externalId;
+
+			            $uniqueKeyId = $this->customerResourceModel->getKeyId('Magento Customer Unique ID', $storeId);
+                        $buildRequest[$uniqueKeyId] = $externalId . "#" . $websiteId . "#" . $storeId;
 
                         //log information that is about to send for contact sync
                         $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
@@ -348,7 +348,7 @@ class SendEmail extends AbstractModel
      */
     public function checkTransactionalMailEnabled($websiteId)
     {
-        $status = $this->emarsysHelper->getConfigValue(
+        $status = $this->dataHelper->getConfigValue(
             'transaction_mail/transactionmail/enable_customer', 'websites', $websiteId
         );
 

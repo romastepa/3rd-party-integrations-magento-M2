@@ -2,25 +2,17 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Framework\{
-    HTTP\ZendClient,
-    Controller\Result\RawFactory,
-    File\Csv,
-    Serialize\Serializer\Json
-};
-
+use Magento\Framework\HTTP\ZendClient;
+use Emarsys\Emarsys\Helper\Data;
+use Magento\Framework\Controller\Result\RawFactory;
+use Magento\Framework\File\Csv;
 use Magento\Store\Model\StoreManagerInterface;
-
-use Emarsys\Emarsys\{
-    Helper\Data,
-    Model\ResourceModel\Order as OrderResourceModel,
-    Model\ResourceModel\Product as ProductResourceModel
-};
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Magento\Framework\Json\Helper\Data as JsonHelper;
 
 /**
  * Class ApiExport
@@ -63,19 +55,15 @@ class ApiExport extends ZendClient
     protected $storeManagerInterface;
 
     /**
-     * @var Json
+     * @var Logs
      */
-    protected $json;
+    protected $emarsysLogs;
 
     /**
-     * @var OrderResourceModel
+     * @var JsonHelper
      */
-    protected $orderResourceModel;
+    protected $jasonHelper;
 
-    /**
-     * @var ProductResourceModel
-     */
-    protected $productResourceModel;
 
     /**
      * ApiExport constructor.
@@ -83,26 +71,23 @@ class ApiExport extends ZendClient
      * @param RawFactory $resultRawFactory
      * @param Csv $csvWriter
      * @param StoreManagerInterface $storeManagerInterface
-     * @param Json $json
-     * @param OrderResourceModel $orderResourceModel
-     * @param ProductResourceModel $productResourceModel
+     * @param Logs $emarsysLogs
+     * @param JsonHelper $jsonHelper
      */
     public function __construct(
         Data $emarsysHelper,
         RawFactory $resultRawFactory,
         Csv $csvWriter,
         StoreManagerInterface $storeManagerInterface,
-        Json $json,
-        OrderResourceModel $orderResourceModel,
-        ProductResourceModel $productResourceModel
+        EmarsysModelLogs $emarsysLogs,
+        JsonHelper $jsonHelper
     ) {
         $this->emarsysHelper = $emarsysHelper;
         $this->resultRawFactory = $resultRawFactory;
         $this->csvWriter = $csvWriter;
         $this->storeManagerInterface = $storeManagerInterface;
-        $this->json = $json;
-        $this->orderResourceModel = $orderResourceModel;
-        $this->productResourceModel = $productResourceModel;
+        $this->emarsysLogs = $emarsysLogs;
+        $this->jasonHelper = $jsonHelper;
     }
 
     /**
@@ -134,7 +119,7 @@ class ApiExport extends ZendClient
             return $headers;
         }
         $storeId = $this->storeManagerInterface->getStore()->getId();
-        $this->emarsysHelper->addErrorLog('Api Token Not Found', $storeId, 'ApiExport::getApiHeaders()');
+        $this->emarsysLogs->addErrorLog('Api Token Not Found', $storeId, 'ApiExport::getApiHeaders()');
 
         return false;
     }
@@ -143,31 +128,28 @@ class ApiExport extends ZendClient
      * @param $apiUrl
      * @param $filePath
      * @return array
-     * @throws \Zend_Http_Client_Exception
      */
-    public function apiExport($apiUrl = false, $filePath = false)
+    public function apiExport($apiUrl, $filePath)
     {
         $this->_apiUrl = $apiUrl;
         $storeId = $this->storeManagerInterface->getStore()->getId();
         $result = [];
         $result['result'] = 0;
         $result['status'] = '';
-        $result['resultBody'] = 'Api Export Failed.';
+        $result['resultBody'] = 'Api Export Failed. API URL or CSV File Not Found.';
 
-        if ($apiUrl && $filePath && file_exists($filePath)) {
+        if (!empty($apiUrl) && !empty($filePath) && (file_exists($filePath))) {
             $data = file_get_contents($filePath);
             $response = $this->post($apiUrl, $data);
             if (($response != '')) {
                 if ($response->getStatus() == 200) {
                     $result['result'] = 1;
                 }
-                $result['status'] = $response->getStatus();
-                $result['resultBody'] = $response->getBody();
-            } else {
-                $result['resultBody'] = 'Api Export Failed. Empty response';
+                $result['status'] =  $response->getStatus();
+                $result['resultBody'] =  $response->getBody();
             }
         } else {
-            $this->emarsysHelper->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
+            $this->emarsysLogs->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
         }
 
         return $result;
@@ -189,7 +171,7 @@ class ApiExport extends ZendClient
         $response = '';
 
         try {
-            if ($method == "GET" && !(empty($data))) {
+            if ($method == "GET" && ! (empty($data))) {
                 $this->setParameterGet($data);
             } else {
                 if (!empty($data)) {
@@ -200,11 +182,11 @@ class ApiExport extends ZendClient
             $responseObject = $this->request($method);
             $response = $responseObject;
             if ($jsonDecode) {
-                $response = $this->json->unserialize($response);
+                $response = $this->jasonHelper->jsonDecode($response);
             }
         } catch (\Exception $e) {
             $storeId = $this->storeManagerInterface->getStore()->getId();
-            $this->emarsysHelper->addErrorLog(
+            $this->emarsysLogs->addErrorLog(
                 'API Test Connection Failed. ' . $e->getMessage(),
                 $storeId,
                 'ApiExport::_request()'
@@ -218,7 +200,6 @@ class ApiExport extends ZendClient
      * @param $apiCall
      * @param array $data
      * @return mixed|string|\Zend_Http_Response
-     * @throws \Zend_Http_Client_Exception
      */
     public function post($apiCall, $data = [])
     {
@@ -231,7 +212,6 @@ class ApiExport extends ZendClient
 
     /**
      * Get API URL
-     * @param string $entityType
      * @return string
      */
     public function getApiUrl($entityType)
@@ -248,8 +228,7 @@ class ApiExport extends ZendClient
     }
 
     /**
-     * Get Static Export Array for Emarsys
-     *
+     * get Static Export Array for Emarsys
      * @return array
      */
     public function getCatalogExportCsvHeader()
@@ -267,140 +246,87 @@ class ApiExport extends ZendClient
 
     /**
      * Sample Data for Catalog full export test connection.
-     *
-     * @param array $headers
      * @return array
      */
-    public function sampleDataCatalogExport($headers)
+    public function sampleDataCatalogExport()
     {
-        $sampleResult = [];
-        $sampleData =  [
-            'item' => 'test_product_item_1',
-            'available' => 'true',
-            'title' => 'test_product_title_1',
-            'link' => $this->storeManagerInterface->getStore()->getBaseUrl(),
-            'image' => $this->storeManagerInterface->getStore()->getBaseUrl(),
-            'category' => 'test_category_1',
-            'price' => '00.00'
+        return [
+            'test_product_item_1',
+            'true',
+            'test_product_title_1',
+            $this->storeManagerInterface->getStore()->getBaseUrl(),
+            $this->storeManagerInterface->getStore()->getBaseUrl(),
+            'test_category_1',
+            '00.00'
         ];
-
-        foreach ($headers as $item) {
-            $itemVal = '';
-            if (isset($sampleData[$item])) {
-                $itemVal = $sampleData[$item];
-            }
-            array_push($sampleResult, $itemVal);
-        }
-
-        return $sampleResult;
     }
 
     /**
      * Get Sales Order Sample Data for Test Connection Button.
      *
      * @param int $store
-     * @param array $headers
      * @return array
      */
-    public function sampleDataSmartInsightExport($store = 0, $headers)
+    public function sampleDataSmartInsightExport($store = 0)
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManagerInterface->getStore($store);
-        $sampleResult = array();
 
-        $emailAsIdentifierStatus = (bool)$store->getConfig(DATA::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
+        $emailAsIdentifierStatus = (bool)$store->getConfig($this->emarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {
             //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
-            $sampleData = [
-                'order' => '00000',
-                'timestamp' => '2017-07-07T07:07:07Z',
-                'email' => 'sample@data.com',
-                'item' => 'test_product_item_1',
-                'price' => '0.00',
-                'quantity' => '0'
+            return [
+                '00000',
+                '2017-07-07T07:07:07Z',
+                'sample@data.com',
+                'test_product_item_1',
+                '0.00',
+                '0'
             ];
         } else {
             //header ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
-            $sampleData = [
-                'order' => '00000',
-                'timestamp' => '2017-07-07T07:07:07Z',
-                'customer' => 'cutomer_id',
-                'item' => 'test_product_item_1',
-                'price' => '0.00',
-                'quantity' => '0'
+            return [
+                '00000',
+                '2017-07-07T07:07:07Z',
+                'customer_id',
+                'test_product_item_1',
+                '0.00',
+                '0'
             ];
         }
 
-        foreach ($headers as $item) {
-            $itemVal = '';
-            if (isset($sampleData[$item])) {
-                $itemVal = $sampleData[$item];
-            }
-            array_push($sampleResult, $itemVal);
-        }
-
-        return $sampleResult;
     }
 
     /**
      * Test Smart Insight API Credentials
-     *
-     * @param $storeId
-     * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
+     * @return string
      */
-    public function testSIExportApi($storeId)
+    public function testSIExportApi()
     {
-        return $this->testApiExport(\Magento\Sales\Model\Order::ENTITY, $storeId);
+        return $this->testApiExport(\Magento\Sales\Model\Order::ENTITY);
     }
 
     /**
      * Test Catalog Export Api Credentials
-     *
-     * @param $storeId
      * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
      */
-    public function testCatalogExportApi($storeId)
+    public function testCatalogExportApi()
     {
-        return $this->testApiExport(\Magento\Catalog\Model\Product::ENTITY, $storeId);
+        return $this->testApiExport(\Magento\Catalog\Model\Product::ENTITY);
     }
 
     /**
      * @param $entityType
-     *
-     * @param $storeId
      * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
      */
-    private function testApiExport($entityType, $storeId)
+    private function testApiExport($entityType)
     {
         if ($entityType == \Magento\Catalog\Model\Product::ENTITY) {
-            $emptyFileHeader = [];
-            $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
-            foreach ($mappedAttributes as $key => $value) {
-                $emarsysFieldNames = $this->productResourceModel->getEmarsysFieldName($storeId, $value['emarsys_attr_code']);
-                array_push($emptyFileHeader, $emarsysFieldNames);
-            }
-
-            if (empty($emptyFileHeader)) {
-                $emptyFileHeader = $this->getCatalogExportCsvHeader();
-            }
-
-            $sampleData = $this->sampleDataCatalogExport($emptyFileHeader);
+            $emptyFileHeader = $this->getCatalogExportCsvHeader();
+            $sampleData = $this->sampleDataCatalogExport();
         } else {
-            //get sales mapped attributes
-            $emptyFileHeader = $this->orderResourceModel->getSalesMappedAttrs($storeId);
-            if (empty($emptyFileHeader)) {
-                $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
-            }
-            $sampleData = $this->sampleDataSmartInsightExport($storeId, $emptyFileHeader);
+            $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
+            $sampleData = $this->sampleDataSmartInsightExport();
         }
 
         $data = [
@@ -411,7 +337,7 @@ class ApiExport extends ZendClient
         $fileName = $entityType . '_test_api_export.csv';
         $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath('testconnections');
         $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-        $filePath = $fileDirectory . "/" . $fileName;
+        $filePath =  $fileDirectory . "/" . $fileName;
 
         $this->csvWriter
             ->setEnclosure('"')
@@ -420,10 +346,7 @@ class ApiExport extends ZendClient
 
         $this->_apiUrl = $apiUrl = $this->getApiUrl($entityType);
         $result = $this->apiExport($apiUrl, $filePath);
-
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
+        unlink($filePath);
 
         if (!$result['result'] && $result['status'] == 400) {
             $result['result'] = 1;

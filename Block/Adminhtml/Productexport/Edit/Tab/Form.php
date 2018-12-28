@@ -7,12 +7,17 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Productexport\Edit\Tab;
 
-use Magento\Backend\Block\Widget\Context;
-use Magento\Framework\Registry;
+use Magento\Backend\Block\Widget\Grid\Extended;
+use \Magento\Backend\Block\Widget\Context;
+use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\Data\FormFactory;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\Category;
+use Magento\Framework\Registry;
+use Magento\ImportExport\Model\Source\Export\FormatFactory;
 use Magento\Framework\App\Request\Http;
 use Magento\Backend\Block\Widget\Form\Generic;
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Form
@@ -21,34 +26,47 @@ use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 class Form extends Generic
 {
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var \Magento\ImportExport\Model\Source\Export\FormatFactory
      */
-    protected $storeManager;
-
-    /**
-     * @var Http
-     */
-    protected $request;
-
+    protected $_formatFactory;
 
     /**
      * Form constructor.
      * @param Context $context
-     * @param Registry $registry
+     * @param Session $session
      * @param FormFactory $formFactory
-     * @param array $data
+     * @param CategoryFactory $categoryFactory
+     * @param Category $categoryModel
+     * @param Registry $registry
+     * @param FormatFactory $formatFactory
      * @param Http $request
+     * @param Extended $extended
+     * @param array $data
      */
     public function __construct(
         Context $context,
-        Registry $registry,
+        Session $session,
         FormFactory $formFactory,
-        array $data = [],
-        Http $request
+        CategoryFactory $categoryFactory,
+        Category $categoryModel,
+        Registry $registry,
+        FormatFactory $formatFactory,
+        Http $request,
+        Extended $extended,
+        array $data = []
     ) {
         parent::__construct($context, $registry, $formFactory, $data);
+        $this->session = $session;
+        $this->admin = $context->getBackendSession();
         $this->storeManager = $context->getStoreManager();
-        $this->request = $request;
+        $this->_formFactory = $formFactory;
+        $this->categoryFactory = $categoryFactory;
+        $this->categoryModel = $categoryModel;
+        $this->_registry = $registry;
+        $this->extended = $extended;
+        $this->getRequest = $request;
+        $this->scopeConfigInterface = $context->getScopeConfig();
+        $this->_formatFactory = $formatFactory;
     }
 
     /**
@@ -56,9 +74,10 @@ class Form extends Generic
      */
     protected function _prepareForm()
     {
-        $params = $this->request->getParams();
+        $params = $this->getRequest->getParams();
+        $scope = ScopeInterface::SCOPE_WEBSITES;
         $storeId = $params['store'];
-        $store = $this->storeManager->getStore($storeId);
+        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
 
         $form = $this->_formFactory->create();
         $this->setForm($form);
@@ -66,16 +85,15 @@ class Form extends Generic
         $values = [];
         $values['customer'] = 'Customer';
         $values['subscriber'] = 'Subscriber';
-
-        $smartInsightEnable = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_ENABLED);
+        $smartInsightEnable = $this->scopeConfigInterface->getValue('smart_insight/smart_insight/smartinsight_enabled', $scope, $websiteId);
         if ($smartInsightEnable == 1) {
             $values['order'] = 'Order';
         }
-
-        $productExportStatus = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED);
+        $productExportStatus = $this->scopeConfigInterface->getValue('emarsys_predict/feed_export/enable_nightly_product_feed', $scope, $websiteId);
         if ($productExportStatus == 1 || $smartInsightEnable == 1) {
             $values['product'] = 'Product';
         }
+        $includeBundleProductValue = $this->scopeConfigInterface->getValue('emarsys_predict/feed_export/include_bundle_product', $scope, $websiteId);
 
         $fieldset->addField("entitytype", "select", [
             'label' => 'Export Entity Type',
@@ -93,7 +111,7 @@ class Form extends Generic
                 '0' => 'No',
                 '1' => 'Yes',
             ],
-            'value' => $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT),
+            'value' => $includeBundleProductValue,
             'style' => 'width:350px'
         ]);
 

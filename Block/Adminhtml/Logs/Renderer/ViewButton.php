@@ -46,7 +46,7 @@ class ViewButton extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abst
     {
         $rowData = $row->getData();
         $url = $this->backendHelper->getUrl('log/logdetails/logdetails', ['id' => $rowData['id']]);
-        if (strtolower($rowData['message_type']) == 'success') {
+        if ($rowData['message_type'] == 'Success') {
             $usermsg = "<span style='color:green'>Success</span>";
         } else {
             $usermsg = "<span style='color:red'>Failed</span>";

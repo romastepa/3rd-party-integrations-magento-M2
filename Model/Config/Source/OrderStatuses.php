@@ -6,10 +6,6 @@
  */
 namespace Emarsys\Emarsys\Model\Config\Source;
 
-use Emarsys\Emarsys\Model\Logs;
-use Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory;
-use Magento\Store\Model\StoreManagerInterface;
-
 /**
  * Class OrderStatuses
  * @package Emarsys\Emarsys\Model\Config\Source
@@ -17,34 +13,27 @@ use Magento\Store\Model\StoreManagerInterface;
 class OrderStatuses
 {
     /**
-     * @var CollectionFactory
+     * @var
      */
-    protected $statusCollectionFactory;
+    protected $resource;
+    /**
+     * @var
+     */
+    protected $connection;
 
     /**
-     * @var StoreManagerInterface
-     */
-
-    protected $storeManager;
-
-    /**
-     * @var Logs
-     */
-    protected $emarsysLogs;
-
-    /**
-     * @param Logs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
-     * @param CollectionFactory $statusCollectionFactory
+     * @param \Magento\Framework\App\ResourceConnection $resource
      */
     public function __construct(
-        Logs $emarsysLogs,
-        StoreManagerInterface $storeManager,
-        CollectionFactory $statusCollectionFactory
+        \Magento\Framework\App\ResourceConnection $resource,
+        \Magento\Config\Model\ResourceModel\Config $config,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
+        \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
+        $this->_resource = $resource;
         $this->storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
-        $this->statusCollectionFactory = $statusCollectionFactory;
+        $this->config = $config;
     }
 
     /**
@@ -52,12 +41,17 @@ class OrderStatuses
      */
     public function toOptionArray()
     {
-       $orderStatusesCollection = $this->statusCollectionFactory->create()->joinStates()
-            ->addFieldToFilter('state', ['in' => ['closed', 'complete', 'processing']]);
-
+        $connection = $this->_resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
+        $sql = "SELECT * FROM " . $this->config->getTable('sales_order_status');
+        try {
+            $orderStatusesCollection = $connection->fetchAll($sql);
+        } catch (\Exception $e) {
+            $storeId = $this->storeManager->getStore()->getId();
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'toOptionArray(orderStatus)');
+        }
         $orderStatusesArray = [];
         foreach ($orderStatusesCollection as $order) {
-            $orderStatusesArray[] = ['value' => $order->getStatus(), 'label' => $order->getLabel()];
+            $orderStatusesArray[] = ['value' => $order['status'], 'label' => $order['label']];
         }
         return $orderStatusesArray;
     }

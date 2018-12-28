@@ -2,14 +2,9 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Controller\Adminhtml\Email;
-
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\Registry;
-use Magento\Email\Model\BackendTemplateFactory;
 
 /**
  * Class Template
@@ -32,31 +27,20 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
     protected $_coreRegistry = null;
 
     /**
-     * @var BackendTemplate
+     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Magento\Framework\Registry $coreRegistry
      */
-    protected $backendTemplate;
-
-    /**
-     * Template constructor.
-     * @param Context $context
-     * @param Registry $coreRegistry
-     * @param BackendTemplateFactory $backendTemplate
-     */
-    public function __construct(
-        Context $context,
-        Registry $coreRegistry,
-        BackendTemplateFactory $backendTemplate
-    )
+    public function __construct(\Magento\Backend\App\Action\Context $context, \Magento\Framework\Registry $coreRegistry)
     {
         $this->_coreRegistry = $coreRegistry;
-        $this->backendTemplate = $backendTemplate;
         parent::__construct($context, $coreRegistry);
     }
 
     /**
      * Dispatch request
      *
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
+     * @return \Magento\Framework\Controller\ResultInterface|ResponseInterface
+     * @throws \Magento\Framework\Exception\NotFoundException
      */
     public function execute()
     {
@@ -67,12 +51,12 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
      * Load email template from request
      *
      * @param string $idFieldName
-     * @return mixed
+     * @return \Magento\Email\Model\BackendTemplate $model
      */
     protected function _initTemplate($idFieldName = 'template_id')
     {
         $id = (int)$this->getRequest()->getParam($idFieldName);
-        $model = $this->backendTemplate->create();
+        $model = $this->_objectManager->create('Magento\Email\Model\BackendTemplate');
         if ($id) {
             $model->load($id);
         }
@@ -87,6 +71,6 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
 
     public function initTemplate($idFieldName = 'template_id')
     {
-        return $this->_initTemplate($idFieldName);
+       return $this->_initTemplate($idFieldName);
     }
 }

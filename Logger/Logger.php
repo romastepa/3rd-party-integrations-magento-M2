@@ -12,5 +12,4 @@ namespace Emarsys\Emarsys\Logger;
  */
 class Logger extends \Monolog\Logger
 {
-    protected $name = 'emarsysLogger';
 }

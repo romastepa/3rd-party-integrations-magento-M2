@@ -3,23 +3,18 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-use Emarsys\Emarsys\Model\Logs;
-use Magento\Framework\{
-    App\Config\ScopeConfigInterface,
-    Model\ResourceModel\Db\AbstractDb,
-    Model\ResourceModel\Db\Context,
-    Stdlib\DateTime\DateTime
-};
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
  * Class Sync
  * @package Emarsys\Emarsys\Model\ResourceModel
  */
-class Sync extends AbstractDb
+class Sync extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
      * @var int
@@ -65,18 +60,20 @@ class Sync extends AbstractDb
 
     protected $scopeConfigInterface;
 
+
     /**
-     * @param Context $context
+     * 
+     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param DateTime $date
-     * @param Logs $emarsysLogs
-     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param \Emarsys\Emarsys\Model\Logs $emarsysLogs
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
      * @param null $connectionName
      */
     public function __construct(
-        Context $context,
+        \Magento\Framework\Model\ResourceModel\Db\Context $context,
         DateTime $date,
-        Logs $emarsysLogs,
-        ScopeConfigInterface $scopeConfigInterface,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
         $connectionName = null
     ) {
     
@@ -106,30 +103,21 @@ class Sync extends AbstractDb
     {
         $connection = $this->getConnection();
 
-        $table = false;
         if ($entity == 'product') {
-            $table = $this->getTable('emarsys_emarsys_product_attributes');
+            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_product_attributes')  . " where store_id =" . $storeId);
         }
         if ($entity == 'customer') {
-            $table = $this->getTable('emarsys_emarsys_customer_attributes');
+            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_customer_attributes') . " where store_id =" . $storeId);
         }
         if ($entity == 'order') {
-            $table = $this->getTable('emarsys_emarsys_order_attributes');
+            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_emarsys_order_attributes') . " where store_id =" . $storeId);
         }
 
         if ($entity == 'customproductattributes') {
-            $table = $this->getTable('emarsys_custom_product_attributes');
+            $results = $connection->fetchAll("SELECT * FROM " . $this->getTable('emarsys_custom_product_attributes') . " where store_id =" . $storeId);
         }
 
-        if ($table) {
-            $select = $connection->select()
-                ->from($table)
-                ->where('store_id = ?', $storeId);
-
-            return $connection->fetchAll($select);
-        }
-
-        return [];
+        return $results;
     }
 
     /**
@@ -143,18 +131,9 @@ class Sync extends AbstractDb
         if ($storeId == null) {
             $storeId = 1;
         }
-        $subselect = $this->getConnection()->select()
-            ->from($this->getTable('emarsys_syncstatus'), 'MAX(id)')
-            ->where('status = ?', 'SUCCESS')
-            ->where('sync_id = ?', '$syncId')
-            ->where('store_id = ?', $storeId);
-
-        $select = $this->getConnection()->select()
-            ->from($this->getTable('emarsys_syncstatus'), ['syncdate' => 'DATE_FORMAT(MAX(finished_at), "%Y-%m-%d %H:%i:%s")'])
-            ->where('id in (?)', $subselect);
-
+        $sql = "SELECT  DATE_FORMAT(max(`finished_at`),'%Y-%m-%d %H:%i:%s') as syncdate FROM " . $this->getTable('emarsys_syncstatus') . " WHERE `id` = ( SELECT MAX(`id`) FROM " . $this->getTable('emarsys_syncstatus') . "  WHERE `status`='SUCCESS' and  `sync_id` = " . $syncId . " and `store_id` = " . $storeId . ")";
         try {
-            $lastsyncDate = $this->getConnection()->fetchOne($select);
+            $lastsyncDate = $this->getConnection()->fetchOne($sql);
             if ($lastsyncDate == null || $lastsyncDate == '') {
                 $lastsyncDate = $this->date->date('Y-m-d H:i:s', strtotime('-5 days'));
             }

@@ -79,7 +79,6 @@ class WebDav extends DataObject
     /**
      * @param $exportMode
      * @param $data
-     * @throws \Exception
      */
     public function syncFullContactUsingWebDav($exportMode, $data)
     {
@@ -90,17 +89,6 @@ class WebDav extends DataObject
         } else {
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
-
-        $fromDate = (isset($data['fromDate']) && !empty($data['fromDate'])) ? $data['fromDate'] : '';
-        $toDate = (isset($data['toDate']) && !empty($data['toDate'])) ? $data['toDate'] : $this->date->date('Y-m-d') . ' 23:59:59';
-
-        $data = [
-            'website' => $websiteId,
-            'storeId' => $storeId,
-            'fromDate' => $fromDate,
-            'toDate' => $toDate
-        ];
-
         $scope = ScopeInterface::SCOPE_WEBSITES;
         $errorStatus = true;
         $jobDetails = $this->cronHelper->getJobDetail($exportMode);
@@ -162,7 +150,6 @@ class WebDav extends DataObject
      * @param $data
      * @param $logId
      * @return bool
-     * @throws \Exception
      */
     public function exportDataToWebDav($exportMode, $data, $logId)
     {

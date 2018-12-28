@@ -7,6 +7,7 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Model\Logs;
+use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\EmarsysCronDetails;
 
 /**
@@ -21,6 +22,11 @@ class CleanCronDetails
     protected $emarsysLogs;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager ;
+
+    /**
      * @var EmarsysCronDetails
      */
     protected $emarsysCronDetails;
@@ -28,13 +34,16 @@ class CleanCronDetails
     /**
      * CleanCronDetails constructor.
      * @param Logs $emarsysLogs
+     * @param StoreManagerInterface $storeManager
      * @param EmarsysCronDetails $emarsysCronDetails
      */
     public function __construct(
         Logs $emarsysLogs,
+        StoreManagerInterface $storeManager,
         EmarsysCronDetails $emarsysCronDetails
     ) {
         $this->emarsysLogs = $emarsysLogs;
+        $this->storeManager = $storeManager;
         $this->emarsysCronDetails = $emarsysCronDetails;
     }
 
@@ -46,7 +55,7 @@ class CleanCronDetails
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
-                0,
+                $this->storeManager->getStore()->getId(),
                 'CleanCronDetails::execute()'
             );
         }

@@ -2,23 +2,17 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-use Emarsys\Emarsys\{
-    Model\Logs,
-    Helper\Data as EmarsysDataHelper
-};
-use Magento\{
-    Framework\Model\ResourceModel\Db\AbstractDb,
-    Framework\Model\ResourceModel\Db\Context,
-    Eav\Model\Entity\Type,
-    Eav\Model\Entity\Attribute,
-    Store\Api\StoreRepositoryInterface,
-    Store\Model\StoreManagerInterface
-};
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Store\Api\StoreRepositoryInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
 
 /**
  * Class Order
@@ -47,7 +41,7 @@ class Order extends AbstractDb
     protected $emarsysDataHelper;
 
     /**
-     * @var StoreManagerInterface
+     * @var \Magento\Store\Model\StoreManagerInterface
      */
     protected $_storeManager;
 
@@ -57,20 +51,12 @@ class Order extends AbstractDb
     protected $emarsysOrderFields = [];
 
     /**
-     * @var Logs
-     */
-    protected $emarsysLogs;
-
-    /**
      * Order constructor.
      *
      * @param Context $context
      * @param Type $entityType
      * @param Attribute $attribute
      * @param StoreRepositoryInterface $storeRepository
-     * @param EmarsysDataHelper $emarsysDataHelper
-     * @param StoreManagerInterface $storeManager
-     * @param Logs $emarsysLogs
      * @param null $connectionName
      */
     public function __construct(
@@ -79,8 +65,8 @@ class Order extends AbstractDb
         Attribute $attribute,
         StoreRepositoryInterface $storeRepository,
         EmarsysDataHelper $emarsysDataHelper,
-        StoreManagerInterface $storeManager,
-        Logs $emarsysLogs,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         $connectionName = null
     ) {
         $this->entityType = $entityType;
@@ -108,12 +94,20 @@ class Order extends AbstractDb
      */
     public function getEmarsysAttrCount($storeId)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('emarsys_event_mapping'), 'count(*)')
-            ->where("store_id = ?", $storeId);
+        $emarsysFieldCount = $this->getConnection()->fetchOne("SELECT count(*) FROM " .
+            $this->getTable('emarsys_event_mapping') . " WHERE store_id=" . $storeId . "");
+        return $emarsysFieldCount;
+    }
 
-        return $this->getConnection()->fetchOne($select);
+    /**
+     * @param $storeId
+     * @return string
+     */
+    public function checkOrderMapping($storeId)
+    {
+        $customerAttributes = $this->getConnection()->fetchOne("SELECT count(*) FROM " .
+            $this->getTable('emarsys_event_mapping') . " WHERE store_id =" . $storeId);
+        return $customerAttributes;
     }
 
     /**
@@ -134,7 +128,6 @@ class Order extends AbstractDb
     /**
      * @param $data
      * @param $storeId
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function insertIntoMappingTable($data, $storeId)
     {
@@ -187,32 +180,25 @@ class Order extends AbstractDb
     /**
      * @param $data
      * @param $storeId
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Db_Statement_Exception
      */
     public function insertIntoMappingTableCustomValue($data, $storeId)
     {
         foreach ($data as $key => $value) {
-            $select = $this->getConnection()
-                ->select()
-                ->from( $this->getMainTable(), 'magento_column_name')
-                ->where("magento_column_name = ?", $key);
-
-            $result = $this->getConnection()->fetchOne($select);
-            if (!$result) {
+            $key = $this->getConnection()->quote($key);
+            $value = $this->getConnection()->quote($value);
+            $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " .
+                $this->getTable('emarsys_order_field_mapping') . " WHERE magento_column_name = " . $key . " ");
+            $result = $stmt->fetch();
+            if ($result == 0) {
                 //insert the attribute
                 //for the first time enter the empty records for the emarsys id
-                $this->getConnection()->insert($this->getMainTable(), [
-                    'magento_column_name' => $key,
-                    'emarsys_order_field' => $value,
-                    'store_id' => $storeId
-                ]);
+                $stmt = $this->getConnection()->query("INSERT INTO  " . $this->getTable('emarsys_order_field_mapping') .
+                    " (magento_column_name,emarsys_order_field,store_id) VALUES (" . $key . "," . $value . ",'" . $storeId . "')  ");
             } else {
                 //else update the attribute value
-                $this->getConnection()->update(
-                    $this->getMainTable(),
-                    ['emarsys_order_field' => $value],
-                    ['store_id = ?' => $storeId, 'magento_column_name = ?' => $key]
-                );
+                $stmt = $this->getConnection()->query("UPDATE " . $this->getTable('emarsys_order_field_mapping') .
+                    " SET emarsys_order_field = " . $value . " WHERE magento_column_name = " . $key . "");
             }
         }
     }
@@ -233,36 +219,11 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $storeId
-     * @return array|false
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function getSalesMappedAttrs($storeId)
-    {
-        $headers = [];
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getMainTable())
-            ->where('store_id = ?', $storeId)
-            ->where('emarsys_order_field != ?', '');
-
-        $result = $this->getConnection()->fetchAll($select);
-        if (!empty($result)) {
-            foreach ($result as $key => $value) {
-                array_push($headers, $value['emarsys_order_field']);
-            }
-        }
-
-        return $headers;
-    }
-
-    /**
-     * @param $storeId
-     * @return mixed
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return array
      */
     public function getEmarsysOrderFields($storeId)
     {
+
         if (!isset($this->emarsysOrderFields[$storeId])) {
             $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
             $select = $this->getConnection()
@@ -279,30 +240,51 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $emarsysOrderField
-     * @param $storeId
-     * @return int|void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @param $emarsysField
+     * @param $orderId
+     * @return mixed|void
      */
-    public function deleteOrderAttributeMapping($emarsysOrderField, $storeId)
+    public function getOrderColValue($emarsysField, $orderId, $storeId = 0)
     {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getMainTable())
-            ->where('emarsys_order_field = (?)',$emarsysOrderField)
-            ->where('store_id = (?)',$storeId);
-
-        $result = $this->getConnection()->fetchAll($select);
-        if (!empty($result)) {
-            $updateResult = $this->getConnection()
-                ->update(
-                    $this->getMainTable(),
-                    ['emarsys_order_field' => ''],
-                    ['emarsys_order_field = ?' => $emarsysOrderField, 'store_id = ?' => $storeId]
-                );
-            return $updateResult;
+        $emarsysField = $this->getConnection()->quote($emarsysField);
+        $heading = $this->emarsysDataHelper->getSalesOrderCsvDefaultHeader($storeId);
+        if (in_array($emarsysField, $heading)) {
+            return;
         }
-        return;
+
+        try {
+            $stmt = $this->getConnection()->query("SELECT magento_column_name FROM " . $this->getTable('emarsys_order_field_mapping') . " WHERE emarsys_order_field = " . $emarsysField);
+            $result = $stmt->fetch();
+            if ($result['magento_column_name'] == 'created_at') { 
+                $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as created_at FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'updated_at') {
+                $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as updated_at FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'customer_dob') {
+                $stmt = $this->getConnection()->query("SELECT DATE_FORMAT(" . $result['magento_column_name']. ",'%Y-%m-%d') as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'email') {
+                $stmt = $this->getConnection()->query("SELECT customer_email as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } elseif ($result['magento_column_name'] == 'customer') {
+                $stmt = $this->getConnection()->query("SELECT customer_id as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            } else {
+                $stmt = $this->getConnection()->query("SELECT " . $result['magento_column_name']. " as magento_column_value FROM " . $this->getTable('sales_order') . " WHERE entity_id = '" . $orderId. "'  ");
+            }
+        } catch (\Exception $e) {
+            $storeId = $this->_storeManager->getStore()->getId();
+            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getOrderColValue()');
+            return;
+        }
+
+        return $stmt->fetch();
+    }
+
+    /**
+     * @return array
+     */
+    public function getStores()
+    {
+        $stmt = $this->getConnection()->query("SELECT * FROM " . $this->getTable('store') . " ");
+        $result = $stmt->fetchAll();
+        return $result;
     }
 }
 

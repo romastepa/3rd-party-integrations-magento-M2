@@ -204,7 +204,6 @@ class Logs extends AbstractHelper
     /**
      * For saving Logs
      * @param array $logsArray
-     * @throws \Exception
      */
     public function logs($logsArray = [])
     {
@@ -235,10 +234,10 @@ class Logs extends AbstractHelper
         if ($sendLogReport == '' && $websiteId == 0) {
             $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report');
         }
-        if ($sendLogReport && @$logsArray['message_type'] == 'Error') {
+        if ($sendLogReport && $logsArray['message_type'] == 'Error') {
             if ($sendLogReport) {
-                $title = ucfirst(@$logsArray['job_code']) . " : Store - " . @$logsArray['store_id'];
-                $description = @$logsArray['description'];
+                $title = ucfirst($logsArray['job_code']) . " : Store - " . $logsArray['store_id'];
+                $description = $logsArray['description'];
                 $this->errorLogEmail($title, $description);
             }
         }
