@@ -170,6 +170,38 @@ class Emarsysproductexport extends AbstractModel
                 'left'
             );
 
+            //Minimal price left join
+            $connection = $collection->getSelect()->getConnection();
+
+            $cond = $connection->prepareSqlCondition('price_index.customer_group_id', 0)
+                . ' ' . \Magento\Framework\DB\Select::SQL_AND . ' '
+                . $connection->prepareSqlCondition('price_index.website_id', $store->getWebsiteId());
+
+            $least = $connection->getLeastSql(['price_index.min_price', 'price_index.tier_price']);
+            $minimalExpr = $connection->getCheckSql(
+                'price_index.tier_price IS NOT NULL',
+                $least,
+                'price_index.min_price'
+            );
+
+            $fields = [
+                'price',
+                'tax_class_id',
+                'final_price',
+                'minimal_price' => $minimalExpr,
+                'min_price',
+                'max_price',
+                'tier_price',
+            ];
+
+            $collection->joinTable(
+                ['price_index' => 'catalog_product_index_price'],
+                'entity_id = entity_id',
+                $fields,
+                $cond,
+                'left'
+            );
+
             return $collection;
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
