@@ -361,39 +361,24 @@
                        showInWebsite="1" showInStore="1">
                     <label>Enable API Export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="emarsys_predict/enable/product_feed">1</field>
-                    </depends>
                 </field>
                 <field id="catalog_merchant_id" translate="label" type="text" sortOrder="10" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Merchant Id</label>
                     <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
-                    <depends>
-                        <field id="enable_catalog_api">1</field>
-                    </depends>
                 </field>
                 <field id="catalog_token" translate="label" type="text" sortOrder="15" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Bearer Token</label>
                     <backend_model>Emarsys\Emarsys\Model\Config\Backend\Trim</backend_model>
-                    <depends>
-                        <field id="enable_catalog_api">1</field>
-                    </depends>
                 </field>
                 <field id="catalog_ping" translate="button_label" sortOrder="40" showInDefault="0" showInWebsite="1" showInStore="0">
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\CatalogApiTestConnection</frontend_model>
-                    <depends>
-                        <field id="enable_catalog_api">1</field>
-                    </depends>
                 </field>
             </group>
             <group id="feed_export" translate="label" type="text" sortOrder="20" showInDefault="0" showInWebsite="1" showInStore="0">
                 <label>Feed Export</label>
                 <field id="execute_at" translate="label comment" sortOrder="21" type="time" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Execute and Export at</label>
-                    <depends>
-                        <field id="emarsys_predict/enable/product_feed">1</field>
-                    </depends>
                 </field>
                 <field id="productexportfrequency" translate="label comment" sortOrder="22" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Frequency</label>
@@ -401,29 +386,17 @@
                     <source_model>Emarsys\Emarsys\Model\Config\Source\ProductExportFrequency</source_model>
                     <backend_model>Emarsys\Emarsys\Model\Config\ProductExportCronConfig</backend_model>
                     <comment>For hours only minutes will be applicable.</comment>
-                    <depends>
-                        <field id="emarsys_predict/enable/product_feed">1</field>
-                    </depends>
                 </field>
                 <field id="include_bundle_product" translate="label comment" type="select" sortOrder="23" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Include Bundle Product</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="emarsys_predict/enable/product_feed">1</field>
-                    </depends>
                 </field>
                 <field id="categories" translate="label comment" type="text" sortOrder="24" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Exclude Categories:</label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\Categorytree</frontend_model>
-                    <depends>
-                        <field id="emarsys_predict/enable/product_feed">1</field>
-                    </depends>
                 </field>
                 <field id="excludedcategories" translate="label comment" type="text" sortOrder="25" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Excluded Categories:</label>
-                    <depends>
-                        <field id="emarsys_predict/enable/product_feed">1</field>
-                    </depends>
                 </field>
             </group>
         </section>
