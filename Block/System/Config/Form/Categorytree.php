@@ -8,7 +8,7 @@ namespace Emarsys\Emarsys\Block\System\Config\Form;
 
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
 use Magento\Framework\App\Request\Http;
 use Magento\Store\Model\StoreManagerInterface;
@@ -61,7 +61,7 @@ class Categorytree extends Field
     {
         $websiteId = $this->getRequest->getParam('website');
         $categoriesExcluded = $this->customerResourceModel->getDataFromCoreConfig(
-            EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES,
+            EmarsysHelperData::XPATH_PREDICT_EXCLUDED_CATEGORIES,
             \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
             $websiteId
         );

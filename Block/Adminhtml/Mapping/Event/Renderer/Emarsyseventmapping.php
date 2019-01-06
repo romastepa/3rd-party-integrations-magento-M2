@@ -53,7 +53,7 @@ class Emarsyseventmapping extends \Magento\Backend\Block\Widget\Grid\Column\Rend
      * @param \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\UrlInterface $urlInterface
-     * @param \Emarsys\Emarsys\Helper\Data $EmarsysHelper
+     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventCollection
      * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection
      */
@@ -64,7 +64,7 @@ class Emarsyseventmapping extends \Magento\Backend\Block\Widget\Grid\Column\Rend
         \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\UrlInterface $urlInterface,
-        \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
+        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventCollection,
         \Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory $EmarsyseventCollection
     ) {
@@ -74,7 +74,7 @@ class Emarsyseventmapping extends \Magento\Backend\Block\Widget\Grid\Column\Rend
         $this->resourceModelEvent = $resourceModelEvent;
         $this->_storeManager = $storeManager;
         $this->EmarsyseventCollection = $EmarsyseventCollection;
-        $this->EmarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $urlInterface;
         $this->magentoEventCollection = $magentoEventCollection;
     }
@@ -102,7 +102,7 @@ class Emarsyseventmapping extends \Magento\Backend\Block\Widget\Grid\Column\Rend
             $dbEvents[] = $emarsysEvent->getId();
         }
         $buttonClass = '';
-        if ($this->EmarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
+        if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
             $ronly .= ' disabled = disabled';
             $buttonClass = ' disabled';
         }

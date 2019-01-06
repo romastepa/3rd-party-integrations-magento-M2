@@ -12,7 +12,7 @@ use Magento\Backend\Model\Session;
 use Magento\Backend\Helper\Data as BackendHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\UrlInterface;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsysEventsCollectionFactory;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
@@ -44,7 +44,7 @@ class EmarsysEvent extends AbstractRenderer
     protected $_storeManager;
 
     /**
-     * @var EmarsysHelper
+     * @var EmarsysHelperData
      */
     protected $emarsysHelper;
 
@@ -59,7 +59,7 @@ class EmarsysEvent extends AbstractRenderer
      * @param BackendHelper $backendHelper
      * @param StoreManagerInterface $storeManager
      * @param UrlInterface $urlInterface
-     * @param EmarsysHelper $EmarsysHelper
+     * @param EmarsysHelperData $emarsysHelper
      * @param EmarsysEventsCollectionFactory $EmarsyseventCollection
      */
     public function __construct(
@@ -67,14 +67,14 @@ class EmarsysEvent extends AbstractRenderer
         BackendHelper $backendHelper,
         StoreManagerInterface $storeManager,
         UrlInterface $urlInterface,
-        EmarsysHelper $EmarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         EmarsysEventsCollectionFactory $EmarsyseventCollection
     ) {
         $this->session = $session;
         $this->backendHelper = $backendHelper;
         $this->_storeManager = $storeManager;
         $this->emarsysEventCollection = $EmarsyseventCollection;
-        $this->emarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $urlInterface;
     }
 

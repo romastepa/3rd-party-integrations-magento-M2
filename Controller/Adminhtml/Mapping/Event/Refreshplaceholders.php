@@ -25,14 +25,14 @@ class Refreshplaceholders extends Action
     /**
      * Refreshplaceholders constructor.
      * @param Context $context
-     * @param Data $EmarsysHelper
+     * @param Data $emarsysHelper
      */
     public function __construct(
         Context $context,
-        Data $EmarsysHelper
+        Data $emarsysHelper
     ) {
         parent::__construct($context);
-        $this->emarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**

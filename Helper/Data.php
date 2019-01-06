@@ -2061,16 +2061,12 @@ class Data extends AbstractHelper
 
     /**
      * @return int
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getFirstStoreId()
     {
-        $firstStoreId = $this->storeManager->getStore()->getId();
-        $listOfStores = $this->storeCollection->create()->addFieldToFilter('store_id', ['neq' => 0]);
-
-        if ($listOfStores) {
-            $firstStoreId = $listOfStores->getFirstItem()->getStoreId();
-        }
+        $stores = $this->storeManager->getStores();
+        $store = current($stores);
+        $firstStoreId = $store->getId();
 
         return $firstStoreId;
     }
@@ -2078,17 +2074,20 @@ class Data extends AbstractHelper
     /**
      * @param $websiteId
      * @return int
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getFirstStoreIdOfWebsite($websiteId)
     {
-        $firstStoreId = $this->storeManager->getStore()->getId();
-        $listOfStores = $this->storeCollection->create()
-            ->addFieldToFilter('website_id', $websiteId)
-            ->addFieldToFilter('store_id', ['neq' => 0]);
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $websiteId */
+        $website = $this->storeManager->getWebsite($websiteId);
 
-        if ($listOfStores) {
-            $firstStoreId = $listOfStores->getFirstItem()->getStoreId();
+        $defaultStore = $website->getDefaultStore();
+        if ($defaultStore->getId()) {
+            $firstStoreId = $defaultStore->getId();
+        } else {
+            $stores = $website->getStores();
+            $store = current($stores);
+            $firstStoreId = $store->getId();
         }
 
         return $firstStoreId;

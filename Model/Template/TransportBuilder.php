@@ -16,7 +16,7 @@ use Magento\{
     Framework\Mail\Template\SenderResolverInterface,
     Store\Model\StoreManagerInterface
 };
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelperData;
 
 /**
  * Class TransportBuilder
@@ -25,7 +25,7 @@ use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 {
     /**
-     * @var EmarsysHelper
+     * @var EmarsysHelperData
      */
     protected $emarsysHelperData;
 
@@ -43,7 +43,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
      * @param ObjectManagerInterface $objectManager
      * @param TransportInterfaceFactory $mailTransportFactory
      * @param StoreManagerInterface $storeManager
-     * @param EmarsysHelper $emarsysHelperData
+     * @param EmarsysHelperData $emarsysHelperData
      */
     public function __construct(
         FactoryInterface $templateFactory,
@@ -51,7 +51,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         SenderResolverInterface $senderResolver,
         ObjectManagerInterface $objectManager,
         TransportInterfaceFactory $mailTransportFactory,
-        EmarsysHelper $emarsysHelperData,
+        EmarsysHelperData $emarsysHelperData,
         StoreManagerInterface $storeManager
     ) {
         $this->emarsysHelperData = $emarsysHelperData;

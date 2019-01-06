@@ -58,7 +58,7 @@ class SaveRecommended extends Action
      * @param PageFactory $resultPageFactory
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManager
-     * @param Data $EmarsysHelper
+     * @param Data $emarsysHelper
      * @param DateTime $date
      * @param CollectionFactory $EmarsyseventCollection
      * @param Logs $logHelper
@@ -71,7 +71,7 @@ class SaveRecommended extends Action
         PageFactory $resultPageFactory,
         ScopeConfigInterface $scopeConfigInterface,
         StoreManagerInterface $storeManager,
-        Data $EmarsysHelper,
+        Data $emarsysHelper,
         DateTime $date,
         CollectionFactory $EmarsyseventCollection,
         Logs $logHelper,
@@ -86,7 +86,7 @@ class SaveRecommended extends Action
         $this->emarsysEventCollection = $EmarsyseventCollection;
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->_storeManager = $storeManager;
-        $this->emarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $context->getUrl();
         $this->date = $date;
         $this->logHelper = $logHelper;
