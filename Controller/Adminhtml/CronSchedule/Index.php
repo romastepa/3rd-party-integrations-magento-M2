@@ -20,7 +20,9 @@ class Index extends Action
      */
     public function execute()
     {
-        $time = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Framework\Stdlib\DateTime\TimezoneInterface::class)->date()->format('Y-m-d H:i');
+        $time = \Magento\Framework\App\ObjectManager::getInstance()->get(
+            \Magento\Framework\Stdlib\DateTime\TimezoneInterface::class
+        )->date()->format('M j, Y, g:i:s a');
         $this->_view->loadLayout();
         $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Cronjob Timeline (%1)', $time));
         $this->_view->renderLayout();

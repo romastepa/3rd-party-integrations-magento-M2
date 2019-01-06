@@ -78,6 +78,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
     /**
      * @param DataObject $row
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function render(DataObject $row)
     {
@@ -88,10 +89,6 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         }
         $heading = $this->emarsysHelperData->getSalesOrderCsvDefaultHeader($storeId, true);
         array_unshift($heading, 'website_id');
-        $attributeCode = $row->getData('attribute_code');
-        $entityTypeId = $row->getEntityTypeId();
-        $url = $this->backendHelper->getUrl('*/*/saveRow');
-        $columnAttr = 'emarsys_contact_field';
         if (in_array($row->getData('emarsys_order_field'), $heading) || (in_array($row->getData('magento_column_name'), $heading))) {
             $html = "<label >" . $row->getData('emarsys_order_field') . "  </label>";
         } else {
