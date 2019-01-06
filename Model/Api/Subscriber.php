@@ -377,12 +377,13 @@ class Subscriber
             //no Subscribers data found
             $logsArray['emarsys_info'] = 'No Subscribers Data Found.';
             $logsArray['action'] = 'Magento to Emarsys';
-            $logsArray['message_type'] = 'Error';
+            $logsArray['message_type'] = 'Success';
             $logsArray['description'] = __('No Subscribers found for the store with store id %1.', $storeId);
             $this->logsHelper->logs($logsArray);
             $this->messageManager->addErrorMessage(
                 __('No Subscribers found for the store with store id %1.', $storeId)
             );
+            $errorStatus = false;
         }
 
         if ($errorStatus) {

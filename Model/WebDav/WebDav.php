@@ -146,10 +146,10 @@ class WebDav extends DataObject
 
         if ($errorStatus) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Error while'. $jobDetails['job_title'] . ' !!!';
+            $logsArray['messages'] = 'Something went wrong, please check logs';
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = 'Successfully synced contacts !!!';
+            $logsArray['messages'] = 'Contacts successfully synced';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogsUpdate($logsArray);
