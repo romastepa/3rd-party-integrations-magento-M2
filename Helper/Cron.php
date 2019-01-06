@@ -9,9 +9,9 @@ namespace Emarsys\Emarsys\Helper;
 use Magento\{
     Framework\App\Helper\AbstractHelper,
     Framework\App\Helper\Context,
-    Framework\Stdlib\DateTime\DateTime,
     Cron\Model\Schedule,
-    Cron\Model\ScheduleFactory
+    Cron\Model\ScheduleFactory,
+    Framework\Stdlib\DateTime\TimezoneInterface as TimezoneInterface
 };
 use Emarsys\Emarsys\{
     Model\EmarsysCronDetailsFactory,
@@ -61,30 +61,31 @@ class Cron extends AbstractHelper
     protected $emarsysLogs;
 
     /**
-     * @var DateTime
+     * @var TimezoneInterface
      */
-    protected $dateTime;
+    protected $timezone;
 
     /**
      * Cron constructor.
+     *
      * @param Context $context
      * @param ScheduleFactory $scheduleFactory
-     * @param DateTime $dateTime
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
      * @param Emarsyslogs $emarsysLogs
+     * @param TimezoneInterface $timezone
      */
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
-        DateTime $dateTime,
         EmarsysCronDetailsFactory $emarsysCronDetails,
-        Emarsyslogs $emarsysLogs
+        Emarsyslogs $emarsysLogs,
+        TimezoneInterface $timezone
     ) {
         $this->context = $context;
         $this->scheduleFactory = $scheduleFactory;
-        $this->dateTime = $dateTime;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->emarsysLogs = $emarsysLogs;
+        $this->timezone = $timezone;
         parent::__construct($context);
     }
 
@@ -156,9 +157,8 @@ class Cron extends AbstractHelper
      * @param null $storeId
      * @param null $websiteBasedChecking
      * @return Schedule
-     * @throws \Magento\Framework\Exception\CronException
      */
-    public function scheduleCronjob($jobCode, $storeId = null, $websiteBasedChecking = null)
+    public function scheduleCronJob($jobCode, $storeId = null, $websiteBasedChecking = null)
     {
         try {
             $cronExist = false;
@@ -208,14 +208,13 @@ class Cron extends AbstractHelper
             $cron = $this->scheduleFactory->create();
         }
 
-        $time = $this->dateTime->gmtTimestamp();
-
         /** @var ScheduleFactory $cron */
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $time))
-            ->setScheduledAt(strftime('%Y-%m-%d %H:%M:%S', $time + 60));
+            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp()))
+            ->setScheduledAt(strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp() + 60));
+
         $cron->save();
 
         return $result;

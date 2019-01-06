@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
 
 /**
  * Class Index
@@ -23,14 +23,24 @@ class Index extends Action
     protected $resultPageFactory;
 
     /**
+     * @var EmarsysHelperData
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var \Magento\Backend\Model\Session
+     */
+    protected $adminSession;
+
+    /**
      * Index constructor.
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelperData $emarsysHelper
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);

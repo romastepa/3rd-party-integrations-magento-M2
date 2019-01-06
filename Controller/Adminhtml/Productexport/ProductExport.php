@@ -124,7 +124,7 @@ class ProductExport extends Action
                             $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CATALOG_BULK_EXPORT, $storeId);
                             if (!$isCronjobScheduled) {
                                 //no cron job scheduled yet, schedule a new cron job
-                                $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_CATALOG_BULK_EXPORT, $storeId);
+                                $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_CATALOG_BULK_EXPORT, $storeId);
 
                                 //format and encode data in json to be saved in the table
                                 $params = $this->cronHelper->getFormattedParams($data);

@@ -139,7 +139,7 @@ class SubscriberExport extends Action
                         $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API, $storeId);
                         if (!$isCronjobScheduled) {
                             //no cron job scheduled yet, schedule a new cron job
-                            $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API, $storeId);
+                            $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API, $storeId);
                             $cronJobScheduled = true;
                             $cronJobName = EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API;
                         }
@@ -148,7 +148,7 @@ class SubscriberExport extends Action
                         $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV, $storeId);
                         if (!$isCronjobScheduled) {
                             //no cron job scheduled yet, schedule a new cron job
-                            $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV, $storeId);
+                            $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV, $storeId);
                             $cronJobScheduled = true;
                             $cronJobName = EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV;
                         }
