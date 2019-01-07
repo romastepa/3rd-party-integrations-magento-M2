@@ -39,7 +39,7 @@
             jQuery.ajax({
                 url: '<?php echo $block->getAjaxUpdateUrl() ?>',
                 data: {
-                    'unique_key': Math.random() * Math.random(),
+                    'unique_key': Math.floor((Math.random() * 1000000) + 1),
                     'full_action_name': '<?php echo $block->getPageHandle(); ?>'
                 },
                 type: 'GET',

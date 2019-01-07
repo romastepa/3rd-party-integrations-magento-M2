@@ -11,7 +11,7 @@ use Magento\Cron\Model\Schedule;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Helper\Data;
 use Magento\Backend\Block\Widget\Grid\Extended;
-
+use Magento\Framework\Stdlib\DateTime\Timezone;
 /**
  * Class Grid
  * @package Emarsys\Emarsys\Block\Adminhtml\Cronschedule
@@ -19,24 +19,32 @@ use Magento\Backend\Block\Widget\Grid\Extended;
 class Grid extends Extended
 {
     /**
+     * @var Timezone
+     */
+    protected $timezone;
+
+    /**
      * @var ScheduleFactory
      */
     protected $scheduleFactory;
 
     /**
      * Grid constructor.
+     * @param ScheduleFactory $scheduleFactory
+     * @param Timezone $timezone
      * @param Context $context
      * @param Data $backendHelper
-     * @param ScheduleFactory $scheduleFactory
      * @param array $data
      */
     public function __construct(
+        ScheduleFactory $scheduleFactory,
+        Timezone $timezone,
         Context $context,
         Data $backendHelper,
-        ScheduleFactory $scheduleFactory,
         array $data = []
     ) {
         $this->scheduleFactory = $scheduleFactory;
+        $this->timezone = $timezone;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -62,7 +70,7 @@ class Grid extends Extended
 
     /**
      * @return $this
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @throws \Exception
      */
     protected function _prepareColumns()
     {
@@ -93,7 +101,8 @@ class Grid extends Extended
                 'align' => 'left',
                 'index' => 'created_at',
                 'type' => 'datetime',
-                'width' => '50'
+                'width' => '50',
+                'frame_callback' => [$this, 'decorateTimeFrameCallBack']
             ]
         );
 
@@ -104,7 +113,8 @@ class Grid extends Extended
                 'align' => 'left',
                 'index' => 'scheduled_at',
                 'type' => 'datetime',
-                'width' => '50'
+                'width' => '50',
+                'frame_callback' => [$this, 'decorateTimeFrameCallBack']
             ]
         );
 
@@ -115,7 +125,8 @@ class Grid extends Extended
                 'align' => 'left',
                 'index' => 'executed_at',
                 'type' => 'datetime',
-                'width' => '50'
+                'width' => '50',
+                'frame_callback' => [$this, 'decorateTimeFrameCallBack']
             ]
         );
 
@@ -126,7 +137,8 @@ class Grid extends Extended
                 'align' => 'left',
                 'index' => 'finished_at',
                 'type' => 'datetime',
-                'width' => '50'
+                'width' => '50',
+                'frame_callback' => [$this, 'decorateTimeFrameCallBack']
             ]
         );
 
@@ -205,5 +217,18 @@ class Grid extends Extended
     public function getRowUrl($row)
     {
         return '';
+    }
+
+    /**
+     * @param $value
+     * @return string
+     */
+    public function decorateTimeFrameCallBack($value)
+    {
+        if ($value && $value != '0000-00-00 00:00:00') {
+            return $this->timezone->formatDateTime($value, 2);
+        } else {
+            return '';
+        }
     }
 }

@@ -220,18 +220,9 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     public function decorateTimeFrameCallBack($value)
     {
         if ($value && $value != '0000-00-00 00:00:00') {
-            return $this->decorateTime(strtotime($value), false, null);
+            return $this->timezone->formatDateTime($value, 2);
         } else {
             return '';
         }
-    }
-
-    /**
-     * @param $value
-     * @return string
-     */
-    public function decorateTime($value)
-    {
-        return $this->timezone->date($value)->format('M d, Y H:i:s A');
     }
 }
