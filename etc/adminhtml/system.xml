@@ -33,7 +33,6 @@
                 </field>
                 <field id="emarsys_custom_url" translate="label" type="text" sortOrder="12" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Custom API URL</label>
-                    <validate>required-entry</validate>
                 </field>
                 <field id="emarsys_api_username" translate="label" type="text" sortOrder="21" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>API Username</label>
