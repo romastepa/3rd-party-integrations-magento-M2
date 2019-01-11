@@ -134,7 +134,7 @@
                     <label>Unique Field</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\Uniquefield</source_model>
                 </field-->
-                <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="0" showInWebsite="0" showInStore="0">
+                <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Notification secret key</label>
                 </field>
             </group>
