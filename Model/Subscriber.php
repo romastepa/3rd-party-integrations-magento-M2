@@ -26,6 +26,7 @@ use Magento\{
 
 /**
  * Class Subscriber
+ *
  * @package Emarsys\Emarsys\Model
  */
 class Subscriber extends \Magento\Newsletter\Model\Subscriber
@@ -37,6 +38,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
 
     /**
      * Subscriber constructor.
+     *
      * @param EmarsysHelperData $emarsysHelperData
      * @param Context $context
      * @param Registry $registry
@@ -136,52 +138,18 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         $optinForcedConfirmation = $this->emarsysHelperData->isOptinForcedConfirmationEnabled($store->getWebsiteId());
         $isOwnSubscribes = $isSubscribeOwnEmail;
 
-        if (!$this->getId() || $this->getStatus() == self::STATUS_UNSUBSCRIBED
-            || $this->getStatus() == self::STATUS_NOT_ACTIVE
-        ) {
-            if ($isConfirmNeed === true && $optinForcedConfirmation == true) {
+        if ($this->getStatus() == self::STATUS_UNSUBSCRIBED || $this->getStatus() == self::STATUS_NOT_ACTIVE) {
+            if ($isConfirmNeed && $optinForcedConfirmation) {
                 $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed === true && $optinForcedConfirmation == false) {
+            } elseif ($isConfirmNeed && !$optinForcedConfirmation) {
                 $this->setStatus(self::STATUS_NOT_ACTIVE);
             } else {
                 $this->setStatus(self::STATUS_SUBSCRIBED);
             }
-        } elseif ($this->getId() && $this->getStatus() == self::STATUS_SUBSCRIBED) {
-            // Who have subID and status subscribed trying for 2nd time or more
-            if ($isConfirmNeed === true && $optinForcedConfirmation == true) {
+        } elseif (($this->getId() && $this->getStatus() == self::STATUS_SUBSCRIBED) || $isOwnSubscribes) {
+            if ($isConfirmNeed && $optinForcedConfirmation) {
                 $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed === true && $optinForcedConfirmation == false) {
-                $this->setStatus(self::STATUS_SUBSCRIBED);
-            } else {
-                $this->setStatus(self::STATUS_SUBSCRIBED);
-            }
-        } elseif ($this->getId() && ($this->getStatus() == self::STATUS_UNSUBSCRIBED) ||
-            $this->getStatus() == self::STATUS_NOT_ACTIVE
-        ) {
-            // Who have subID and status UnSubscribed or not active trying for 2nd time or more
-            if ($isConfirmNeed === true && $optinForcedConfirmation == true) { //Double optin
-                $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed === true && $optinForcedConfirmation == false) { //Double optin
-                $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } else {
-                $this->setStatus(self::STATUS_SUBSCRIBED);
-            }
-        } elseif ($this->getId() && $isOwnSubscribes) {
-            //loged in customer with subscription
-            if ($isConfirmNeed === true && $optinForcedConfirmation == true) { //Double optin
-                $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed === true && $optinForcedConfirmation == false) { //Double optin
-                $this->setStatus(self::STATUS_SUBSCRIBED);
-            } else {
-                $this->setStatus(self::STATUS_SUBSCRIBED);
-            }
-        }
-
-        if ($isOwnSubscribes) {
-            //loged in customer with subscription
-            if ($isConfirmNeed === true && $optinForcedConfirmation == true) { //Double optin
-                $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed === true && $optinForcedConfirmation == false) { //Double optin
+            } elseif ($isConfirmNeed && !$optinForcedConfirmation) {
                 $this->setStatus(self::STATUS_SUBSCRIBED);
             } else {
                 $this->setStatus(self::STATUS_SUBSCRIBED);
@@ -195,7 +163,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
                 $customer = $this->customerRepository->getById($this->_customerSession->getCustomerId());
                 $this->setStoreId($customer->getStoreId());
                 $this->setCustomerId($customer->getId());
-            } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            } catch (\Exception $e) {
                 $this->setStoreId($this->_storeManager->getStore()->getId());
                 $this->setCustomerId(0);
             }

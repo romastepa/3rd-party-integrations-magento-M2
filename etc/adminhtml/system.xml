@@ -158,7 +158,7 @@
                     <label>Opt-In Strategy</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\OptInStrategy</source_model>
                 </field>
-                <field id="force_optin_confirmation" translate="label" type="select" sortOrder="40" showInDefault="0" showInWebsite="0" showInStore="0">
+                <field id="force_optin_confirmation" translate="label" type="select" sortOrder="40" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Force Optin Confirmation</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
