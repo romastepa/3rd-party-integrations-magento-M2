@@ -120,9 +120,9 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         }
 
         $isConfirmNeed = $store->getConfig(self::XML_PATH_CONFIRMATION_FLAG) == 1 ? true : false;
-        if ($optEnable = $store->getConfig('opt_in/optin_enable/enable_optin')) {
+        if ($optEnable = $store->getConfig(EmarsysHelperData::XPATH_OPTIN_ENABLED)) {
             //return single / double opt-in
-            $optInType = $store->getConfig('opt_in/optin_enable/opt_in_strategy');
+            $optInType = $store->getConfig(EmarsysHelperData::XPATH_OPTIN_EVERYPAGE_STRATEGY);
             if ($optInType == 'singleOptIn') {
                 $isConfirmNeed = false;
             } elseif ($optInType == 'doubleOptIn') {
