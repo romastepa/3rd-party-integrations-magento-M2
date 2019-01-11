@@ -31,6 +31,18 @@ class UpgradeData implements UpgradeDataInterface
                     ['emarsys_contact_field in (?)' => [0, 27, 28, 29, 30, 33, 34, 36, 47, 48]]
                 );
             }
+
+            $tableName = $setup->getTable('core_config_data');
+            $connection->update(
+                $tableName,
+                ['path' => new \Zend_Db_Expr('(TRIM(LEADING "crontab/default/jobs/" FROM `path`))')],
+                $connection->quoteInto('`path` like ?', '%crontab/default/jobs/emarsys%')
+            );
+            $connection->update(
+                $tableName,
+                ['value' => 1],
+                $connection->quoteInto('path = ?', 'contacts_synchronization/emarsys_emarsys/realtime_sync')
+            );
         }
         $setup->endSetup();
     }

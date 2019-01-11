@@ -979,7 +979,7 @@ class Order extends AbstractModel
                     $rowTotal = 0;
                     $qty = (int)$item->getQty();
                     if ($qty > 0) {
-                        $qty = '-' . $qty;
+                        $qty = '-' . abs($qty);
                         if ($taxIncluded) {
                             $rowTotal = $useBaseCurrency
                                 ? $item->getBaseRowTotalInclTax()
@@ -1001,7 +1001,7 @@ class Order extends AbstractModel
                     }
 
                     if ($rowTotal) {
-                        $values[] = '-' . number_format($rowTotal, 2, '.', '');
+                        $values[] = '-' . number_format(abs($rowTotal), 2, '.', '');
                     } else {
                         $values[] = 0;
                     }

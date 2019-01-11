@@ -116,7 +116,7 @@
             </group>
             <group id="emarsys_emarsys" type="text" sortOrder="11" showInDefault="0" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization Settings</label>
-                <field id="realtime_sync" translate="label comment" sortOrder="24" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
+                <!--field id="realtime_sync" translate="label comment" sortOrder="24" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Realtime-failsafe</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
@@ -133,7 +133,7 @@
                 <field id="unique_field" translate="label comment" sortOrder="27" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Unique Field</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\Uniquefield</source_model>
-                </field>
+                </field-->
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="0" showInWebsite="0" showInStore="0">
                     <label>Notification secret key</label>
                 </field>
