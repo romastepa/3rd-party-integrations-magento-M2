@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Model\ResourceModel\Customer,
     Model\EmarsysCronDetails,
     Helper\Cron as EmarsysCronHelper,
@@ -62,9 +62,9 @@ class CustomerExport extends Action
     protected $timezoneInterface;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * @var
@@ -85,7 +85,7 @@ class CustomerExport extends Action
      * @param Timezone $timezone
      * @param TimezoneInterface $timezoneInterface
      * @param Http $request
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param EmarsysCronDetails $emarsysCronDetails
      * @param EmarsysCronHelper $cronHelper
      * @param Logs $emarsysLogs
@@ -98,7 +98,7 @@ class CustomerExport extends Action
         Timezone $timezone,
         TimezoneInterface $timezoneInterface,
         Http $request,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         EmarsysCronDetails $emarsysCronDetails,
         EmarsysCronHelper $cronHelper,
         Logs $emarsysLogs
@@ -109,7 +109,7 @@ class CustomerExport extends Action
         $this->request = $request;
         $this->timezone = $timezone;
         $this->timezoneInterface = $timezoneInterface;
-        $this->emarsysHelperData = $emarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->cronHelper = $cronHelper;
         $this->emarsysLogs = $emarsysLogs;
@@ -132,7 +132,7 @@ class CustomerExport extends Action
             $returnUrl = $this->getUrl("emarsys_emarsys/customerexport/index", ["store" => $storeId]);
 
             //check emarsys enable for website
-            if ($this->emarsysHelperData->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
                 if (isset($data['fromDate']) && $data['fromDate'] != '') {
                     $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
                 }

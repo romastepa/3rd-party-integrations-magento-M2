@@ -30,7 +30,7 @@ class Checklist extends \Magento\Backend\Block\Template
     /**
      * @var Data
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * @var Customer
@@ -40,20 +40,20 @@ class Checklist extends \Magento\Backend\Block\Template
     /**
      * Checklist constructor.
      * @param Context $context
-     * @param Data $emarsysHelperData
+     * @param Data $emarsysHelper
      * @param Customer $emarsysHelperCustomer
      * @param array $data
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelperData,
+        Data $emarsysHelper,
         Customer $emarsysHelperCustomer,
         array $data = []
     )
     {
         $this->storeManagerInterface = $context->getStoreManager();
         $this->requestInterface = $context->getRequest();
-        $this->emarsysHelperData = $emarsysHelperData;
+        $this->emarsysHelper = $emarsysHelper;
         $this->emarsysHelperCustomer = $emarsysHelperCustomer;
         parent::__construct($context, $data);
     }
@@ -91,6 +91,6 @@ class Checklist extends \Magento\Backend\Block\Template
 
     public function getRequirementsInfo($storeId)
     {
-        return $this->emarsysHelperData->getRequirementsInfo($storeId);
+        return $this->emarsysHelper->getRequirementsInfo($storeId);
     }
 }

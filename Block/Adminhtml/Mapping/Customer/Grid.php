@@ -8,7 +8,7 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\CustomerMagentoAttsFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
 use Magento\Backend\Block\Template\Context;
@@ -82,7 +82,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $customerMagentoAttsFactory;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -98,7 +98,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * @param Customer $resourceModelCustomer
      * @param Manager $moduleManager
      * @param CustomerMagentoAttsFactory $customerMagentoAttsFactory
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -111,7 +111,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         Customer $resourceModelCustomer,
         Manager $moduleManager,
         CustomerMagentoAttsFactory $customerMagentoAttsFactory,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getBackendSession();

@@ -18,7 +18,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Model\Api\Contact,
     Model\ResourceModel\Customer,
-    Helper\Data as EmarsysHelperData
+    Helper\Data as EmarsysHelper
 };
 
 /**
@@ -28,7 +28,7 @@ use Emarsys\Emarsys\{
 class RealTimeCustomer implements ObserverInterface
 {
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -69,7 +69,7 @@ class RealTimeCustomer implements ObserverInterface
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
      * @param Contact $contactModel
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Customer $customerResourceModel
      * @param Subscriber $subscriber
      */
@@ -78,7 +78,7 @@ class RealTimeCustomer implements ObserverInterface
         Registry $registry,
         StoreManagerInterface $storeManager,
         Contact $contactModel,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Customer $customerResourceModel,
         Subscriber $subscriber
     ) {
@@ -109,7 +109,7 @@ class RealTimeCustomer implements ObserverInterface
         }
 
         try {
-            if ($store->getConfig(EmarsysHelperData::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
+            if ($store->getConfig(EmarsysHelper::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {
                     return;

@@ -15,7 +15,7 @@ use Magento\{
 };
 use Emarsys\Emarsys\{
     Model\ResourceModel\Customer,
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Helper\Logs
 };
 
@@ -26,7 +26,7 @@ use Emarsys\Emarsys\{
 class Subscriber extends DataObject
 {
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -58,7 +58,7 @@ class Subscriber extends DataObject
     /**
      * Subscriber constructor.
      *
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
@@ -67,7 +67,7 @@ class Subscriber extends DataObject
      * @param WebDavExport $webDavExport
      */
     public function __construct(
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Context $context,
         DateTime $date,
         StoreManagerInterface $storeManager,
@@ -125,9 +125,9 @@ class Subscriber extends DataObject
         if ($optInStatus == 'attribute') {
             $data['subscribeStatus'] = $data['attributevalue'];
         }
-        $emarsysFieldNames = [EmarsysHelperData::CUSTOMER_EMAIL, EmarsysHelperData::SUBSCRIBER_ID];
+        $emarsysFieldNames = [EmarsysHelper::CUSTOMER_EMAIL, EmarsysHelper::SUBSCRIBER_ID];
         if ($optInStatus != '') {
-            $emarsysFieldNames[] = EmarsysHelperData::OPT_IN;
+            $emarsysFieldNames[] = EmarsysHelper::OPT_IN;
         }
 
         $customerValues = $this->customerResourceModel->getSubscribedCustomerCollection(

@@ -85,6 +85,10 @@ class WebDav extends DataObject
     {
         $websiteId = $data['website'];
 
+        if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
+            return;
+        }
+
         if (isset($data['store'])) {
             $storeId = $data['store'];
         } else {

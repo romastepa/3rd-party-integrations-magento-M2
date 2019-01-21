@@ -10,7 +10,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Request\Http;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Catalog\Model\ProductFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
@@ -34,9 +34,9 @@ class ProductExport extends Action
     protected $storeManager;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * @var ProductFactory
@@ -63,7 +63,7 @@ class ProductExport extends Action
      * @param Context $context
      * @param StoreManagerInterface $storeManager
      * @param Http $request
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param ProductFactory $productCollectionFactory
      * @param ProductResourceModel $productResourceModel
      * @param EmarsysCronHelper $cronHelper
@@ -74,7 +74,7 @@ class ProductExport extends Action
         Context $context,
         StoreManagerInterface $storeManager,
         Http $request,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         ProductFactory $productCollectionFactory,
         ProductResourceModel $productResourceModel,
         EmarsysCronHelper $cronHelper,
@@ -83,7 +83,7 @@ class ProductExport extends Action
     ) {
         $this->request = $request;
         $this->storeManager = $storeManager;
-        $this->emarsysHelperData = $emarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->productResourceModel = $productResourceModel;
         $this->cronHelper = $cronHelper;
@@ -106,10 +106,10 @@ class ProductExport extends Action
             $websiteId = $store->getWebsiteId();
 
             //check emarsys enabled for the website
-            if ($this->emarsysHelperData->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
 
                 //check feed export enabled for the website
-                if ($this->emarsysHelperData->isCatalogExportEnabled($websiteId)) {
+                if ($this->emarsysHelper->isCatalogExportEnabled($websiteId)) {
                     $productCollection = $this->productCollectionFactory->create()->getCollection()
                         ->addStoreFilter($storeId)
                         ->addWebsiteFilter($websiteId)

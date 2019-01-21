@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 use Magento\{
     Framework\App\Config\ScopeConfigInterface,
@@ -69,9 +69,9 @@ class Emarsysproductexport extends AbstractModel
     protected $file;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * Emarsysproductexport constructor.
@@ -81,7 +81,7 @@ class Emarsysproductexport extends AbstractModel
      * @param ScopeConfigInterface $scopeConfig
      * @param CurrencyFactory $currencyFactory
      * @param File $file
-     * @param EmarsysHelperData $emarsysHelperData
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -94,7 +94,7 @@ class Emarsysproductexport extends AbstractModel
         ScopeConfigInterface $scopeConfig,
         CurrencyFactory $currencyFactory,
         File $file,
-        EmarsysHelperData $emarsysHelperData,
+        EmarsysHelper $emarsysHelper,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -107,7 +107,7 @@ class Emarsysproductexport extends AbstractModel
         $this->logger = $context->getLogger();
         $this->currencyFactory = $currencyFactory;
         $this->file = $file;
-        $this->emarsysHelperData = $emarsysHelperData;
+        $this->emarsysHelper = $emarsysHelper;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -145,14 +145,14 @@ class Emarsysproductexport extends AbstractModel
                 ->addUrlRewrite();
 
             if (is_null($includeBundle)) {
-                $includeBundle = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
+                $includeBundle = $store->getConfig(EmarsysHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
             }
 
             if (!$includeBundle) {
                 $collection->addAttributeToFilter('type_id', ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]);
             }
             if (is_null($excludedCategories)) {
-                $excludedCategories = $store->getConfig(EmarsysHelperData::XPATH_PREDICT_EXCLUDED_CATEGORIES);
+                $excludedCategories = $store->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
             }
             if ($excludedCategories) {
                 $excludedCategories = explode(',', $excludedCategories);
@@ -225,8 +225,8 @@ class Emarsysproductexport extends AbstractModel
         $this->_processedStores = $processedStores;
         $this->_preparedData = array();
 
-        $fileDirectory = $this->emarsysHelperData->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
-        $this->emarsysHelperData->checkAndCreateFolder($fileDirectory);
+        $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
+        $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
 
         $name = 'products_' . $websiteId . '.csv';
         $file = $fileDirectory . '/' . $name;

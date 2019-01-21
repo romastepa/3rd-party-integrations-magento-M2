@@ -17,7 +17,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Field as ResourceModelField;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping\Collection as EmarsyseventmappingCollection;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\Collection as EmarsyseventsCollection;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\Collection as EmarsysmagentoeventsCollection;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Email\Model\Template as EmailModelTemplate;
 
 /**
@@ -82,7 +82,7 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
     protected $_template = 'mapping/customer/view.phtml';
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -100,7 +100,7 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
      * @param EmarsyseventmappingCollection $emarsyseventmappingCollection
      * @param EmarsysmagentoeventsCollection $emarsysmagentoeventsCollection
      * @param EmailModelTemplate $emailModelTemplate
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -115,7 +115,7 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
         EmarsyseventmappingCollection $emarsyseventmappingCollection,
         EmarsysmagentoeventsCollection $emarsysmagentoeventsCollection,
         EmailModelTemplate $emailModelTemplate,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->emailModelTemplate = $emailModelTemplate;

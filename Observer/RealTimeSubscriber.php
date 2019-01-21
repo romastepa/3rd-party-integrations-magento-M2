@@ -17,7 +17,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Model\Api\Subscriber,
     Model\ResourceModel\Customer,
-    Helper\Data as EmarsysHelperData
+    Helper\Data as EmarsysHelper
 };
 
 /**
@@ -47,7 +47,7 @@ class RealTimeSubscriber implements ObserverInterface
     protected $request;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -63,7 +63,7 @@ class RealTimeSubscriber implements ObserverInterface
      * @param Subscriber $subscriberModel
      * @param Customer $customerResourceModel
      * @param Http $request
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Session $customerSession
      */
     public function __construct(
@@ -71,7 +71,7 @@ class RealTimeSubscriber implements ObserverInterface
         Subscriber $subscriberModel,
         Customer $customerResourceModel,
         Http $request,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Session $customerSession
     ) {
         $this->subscriberModel = $subscriberModel;

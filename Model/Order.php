@@ -8,7 +8,7 @@
 namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Helper\Logs as EmarsysHelperLogs,
     Model\ApiExport,
     Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
@@ -68,7 +68,7 @@ class Order extends AbstractModel
     protected $date;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -161,7 +161,7 @@ class Order extends AbstractModel
      * @param EmarsysResourceModelCustomer $customerResourceModel
      * @param EmarsysHelperLogs $logsHelper
      * @param DateTime $date
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param OrderResourceModel $orderResourceModel
      * @param OrderFactory $salesOrderFactory
      * @param EmarsysOrderExportFactory $emarsysOrderExportFactory
@@ -187,7 +187,7 @@ class Order extends AbstractModel
         EmarsysResourceModelCustomer $customerResourceModel,
         EmarsysHelperLogs $logsHelper,
         DateTime $date,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         OrderResourceModel $orderResourceModel,
         OrderFactory $salesOrderFactory,
         EmarsysOrderExportFactory $emarsysOrderExportFactory,
@@ -271,7 +271,7 @@ class Order extends AbstractModel
             //check smart insight enabled for the website
             if ($this->emarsysHelper->getCheckSmartInsight($websiteId)) {
                 //get configuration of catalog export method
-                $apiExportEnabled = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_SIEXPORT_API_ENABLED);
+                $apiExportEnabled = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_SIEXPORT_API_ENABLED);
 
                 //check method of data exort from admin configuration
                 if ($apiExportEnabled) {
@@ -326,8 +326,8 @@ class Order extends AbstractModel
         $orderSyncStatus = true;
         $cmSyncStatus = true;
 
-        $merchantId = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_SIEXPORT_MERCHANT_ID);
-        $token = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_SIEXPORT_TOKEN);
+        $merchantId = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_SIEXPORT_MERCHANT_ID);
+        $token = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_SIEXPORT_TOKEN);
 
         if ($merchantId != '' && $token != '') {
             //test connection using merchant id and token
@@ -370,7 +370,7 @@ class Order extends AbstractModel
                 }
 
                 //check maximum record export is set
-                $maxRecordExport = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_SIEXPORT_MAX_RECORDS);
+                $maxRecordExport = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_SIEXPORT_MAX_RECORDS);
 
                 if ($maxRecordExport) {
                     //export data in chunks based on max record set in admin configuration
@@ -458,7 +458,7 @@ class Order extends AbstractModel
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Smart Insight API test connection is failed. Please check credentials. ' . json_encode($response, JSON_PRETTY_PRINT);
                 $this->logsHelper->manualLogsUpdate($logsArray);
-                if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage('Smart Insight API Test connection is failed. Please check credentials.');
                 }
             }
@@ -468,7 +468,7 @@ class Order extends AbstractModel
             $logsArray['description'] = __('Invalid API credentials. Either Merchant Id or Token is not present. Please check your settings and try again');
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
-            if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
+            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __("Invalid API credentials. Either Merchant Id or Token is not present. Please check your settings and try again !!!")
                 );
@@ -489,7 +489,7 @@ class Order extends AbstractModel
             $logsArray['status'] = 'error';
             $logsArray['messages'] = __('Order export has an error. Please check.');
         } else {
-            if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_AUTOMATIC) {
+            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
                 $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
             }
             $logsArray['status'] = 'success';
@@ -514,7 +514,7 @@ class Order extends AbstractModel
         $store = $this->storeManager->getStore($storeId);
         $errorCount = true;
 
-        $bulkDir = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
+        $bulkDir = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
 
         if ($this->emarsysHelper->checkFtpConnectionByStore($store)) {
             try {
@@ -621,7 +621,7 @@ class Order extends AbstractModel
                         $logsArray['description'] = $url . ' > ' . $remoteFileName;
                         $logsArray['message_type'] = 'Success';
                         $this->logsHelper->logs($logsArray);
-                        if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
+                        if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addSuccessMessage(
                                 __("File uploaded to FTP server successfully !!!")
                             );
@@ -634,7 +634,7 @@ class Order extends AbstractModel
                         $logsArray['description'] = __('Failed to upload %1 on FTP server. %2', $url, $msg);
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
-                        if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
+                        if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
                                 __("Failed to upload file on FTP server !!! %1", $msg)
                             );
@@ -664,7 +664,7 @@ class Order extends AbstractModel
             $logsArray['description'] = __('Failed to connect with FTP server.');
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
-            if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_MANUAL) {
+            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __('"Failed to connect with FTP server. Please check your settings and try again !!!"')
                 );
@@ -676,7 +676,7 @@ class Order extends AbstractModel
             $logsArray['messages'] = __('Order export have an error. Please check');
         } else {
             //clean the queue table after SI export
-            if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_AUTOMATIC) {
+            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
                 $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
             }
             $logsArray['status'] = 'success';
@@ -827,8 +827,8 @@ class Order extends AbstractModel
         $store = $this->storeManager->getStore($storeId);
         $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
 
-        $guestOrderExportStatus = $store->getConfig(EmarsysHelperData::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
-        $emailAsIdentifierStatus = $store->getConfig(EmarsysHelperData::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
+        $guestOrderExportStatus = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
+        $emailAsIdentifierStatus = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         $taxIncluded = $this->emarsysHelper->isIncludeTax();
         $useBaseCurrency = $this->emarsysHelper->isUseBaseCurrency();
 
@@ -1050,7 +1050,7 @@ class Order extends AbstractModel
     public function getSalesCsvHeader($storeId = 0)
     {
         $store = $this->storeManager->getStore($storeId);
-        $emailAsIdentifierStatus = (bool)$store->getConfig(EmarsysHelperData::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
+        $emailAsIdentifierStatus = (bool)$store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
 
         if (!isset($this->salesCsvHeader[$storeId])) {
             //default header
@@ -1088,7 +1088,7 @@ class Order extends AbstractModel
     {
         $orderCollection = [];
 
-        if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_AUTOMATIC) {
+        if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
             $orderQueueCollection = $this->orderQueueFactory->create()->getCollection()
                 ->addFieldToFilter('store_id', ['eq' => $storeId])
                 ->addFieldToFilter('entity_type_id', 1);
@@ -1145,7 +1145,7 @@ class Order extends AbstractModel
     {
         $creditMemoCollection = [];
 
-        if ($mode == EmarsysHelperData::ENTITY_EXPORT_MODE_AUTOMATIC) {
+        if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
             $creditMemoQueueCollection = $this->orderQueueFactory->create()->getCollection()
                 ->addFieldToFilter('store_id', ['eq' => $storeId])
                 ->addFieldToFilter('entity_type_id', 2);

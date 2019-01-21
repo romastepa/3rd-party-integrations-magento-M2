@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\{
     Customer\Api\AccountManagementInterface,
     Customer\Api\CustomerRepositoryInterface,
@@ -32,14 +32,14 @@ use Magento\{
 class Subscriber extends \Magento\Newsletter\Model\Subscriber
 {
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * Subscriber constructor.
      *
-     * @param EmarsysHelperData $emarsysHelperData
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param Registry $registry
      * @param Data $newsletterData
@@ -57,7 +57,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
      */
     public function __construct
     (
-        EmarsysHelperData $emarsysHelperData,
+        EmarsysHelper $emarsysHelper,
         Context $context,
         Registry $registry,
         Data $newsletterData,
@@ -73,7 +73,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         DateTime $dateTime = null,
         array $data = []
     ) {
-        $this->emarsysHelperData = $emarsysHelperData;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct(
             $context,
             $registry,
@@ -99,7 +99,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
     public function subscribe($email)
     {
         $websiteId = $this->_storeManager->getStore()->getWebsiteId();
-        if (!$this->emarsysHelperData->isEmarsysEnabled($websiteId)) {
+        if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
             return parent::subscribe($email);
         } else {
             return $this->subscribeByEmarsys($email);
@@ -122,9 +122,9 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         }
 
         $isConfirmNeed = $store->getConfig(self::XML_PATH_CONFIRMATION_FLAG) == 1 ? true : false;
-        if ($optEnable = $store->getConfig(EmarsysHelperData::XPATH_OPTIN_ENABLED)) {
+        if ($optEnable = $store->getConfig(EmarsysHelper::XPATH_OPTIN_ENABLED)) {
             //return single / double opt-in
-            $optInType = $store->getConfig(EmarsysHelperData::XPATH_OPTIN_EVERYPAGE_STRATEGY);
+            $optInType = $store->getConfig(EmarsysHelper::XPATH_OPTIN_EVERYPAGE_STRATEGY);
             if ($optInType == 'singleOptIn') {
                 $isConfirmNeed = false;
             } elseif ($optInType == 'doubleOptIn') {
@@ -135,7 +135,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         //It will return boolean value, If customer is logged in and email Id is the same.
         $isSubscribeOwnEmail = $this->_customerSession->isLoggedIn()
             && $this->_customerSession->getCustomerDataObject()->getEmail() == $email;
-        $optinForcedConfirmation = $this->emarsysHelperData->isOptinForcedConfirmationEnabled($store->getWebsiteId());
+        $optinForcedConfirmation = $this->emarsysHelper->isOptinForcedConfirmationEnabled($store->getWebsiteId());
         $isOwnSubscribes = $isSubscribeOwnEmail;
 
         if ($this->getStatus() == self::STATUS_UNSUBSCRIBED || $this->getStatus() == self::STATUS_NOT_ACTIVE) {

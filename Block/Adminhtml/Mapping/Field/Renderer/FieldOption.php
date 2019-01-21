@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
@@ -48,7 +48,7 @@ class FieldOption extends AbstractRenderer
     protected $_storeManager;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -59,7 +59,7 @@ class FieldOption extends AbstractRenderer
      * @param Data $backendHelper
      * @param Field $resourceModelField
      * @param StoreManagerInterface $storeManager
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Session $session,
@@ -67,7 +67,7 @@ class FieldOption extends AbstractRenderer
         Data $backendHelper,
         Field $resourceModelField,
         StoreManagerInterface $storeManager,
-        EmarsysHelperData $emarsysHelper
+        EmarsysHelper $emarsysHelper
     ) {
         $this->session = $session;
         $this->collectionFactory = $collectionFactory;

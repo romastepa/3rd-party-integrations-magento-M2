@@ -10,7 +10,7 @@ namespace Emarsys\Emarsys\Model\Api;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Zend_Http_Client;
 use Zend_Json;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Api
@@ -28,7 +28,7 @@ class Api extends \Magento\Framework\DataObject
     protected $scopeConfigInterface;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -109,9 +109,9 @@ class Api extends \Magento\Framework\DataObject
             }
             return $this->apiUrl = rtrim($url, '/') . "/";
         } elseif ($endpoint == 'cdn') {
-            return $this->apiUrl = EmarsysHelperData::EMARSYS_CDN_API_URL;
+            return $this->apiUrl = EmarsysHelper::EMARSYS_CDN_API_URL;
         } elseif ($endpoint == 'default') {
-            return $this->apiUrl = EmarsysHelperData::EMARSYS_DEFAULT_API_URL;
+            return $this->apiUrl = EmarsysHelper::EMARSYS_DEFAULT_API_URL;
         }
     }
 

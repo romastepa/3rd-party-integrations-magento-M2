@@ -48,7 +48,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
     /**
      * @var \Emarsys\Emarsys\Helper\Data
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * EmarsysOrderField constructor.
@@ -57,7 +57,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
      * @param \Magento\Backend\Helper\Data $backendHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelperData
+     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
      */
     public function __construct(
         \Magento\Backend\Model\Session $session,
@@ -65,14 +65,14 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         \Magento\Backend\Helper\Data $backendHelper,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelperData
+        \Emarsys\Emarsys\Helper\Data $emarsysHelper
     ) {
         $this->session = $session;
         $this->collectionFactory = $collectionFactory;
         $this->backendHelper = $backendHelper;
         $this->resourceModelCustomer = $resourceModelCustomer;
         $this->_storeManager = $storeManager;
-        $this->emarsysHelperData = $emarsysHelperData;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
@@ -87,7 +87,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         if (isset($session['store'])) {
             $storeId = $session['store'];
         }
-        $heading = $this->emarsysHelperData->getSalesOrderCsvDefaultHeader($storeId, true);
+        $heading = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId, true);
         array_unshift($heading, 'website_id');
         if (in_array($row->getData('emarsys_order_field'), $heading) || (in_array($row->getData('magento_column_name'), $heading))) {
             $html = "<label >" . $row->getData('emarsys_order_field') . "  </label>";

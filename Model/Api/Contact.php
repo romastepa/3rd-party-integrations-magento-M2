@@ -15,7 +15,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Helper\Logs,
     Helper\Cron as EmarsysCronHelper,
     Helper\Country as EmarsysCountryHelper,
@@ -63,9 +63,9 @@ class Contact
     protected $logsHelper;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $dataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var CustomerCollection
@@ -121,7 +121,7 @@ class Contact
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param Logs $logsHelper
-     * @param EmarsysHelperData $dataHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param CustomerCollection $customerColl
      * @param EmarsysCountryHelper $emarsysCountryHelper
      * @param StoreManagerInterface $storeManager
@@ -138,7 +138,7 @@ class Contact
         customerResourceModel $customerResourceModel,
         DateTime $date,
         Logs $logsHelper,
-        EmarsysHelperData $dataHelper,
+        EmarsysHelper $emarsysHelper,
         CustomerCollection $customerColl,
         EmarsysCountryHelper $emarsysCountryHelper,
         StoreManagerInterface $storeManager,
@@ -154,7 +154,7 @@ class Contact
         $this->customerResourceModel = $customerResourceModel;
         $this->date = $date;
         $this->logsHelper = $logsHelper;
-        $this->dataHelper = $dataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->custColl = $customerColl;
         $this->emarsysCountryHelper = $emarsysCountryHelper;
         $this->storeManager = $storeManager;
@@ -193,12 +193,12 @@ class Contact
 
         $buildRequest = [];
 
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
         if ($emailKey && $customer->getEmail()) {
             $buildRequest[$emailKey] = $customer->getEmail();
         }
 
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
         if ($customerIdKey && $customer->getId()) {
             $buildRequest[$customerIdKey] = $customer->getId();
         }
@@ -264,9 +264,9 @@ class Contact
 
                 $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
                 $logsArray['description'] = 'Created customer ' . $customer->getEmail() . ' in Emarsys succcessfully ' . $res . $confirmUrl;
-                $this->dataHelper->syncSuccess($customer->getId(), $websiteId, $storeId, $cron);
+                $this->emarsysHelper->syncSuccess($customer->getId(), $websiteId, $storeId, $cron);
             } else {
-                $this->dataHelper->syncFail($customer->getId(), $websiteId, $storeId, $cron, 1);
+                $this->emarsysHelper->syncFail($customer->getId(), $websiteId, $storeId, $cron, 1);
                 $logsArray['message_type'] = 'Error';
                 $logsArray['description'] = $result['body']['replyText'];
                 $errorMsg = 1;
@@ -451,7 +451,7 @@ class Contact
         if (isset($data['storeId'])) {
             $storeId = $data['storeId'];
         } else {
-            $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
+            $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
 
         $params = [
@@ -487,8 +487,8 @@ class Contact
         $logsArray['message_type'] = 'Success';
         $this->logsHelper->logs($logsArray);
 
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
 
         //check customer attributes are mapped
         $mappedAttributes = $this->getMappedCustomerAttribute($storeId);
@@ -524,7 +524,7 @@ class Contact
             if (!empty($allCustomersPayload)) {
                 //customers data present
 
-                $customerChunks = array_chunk($allCustomersPayload, EmarsysHelperData::BATCH_SIZE);
+                $customerChunks = array_chunk($allCustomersPayload, EmarsysHelper::BATCH_SIZE);
                 foreach ($customerChunks as $customerChunk) {
                     //prepare customers payload
                     $buildRequest = $this->prepareCustomerPayload($customerChunk, $emailKey);
@@ -567,7 +567,7 @@ class Contact
                                         $dataDataColl = $customerCollFail->addAttributeToFilter('email', ["in" => $errIds]);
                                         $custData = $dataDataColl->getData();
                                         foreach ($custData as $custIndividualData) {
-                                            $this->dataHelper->syncFail(
+                                            $this->emarsysHelper->syncFail(
                                                 $custIndividualData['entity_id'],
                                                 $custIndividualData['website_id'],
                                                 $custIndividualData['store_id'],
@@ -583,7 +583,7 @@ class Contact
                                     $dataDataColl = $customerCollSuccess->addAttributeToFilter('email', ["in" => $successIds]);
                                     $custData = $dataDataColl->getData();
                                     foreach ($custData as $custIndividualData) {
-                                        $this->dataHelper->syncSuccess(
+                                        $this->emarsysHelper->syncSuccess(
                                             $custIndividualData['entity_id'],
                                             $custIndividualData['website_id'],
                                             $custIndividualData['store_id'],
@@ -651,10 +651,14 @@ class Contact
 
         $website = $this->storeManager->getWebsite($websiteId);
 
+        if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
+            return;
+        }
+
         if (isset($data['storeId'])) {
             $storeId = $data['storeId'];
         } else {
-            $storeId = $this->dataHelper->getFirstStoreIdOfWebsite($websiteId);
+            $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
         $fromDate = (isset($data['fromDate']) && !empty($data['fromDate'])) ? $data['fromDate'] : '';
         $toDate = (isset($data['toDate']) && !empty($data['toDate'])) ? $data['toDate'] : $this->date->date('Y-m-d') . ' 23:59:59';
@@ -683,8 +687,8 @@ class Contact
         $logsArray['action'] = 'synced to emarsys';
 
         //check if emarsys enabled for the website
-        if ($this->dataHelper->getEmarsysConnectionSetting($websiteId) &&
-            $website->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
+        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId) &&
+            $website->getConfig(EmarsysHelper::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
         ) {
             $errorStatus = $this->exportDataToApi($exportMode, $params, $logId);
         } else {

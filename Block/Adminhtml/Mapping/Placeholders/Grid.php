@@ -15,7 +15,7 @@ use Magento\Framework\Data\Collection;
 use Magento\Framework\DataObjectFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Emarsys\Emarsys\Model\PlaceholdersFactory;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\App\ResponseFactory;
@@ -82,7 +82,7 @@ class Grid extends Extended
     protected $formKey;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -101,7 +101,7 @@ class Grid extends Extended
      * @param DataObjectFactory $dataObjectFactory
      * @param Event $resourceModelEvent
      * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param ModuleManager $moduleManager
      * @param MessageManagerInterface $messageManager
      * @param ResponseFactory $responseFactory
@@ -116,7 +116,7 @@ class Grid extends Extended
         DataObjectFactory $dataObjectFactory,
         Event $resourceModelEvent,
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         ModuleManager $moduleManager,
         MessageManagerInterface $messageManager,
         ResponseFactory $responseFactory,

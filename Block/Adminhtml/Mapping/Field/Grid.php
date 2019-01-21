@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Helper\Data;
 use Magento\Eav\Model\Entity\Type;
@@ -47,7 +47,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $attribute;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -58,7 +58,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * @param Data $backendHelper
      * @param Type $entityType
      * @param Option $attribute
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -66,7 +66,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         Data $backendHelper,
         Type $entityType,
         Option $attribute,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getBackendSession();

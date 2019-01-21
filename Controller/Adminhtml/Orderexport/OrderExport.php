@@ -16,7 +16,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Helper\Cron as EmarsysCronHelper,
     Model\Order as EmarsysOrderModel,
     Model\EmarsysCronDetails,
@@ -45,9 +45,9 @@ class OrderExport extends Action
     protected $storeManager;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $emarsysHelperData;
+    protected $emarsysHelper;
 
     /**
      * @var MessageManagerInterface
@@ -85,7 +85,7 @@ class OrderExport extends Action
      * @param Http $request
      * @param EmarsysOrderModel $emarsysOrderModel
      * @param StoreManagerInterface $storeManager
-     * @param EmarsysHelperData $emarsysHelperData
+     * @param EmarsysHelper $emarsysHelper
      * @param DateTime $date
      * @param TimeZone $timezone
      * @param EmarsysCronHelper $cronHelper
@@ -97,7 +97,7 @@ class OrderExport extends Action
         Http $request,
         EmarsysOrderModel $emarsysOrderModel,
         StoreManagerInterface $storeManager,
-        EmarsysHelperData $emarsysHelperData,
+        EmarsysHelper $emarsysHelper,
         DateTime $date,
         TimeZone $timezone,
         EmarsysCronHelper $cronHelper,
@@ -107,7 +107,7 @@ class OrderExport extends Action
         $this->request = $request;
         $this->emarsysOrderModel = $emarsysOrderModel;
         $this->storeManager = $storeManager;
-        $this->emarsysHelperData = $emarsysHelperData;
+        $this->emarsysHelper = $emarsysHelper;
         $this->messageManager = $context->getMessageManager();
         $this->date = $date;
         $this->timezone = $timezone;
@@ -131,9 +131,9 @@ class OrderExport extends Action
         $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
         try {
             //check emarsys enabled for the website
-            if ($this->emarsysHelperData->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
                 //check smart insight enabled for the website
-                if ($this->emarsysHelperData->getCheckSmartInsight($websiteId)) {
+                if ($this->emarsysHelper->getCheckSmartInsight($websiteId)) {
                     if (isset($data['fromDate']) && $data['fromDate'] != '') {
                         $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
                     }

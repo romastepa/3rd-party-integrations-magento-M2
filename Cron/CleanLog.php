@@ -12,7 +12,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Filesystem\Io\File;
 use Magento\Config\Model\ResourceModel\Config;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Store\Model\StoreManagerInterface;
@@ -61,9 +61,9 @@ class CleanLog
     protected $ioFile;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
-    protected $dataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var StoreManagerInterface
@@ -93,7 +93,7 @@ class CleanLog
      * @param File $ioFile
      * @param Config $resourceConfig
      * @param DateTime $date
-     * @param Data $dataHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param DeploymentConfig $config
      * @param TransportBuilder $transportBuilder
      * @param StoreManagerInterface $storeManager
@@ -107,7 +107,7 @@ class CleanLog
         File $ioFile,
         Config $resourceConfig,
         DateTime $date,
-        Data $dataHelper,
+        EmarsysHelper $emarsysHelper,
         DeploymentConfig $config,
         TransportBuilder $transportBuilder,
         StoreManagerInterface $storeManager,
@@ -121,7 +121,7 @@ class CleanLog
         $this->_resource = $resource;
         $this->resourceConfig = $resourceConfig;
         $this->ioFile = $ioFile;
-        $this->dataHelper = $dataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->storeManager = $storeManager;
         $this->_logger = $logger;
         $this->_transportBuilder = $transportBuilder;
@@ -164,7 +164,7 @@ class CleanLog
                     $logCleaningDays = $this->scopeConfig->getValue('logs/log_setting/log_days');
                 }
                 $cleanUpDate = $this->date->date('Y-m-d', strtotime("-" . $logCleaningDays . " days"));
-                $cleanUpDate = $this->dataHelper->getDateTimeInLocalTimezone($cleanUpDate);
+                $cleanUpDate = $this->emarsysHelper->getDateTimeInLocalTimezone($cleanUpDate);
                 /* Create archive folder*/
 
                 $varDir = $this->baseDirPath->getRoot() . "/";
@@ -218,7 +218,7 @@ class CleanLog
                  * Email send if failure
                  */
 
-                $errorEmailData = $this->dataHelper->logErrorSenderEmail();
+                $errorEmailData = $this->emarsysHelper->logErrorSenderEmail();
                 $senderEmailId = $errorEmailData['email'];
                 $senderEmailName = $errorEmailData['name'];
                 $logEmailRecipient = $this->scopeConfig->getValue('logs/log_setting/log_email_recipient', $scopeType, $websiteId);
@@ -287,7 +287,7 @@ class CleanLog
                         $deleteArchivedData = $this->scopeConfig->getValue('logs/log_setting/delete_archive_days');
                     }
                     $deleteDate = $this->date->date('Y-m-d', strtotime("-" . $deleteArchivedData . " days")); //date to delete old archived data
-                    $deleteDate = $this->dataHelper->getDateTimeInLocalTimezone($deleteDate);
+                    $deleteDate = $this->emarsysHelper->getDateTimeInLocalTimezone($deleteDate);
                     $archiveFolderPath = $archivePath;                                      //Archive folder path
                     $dir = new \DirectoryIterator($archiveFolderPath);                      //Sub-dir inside archive dir
                     foreach ($dir as $fileinfo) {
@@ -295,7 +295,7 @@ class CleanLog
                             $path = $archiveFolderPath . "/" . $fileinfo->getFilename();        //get sub-dir name
                             $stat = stat($path);
                             $folderCreateDate = $this->date->date('Y-m-d', $stat['ctime']);  //create date of sub-dir
-                            $folderCreateDate = $this->dataHelper->getDateTimeInLocalTimezone($folderCreateDate);
+                            $folderCreateDate = $this->emarsysHelper->getDateTimeInLocalTimezone($folderCreateDate);
                             /* If create date of sub-dir less than delete date of sub-dir then delete sub-dir */
                             if ($folderCreateDate <= $deleteDate && is_dir($path)) {
                                 array_map('unlink', glob($path . "/*"));                      //delete all files inside directory
