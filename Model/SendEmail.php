@@ -190,10 +190,9 @@ class SendEmail extends AbstractModel
                             $buildRequest[$subscriberIdKey] = $subscribeId;
                         }
 
-                        $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
-                        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-                        $buildRequest['key_id'] = $uniqueIdKey;
-                        $buildRequest[$uniqueIdKey] = $externalId;
+                        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+                        $buildRequest['key_id'] = $emailKey;
+                        $buildRequest[$emailKey] = $externalId;
 
                         //log information that is about to send for contact sync
                         $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);

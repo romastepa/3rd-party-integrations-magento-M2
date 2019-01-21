@@ -2196,8 +2196,6 @@ class Data extends AbstractHelper
     public function realtimeTimeBasedOptinSync($subscriber)
     {
         try {
-            $store = $this->storeManager->getStore($subscriber->getStoreId());
-            $keyField = $store->getConfig(self::CUSTOMER_EMAIL);
             $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $subscriber->getStoreId());
 
             $keyValue = $subscriber->getSubscriberEmail();
@@ -2288,9 +2286,7 @@ class Data extends AbstractHelper
             $store = $this->storeManager->getStore($storeId);
 
             $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $storeId);
-            $keyField = $store->getConfig(self::CUSTOMER_EMAIL);
-            $uniqueIdKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $storeId);
-            $keyId = $this->customerResourceModel->getKeyId('Email', $storeId);
+            $emailKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $storeId);
             $key = '';
 
             $subscribersCollection = $this->newsLetterCollectionFactory->create()
@@ -2305,7 +2301,7 @@ class Data extends AbstractHelper
             }
 
             $payload = [
-                'keyId' => $uniqueIdKey,
+                'keyId' => $emailKey,
                 'keyValues' => array_keys($magLastModifiedStatus),
                 'fieldId' => $fieldId,
             ];

@@ -69,7 +69,6 @@ class RealTimeAdminSubscriber implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $pageHandle = $this->request->getFullActionName();
         $subscriberId = $observer->getEvent()->getSubscriber()->getId();
         $storeId = $observer->getEvent()->getSubscriber()->getStoreId();
 
@@ -84,7 +83,7 @@ class RealTimeAdminSubscriber implements ObserverInterface
         $realtimeStatus = $store->getConfig(Data::XPATH_EMARSYS_REALTIME_SYNC);
         if ($realtimeStatus == 1) {
             $frontendFlag = '';
-            $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag, $pageHandle);
+            $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag);
         } else {
             $this->dataHelper->syncFail($subscriberId, $store->getWebsiteId(), $storeId, 0, 2);
         }

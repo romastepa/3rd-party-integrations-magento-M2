@@ -192,8 +192,6 @@ class Contact
         }
 
         $buildRequest = [];
-        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
 
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         if ($emailKey && $customer->getEmail()) {
@@ -204,9 +202,6 @@ class Contact
         if ($customerIdKey && $customer->getId()) {
             $buildRequest[$customerIdKey] = $customer->getId();
         }
-
-        $buildRequest['key_id'] = $uniqueIdKey;
-        $buildRequest[$uniqueIdKey] = $customer->getEmail();
 
         $errorMsg = 0;
         $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
@@ -379,26 +374,19 @@ class Contact
     /**
      * @param $objCustomer
      * @param $storeId
-     * @param $keyField
      * @param $emailKey
      * @param $customerIdKey
-     * @param $uniqueIdKey
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Json_Exception
      */
     public function getCustomerPayload(
         $objCustomer,
         $storeId,
-        $keyField,
         $emailKey,
-        $customerIdKey,
-        $uniqueIdKey
+        $customerIdKey
     ) {
-        $store = $this->storeManager->getStore($storeId);
-        $websiteId = $store->getWebsiteId();
-
+        $customerData = [];
         if ($emailKey && $objCustomer->getEmail()) {
             $customerData[$emailKey] = $objCustomer->getEmail();
         }
@@ -499,10 +487,8 @@ class Contact
         $logsArray['message_type'] = 'Success';
         $this->logsHelper->logs($logsArray);
 
-        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
 
         //check customer attributes are mapped
         $mappedAttributes = $this->getMappedCustomerAttribute($storeId);
@@ -518,10 +504,8 @@ class Contact
                     $allCustomersPayload[] = $this->getCustomerPayload(
                         $this->customerFactory->create()->load($item->getEntityId()),
                         $storeId,
-                        $keyField,
                         $emailKey,
-                        $customerIdKey,
-                        $uniqueIdKey
+                        $customerIdKey
                     );
                 }
             } else {
@@ -532,10 +516,8 @@ class Contact
                     $allCustomersPayload[] = $this->getCustomerPayload(
                         $customerData,
                         $storeId,
-                        $keyField,
                         $emailKey,
-                        $customerIdKey,
-                        $uniqueIdKey
+                        $customerIdKey
                     );
                 }
             }

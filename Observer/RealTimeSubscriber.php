@@ -103,7 +103,6 @@ class RealTimeSubscriber implements ObserverInterface
         $subscriberId = $subscriber->getId();
         $storeId = $store->getStoreId();
         $websiteId = $store->getWebsiteId();
-        $pageHandle = $this->request->getFullActionName();
 
         if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
             return;
@@ -114,7 +113,7 @@ class RealTimeSubscriber implements ObserverInterface
         try {
             $frontendFlag = 1;
             $this->emarsysHelper->realtimeTimeBasedOptinSync($subscriber);
-            $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag, $pageHandle);
+            $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag);
 
             if ($result['apiResponseStatus'] == '200') {
                 return true;

@@ -145,17 +145,13 @@ class Subscriber
      * @param $subscribeId
      * @param $storeId
      * @param null $frontendFlag
-     * @param null $pageHandle
-     * @param int $cron
      * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function syncSubscriber(
         $subscribeId,
         $storeId,
-        $frontendFlag = null,
-        $pageHandle = null,
-        $cron = 0
+        $frontendFlag = null
     ) {
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
@@ -174,14 +170,7 @@ class Subscriber
 
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
-        $keyField = $store->getConfig(EmarsysHelperData::CUSTOMER_EMAIL);
-        $keyValue = $objSubscriber->getSubscriberEmail();
-
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $buildRequest = [];
-        $buildRequest['key_id'] = $uniqueIdKey;
-        $buildRequest[$uniqueIdKey] = $keyValue;
-
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         if ($emailKey && $objSubscriber->getSubscriberEmail()) {
             $buildRequest[$emailKey] = $objSubscriber->getSubscriberEmail();
@@ -232,7 +221,7 @@ class Subscriber
                 $logsArray['message_type'] = 'Success';
                 $logsArray['description'] = "Created subscriber '" . $objSubscriber->getSubscriberEmail() . "' in Emarsys succcessfully " . $res;
             } else {
-                $this->dataHelper->syncFail($subscribeId, $websiteId, $storeId, $cron, 2);
+                $this->dataHelper->syncFail($subscribeId, $websiteId, $storeId, 0, 2);
                 $logsArray['message_type'] = 'Error';
                 $logsArray['description'] = $objSubscriber->getSubscriberEmail() . " - " . $optInResult['body']['replyText'] . $res;
                 $errorMsg = 1;
@@ -303,22 +292,17 @@ class Subscriber
         $this->logsHelper->logs($logsArray);
 
         //prepare subscribers data
-        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
         $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
 
         $subscriberData = $this->prepareSubscribersInfo(
             $storeId,
-            $websiteId,
             $exportMode,
-            $keyField,
             $emailKey,
             $subscriberIdKey,
             $customerIdKey,
-            $uniqueIdKey,
             $optInEmarsysId
         );
 
@@ -401,25 +385,19 @@ class Subscriber
 
     /**
      * @param $storeId
-     * @param $websiteId
      * @param $exportMode
-     * @param $keyField
      * @param $emailKey
      * @param $subscriberIdKey
      * @param $customerIdKey
-     * @param $uniqueIdKey
      * @param $optInEmarsysId
      * @return array
      */
     public function prepareSubscribersInfo(
         $storeId,
-        $websiteId,
         $exportMode,
-        $keyField,
         $emailKey,
         $subscriberIdKey,
         $customerIdKey,
-        $uniqueIdKey,
         $optInEmarsysId
     ) {
         $websiteStoreIds = [];
