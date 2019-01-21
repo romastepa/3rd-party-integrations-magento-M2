@@ -104,12 +104,11 @@ class RealTimeCustomer implements ObserverInterface
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $customer->getWebsiteId();
 
-        try {
-            if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)
-            || !$store->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)) {
-                return;
-            }
+        if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
+            return;
+        }
 
+        try {
             if ($store->getConfig(EmarsysHelperData::XPATH_EMARSYS_REALTIME_SYNC) == 1) {
                 $customerVar = 'create_customer_variable_' . $customerId;
                 if ($this->registry->registry($customerVar) == 'created') {

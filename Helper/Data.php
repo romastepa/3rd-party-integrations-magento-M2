@@ -2183,6 +2183,31 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Checks whether contacts synchronization is enabled or not.
+     *
+     * @param null $websiteId
+     * @return bool
+     */
+    public function isContactsSynchronizationEnable($websiteId = null)
+    {
+        $contactsSynchronization = false;
+
+        if ($this->isEmarsysEnabled($websiteId)) {
+            if ($websiteId) {
+                $contactsSynchronization = $this->scopeConfigInterface->getValue(
+                    self::XPATH_EMARSYS_ENABLE_CONTACT_FEED,
+                    \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
+                    $websiteId
+                );
+            } else {
+                $contactsSynchronization = $this->scopeConfigInterface->getValue(self::XPATH_EMARSYS_ENABLE_CONTACT_FEED);
+            }
+        }
+
+        return (bool)$contactsSynchronization;
+    }
+
+    /**
      * @return mixed
      */
     public function getEmarsysVersion()

@@ -74,9 +74,7 @@ class RealTimeAdminSubscriber implements ObserverInterface
 
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
-        if (!$this->dataHelper->isEmarsysEnabled($store->getWebsiteId())
-            || !$store->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
-        ) {
+        if (!$this->emarsysHelper->isContactsSynchronizationEnable($store->getWebsiteId())) {
             return;
         }
 

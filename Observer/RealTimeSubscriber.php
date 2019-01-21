@@ -92,20 +92,14 @@ class RealTimeSubscriber implements ObserverInterface
         $event = $observer->getEvent();
         $subscriber = $event->getSubscriber();
         $store = $this->storeManager->getStore($subscriber->getStoreId());
-
-        if ($subscriber->getEmarsysNoExport()
-            || !$store->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
-            || !$store->getConfig(EmarsysHelperData::XPATH_EMARSYS_REALTIME_SYNC)
-        ) {
-            return true;
-        }
-
         $subscriberId = $subscriber->getId();
         $storeId = $store->getStoreId();
         $websiteId = $store->getWebsiteId();
 
-        if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
-            return;
+        if ($subscriber->getEmarsysNoExport()
+            || !$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)
+        ) {
+            return true;
         }
 
         $this->customerSession->setWebExtendCustomerEmail($subscriber->getSubscriberEmail());
@@ -129,5 +123,3 @@ class RealTimeSubscriber implements ObserverInterface
         return false;
     }
 }
-
-
