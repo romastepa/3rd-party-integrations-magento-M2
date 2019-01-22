@@ -172,6 +172,7 @@ class Subscriber
 
         $buildRequest = [];
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+        $buildRequest['key_id'] = $emailKey;
         if ($emailKey && $objSubscriber->getSubscriberEmail()) {
             $buildRequest[$emailKey] = $objSubscriber->getSubscriberEmail();
         }
@@ -190,12 +191,21 @@ class Subscriber
         $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
         $subscriberStatus = $objSubscriber->getSubscriberStatus();
 
-        if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
-            $buildRequest[$optInEmarsysId] = '';
-        } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+        //return single / double opt-in
+        $optInType = $store->getConfig(EmarsysHelper::XPATH_OPTIN_EVERYPAGE_STRATEGY);
+
+        if ($optInType == 'singleOptIn' && !$subscriberStatus) {
             $buildRequest[$optInEmarsysId] = 1;
+        } elseif ($optInType == 'doubleOptIn' && !$subscriberStatus) {
+            $buildRequest[$optInEmarsysId] = '';
         } else {
-            $buildRequest[$optInEmarsysId] = 2;
+            if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
+                $buildRequest[$optInEmarsysId] = '';
+            } elseif ($subscriberStatus == \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+                $buildRequest[$optInEmarsysId] = 1;
+            } else {
+                $buildRequest[$optInEmarsysId] = 2;
+            }
         }
 
         $errorMsg = 0;

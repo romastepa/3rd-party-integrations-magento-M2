@@ -170,10 +170,10 @@ class Contact extends \Magento\Framework\DataObject
                         $headerIndex = [];
                         $indexCount = 0;
                         foreach ($mappedAttributes as $att) {
-                            if ($att['emarsys_contact_field'] == NULL)
+                            if ($att['emarsys_contact_field'] == NULL) {
                                 continue;
-                            $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($att, $storeId);
-                            $headers[$att['magento_custom_attribute_id']] = $emarsysField['name'];
+                            }
+                            $headers[$att['magento_custom_attribute_id']] = $this->customerResourceModel->getEmarsysFieldNameContact($att, $storeId);
                             $headerIndex[$indexCount] = $att['magento_custom_attribute_id'];
                             $indexCount++;
                         }

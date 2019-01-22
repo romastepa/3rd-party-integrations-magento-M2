@@ -141,10 +141,10 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 foreach ($recommendedData['magento'] as $key => $code) {
                     if (isset($recommendedData['emarsys'][$key]) && !empty($recommendedData['emarsys'][$key])) {
                         $model = $this->customerFactory->create();
-                        $custMageId = $this->resourceModelCustomer->getCustAttIdByCode($emarsysCodes[$key],$storeId);
+                        $custMageId = $this->resourceModelCustomer->getCustAttIdByCode($emarsysCodes[$key], $storeId);
                         $model->setEmarsysContactField($recommendedData['emarsys'][$key]);
                         $model->setMagentoAttributeId($code);
-                        $model->setMagentoCustomAttributeId($custMageId['id']);
+                        $model->setMagentoCustomAttributeId($custMageId);
                         $model->setStoreId($storeId);
                         $model->save();
                     }

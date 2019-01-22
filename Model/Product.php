@@ -307,6 +307,17 @@ class Product extends AbstractModel
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
                     }
 
+                    if (is_null($excludedCategories)) {
+                        $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
+                    }
+                    if ($excludedCategories) {
+                        $excludedCategories = explode(',', str_replace(' ', '', $excludedCategories));
+                    }
+
+                    if (empty($excludedCategories)) {
+                        $excludedCategories = [];
+                    }
+
                     $currentPageNumber = 1;
                     $collection = $this->productExportModel->getCatalogExportProductCollection(
                         $storeId,
@@ -346,7 +357,7 @@ class Product extends AbstractModel
                         $products = [];
                         foreach ($collection as $product) {
                             $catIds = $product->getCategoryIds();
-                            $categoryNames = $this->getCategoryNames($catIds, $storeId);
+                            $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                             $product->setStoreId($storeId);
                             $products[$product->getId()] = [
                                 'entity_id' => $product->getId(),
@@ -702,14 +713,18 @@ class Product extends AbstractModel
      *
      * @param $catIds
      * @param $storeId
+     * @param $excludedCategories
      * @return array
      */
-    public function getCategoryNames($catIds, $storeId)
+    public function getCategoryNames($catIds, $storeId, $excludedCategories = array())
     {
         $key = $storeId . '-' . serialize($catIds);
         if (!isset($this->_categoryNames[$key])) {
             $this->_categoryNames[$key] = [];
             foreach ($catIds as $catId) {
+                if (in_array($catId, $excludedCategories)) {
+                    continue;
+                }
                 $cateData = $this->categoryFactory->create()
                     ->setStoreId($storeId)
                     ->load($catId);

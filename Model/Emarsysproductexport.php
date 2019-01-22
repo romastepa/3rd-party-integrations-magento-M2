@@ -127,10 +127,10 @@ class Emarsysproductexport extends AbstractModel
      * @param int $currentPageNumber
      * @param array $attributes
      * @param null|1|0 $includeBundle
-     * @param null|string $excludedCategories
+     * @param array $excludedCategories
      * @return object
      */
-    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle = null, $excludedCategories = null)
+    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle = null, $excludedCategories = [])
     {
         try {
             /** @var \Magento\Store\Model\Store $store */
@@ -151,11 +151,8 @@ class Emarsysproductexport extends AbstractModel
             if (!$includeBundle) {
                 $collection->addAttributeToFilter('type_id', ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]);
             }
-            if (is_null($excludedCategories)) {
-                $excludedCategories = $store->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
-            }
-            if ($excludedCategories) {
-                $excludedCategories = explode(',', $excludedCategories);
+
+            if (!empty($excludedCategories)) {
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 

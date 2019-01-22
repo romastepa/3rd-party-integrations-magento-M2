@@ -2223,11 +2223,9 @@ class Data extends AbstractHelper
         try {
             $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $subscriber->getStoreId());
 
-            $keyValue = $subscriber->getSubscriberEmail();
-
             $payload = [
                 'key_id' => $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $subscriber->getStoreId()),
-                'key_value' => $keyValue,
+                'key_value' => $subscriber->getSubscriberEmail(),
                 'field_id' => $fieldId,
             ];
 
@@ -2236,7 +2234,7 @@ class Data extends AbstractHelper
 
             if (isset($response['data']['time'])) {
                 $emarsysTime = $response['data']['time'];
-                $EmarsysOptinChangeTime = $this->convertToUtc($emarsysTime);
+                $emarsysOptinChangeTime = $this->convertToUtc($emarsysTime);
                 $magentoOptinChangeTime = $subscriber->getChangeStatusAt();
 
                 if (isset($response['data']['current_value'])) {
@@ -2244,8 +2242,9 @@ class Data extends AbstractHelper
                 }
                 $magentoOptinValue = $subscriber->getSubscriberStatus();
 
-                if ((($EmarsysOptinChangeTime == $magentoOptinChangeTime) || ($EmarsysOptinChangeTime >= $magentoOptinChangeTime))
-                    && $emarsysOptinValue != $magentoOptinValue
+                if ((($emarsysOptinChangeTime == $magentoOptinChangeTime)
+                    || ($emarsysOptinChangeTime >= $magentoOptinChangeTime)
+                    ) && $emarsysOptinValue != $magentoOptinValue
                 ) {
                     if ($emarsysOptinValue == 1) {
                         $statusToBeChanged = \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED;
@@ -2256,7 +2255,7 @@ class Data extends AbstractHelper
                     }
                     if (!in_array($magentoOptinValue, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])
                         && !in_array($statusToBeChanged, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED]
-                        )) {
+                    )) {
                         $subscriber->setSubscriberStatus($statusToBeChanged)
                             ->setEmarsysNoExport(true)
                             ->save();
