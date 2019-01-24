@@ -8,16 +8,20 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Model\CustomerMagentoAttsFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Magento\Backend\Block\Template\Context;
-use Magento\Backend\Helper\Data;
-use Magento\Eav\Model\Entity\Attribute;
-use Magento\Eav\Model\Entity\Type;
-use Magento\Framework\Data\Collection;
-use Magento\Framework\DataObjectFactory;
-use Magento\Framework\Module\Manager;
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysHelper,
+    Model\CustomerMagentoAttsFactory,
+    Model\ResourceModel\Customer
+};
+use Magento\{
+    Backend\Block\Template\Context,
+    Backend\Helper\Data as BackendHelper,
+    Eav\Model\Entity\Attribute,
+    Eav\Model\Entity\Type,
+    Framework\Data\Collection,
+    Framework\DataObjectFactory,
+    Framework\Module\Manager
+};
 
 /**
  * Class Grid
@@ -40,11 +44,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * @var \Magento\Backend\Model\Session
      */
     protected $session;
-
-    /**
-     * @var Data
-     */
-    protected $backendHelper;
 
     /**
      * @var Customer
@@ -72,11 +71,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $attribute;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
      * @var CustomerMagentoAttsFactory
      */
     protected $customerMagentoAttsFactory;
@@ -90,7 +84,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * Grid constructor.
      *
      * @param Context $context
-     * @param Data $backendHelper
+     * @param BackendHelper $backendHelper
      * @param Type $entityType
      * @param Attribute $attribute
      * @param Collection $dataCollection
@@ -103,7 +97,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     public function __construct(
         Context $context,
-        Data $backendHelper,
+        BackendHelper $backendHelper,
         Type $entityType,
         Attribute $attribute,
         Collection $dataCollection,
@@ -118,11 +112,9 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->moduleManager = $moduleManager;
-        $this->backendHelper = $backendHelper;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
         $this->resourceModelCustomer = $resourceModelCustomer;
-        $this->_storeManager = $context->getStoreManager();
         $this->customerMagentoAttsFactory = $customerMagentoAttsFactory;
         $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);

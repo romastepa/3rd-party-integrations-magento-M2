@@ -7,6 +7,7 @@
 namespace Emarsys\Emarsys\Model\Api;
 
 use Magento\{
+    Customer\Model\Address,
     Customer\Model\Customer,
     Customer\Model\CustomerFactory,
     Customer\Model\ResourceModel\Customer\Collection as CustomerCollection,
@@ -15,7 +16,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
+    Helper\Data as EmarsysHelperData,
     Helper\Logs,
     Helper\Cron as EmarsysCronHelper,
     Helper\Country as EmarsysCountryHelper,
@@ -63,7 +64,7 @@ class Contact
     protected $logsHelper;
 
     /**
-     * @var EmarsysHelper
+     * @var EmarsysHelperData
      */
     protected $emarsysHelper;
 
@@ -121,7 +122,7 @@ class Contact
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param Logs $logsHelper
-     * @param EmarsysHelper $emarsysHelper
+     * @param EmarsysHelperData $emarsysHelper
      * @param CustomerCollection $customerColl
      * @param EmarsysCountryHelper $emarsysCountryHelper
      * @param StoreManagerInterface $storeManager
@@ -138,7 +139,7 @@ class Contact
         customerResourceModel $customerResourceModel,
         DateTime $date,
         Logs $logsHelper,
-        EmarsysHelper $emarsysHelper,
+        EmarsysHelperData $emarsysHelper,
         CustomerCollection $customerColl,
         EmarsysCountryHelper $emarsysCountryHelper,
         StoreManagerInterface $storeManager,
@@ -170,9 +171,10 @@ class Contact
      * @param $websiteId
      * @param $storeId
      * @param int $cron
+     * @param null|\Magento\Customer\Model\Address $customerAddress
      * @throws \Exception
      */
-    public function syncContact($customer, $websiteId, $storeId, $cron = 0)
+    public function syncContact($customer, $websiteId, $storeId, $cron = 0, $customerAddress = null)
     {
         $logsArray['job_code'] = 'customer';
         $logsArray['status'] = 'started';
@@ -192,13 +194,13 @@ class Contact
         }
 
         $buildRequest = [];
-
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $buildRequest['key_id'] = $emailKey;
         if ($emailKey && $customer->getEmail()) {
             $buildRequest[$emailKey] = $customer->getEmail();
         }
 
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
         if ($customerIdKey && $customer->getId()) {
             $buildRequest[$customerIdKey] = $customer->getId();
         }
@@ -230,7 +232,7 @@ class Contact
         }
 
         //Fetch Customer's Mapped Address Attributes
-        $customerMappedAddressAttributes = $this->getMappedCustomersAddressAttributes($customer, $storeId);
+        $customerMappedAddressAttributes = $this->getMappedCustomersAddressAttributes($customer, $storeId, $customerAddress);
         foreach ($customerMappedAddressAttributes as $key => $value) {
             $buildRequest[$key] = $value;
         }
@@ -306,24 +308,34 @@ class Contact
      * Fetch Customer's Mapped Address attributes values
      *
      * @param $customer
-     * @param $storeId
+     * @param int $storeId
+     * @param null|\Magento\Customer\Model\Address $customerAddress
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Json_Exception
      */
-    public function getMappedCustomersAddressAttributes($customer, $storeId)
+    public function getMappedCustomersAddressAttributes($customer, $storeId, $customerAddress = null)
     {
         $addressFields = [];
         $mappedAttributes = $this->getMappedCustomerAttribute($storeId);
         if (count($mappedAttributes)) {
-            $primaryBilling  = $customer->getPrimaryBillingAddress();
-            $primaryShipping = $customer->getPrimaryshippingAddress();
+            $primaryShipping = $customer->getPrimaryShippingAddress();
+            if (($customerAddress && $customerAddress->getDefaultShipping()) || !$primaryShipping) {
+                $primaryShipping = $customerAddress;
+            } elseif ($customerAddress && $primaryShipping->getId() == $customerAddress->getId()) {
+                $primaryShipping = $customerAddress;
+            }
+            $primaryBilling = $customer->getPrimaryBillingAddress();
+            if (($customerAddress && $customerAddress->getDefaultBilling()) || !$primaryBilling) {
+                $primaryBilling = $customerAddress;
+            } elseif ($customerAddress && $primaryBilling->getId() == $customerAddress->getId()) {
+                $primaryBilling = $customerAddress;
+            }
+
             $mappedCountries = $this->emarsysCountryHelper->getMapping($storeId);
-            $headers = [];
-            $headerIndex = [];
+            $headers = $headerIndex = [];
 
             foreach ($mappedAttributes as $attribute) {
-                if ($attribute['emarsys_contact_field'] == NULL) {
+                if (!$attribute['emarsys_contact_field']) {
                     continue;
                 }
                 $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($attribute, $storeId);
@@ -338,31 +350,18 @@ class Contact
                     $isShippingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_shipping_') !== false) ? true : false;
                     $isBillingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_billing_') !== false) ? true : false;
                     $index = array_search($key, $headerIndex);
-                    if ($index == 0) continue;
                     $attrValue = '';
-                    if ($isShippingAttr) {
-                        if ($customer->getDefaultShipping())  {
-                            if ($primaryShipping) {
-                                $attrValue = $primaryShipping->getData($attributeCode['attribute_code']);
-                                if ($attributeCode['attribute_code'] == 'country_id') {
-                                    $attrValue = (isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '');
-                                } elseif ($attributeCode['attribute_code'] == 'street') {
-                                    $attrValue = str_replace("\n", ',', $attrValue);
-                                }
-                            }
-                        }
-                    } elseif ($isBillingAttr) {
-                        if ($customer->getDefaultBilling()) {
-                            if ($primaryBilling) {
-                                $attrValue = $primaryBilling->getData($attributeCode['attribute_code']);
-                                if ($attributeCode['attribute_code'] == 'country_id') {
-                                    $attrValue = (isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '');
-                                } elseif ($attributeCode['attribute_code'] == 'street') {
-                                    $attrValue = str_replace("\n", ',', $attrValue);
-                                }
-                            }
-                        }
+                    if ($isShippingAttr && $primaryShipping) {
+                        $attrValue = $primaryShipping->getData($attributeCode['attribute_code']);
+                    } elseif ($isBillingAttr && $primaryBilling) {
+                        $attrValue = $primaryBilling->getData($attributeCode['attribute_code']);
                     }
+                    if ($attributeCode['attribute_code'] == 'country_id') {
+                        $attrValue = (isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '');
+                    } elseif ($attributeCode['attribute_code'] == 'street') {
+                        $attrValue = str_replace("\n", ',', $attrValue);
+                    }
+
                     $addressFields[$index] = $attrValue;
                 }
             }
@@ -487,8 +486,8 @@ class Contact
         $logsArray['message_type'] = 'Success';
         $this->logsHelper->logs($logsArray);
 
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
 
         //check customer attributes are mapped
         $mappedAttributes = $this->getMappedCustomerAttribute($storeId);
@@ -524,7 +523,7 @@ class Contact
             if (!empty($allCustomersPayload)) {
                 //customers data present
 
-                $customerChunks = array_chunk($allCustomersPayload, EmarsysHelper::BATCH_SIZE);
+                $customerChunks = array_chunk($allCustomersPayload, EmarsysHelperData::BATCH_SIZE);
                 foreach ($customerChunks as $customerChunk) {
                     //prepare customers payload
                     $buildRequest = $this->prepareCustomerPayload($customerChunk, $emailKey);
@@ -688,7 +687,7 @@ class Contact
 
         //check if emarsys enabled for the website
         if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId) &&
-            $website->getConfig(EmarsysHelper::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
+            $website->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
         ) {
             $errorStatus = $this->exportDataToApi($exportMode, $params, $logId);
         } else {

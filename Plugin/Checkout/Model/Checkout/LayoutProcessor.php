@@ -55,8 +55,7 @@ class LayoutProcessor
         StoreManagerInterface $storeManagerInterface,
         Session $session,
         SubscriberFactory $subscriberFactory
-    )
-    {
+    ) {
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->storeManagerInterface = $storeManagerInterface;
         $this->session = $session;
@@ -64,16 +63,12 @@ class LayoutProcessor
     }
 
     /**
-     * @param \Magento\Checkout\Block\Checkout\LayoutProcessor $subject
+     * @param \Magento\Checkout\Block\Checkout\LayoutProcessor $processor
      * @param array $jsLayout
      * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function afterProcess(
-        \Magento\Checkout\Block\Checkout\LayoutProcessor $subject,
-        array $jsLayout
-    )
-    {
+    public function afterProcess(\Magento\Checkout\Block\Checkout\LayoutProcessor $processor, $jsLayout) {
         $store = $this->storeManagerInterface->getStore();
         $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS);
 

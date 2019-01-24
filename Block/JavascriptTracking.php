@@ -597,9 +597,6 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
      */
     public function getStoreCode()
     {
-        if ($this->storeManager->getStore()->isDefault()) {
-            return '';
-        }
         return $this->storeManager->getStore()->getCode();
     }
 }
