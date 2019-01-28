@@ -365,7 +365,7 @@ class Product extends AbstractModel
                                     'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
                                     'store' => $store['store']->getCode(),
                                     'store_id' => $store['store']->getId(),
-                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames, $store['store'], $collection),
+                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames, $store['store'], $collection, $logsArray),
                                     'header' => $header,
                                     'currency_code' => $currencyStoreCode,
                             ])];
@@ -429,7 +429,7 @@ class Product extends AbstractModel
             $this->logsHelper->manualLogsUpdate($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception " . json_encode(error_get_last()));
+            $logsArray['description'] = __("Exception $1", json_encode(error_get_last()));
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
 
@@ -757,93 +757,102 @@ class Product extends AbstractModel
      * @param $categoryNames
      * @param \Magento\Store\Model\Store $store
      * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param array $logsArray
      * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Exception
      */
-    protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store, $collection)
+    protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store, $collection, $logsArray)
     {
         $attributeData = [];
         foreach ($magentoAttributeNames as $attributeCode) {
-            $attributeOption = $productObject->getData($attributeCode);
-            if (!is_array($attributeOption)) {
-                $attribute = $this->getEavAttribute($attributeCode);
-                if ($attribute->getFrontendInput() == 'boolean'
-                    || $attribute->getFrontendInput() == 'select'
-                    || $attribute->getFrontendInput() == 'multiselect'
-                ) {
-                    $attributeOption = $productObject->getAttributeText($attributeCode);
-                }
-            }
-            switch ($attributeCode) {
-                case 'quantity_and_stock_status':
-                    $status = ($productObject->getStatus() == Status::STATUS_ENABLED);
-                    $inStock = ($productObject->getData('inventory_in_stock') == 1);
-                    $visibility = ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
-
-                    if ($status && $inStock && $visibility) {
-                        $attributeData[] = 'TRUE';
-                    } else {
-                        $attributeData[] = 'FALSE';
+            try {
+                $attributeOption = $productObject->getData($attributeCode);
+                if (!is_array($attributeOption)) {
+                    $attribute = $this->getEavAttribute($attributeCode);
+                    if ($attribute->getFrontendInput() == 'boolean'
+                        || $attribute->getFrontendInput() == 'select'
+                        || $attribute->getFrontendInput() == 'multiselect'
+                    ) {
+                        $attributeOption = $productObject->getAttributeText($attributeCode);
                     }
-                    break;
-                case 'category_ids':
-                    $attributeData[] = implode('|', $categoryNames);
-                    break;
-                case is_array($attributeOption):
-                    $attributeData[] = implode(',', $attributeOption);
-                    break;
-                case 'image':
-                    /** @var \Magento\Catalog\Helper\Image $helper */
-                    $url = $this->imageHelper
-                        ->init($productObject, 'product_base_image')
-                        ->setImageFile($attributeOption)
-                        ->getUrl();
-                    $attributeData[] = $url;
-                    break;
-                case 'url_key':
-                    $url = $productObject->getProductUrl();
-                    if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
-                        $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
-                        $this->_productTypeInstance = $this->typeConfigurable;
-                        if (empty($parentProducts)) {
-                            $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
-                            $this->_productTypeInstance = $this->typeBundle;
-                            if (empty($parentProducts)) {
-                                $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
-                                $this->_productTypeInstance = $this->typeGrouped;
-                            }
+                }
+                switch ($attributeCode) {
+                    case 'quantity_and_stock_status':
+                        $status = ($productObject->getStatus() == Status::STATUS_ENABLED);
+                        $inStock = ($productObject->getData('inventory_in_stock') == 1);
+                        $visibility = ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
+
+                        if ($status && $inStock && $visibility) {
+                            $attributeData[] = 'TRUE';
+                        } else {
+                            $attributeData[] = 'FALSE';
                         }
-                        if (!empty($parentProducts)) {
-                            $parentProductId = current($parentProducts);
-                            $parentProduct = $collection->getItemById($parentProductId);
-                            if (!$parentProduct) {
-                                if (!isset($this->_parentProducts[$parentProductId])) {
-                                    $this->productModel->setTypeInstance($this->_productTypeInstance);
-                                    $this->_parentProducts[$parentProductId] = $this->productModel->load($parentProductId);
-                                    $parentProduct = $this->_parentProducts[$parentProductId];
-                                } else {
-                                    $parentProduct = $this->_parentProducts[$parentProductId];
+                        break;
+                    case 'category_ids':
+                        $attributeData[] = implode('|', $categoryNames);
+                        break;
+                    case is_array($attributeOption):
+                        $attributeData[] = implode(',', $attributeOption);
+                        break;
+                    case 'image':
+                        /** @var \Magento\Catalog\Helper\Image $helper */
+                        $url = $this->imageHelper
+                            ->init($productObject, 'product_base_image')
+                            ->setImageFile($attributeOption)
+                            ->getUrl();
+                        $attributeData[] = $url;
+                        break;
+                    case 'url_key':
+                        $url = $productObject->getProductUrl();
+                        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
+                            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+                            $this->_productTypeInstance = $this->typeConfigurable;
+                            if (empty($parentProducts)) {
+                                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+                                $this->_productTypeInstance = $this->typeBundle;
+                                if (empty($parentProducts)) {
+                                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                                    $this->_productTypeInstance = $this->typeGrouped;
                                 }
                             }
-                            if ($parentProduct) {
-                                $parentProduct->setStoreId($store->getId());
-                                $url = $parentProduct->getProductUrl();
+                            if (!empty($parentProducts)) {
+                                $parentProductId = current($parentProducts);
+                                $parentProduct = $collection->getItemById($parentProductId);
+                                if (!$parentProduct) {
+                                    if (!isset($this->_parentProducts[$parentProductId])) {
+                                        $this->productModel->setTypeInstance($this->_productTypeInstance);
+                                        $this->_parentProducts[$parentProductId] = $this->productModel->load($parentProductId);
+                                        $parentProduct = $this->_parentProducts[$parentProductId];
+                                    } else {
+                                        $parentProduct = $this->_parentProducts[$parentProductId];
+                                    }
+                                }
+                                if ($parentProduct) {
+                                    $parentProduct->setStoreId($store->getId());
+                                    $url = $parentProduct->getProductUrl();
+                                }
                             }
                         }
-                    }
-                    $attributeData[] = $url;
-                    break;
-                case 'price':
-                    $price = $productObject->getMinimalPrice();
-                    if ($price <= 0.0001) {
-                        $price = $attributeOption;
-                    }
-                    $attributeData[] = number_format($price, 2, '.', '');
-                    break;
-                default:
-                    $attributeData[] = $attributeOption;
-                    break;
+                        $attributeData[] = $url;
+                        break;
+                    case 'price':
+                        $price = $productObject->getMinimalPrice();
+                        if ($price <= 0.0001) {
+                            $price = $attributeOption;
+                        }
+                        $attributeData[] = number_format($price, 2, '.', '');
+                        break;
+                    default:
+                        $attributeData[] = $attributeOption;
+                        break;
 
+                }
+            } catch (\Exception $e) {
+                $attributeData[] = '';
+                $logsArray['emarsys_info'] = __('consolidatedCatalogExport _getProductData Exception');
+                $logsArray['description'] = __('$1: $2', $attributeCode, $e->getMessage());
+                $logsArray['message_type'] = 'Error';
+                $this->logsHelper->logs($logsArray);
             }
         }
 
