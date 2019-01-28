@@ -128,7 +128,7 @@ class Emarsysproductexport extends AbstractModel
      * @param array $attributes
      * @param null|1|0 $includeBundle
      * @param array $excludedCategories
-     * @return object
+     * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
     public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle = null, $excludedCategories = [])
     {
