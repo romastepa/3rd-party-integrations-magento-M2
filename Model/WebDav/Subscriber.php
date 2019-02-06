@@ -15,7 +15,7 @@ use Magento\{
 };
 use Emarsys\Emarsys\{
     Model\ResourceModel\Customer,
-    Helper\Data,
+    Helper\Data as EmarsysHelper,
     Helper\Logs
 };
 
@@ -26,7 +26,7 @@ use Emarsys\Emarsys\{
 class Subscriber extends DataObject
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -57,15 +57,17 @@ class Subscriber extends DataObject
 
     /**
      * Subscriber constructor.
-     * @param Data $emarsysHelper
+     *
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
      * @param Customer $customerResourceModel
      * @param Logs $logsHelper
+     * @param WebDavExport $webDavExport
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Context $context,
         DateTime $date,
         StoreManagerInterface $storeManager,
@@ -123,9 +125,9 @@ class Subscriber extends DataObject
         if ($optInStatus == 'attribute') {
             $data['subscribeStatus'] = $data['attributevalue'];
         }
-        $emarsysFieldNames = ['Email', 'Magento Subscriber ID', 'Magento Customer Unique ID'];
+        $emarsysFieldNames = [EmarsysHelper::CUSTOMER_EMAIL, EmarsysHelper::SUBSCRIBER_ID];
         if ($optInStatus != '') {
-            $emarsysFieldNames[] = 'Opt-In';
+            $emarsysFieldNames[] = EmarsysHelper::OPT_IN;
         }
 
         $customerValues = $this->customerResourceModel->getSubscribedCustomerCollection(
@@ -160,14 +162,6 @@ class Subscriber extends DataObject
                         $values = [];
                         $values[] = $value['subscriber_email'];
                         $values[] = $value['subscriber_id'];
-
-                        if ($keyField == 'email') {
-                            $values[] = $value['subscriber_email'];
-                        } elseif ($keyField == 'magento_id') {
-                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#";
-                        } else {
-                            $values[] = $value['subscriber_email'] . "#" . $websiteId . "#" . $value['store_id'];
-                        }
 
                         if ($optInStatus == 'true') {
                             $values[] = '1';

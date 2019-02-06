@@ -12,8 +12,8 @@ use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Helper\Email;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Email as EmarsysHelperEmail;
 use Psr\Log\LoggerInterface as Logger;
 
 /**
@@ -58,12 +58,22 @@ class Save extends Action
     protected $session;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var EmarsysHelperEmail
+     */
+    protected $emailHelper;
+
+    /**
      * Save constructor.
      * @param Session $authSession
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManager
-     * @param Data $data
-     * @param Email $email
+     * @param EmarsysHelper $emarsysHelper
+     * @param EmarsysHelperEmail $emailHelper
      * @param Context $context
      * @param Logger $logger
      */
@@ -71,28 +81,28 @@ class Save extends Action
         Session $authSession,
         ScopeConfigInterface $scopeConfigInterface,
         StoreManagerInterface $storeManager,
-        Data $data,
-        Email $email,
+        EmarsysHelper $emarsysHelper,
+        EmarsysHelperEmail $emailHelper,
         Context $context,
         Logger $logger
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->authSession = $authSession;
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->storeManager = $storeManager;
-        $this->helper = $data;
-        $this->emailHelper = $email;
+        $this->emarsysHelper = $emarsysHelper;
+        $this->emailHelper = $emailHelper;
         $this->logger = $logger;
         $this->session = $context->getSession();
     }
 
     /**
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
-        $req = $this->helper->getRequirementsInfo();
+        $req = $this->emarsysHelper->getRequirementsInfo();
         if ($this->getRequest()->getParams()) {
             $data = $this->getRequest()->getParams();
             try {
@@ -103,14 +113,6 @@ class Save extends Action
                 $subject = trim($data['subject']);
                 $priority = trim($data['priority']);
                 $message = trim($data['message']);
-                $store_name = $this->storeManager->getStore()->getName();
-                $base_url = $this->helper->getBaseUrl();
-                //systemrequirement details
-                $phpvalue = $req['php_version']['current']['value'];
-                $memoryvalue = $req['memory_limit']['current']['value'];
-                $magentovalue = $req['magento_version']['current']['value'];
-                $curlvalue = $req['curl_enabled']['current']['value'];
-                $soapvalue = $req['soap_enabled']['current']['value'];
                 // it depends on the template variables
                 $emailTemplateVariables = [];
                 $emailTemplateVariables['type'] = $type;
@@ -119,13 +121,13 @@ class Save extends Action
                 $emailTemplateVariables['subject'] = $type . ' - ' . $subject;
                 $emailTemplateVariables['priority'] = $priority;
                 $emailTemplateVariables['message'] = $message;
-                $emailTemplateVariables['store_name'] = $store_name;
-                $emailTemplateVariables['domain'] = $base_url;
-                $emailTemplateVariables['phpvalue'] = $phpvalue;
-                $emailTemplateVariables['memoryvalue'] = $memoryvalue;
-                $emailTemplateVariables['magentovalue'] = $magentovalue;
-                $emailTemplateVariables['curlvalue'] = $curlvalue;
-                $emailTemplateVariables['soapvalue'] = $soapvalue;
+                $emailTemplateVariables['store_name'] = $this->storeManager->getStore()->getName();;
+                $emailTemplateVariables['domain'] = $this->storeManager->getStore()->getBaseUrl();
+                $emailTemplateVariables['phpvalue'] = $req['php_version']['current']['value'];
+                $emailTemplateVariables['memoryvalue'] = $req['memory_limit']['current']['value'];
+                $emailTemplateVariables['magentovalue'] = $req['magento_version']['current']['value'];
+                $emailTemplateVariables['curlvalue'] = $req['curl_enabled']['current']['value'];
+                $emailTemplateVariables['soapvalue'] = $req['soap_enabled']['current']['value'];
                 $inputFilter = new \Zend_Filter_Input(
                     [],
                     [],

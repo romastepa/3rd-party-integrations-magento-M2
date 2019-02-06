@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Model\ResourceModel\Customer,
     Model\EmarsysCronDetails,
     Helper\Cron as EmarsysCronHelper,
@@ -62,9 +62,9 @@ class CustomerExport extends Action
     protected $timezoneInterface;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var
@@ -85,7 +85,7 @@ class CustomerExport extends Action
      * @param Timezone $timezone
      * @param TimezoneInterface $timezoneInterface
      * @param Http $request
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param EmarsysCronDetails $emarsysCronDetails
      * @param EmarsysCronHelper $cronHelper
      * @param Logs $emarsysLogs
@@ -98,7 +98,7 @@ class CustomerExport extends Action
         Timezone $timezone,
         TimezoneInterface $timezoneInterface,
         Http $request,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         EmarsysCronDetails $emarsysCronDetails,
         EmarsysCronHelper $cronHelper,
         Logs $emarsysLogs
@@ -109,7 +109,7 @@ class CustomerExport extends Action
         $this->request = $request;
         $this->timezone = $timezone;
         $this->timezoneInterface = $timezoneInterface;
-        $this->emarsysDataHelper = $emarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->cronHelper = $cronHelper;
         $this->emarsysLogs = $emarsysLogs;
@@ -132,7 +132,7 @@ class CustomerExport extends Action
             $returnUrl = $this->getUrl("emarsys_emarsys/customerexport/index", ["store" => $storeId]);
 
             //check emarsys enable for website
-            if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
                 if (isset($data['fromDate']) && $data['fromDate'] != '') {
                     $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
                 }
@@ -152,7 +152,7 @@ class CustomerExport extends Action
                         $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
                         if (!$isCronjobScheduled) {
                             //no cron job scheduled yet, schedule a new cron job
-                            $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
+                            $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
                             $cronJobScheduled = true;
                             $cronJobName = EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API;
                         }
@@ -160,7 +160,7 @@ class CustomerExport extends Action
                         //export customers through WebDav
                         $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV, $storeId);
                         if (!$isCronjobScheduled) {
-                            $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV, $storeId);
+                            $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV, $storeId);
                             $cronJobScheduled = true;
                             $cronJobName = EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV;
                         }

@@ -16,7 +16,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysDataHelper,
+    Helper\Data as EmarsysHelper,
     Helper\Cron as EmarsysCronHelper,
     Model\Order as EmarsysOrderModel,
     Model\EmarsysCronDetails,
@@ -45,9 +45,9 @@ class OrderExport extends Action
     protected $storeManager;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelper
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var MessageManagerInterface
@@ -85,7 +85,7 @@ class OrderExport extends Action
      * @param Http $request
      * @param EmarsysOrderModel $emarsysOrderModel
      * @param StoreManagerInterface $storeManager
-     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param DateTime $date
      * @param TimeZone $timezone
      * @param EmarsysCronHelper $cronHelper
@@ -97,7 +97,7 @@ class OrderExport extends Action
         Http $request,
         EmarsysOrderModel $emarsysOrderModel,
         StoreManagerInterface $storeManager,
-        EmarsysDataHelper $emarsysDataHelper,
+        EmarsysHelper $emarsysHelper,
         DateTime $date,
         TimeZone $timezone,
         EmarsysCronHelper $cronHelper,
@@ -107,7 +107,7 @@ class OrderExport extends Action
         $this->request = $request;
         $this->emarsysOrderModel = $emarsysOrderModel;
         $this->storeManager = $storeManager;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->messageManager = $context->getMessageManager();
         $this->date = $date;
         $this->timezone = $timezone;
@@ -131,9 +131,9 @@ class OrderExport extends Action
         $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
         try {
             //check emarsys enabled for the website
-            if ($this->emarsysDataHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
                 //check smart insight enabled for the website
-                if ($this->emarsysDataHelper->getCheckSmartInsight($websiteId)) {
+                if ($this->emarsysHelper->getCheckSmartInsight($websiteId)) {
                     if (isset($data['fromDate']) && $data['fromDate'] != '') {
                         $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
                     }
@@ -146,7 +146,7 @@ class OrderExport extends Action
                     $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
                     if (!$isCronjobScheduled) {
                         //no cron job scheduled yet, schedule a new cron job
-                        $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
+                        $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT, $storeId);
 
                         //format and encode data in json to be saved in the table
                         $params = $this->cronHelper->getFormattedParams($data);

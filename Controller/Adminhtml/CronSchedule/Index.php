@@ -7,6 +7,8 @@
 namespace Emarsys\Emarsys\Controller\Adminhtml\CronSchedule;
 
 use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\Stdlib\DateTime\Timezone;
 
 /**
  * Class Index
@@ -15,14 +17,31 @@ use Magento\Backend\App\Action;
 class Index extends Action
 {
     /**
+     * @var Timezone
+     */
+    protected $timezone;
+
+    /**
+     * Params constructor.
+     * @param Timezone $timezone
+     * @param Context $context
+     */
+    public function __construct(
+        Timezone $timezone,
+        Context $context
+    ) {
+        $this->timezone = $timezone;
+        parent::__construct($context);
+    }
+
+    /**
      * @return void|$this
      * @throws \RuntimeException
      */
     public function execute()
     {
-        $time = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Framework\Stdlib\DateTime\TimezoneInterface::class)->date()->format('Y-m-d H:i');
         $this->_view->loadLayout();
-        $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Cronjob Timeline (%1)', $time));
+        $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Cronjob Timeline (%1)', $this->timezone->formatDateTime('now', 2)));
         $this->_view->renderLayout();
     }
 }

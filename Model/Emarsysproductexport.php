@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 use Magento\{
     Framework\App\Config\ScopeConfigInterface,
@@ -22,7 +22,6 @@ use Magento\{
     Directory\Model\CurrencyFactory,
     Store\Model\StoreManagerInterface
 };
-use MEQP2\Tests\NamingConventions\true\resource;
 
 /**
  * Class Emarsysproductexport
@@ -70,9 +69,9 @@ class Emarsysproductexport extends AbstractModel
     protected $file;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelper
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelper;
 
     /**
      * Emarsysproductexport constructor.
@@ -82,7 +81,7 @@ class Emarsysproductexport extends AbstractModel
      * @param ScopeConfigInterface $scopeConfig
      * @param CurrencyFactory $currencyFactory
      * @param File $file
-     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -95,7 +94,7 @@ class Emarsysproductexport extends AbstractModel
         ScopeConfigInterface $scopeConfig,
         CurrencyFactory $currencyFactory,
         File $file,
-        EmarsysDataHelper $emarsysDataHelper,
+        EmarsysHelper $emarsysHelper,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -108,7 +107,7 @@ class Emarsysproductexport extends AbstractModel
         $this->logger = $context->getLogger();
         $this->currencyFactory = $currencyFactory;
         $this->file = $file;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysHelper = $emarsysHelper;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -127,11 +126,11 @@ class Emarsysproductexport extends AbstractModel
      * @param int|object $storeId
      * @param int $currentPageNumber
      * @param array $attributes
-     * @param $includeBundle
-     * @param $excludedCategories
-     * @return object
+     * @param null|1|0 $includeBundle
+     * @param array $excludedCategories
+     * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle, $excludedCategories)
+    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle = null, $excludedCategories = [])
     {
         try {
             /** @var \Magento\Store\Model\Store $store */
@@ -146,17 +145,14 @@ class Emarsysproductexport extends AbstractModel
                 ->addUrlRewrite();
 
             if (is_null($includeBundle)) {
-                $includeBundle = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
+                $includeBundle = $store->getConfig(EmarsysHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
             }
 
             if (!$includeBundle) {
                 $collection->addAttributeToFilter('type_id', ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]);
             }
-            if (is_null($excludedCategories)) {
-                $excludedCategories = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
-            }
-            if ($excludedCategories) {
-                $excludedCategories = explode(',', $excludedCategories);
+
+            if (!empty($excludedCategories)) {
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 
@@ -168,6 +164,38 @@ class Emarsysproductexport extends AbstractModel
                 'is_in_stock',
                 'product_id = entity_id',
                 null,
+                'left'
+            );
+
+            //Minimal price left join
+            $connection = $collection->getSelect()->getConnection();
+
+            $cond = $connection->prepareSqlCondition('price_index.customer_group_id', 0)
+                . ' ' . \Magento\Framework\DB\Select::SQL_AND . ' '
+                . $connection->prepareSqlCondition('price_index.website_id', $store->getWebsiteId());
+
+            $least = $connection->getLeastSql(['price_index.min_price', 'price_index.tier_price']);
+            $minimalExpr = $connection->getCheckSql(
+                'price_index.tier_price IS NOT NULL',
+                $least,
+                'price_index.min_price'
+            );
+
+            $fields = [
+                'price',
+                'tax_class_id',
+                'final_price',
+                'minimal_price' => $minimalExpr,
+                'min_price',
+                'max_price',
+                'tier_price',
+            ];
+
+            $collection->joinTable(
+                ['price_index' => 'catalog_product_index_price'],
+                'entity_id = entity_id',
+                $fields,
+                $cond,
                 'left'
             );
 
@@ -192,10 +220,10 @@ class Emarsysproductexport extends AbstractModel
     {
         $this->_mapHeader = $header;
         $this->_processedStores = $processedStores;
-        $this->_preparedData = array();
+        $this->_preparedData = [];
 
-        $fileDirectory = $this->emarsysDataHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
-        $this->emarsysDataHelper->checkAndCreateFolder($fileDirectory);
+        $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
+        $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
 
         $name = 'products_' . $websiteId . '.csv';
         $file = $fileDirectory . '/' . $name;
@@ -259,10 +287,10 @@ class Emarsysproductexport extends AbstractModel
                                 $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();
                                 if ($item['currency_code'] != $currencyCodeTo) {
                                     $rate = $this->currencyFactory->create()->load($item['currency_code'])->getAnyRate($currencyCodeTo);
-                                    $value = $value * $rate;
+                                    $value = number_format($value * $rate, 2, '.', '');
                                 }
                             }
-                            $data[$productId][$map[$key]] = nl2br($value);
+                            $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
                         }
                     }
                 }

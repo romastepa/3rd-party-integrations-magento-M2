@@ -7,6 +7,7 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Helper\Data;
 use Magento\Eav\Model\Entity\Type;
@@ -46,12 +47,18 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $attribute;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Grid constructor.
      *
      * @param Context $context
      * @param Data $backendHelper
      * @param Type $entityType
      * @param Option $attribute
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -59,12 +66,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         Data $backendHelper,
         Type $entityType,
         Option $attribute,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getBackendSession();
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->backendHelper = $backendHelper;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -76,8 +85,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_construct();
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = 1;
+        if (!$storeId) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $this->session->setData('store', $storeId);
     }

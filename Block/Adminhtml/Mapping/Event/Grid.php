@@ -74,7 +74,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
      * @param \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent
      * @param \Emarsys\Emarsys\Model\EmarsyseventmappingFactory $EmarsyseventmappingFactory
-     * @param \Emarsys\Emarsys\Helper\Data $EmarsysHelper
+     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
      * @param \Magento\Framework\Module\Manager $moduleManager
      * @param \Magento\Framework\App\ResourceConnection $resourceConnection
      * @param array $data
@@ -88,7 +88,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Emarsys\Emarsys\Model\ResourceModel\Event $resourceModelEvent,
         \Emarsys\Emarsys\Model\EmarsyseventmappingFactory $EmarsyseventmappingFactory,
-        \Emarsys\Emarsys\Helper\Data $EmarsysHelper,
+        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Magento\Framework\Module\Manager $moduleManager,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
         $data = []
@@ -103,7 +103,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->dataObjectFactory = $dataObjectFactory;
         $this->resourceModelEvent = $resourceModelEvent;
         $this->_storeManager = $context->getStoreManager();
-        $this->EmarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->resourceConnection = $resourceConnection;
         parent::__construct($context, $backendHelper, $data);
     }
@@ -115,11 +115,11 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     {
         $storeId = $this->getRequest()->getParam('store');
         if (!isset($storeId)) {
-            $storeId = $this->EmarsysHelper->getFirstStoreId();
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $EventMappingCollection = $this->EmarsyseventmappingFactory->create()->getCollection()->addFieldToFilter("store_id", $storeId);
         if (!$EventMappingCollection->getSize()) {
-            $this->EmarsysHelper->insertFirstime($storeId);
+            $this->emarsysHelper->insertFirstime($storeId);
         }
         $EventMappingCollection = $this->EmarsyseventmappingFactory->create()->getCollection()->addFieldToFilter("store_id", $storeId);
         $tableName = $this->resourceConnection->getTableName('emarsys_magento_events');
@@ -136,7 +136,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_construct();
         $storeId = $this->getRequest()->getParam('store');
         if (!isset($storeId)) {
-            $storeId = $this->EmarsysHelper->getFirstStoreId();
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $this->session->setData('store', $storeId);
         $this->session->setMappingGridData('');

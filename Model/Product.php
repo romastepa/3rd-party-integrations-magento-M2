@@ -8,6 +8,7 @@ namespace Emarsys\Emarsys\Model;
 
 use Magento\{
     Eav\Model\Config as EavConfig,
+    Framework\App\Area,
     Framework\Model\AbstractModel,
     Framework\Model\Context,
     Framework\Model\ResourceModel\AbstractResource,
@@ -22,12 +23,16 @@ use Magento\{
     Catalog\Model\Product\Visibility,
     Catalog\Model\CategoryFactory,
     Catalog\Model\Product as ProductModel,
-    Store\Model\StoreManagerInterface
+    Store\Model\App\Emulation,
+    Store\Model\StoreManagerInterface,
+    ConfigurableProduct\Model\Product\Type\Configurable as TypeConfigurable,
+    Bundle\Model\Product\Type as TypeBundle,
+    GroupedProduct\Model\Product\Type\Grouped as TypeGrouped
 };
 
 use Emarsys\Emarsys\{
     Helper\Logs as EmarsysHelperLogs,
-    Helper\Data as EmarsysDataHelper,
+    Helper\Data as EmarsysHelper,
     Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
     Model\ResourceModel\Product as ProductResourceModel,
     Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel,
@@ -96,7 +101,7 @@ class Product extends AbstractModel
     protected $eavConfig;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -120,6 +125,11 @@ class Product extends AbstractModel
      */
     protected $imageHelper;
 
+    /**
+     * @var Emulation
+     */
+    protected $appEmulation;
+
     protected $_errorCount = false;
     protected $_mode = false;
     protected $_credentials = [];
@@ -128,14 +138,29 @@ class Product extends AbstractModel
     protected $_categoryNames = [];
     protected $_mapHeader = ['item'];
     protected $_processedStores = [];
+    protected $_parentProducts = [];
+    protected $_productTypeInstance = null;
 
     /**
      * @var State
      */
     protected $state;
+    /**
+     * @var TypeConfigurable
+     */
+    protected $typeConfigurable;
+    /**
+     * @var TypeBundle
+     */
+    protected $typeBundle;
+    /**
+     * @var TypeGrouped
+     */
+    protected $typeGrouped;
 
     /**
      * Product constructor.
+     *
      * @param MessageManagerInterface $messageManager
      * @param ProductModel $productModel
      * @param DateTime $date
@@ -147,11 +172,15 @@ class Product extends AbstractModel
      * @param CategoryFactory $categoryFactory
      * @param StoreManagerInterface $storeManager
      * @param EavConfig $eavConfig
-     * @param EmarsysDataHelper $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Csv $csvWriter
      * @param DirectoryList $directoryList
      * @param ApiExport $apiExport
      * @param Image $imageHelper
+     * @param Emulation $appEmulation
+     * @param TypeConfigurable $typeConfigurable
+     * @param TypeBundle $typeBundle
+     * @param TypeGrouped $typeGrouped
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -170,11 +199,15 @@ class Product extends AbstractModel
         CategoryFactory $categoryFactory,
         StoreManagerInterface $storeManager,
         EavConfig $eavConfig,
-        EmarsysDataHelper $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Csv $csvWriter,
         DirectoryList $directoryList,
         ApiExport $apiExport,
         Image $imageHelper,
+        Emulation $appEmulation,
+        TypeConfigurable $typeConfigurable,
+        TypeBundle $typeBundle,
+        TypeGrouped $typeGrouped,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -197,6 +230,10 @@ class Product extends AbstractModel
         $this->directoryList = $directoryList;
         $this->apiExport = $apiExport;
         $this->imageHelper = $imageHelper;
+        $this->appEmulation = $appEmulation;
+        $this->typeConfigurable = $typeConfigurable;
+        $this->typeBundle = $typeBundle;
+        $this->typeGrouped = $typeGrouped;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -216,7 +253,7 @@ class Product extends AbstractModel
      * @return bool
      * @throws \Exception
      */
-    public function consolidatedCatalogExport($mode = EmarsysDataHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
+    public function consolidatedCatalogExport($mode = EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
     {
         set_time_limit(0);
 
@@ -247,8 +284,7 @@ class Product extends AbstractModel
             }
 
             foreach ($this->getCredentials() as $websiteId => $website) {
-                $emarsysFieldNames = array();
-                $magentoAttributeNames = array();
+                $emarsysFieldNames = $magentoAttributeNames = [];
 
                 foreach ($website as $storeId => $store) {
                     foreach ($store['mapped_attributes_names'] as $mapAttribute) {
@@ -264,9 +300,21 @@ class Product extends AbstractModel
                 $this->_mapHeader = ['item'];
                 $this->_processedStores = [];
                 foreach ($website as $storeId => $store) {
+                    $this->appEmulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
                     $currencyStoreCode = $store['store']->getDefaultCurrencyCode();
                     if (!$defaultStoreID) {
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
+                    }
+
+                    if (is_null($excludedCategories)) {
+                        $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
+                    }
+                    if ($excludedCategories) {
+                        $excludedCategories = explode(',', str_replace(' ', '', $excludedCategories));
+                    }
+
+                    if (empty($excludedCategories)) {
+                        $excludedCategories = [];
                     }
 
                     $currentPageNumber = 1;
@@ -281,6 +329,7 @@ class Product extends AbstractModel
                     $lastPageNumber = $collection->getLastPageNumber();
                     $header = $emarsysFieldNames[$storeId];
                     $this->_categoryNames = [];
+                    $this->_parentProducts = [];
 
                     $this->prepareHeader(
                         $store['store']->getCode(),
@@ -307,7 +356,7 @@ class Product extends AbstractModel
                         $products = [];
                         foreach ($collection as $product) {
                             $catIds = $product->getCategoryIds();
-                            $categoryNames = $this->getCategoryNames($catIds, $storeId);
+                            $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                             $product->setStoreId($storeId);
                             $products[$product->getId()] = [
                                 'entity_id' => $product->getId(),
@@ -315,7 +364,7 @@ class Product extends AbstractModel
                                     'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
                                     'store' => $store['store']->getCode(),
                                     'store_id' => $store['store']->getId(),
-                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames, $store['store']),
+                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product, $categoryNames, $store['store'], $collection, $logsArray),
                                     'header' => $header,
                                     'currency_code' => $currencyStoreCode,
                             ])];
@@ -330,6 +379,7 @@ class Product extends AbstractModel
                     $logsArray['description'] = __('Data for store %1 prepared', $storeId);
                     $logsArray['message_type'] = 'Success';
                     $this->logsHelper->logs($logsArray);
+                    $this->appEmulation->stopEnvironmentEmulation();
                 }
 
                 if (!empty($store)) {
@@ -378,11 +428,11 @@ class Product extends AbstractModel
             $this->logsHelper->manualLogsUpdate($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception " . json_encode(error_get_last()));
+            $logsArray['description'] = __("Exception $1", json_encode(error_get_last()));
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
 
-            if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __("Exception " . $msg)
                 );
@@ -450,18 +500,19 @@ class Product extends AbstractModel
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Zend_Http_Client_Exception
      */
     public function moveFile($store, $csvFilePath, $logsArray, $mode)
     {
         $result = true;
-        $apiExportEnabled = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED);
+        $apiExportEnabled = $store->getConfig(EmarsysHelper::XPATH_PREDICT_API_ENABLED);
 
         $isBig = (filesize($csvFilePath) / pow(1024, 2)) > 100;
-        $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
+        $merchantId = $store->getConfig(EmarsysHelper::XPATH_PREDICT_MERCHANT_ID);
         $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY . '/' . $merchantId, $csvFilePath);
         if ($apiExportEnabled && !$isBig) {
             //get token from admin configuration
-            $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
+            $token = $store->getConfig(EmarsysHelper::XPATH_PREDICT_TOKEN);
 
             //Assign API Credentials
             $this->apiExport->assignApiCredentials($merchantId, $token);
@@ -478,7 +529,7 @@ class Product extends AbstractModel
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
                 $this->_errorCount = false;
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addSuccessMessage(
                         __("File uploaded to Emarsys successfully !!!")
                     );
@@ -491,7 +542,7 @@ class Product extends AbstractModel
                 $logsArray['description'] = __('Failed to upload %1 on Emarsys. %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
                         __("Failed to upload file on Emarsys !!! " . $msg)
                     );
@@ -499,7 +550,7 @@ class Product extends AbstractModel
                 $result = false;
             }
         } else {
-            $bulkDir = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
+            $bulkDir = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
             $outputFile = $bulkDir . 'products_' . $store->getWebsiteId() . '.csv';
             if ($this->emarsysHelper->moveFileToFtp($store, $csvFilePath, $outputFile)) {
                 //successfully uploaded the file on ftp
@@ -508,7 +559,7 @@ class Product extends AbstractModel
                 $logsArray['description'] = $url . ' > ' . $outputFile;
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addSuccessMessage(
                         __("File uploaded to FTP server successfully !!!")
                     );
@@ -522,7 +573,7 @@ class Product extends AbstractModel
                 $logsArray['description'] = __('Failed to upload %1 on FTP server %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
-                if ($mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
                         __("Failed to upload file on FTP server !!! " . $msg)
                     );
@@ -560,80 +611,80 @@ class Product extends AbstractModel
      *
      * @param \Magento\Store\Model\Store $store
      * @param array $logsArray
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function setCredentials($store, $logsArray)
     {
         $storeId = $store->getId();
         $websiteId = $this->getWebsiteId($store);
         if (!isset($this->_credentials[$websiteId][$storeId])) {
-            if ($store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_ENABLED)) {
-                //check feed export enabled for the website
-                if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)) {
-                    //get method of catalog export from admin configuration
-                    $merchantId = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_MERCHANT_ID);
-                    if ($store->getConfig(EmarsysDataHelper::XPATH_PREDICT_API_ENABLED)) {
-                        $token = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_TOKEN);
-                        if ($merchantId == '' || $token == '') {
-                            $this->_errorCount = true;
-                            $logsArray['emarsys_info'] = __('Invalid API credentials');
-                            $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
-                            $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
-                            if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                                $this->messageManager->addErrorMessage(
-                                    __('Invalid API credential. Please check your settings and try again !!!')
-                                );
-                            }
-                            return;
-                        }
-                        $logsArray['emarsys_info'] = __('Set API credentials');
-                        $logsArray['description'] = __('Set API credentials for store %1', $storeId);
-                        $logsArray['message_type'] = 'Success';
+            if ($store->getConfig(EmarsysHelper::XPATH_EMARSYS_ENABLED)
+                && $store->getConfig(EmarsysHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)
+            ) {
+                //get method of catalog export from admin configuration
+                $merchantId = $store->getConfig(EmarsysHelper::XPATH_PREDICT_MERCHANT_ID);
+                if ($store->getConfig(EmarsysHelper::XPATH_PREDICT_API_ENABLED)) {
+                    $token = $store->getConfig(EmarsysHelper::XPATH_PREDICT_TOKEN);
+                    if ($merchantId == '' || $token == '') {
+                        $this->_errorCount = true;
+                        $logsArray['emarsys_info'] = __('Invalid API credentials');
+                        $logsArray['description'] = __('Invalid API credential. Please check your settings and try again');
+                        $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
-                    } else {
-                        if (!$this->emarsysHelper->checkFtpConnectionByStore($store)) {
-                            $this->_errorCount = true;
-                            $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
-                            $logsArray['description'] = __('Failed to connect with FTP server.');
-                            $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
-                            if ($this->_mode == EmarsysDataHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                                $this->messageManager->addErrorMessage(
-                                    __("Failed to connect with FTP server. Please check your settings and try again !!!")
-                                );
-                            }
-                            return;
+                        if ($this->_mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                            $this->messageManager->addErrorMessage(
+                                __('Invalid API credential. Please check your settings and try again !!!')
+                            );
                         }
-                        $logsArray['emarsys_info'] = __('Set FTP credentials');
-                        $logsArray['description'] = __('Set FTP credentials for store %1', $storeId);
-                        $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
+                        return;
                     }
+                    $logsArray['emarsys_info'] = __('Set API credentials');
+                    $logsArray['description'] = __('Set API credentials for store %1', $storeId);
+                    $logsArray['message_type'] = 'Success';
+                    $this->logsHelper->logs($logsArray);
+                } else {
+                    if (!$this->emarsysHelper->checkFtpConnectionByStore($store)) {
+                        $this->_errorCount = true;
+                        $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
+                        $logsArray['description'] = __('Failed to connect with FTP server.');
+                        $logsArray['message_type'] = 'Error';
+                        $this->logsHelper->logs($logsArray);
+                        if ($this->_mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
+                            $this->messageManager->addErrorMessage(
+                                __("Failed to connect with FTP server. Please check your settings and try again !!!")
+                            );
+                        }
+                        return;
+                    }
+                    $logsArray['emarsys_info'] = __('Set FTP credentials');
+                    $logsArray['description'] = __('Set FTP credentials for store %1', $storeId);
+                    $logsArray['message_type'] = 'Success';
+                    $this->logsHelper->logs($logsArray);
+                }
 
-                    $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
-                    $mappingField = 0;
-                    foreach ($mappedAttributes as $mapAttribute) {
-                        $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-                        if ($emarsysFieldId != 0) {
-                            $mappingField = 1;
-                        }
+                $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
+                $mappingField = 0;
+                foreach ($mappedAttributes as $mapAttribute) {
+                    $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
+                    if ($emarsysFieldId != 0) {
+                        $mappingField = 1;
                     }
-                    if ($mappingField) {
-                        $this->_credentials[$websiteId][$storeId]['store'] = $store;
-                        $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $mappedAttributes;
-                        $this->_credentials[$websiteId][$storeId]['merchant_id'] = $merchantId;
-                    }
+                }
+                if ($mappingField) {
+                    $this->_credentials[$websiteId][$storeId]['store'] = $store;
+                    $this->_credentials[$websiteId][$storeId]['mapped_attributes_names'] = $mappedAttributes;
+                    $this->_credentials[$websiteId][$storeId]['merchant_id'] = $merchantId;
                 } else {
                     $this->_errorCount = true;
-                    $logsArray['emarsys_info'] = __('Catalog Feed Export is Disabled');
-                    $logsArray['description'] = __('Catalog Feed Export is Disabled for the store %1.', $store->getName());
+                    $logsArray['emarsys_info'] = __('Catalog Feed Export Mapping Error');
+                    $logsArray['description'] = __('No default mapping for for the store %1.', $store->getName());
                     $logsArray['message_type'] = 'Error';
                     $this->logsHelper->logs($logsArray);
                 }
             } else {
                 $this->_errorCount = true;
-                $logsArray['emarsys_info'] = __('Emarsys is disabled');
-                $logsArray['description'] = __('Emarsys is disabled for the website %1', $websiteId);
+                $logsArray['emarsys_info'] = __('Catalog Feed Export is Disabled');
+                $logsArray['description'] = __('Catalog Feed Export is Disabled for the store %1.', $store->getName());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
             }
@@ -648,7 +699,7 @@ class Product extends AbstractModel
      */
     public function getWebsiteId($store)
     {
-        $apiUserName = $store->getConfig(EmarsysDataHelper::XPATH_EMARSYS_API_USER);
+        $apiUserName = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_API_USER);
         if (!isset($this->_websites[$apiUserName])) {
             $this->_websites[$apiUserName] = $store->getWebsiteId();
         }
@@ -661,14 +712,18 @@ class Product extends AbstractModel
      *
      * @param $catIds
      * @param $storeId
+     * @param $excludedCategories
      * @return array
      */
-    public function getCategoryNames($catIds, $storeId)
+    public function getCategoryNames($catIds, $storeId, $excludedCategories = [])
     {
         $key = $storeId . '-' . serialize($catIds);
         if (!isset($this->_categoryNames[$key])) {
             $this->_categoryNames[$key] = [];
             foreach ($catIds as $catId) {
+                if (in_array($catId, $excludedCategories)) {
+                    continue;
+                }
                 $cateData = $this->categoryFactory->create()
                     ->setStoreId($storeId)
                     ->load($catId);
@@ -700,38 +755,31 @@ class Product extends AbstractModel
      * @param \Magento\Catalog\Model\Product $productObject
      * @param $categoryNames
      * @param \Magento\Store\Model\Store $store
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param array $logsArray
      * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Exception
      */
-    protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store)
+    protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store, $collection, $logsArray)
     {
         $attributeData = [];
         foreach ($magentoAttributeNames as $attributeCode) {
-            $attributeOption = $productObject->getData($attributeCode);
-            if (!is_array($attributeOption)) {
-                $attribute = $this->getEavAttribute($attributeCode);
-                if ($attribute->getFrontendInput() == 'boolean'
-                    || $attribute->getFrontendInput() == 'select'
-                    || $attribute->getFrontendInput() == 'multiselect'
-                ) {
-                    $attributeOption = $productObject->getAttributeText($attributeCode);
+            try {
+                $attributeOption = $productObject->getData($attributeCode);
+                if (!is_array($attributeOption)) {
+                    $attribute = $this->getEavAttribute($attributeCode);
+                    if ($attribute->getFrontendInput() == 'boolean'
+                        || $attribute->getFrontendInput() == 'select'
+                        || $attribute->getFrontendInput() == 'multiselect'
+                    ) {
+                        $attributeOption = $productObject->getAttributeText($attributeCode);
+                    }
                 }
-            }
-            if (isset($attributeOption) && $attributeOption != '') {
                 switch ($attributeCode) {
                     case 'quantity_and_stock_status':
-                        $status = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_STATUS)
-                            ? ($productObject->getStatus() == Status::STATUS_ENABLED)
-                            : true
-                        ;
-                        $inStock = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK)
-                            ? ($productObject->getData('inventory_in_stock') == 1)
-                            : true
-                        ;
-                        $visibility = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY)
-                            ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
-                            : true
-                        ;
+                        $status = ($productObject->getStatus() == Status::STATUS_ENABLED);
+                        $inStock = ($productObject->getData('inventory_in_stock') == 1);
+                        $visibility = ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
 
                         if ($status && $inStock && $visibility) {
                             $attributeData[] = 'TRUE';
@@ -754,29 +802,56 @@ class Product extends AbstractModel
                         $attributeData[] = $url;
                         break;
                     case 'url_key':
-                        $attributeData[] = $store->getBaseUrl() . $productObject->getRequestPath();
+                        $url = $productObject->getProductUrl();
+                        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
+                            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+                            $this->_productTypeInstance = $this->typeConfigurable;
+                            if (empty($parentProducts)) {
+                                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+                                $this->_productTypeInstance = $this->typeBundle;
+                                if (empty($parentProducts)) {
+                                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                                    $this->_productTypeInstance = $this->typeGrouped;
+                                }
+                            }
+                            if (!empty($parentProducts)) {
+                                $parentProductId = current($parentProducts);
+                                $parentProduct = $collection->getItemById($parentProductId);
+                                if (!$parentProduct) {
+                                    if (!isset($this->_parentProducts[$parentProductId])) {
+                                        $this->productModel->setTypeInstance($this->_productTypeInstance);
+                                        $this->_parentProducts[$parentProductId] = $this->productModel->load($parentProductId);
+                                        $parentProduct = $this->_parentProducts[$parentProductId];
+                                    } else {
+                                        $parentProduct = $this->_parentProducts[$parentProductId];
+                                    }
+                                }
+                                if ($parentProduct) {
+                                    $parentProduct->setStoreId($store->getId());
+                                    $url = $parentProduct->getProductUrl();
+                                }
+                            }
+                        }
+                        $attributeData[] = $url;
+                        break;
+                    case 'price':
+                        $price = $productObject->getMinimalPrice();
+                        if ($price <= 0.0001) {
+                            $price = $attributeOption;
+                        }
+                        $attributeData[] = number_format($price, 2, '.', '');
                         break;
                     default:
                         $attributeData[] = $attributeOption;
                         break;
 
                 }
-            } else {
-                switch ($attributeCode) {
-                    case 'image':
-                        $url = $this->imageHelper
-                            ->init($productObject, 'product_base_image')
-                            ->setImageFile($attributeOption)
-                            ->getUrl();
-                        $attributeData[] = $url;
-                        break;
-                    case 'url_key':
-                        $attributeData[] = $store->getBaseUrl() . $productObject->getRequestPath();
-                        break;
-                    default:
-                        $attributeData[] = $attributeOption;
-                        break;
-                }
+            } catch (\Exception $e) {
+                $attributeData[] = '';
+                $logsArray['emarsys_info'] = __('consolidatedCatalogExport _getProductData Exception');
+                $logsArray['description'] = __('$1: $2', $attributeCode, $e->getMessage());
+                $logsArray['message_type'] = 'Error';
+                $this->logsHelper->logs($logsArray);
             }
         }
 

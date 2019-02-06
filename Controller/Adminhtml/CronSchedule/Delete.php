@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\CronSchedule;
 
@@ -16,16 +16,10 @@ use Magento\Cron\Model\ScheduleFactory;
  */
 class Delete extends Action
 {
-
     /**
      * @var ScheduleFactory
      */
     private $scheduleFactory;
-
-    /**
-     * @var Data
-     */
-    private $jsonHelper;
 
     /**
      * Params constructor.

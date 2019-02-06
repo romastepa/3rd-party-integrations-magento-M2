@@ -25,7 +25,7 @@
         </emarsys_settings>
         <contacts_synchronization>
             <emarsys_emarsys>
-                <realtime_sync>0</realtime_sync>
+                <realtime_sync>1</realtime_sync>
                 <background_frequency>Daily</background_frequency>
                 <unique_field>email</unique_field>
                 <notification_secret_key>1234567890</notification_secret_key>
@@ -54,7 +54,6 @@
                 <exportusing_emailidentifier>0</exportusing_emailidentifier>
                 <exportguest_checkoutorders>0</exportguest_checkoutorders>
                 <smartinsightfrequency>Daily</smartinsightfrequency>
-                <orderexportforstatus>complete,processing,closed</orderexportforstatus>
             </smart_insight>
             <api_settings>
                 <max_records_per_export_option>100,500,1000</max_records_per_export_option>

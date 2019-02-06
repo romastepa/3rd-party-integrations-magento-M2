@@ -10,8 +10,7 @@ namespace Emarsys\Emarsys\Model;
 use Magento\Framework\{
     HTTP\ZendClient,
     Controller\Result\RawFactory,
-    File\Csv,
-    Serialize\Serializer\Json
+    File\Csv
 };
 
 use Magento\Store\Model\StoreManagerInterface;
@@ -63,11 +62,6 @@ class ApiExport extends ZendClient
     protected $storeManagerInterface;
 
     /**
-     * @var Json
-     */
-    protected $json;
-
-    /**
      * @var OrderResourceModel
      */
     protected $orderResourceModel;
@@ -83,7 +77,6 @@ class ApiExport extends ZendClient
      * @param RawFactory $resultRawFactory
      * @param Csv $csvWriter
      * @param StoreManagerInterface $storeManagerInterface
-     * @param Json $json
      * @param OrderResourceModel $orderResourceModel
      * @param ProductResourceModel $productResourceModel
      */
@@ -92,7 +85,6 @@ class ApiExport extends ZendClient
         RawFactory $resultRawFactory,
         Csv $csvWriter,
         StoreManagerInterface $storeManagerInterface,
-        Json $json,
         OrderResourceModel $orderResourceModel,
         ProductResourceModel $productResourceModel
     ) {
@@ -100,7 +92,6 @@ class ApiExport extends ZendClient
         $this->resultRawFactory = $resultRawFactory;
         $this->csvWriter = $csvWriter;
         $this->storeManagerInterface = $storeManagerInterface;
-        $this->json = $json;
         $this->orderResourceModel = $orderResourceModel;
         $this->productResourceModel = $productResourceModel;
     }
@@ -117,8 +108,10 @@ class ApiExport extends ZendClient
 
     /**
      * Get API Headers
+     *
      * @param $token
      * @return array|bool
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getApiHeaders($token)
     {
@@ -140,9 +133,10 @@ class ApiExport extends ZendClient
     }
 
     /**
-     * @param $apiUrl
-     * @param $filePath
+     * @param bool $apiUrl
+     * @param bool $filePath
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     public function apiExport($apiUrl = false, $filePath = false)
@@ -175,11 +169,13 @@ class ApiExport extends ZendClient
 
     /**
      * Requests API call
+     *
      * @param $apiCall
      * @param string $method
      * @param array $data
      * @param bool $jsonDecode
      * @return mixed|string|\Zend_Http_Response
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     protected function _request($apiCall, $method = \Zend_Http_Client::GET, $data = [], $jsonDecode = true)
@@ -200,13 +196,12 @@ class ApiExport extends ZendClient
             $responseObject = $this->request($method);
             $response = $responseObject;
             if ($jsonDecode) {
-                $response = $this->json->unserialize($response);
+                $response = \Zend_Json::decode($response);
             }
         } catch (\Exception $e) {
-            $storeId = $this->storeManagerInterface->getStore()->getId();
             $this->emarsysHelper->addErrorLog(
                 'API Test Connection Failed. ' . $e->getMessage(),
-                $storeId,
+                $this->storeManagerInterface->getStore()->getId(),
                 'ApiExport::_request()'
             );
         }
@@ -218,6 +213,7 @@ class ApiExport extends ZendClient
      * @param $apiCall
      * @param array $data
      * @return mixed|string|\Zend_Http_Response
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     public function post($apiCall, $data = [])
@@ -270,6 +266,7 @@ class ApiExport extends ZendClient
      *
      * @param array $headers
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function sampleDataCatalogExport($headers)
     {
@@ -301,12 +298,13 @@ class ApiExport extends ZendClient
      * @param int $store
      * @param array $headers
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function sampleDataSmartInsightExport($store = 0, $headers)
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManagerInterface->getStore($store);
-        $sampleResult = array();
+        $sampleResult = [];
 
         $emailAsIdentifierStatus = (bool)$store->getConfig(DATA::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {

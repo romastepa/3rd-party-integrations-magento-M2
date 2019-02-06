@@ -11,7 +11,6 @@ use Emarsys\Emarsys\{
     Helper\Cron as EmarsysCronHelper,
     Model\Logs
 };
-use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * Class ProductBulkExport
@@ -23,11 +22,6 @@ class ProductBulkExport
      * @var EmarsysCronHelper
      */
     protected $cronHelper;
-
-    /**
-     * @var Json
-     */
-    protected $json;
 
     /**
      * @var EmarsysProductModel
@@ -43,18 +37,15 @@ class ProductBulkExport
      * ProductBulkExport constructor.
      *
      * @param EmarsysCronHelper $cronHelper
-     * @param Json $json
      * @param EmarsysProductModel $emarsysProductModel
      * @param Logs $emarsysLogs
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
-        Json $json,
         EmarsysProductModel $emarsysProductModel,
         Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
-        $this->json = $json;
         $this->emarsysProductModel =  $emarsysProductModel;
         $this->emarsysLogs = $emarsysLogs;
     }
@@ -71,9 +62,10 @@ class ProductBulkExport
                 return;
             }
 
-            $data = $this->json->unserialize($currentCronInfo->getParams());
-            $includeBundle = $data['includeBundle'];
-            $excludedCategories = $data['excludeCategories'];
+            $data = \Zend_Json::decode($currentCronInfo->getParams());
+
+            $includeBundle = isset($data['includeBundle']) ? $data['includeBundle'] : null;
+            $excludedCategories = isset($data['excludeCategories']) ? $data['excludeCategories'] : null;
 
             $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL, $includeBundle, $excludedCategories);
 

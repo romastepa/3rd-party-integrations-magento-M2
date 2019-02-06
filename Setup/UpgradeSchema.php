@@ -17,6 +17,7 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 class UpgradeSchema implements UpgradeSchemaInterface
 {
     const EMARSYS_CRON_SUPPORT_TABLE = 'emarsys_cron_details';
+    const MAGENTO_CRON_SCHEDULE = 'cron_schedule';
 
     /**
      * {@inheritdoc}
@@ -50,6 +51,26 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     )
                     ->setComment('Catalog Product Export');
                 $setup->getConnection()->createTable($table);
+            }
+        }
+
+        if (version_compare($context->getVersion(), "1.0.13", "<")) {
+            $connection = $setup->getConnection();
+            $cronDetailsTable = $setup->getTable(self::EMARSYS_CRON_SUPPORT_TABLE);
+            if ($connection->isTableExists($cronDetailsTable)) {
+                $connection->addForeignKey(
+                    $setup->getFkName(
+                        self::EMARSYS_CRON_SUPPORT_TABLE,
+                        'schedule_id',
+                        self::MAGENTO_CRON_SCHEDULE,
+                        'schedule_id'
+                    ),
+                    $cronDetailsTable,
+                    'schedule_id',
+                    $setup->getTable('cron_schedule'),
+                    'schedule_id',
+                    \Magento\Framework\DB\Ddl\Table::ACTION_CASCADE
+                );
             }
         }
         $setup->endSetup();

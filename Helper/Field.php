@@ -25,7 +25,7 @@ class Field extends AbstractHelper
     /**
      * @var Data
      */
-    protected $dataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var Api
@@ -39,13 +39,13 @@ class Field extends AbstractHelper
 
     /**
      * Field constructor.
-     * @param Data $dataHelper
+     * @param Data $emarsysHelper
      * @param Api $api
      * @param Context $context
      * @param EmarsysResourceModelCustomer $customer
      */
     public function __construct(
-        Data $dataHelper,
+        Data $emarsysHelper,
         Api $api,
         Context $context,
         EmarsysResourceModelCustomer $customer
@@ -53,7 +53,7 @@ class Field extends AbstractHelper
         ini_set('default_socket_timeout', 5000);
         $this->logger = $context->getLogger();
         $this->api = $api;
-        $this->dataHelper = $dataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->customerResourceModel = $customer;
     }
 
@@ -65,12 +65,12 @@ class Field extends AbstractHelper
      */
     public function getEmarsysOptionSchema($storeId)
     {
-        $this->dataHelper->getEmarsysAPIDetails($storeId);
+        $this->emarsysHelper->getEmarsysAPIDetails($storeId);
         $emarsysContactFields = $this->customerResourceModel->getEmarsysContactFields($storeId);
         $emarsysFieldOptions = [];
         foreach ($emarsysContactFields as $emarsysField) {
             if ($emarsysField['type'] == "singlechoice" || $emarsysField['type'] == "multichoice") {
-                $response = $this->dataHelper->send('GET', 'field/' . $emarsysField['emarsys_field_id'] . '/choice');
+                $response = $this->emarsysHelper->send('GET', 'field/' . $emarsysField['emarsys_field_id'] . '/choice');
                 $jsonDecode = \Zend_Json::decode($response);
                 if (is_array($jsonDecode['data'])) {
                     foreach ($jsonDecode['data'] as $optionField) {

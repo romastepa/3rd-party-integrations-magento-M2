@@ -56,8 +56,7 @@ class CustomerRegisterSuccess implements ObserverInterface
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         try {
-            $event = $observer->getEvent();
-            $customer = $event->getCustomer();
+            $customer = $observer->getEvent()->getCustomer();
             $this->customerSession->setWebExtendCustomerEmail($customer->getEmail());
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(

@@ -17,6 +17,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Field as ResourceModelField;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping\Collection as EmarsyseventmappingCollection;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\Collection as EmarsyseventsCollection;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\Collection as EmarsysmagentoeventsCollection;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Email\Model\Template as EmailModelTemplate;
 
 /**
@@ -81,7 +82,13 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
     protected $_template = 'mapping/customer/view.phtml';
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * MappingButtons constructor.
+     *
      * @param Context $context
      * @param Config $edit
      * @param ResourceModelOrder $resourceModelOrder
@@ -93,6 +100,7 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
      * @param EmarsyseventmappingCollection $emarsyseventmappingCollection
      * @param EmarsysmagentoeventsCollection $emarsysmagentoeventsCollection
      * @param EmailModelTemplate $emailModelTemplate
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -107,9 +115,9 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
         EmarsyseventmappingCollection $emarsyseventmappingCollection,
         EmarsysmagentoeventsCollection $emarsysmagentoeventsCollection,
         EmailModelTemplate $emailModelTemplate,
+        EmarsysHelper $emarsysHelper,
         $data = []
-    )
-    {
+    ) {
         $this->emailModelTemplate = $emailModelTemplate;
         $this->scopeConfigInterface = $context->getScopeConfig();
         $this->emarsysmagentoeventsCollection = $emarsysmagentoeventsCollection;
@@ -121,6 +129,7 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
         $this->resourceModelField = $resourceModelField;
         $this->emarsyseventmappingCollection = $emarsyseventmappingCollection;
         $this->edit = $edit;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $data);
     }
 
@@ -130,8 +139,8 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
     public function getStoreId()
     {
         $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = 1;
+        if (!$storeId) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         return $storeId;
     }

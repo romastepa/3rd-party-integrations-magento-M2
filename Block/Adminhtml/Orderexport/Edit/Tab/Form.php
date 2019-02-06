@@ -12,7 +12,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Framework\App\Request\Http;
 use Magento\Backend\Block\Widget\Form\Generic;
-use Emarsys\Emarsys\Helper\Data as EmarsysDataHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Form
@@ -66,11 +66,11 @@ class Form extends Generic
         $values = [];
         $values['customer'] = 'Customer';
         $values['subscriber'] = 'Subscriber';
-        $smartInsightEnable = $store->getConfig(EmarsysDataHelper::XPATH_SMARTINSIGHT_ENABLED);
+        $smartInsightEnable = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_ENABLED);
         if ($smartInsightEnable == 1) {
             $values['order'] = 'Order';
         }
-        $productExportStatus = $store->getConfig(EmarsysDataHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED);
+        $productExportStatus = $store->getConfig(EmarsysHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED);
         if ($productExportStatus == 1 || $smartInsightEnable == 1) {
             $values['product'] = 'Product';
         }

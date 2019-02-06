@@ -59,7 +59,7 @@ class EmarsysEvent extends AbstractRenderer
      * @param BackendHelper $backendHelper
      * @param StoreManagerInterface $storeManager
      * @param UrlInterface $urlInterface
-     * @param EmarsysHelper $EmarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param EmarsysEventsCollectionFactory $EmarsyseventCollection
      */
     public function __construct(
@@ -67,14 +67,14 @@ class EmarsysEvent extends AbstractRenderer
         BackendHelper $backendHelper,
         StoreManagerInterface $storeManager,
         UrlInterface $urlInterface,
-        EmarsysHelper $EmarsysHelper,
+        EmarsysHelper $emarsysHelper,
         EmarsysEventsCollectionFactory $EmarsyseventCollection
     ) {
         $this->session = $session;
         $this->backendHelper = $backendHelper;
         $this->_storeManager = $storeManager;
         $this->emarsysEventCollection = $EmarsyseventCollection;
-        $this->emarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $urlInterface;
     }
 

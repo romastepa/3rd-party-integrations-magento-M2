@@ -489,9 +489,7 @@ class Order extends AbstractModel
             $logsArray['status'] = 'error';
             $logsArray['messages'] = __('Order export has an error. Please check.');
         } else {
-            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
-                $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
-            }
+            $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
             $logsArray['status'] = 'success';
             $logsArray['messages'] = __('Order export completed');
         }
@@ -676,9 +674,7 @@ class Order extends AbstractModel
             $logsArray['messages'] = __('Order export have an error. Please check');
         } else {
             //clean the queue table after SI export
-            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
-                $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
-            }
+            $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
             $logsArray['status'] = 'success';
             $logsArray['messages'] = __('Order export completed');
         }
@@ -769,6 +765,7 @@ class Order extends AbstractModel
      * @param $logsArray
      * @param null $entityName
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     public function sendRequestToEmarsys($filePath, $csvFileName, $logsArray, $entityName = NULL)
@@ -853,15 +850,23 @@ class Order extends AbstractModel
         //write data for orders into csv
         if ($orderCollection) {
             $dummySnapshot = $this->snapshotFactory->create();
+            /** @var \Magento\Sales\Model\Order $order */
             foreach ($orderCollection as $order) {
                 $orderId = $order->getRealOrderId();
                 $createdDate = date('Y-m-d', strtotime($order->getCreatedAt()));
                 $customerEmail = $order->getCustomerEmail();
                 $customerId = $order->getCustomerId();
 
+                $fullyInvoiced = false;
+                if ($order->getTotalPaid() == $order->getGrandTotal()) {
+                    $fullyInvoiced = true;
+                }
+
                 $parentId = null;
                 $items = $this->orderItemCollectionFactory->create(['entitySnapshot' => $dummySnapshot])
                     ->addFieldToFilter('order_id', ['eq' => $order->getId()]);
+
+                /** @var \Magento\Sales\Model\Order\Item $item */
                 foreach ($items as $item) {
                     if ($item->getProductType() == Configurable::TYPE_CODE) {
                         $parentId = $item->getId();
@@ -885,33 +890,31 @@ class Order extends AbstractModel
                     //set product sku/id
                     $values[] = $item->getSku();
 
-                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE)) {
-                        $parentId = null;
-                        $productOptions = $item->getProductOptions();
-                        if (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 1) {
-                            if ($taxIncluded) {
-                                $price = $useBaseCurrency ? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
-                            } else {
-                                $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
-                            }
-                        } elseif (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 0) {
-                            $price = 0;
-                        }
-                    } else {
-                        if ($taxIncluded) {
-                            $price = $useBaseCurrency ? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
-                        } else {
-                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
-                        }
-                    }
-
-                    $qty = (int)$item->getQtyInvoiced();
                     $rowTotal = 0;
-                    if ($qty > 0) {
-                        $rowTotal = $price;
+                    $qty = 0;
+                    if ($fullyInvoiced) {
+                        $qty = (int)$item->getQtyInvoiced();
+                        if ($taxIncluded) {
+                            $rowTotal = $useBaseCurrency
+                                ? $item->getBaseRowTotalInclTax()
+                                : $item->getRowTotalInclTax();
+                        } else {
+                            $rowTotal = $useBaseCurrency
+                                ? $item->getBaseRowTotal()
+                                : $item->getRowTotal();
+                        }
+                        if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE)) {
+                            $parentId = null;
+                            $productOptions = $item->getProductOptions();
+                            if (isset($productOptions['product_calculations'])
+                                && $productOptions['product_calculations'] == 0
+                            ) {
+                                $rowTotal = 0;
+                            }
+                        }
                     }
 
-                    if ($rowTotal != '') {
+                    if ($rowTotal) {
                         $values[] = number_format($rowTotal, 2, '.', '');
                     } else {
                         $values[] = 0;
@@ -937,17 +940,19 @@ class Order extends AbstractModel
         //write data for credit-memo into csv
         if ($creditMemoCollection) {
             $dummySnapshot = $this->snapshotFactory->create();
+            /** @var \Magento\Sales\Model\Order\Creditmemo $creditMemo */
             foreach ($creditMemoCollection as $creditMemo) {
                 $creditMemoOrder = $this->salesOrderFactory->create()->load($creditMemo->getOrderId());
-                $orderId = $creditMemoOrder->getIncrementId();
-                $orderEntityId = $creditMemoOrder->getId();
-                $createdDate = date('Y-m-d', strtotime($creditMemoOrder->getCreatedAt()));
-                $customerEmail = $creditMemoOrder->getCustomerEmail();
-                $customerId = $creditMemoOrder->getCustomerId();
+                $orderId = $creditMemo->getOrderId();
+                $createdDate = date('Y-m-d', strtotime($creditMemo->getCreatedAt()));
+                $customerEmail = $creditMemo->getOrder()->getCustomerEmail();
+                $customerId = $creditMemo->getOrder()->getCustomerId();
 
                 $parentId = null;
                 $items = $this->creditmemoItemCollectionFactory->create(['entitySnapshot' => $dummySnapshot])
                     ->addFieldToFilter('parent_id', ['eq' => $creditMemo->getId()]);
+
+                /** @var \Magento\Sales\Model\Order\Creditmemo\Item $item */
                 foreach ($items as $item) {
                     if ($item->getOrderItem()->getParentItem()) {
                         continue;
@@ -966,37 +971,34 @@ class Order extends AbstractModel
                         $values[] = $customerId;
                     }
                     //set product sku/id
-                    $values[] = $item->getSku();;
+                    $values[] = $item->getSku();
 
-                    if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE)) {
-                        $parentId = null;
-                        $productOptions = $item->getProductOptions();
-                        if (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 1) {
-                            if ($taxIncluded) {
-                                $price = $useBaseCurrency ? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
-                            } else {
-                                $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
-                            }
-                        } elseif (isset($productOptions['product_calculations']) && $productOptions['product_calculations'] == 0) {
-                            $price = 0;
-                        }
-                    } else {
-                        if ($taxIncluded) {
-                            $price = $useBaseCurrency ? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
-                        } else {
-                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
-                        }
-                    }
-
-                    $qty = (int)$item->getQty();
                     $rowTotal = 0;
+                    $qty = (int)$item->getQty();
                     if ($qty > 0) {
-                        $rowTotal = $price;
-                        $qty = '-' . $qty;
+                        $qty = '-' . abs($qty);
+                        if ($taxIncluded) {
+                            $rowTotal = $useBaseCurrency
+                                ? $item->getBaseRowTotalInclTax()
+                                : $item->getRowTotalInclTax();
+                        } else {
+                            $rowTotal = $useBaseCurrency
+                                ? $item->getBaseRowTotal()
+                                : $item->getRowTotal();
+                        }
+                        if (($item->getProductType() == \Magento\Bundle\Model\Product\Type::TYPE_CODE)) {
+                            $parentId = null;
+                            $productOptions = $item->getProductOptions();
+                            if (isset($productOptions['product_calculations'])
+                                && $productOptions['product_calculations'] == 0
+                            ) {
+                                $rowTotal = 0;
+                            }
+                        }
                     }
 
-                    if ($rowTotal != '') {
-                        $values[] = '-' . number_format($rowTotal, 2, '.', '');
+                    if ($rowTotal) {
+                        $values[] = '-' . number_format(abs($rowTotal), 2, '.', '');
                     } else {
                         $values[] = 0;
                     }
@@ -1009,42 +1011,6 @@ class Order extends AbstractModel
                         $magentoColumnName = trim($field['magento_column_name']);
                         if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemo->getData($magentoColumnName));
-                        }
-                    }
-                    if (!($creditMemoOrder->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
-                        fputcsv($this->handle, $values);
-                    }
-                }
-
-                //if creditmemo have adjustments
-                if ($creditMemo->getAdjustment() != 0) {
-                    $values = [];
-                    //set order id
-                    $values[] = $orderId;
-                    //set timestamp
-                    $values[] = $createdDate;
-
-                    //set customer
-                    if ($emailAsIdentifierStatus) {
-                        $values[] = $customerEmail;
-                    } else {
-                        $values[] = $customerId;
-                    }
-
-                    //set item id/sku
-                    $values[] = 0;
-
-                    //set Unit Prices
-                    $values[] = $creditMemo->getAdjustment();
-
-                    //set quantity
-                    $values[] = 1;
-
-                    foreach ($emarsysFields as $field) {
-                        $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
-                        $magentoColumnName = trim($field['magento_column_name']);
-                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
-                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemoOrder->getData($magentoColumnName));
                         }
                     }
                     if (!($creditMemoOrder->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
@@ -1114,13 +1080,9 @@ class Order extends AbstractModel
      * @param $exportFromDate
      * @param $exportTillDate
      * @return $this|array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getOrderCollection($mode, $storeId, $exportFromDate, $exportTillDate)
     {
-        $store = $this->storeManager->getStore($storeId);
-        $orderStatuses = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORT_ORDER_STATUS);
-        $orderStatuses = explode(',', $orderStatuses);
         $orderCollection = [];
 
         if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
@@ -1135,16 +1097,14 @@ class Order extends AbstractModel
                 }
                 $orderCollection = $this->emarsysOrderExportFactory->create()
                     ->addFieldToFilter('store_id', ['eq' => $storeId])
-                    ->addFieldToFilter('entity_id', ['in' => $orderIds]);
+                    ->addFieldToFilter('entity_id', ['in' => $orderIds])
+                    ->addFieldToFilter('status', ['nin' => \Magento\Sales\Model\Order::STATE_CLOSED]);
             }
         } else {
             $orderCollection = $this->emarsysOrderExportFactory->create()
                 ->addFieldToFilter('store_id', ['eq' => $storeId])
-                ->addOrder('created_at', 'ASC');
-
-            if ($orderStatuses != '') {
-                $orderCollection->addFieldToFilter('status', ['in' => $orderStatuses]);
-            }
+                ->addOrder('created_at', 'ASC')
+                ->addFieldToFilter('status', ['nin' => \Magento\Sales\Model\Order::STATE_CLOSED]);
 
             if (isset($exportFromDate) && isset($exportTillDate) && $exportFromDate != '' && $exportTillDate != '') {
                 $toTimezone = $this->timezone->getDefaultTimezone();
@@ -1186,6 +1146,7 @@ class Order extends AbstractModel
             $creditMemoQueueCollection = $this->orderQueueFactory->create()->getCollection()
                 ->addFieldToFilter('store_id', ['eq' => $storeId])
                 ->addFieldToFilter('entity_type_id', 2);
+
             if ($creditMemoQueueCollection && $creditMemoQueueCollection->getSize()) {
                 $creditMemoIds = [];
                 foreach ($creditMemoQueueCollection as $creditMemoQueue) {
@@ -1225,54 +1186,58 @@ class Order extends AbstractModel
 
     /**
      * clean Order Queue Table
+     *
+     * @param bool $orderCollection
+     * @param bool $creditMemoCollection
+     * @throws \Exception
      */
     public function cleanOrderQueueTable($orderCollection = false, $creditMemoCollection = false)
     {
         //remove order records from queue table
         if ($orderCollection) {
-            $orderIds = [];
-            foreach ($orderCollection as $order) {
-                $orderIds[] = $order['entity_id'];
-            }
+            $allOrderIds = $orderCollection->getAllIds();
+            $orderIdsArrays = array_chunk($allOrderIds, 100);
 
-            $orderExportStatusCollection = $this->orderExportStatusFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('order_id', ['in' => $orderIds]);
-            $allDataExport = $orderExportStatusCollection->getData();
+            foreach ($orderIdsArrays as $orderIds) {
+                $orderExportStatusCollection = $this->orderExportStatusFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('order_id', ['in' => $orderIds]);
 
-            foreach ($allDataExport as $orderExportStat) {
-                $eachOrderStat = $this->orderExportStatusFactory->create()->load($orderExportStat['id']);
-                $eachOrderStat->setExported(1);
-                $eachOrderStat->save();
+                foreach ($orderExportStatusCollection as $orderExportStat) {
+                    $eachOrderStat = $this->orderExportStatusFactory->create()->load($orderExportStat['id']);
+                    $eachOrderStat->setExported(1);
+                    $eachOrderStat->save();
+                }
+
+                $orderQueueCollection = $this->orderQueueFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('entity_id', ['in' => $orderIds])
+                    ->load();
+                $orderQueueCollection->walk('delete');
             }
-            $orderQueueCollection = $this->orderQueueFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('entity_id', ['in' => $orderIds])
-                ->load();
-            $orderQueueCollection->walk('delete');
         }
 
         //remove credit-memo records from queue table
         if ($creditMemoCollection) {
-            $creditmemoOrderIds = [];
-            foreach ($creditMemoCollection as $creditMemo) {
-                $creditmemoOrderIds[] = $creditMemo['entity_id'];
-            }
-            $creditmemoExportStatusCollection = $this->creditmemoExportStatusFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('order_id', ['in' => $creditmemoOrderIds]);
-            $allDataExport = $creditmemoExportStatusCollection->getData();
-            foreach ($allDataExport as $orderExportStat) {
-                $eachOrderStat = $this->creditmemoExportStatusFactory->create()->load($orderExportStat['id']);
-                $eachOrderStat->setExported(1);
-                $eachOrderStat->save();
-            }
+            $allCreditmemoOrderIds = $creditMemoCollection->getAllIds();
+            $creditmemoIdsArrays = array_chunk($allCreditmemoOrderIds, 100);
+            foreach ($creditmemoIdsArrays as $creditmemoIds) {
+                $creditmemoExportStatusCollection = $this->creditmemoExportStatusFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('order_id', ['in' => $creditmemoIds]);
 
-            $creditMemoQueueCollection = $this->orderQueueFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('entity_id', ['in' => $creditmemoOrderIds])
-                ->load();
-            $creditMemoQueueCollection->walk('delete');
+                foreach ($creditmemoExportStatusCollection as $orderExportStat) {
+                    $eachOrderStat = $this->creditmemoExportStatusFactory->create()->load($orderExportStat['id']);
+                    $eachOrderStat->setExported(1);
+                    $eachOrderStat->save();
+                }
+
+                $creditMemoQueueCollection = $this->orderQueueFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('entity_id', ['in' => $creditmemoIds])
+                    ->load();
+                $creditMemoQueueCollection->walk('delete');
+            }
         }
 
         return;

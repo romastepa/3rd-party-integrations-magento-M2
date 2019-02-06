@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Model\Api;
 use Emarsys\Emarsys\{
     Model\ResourceModel\Customer as customerResourceModel,
     Model\QueueFactory,
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Helper\Logs,
     Helper\Cron as EmarsysCronHelper,
     Logger\Logger as EmarsysLogger
@@ -41,9 +41,9 @@ class Subscriber
     protected $customerResourceModel;
 
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
-    protected $dataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var StoreManagerInterface
@@ -101,7 +101,7 @@ class Subscriber
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param Logs $logsHelper
-     * @param EmarsysHelperData $dataHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param StoreManagerInterface $storeManager
      * @param MessageManagerInterface $messageManager
      * @param ResourceConnection $resourceConnection
@@ -116,7 +116,7 @@ class Subscriber
         customerResourceModel $customerResourceModel,
         DateTime $date,
         Logs $logsHelper,
-        EmarsysHelperData $dataHelper,
+        EmarsysHelper $emarsysHelper,
         StoreManagerInterface $storeManager,
         MessageManagerInterface $messageManager,
         ResourceConnection $resourceConnection,
@@ -127,7 +127,7 @@ class Subscriber
         NewsletterHelperData $newsletterHelperData
     ) {
         $this->api = $api;
-        $this->dataHelper = $dataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->customerResourceModel = $customerResourceModel;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
@@ -145,17 +145,13 @@ class Subscriber
      * @param $subscribeId
      * @param $storeId
      * @param null $frontendFlag
-     * @param null $pageHandle
-     * @param int $cron
      * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function syncSubscriber(
         $subscribeId,
         $storeId,
-        $frontendFlag = null,
-        $pageHandle = null,
-        $cron = 0
+        $frontendFlag = null
     ) {
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
@@ -174,45 +170,42 @@ class Subscriber
 
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
-        $keyField = $store->getConfig(EmarsysHelperData::XPATH_EMARSYS_UNIQUE_FIELD);
-        if ($keyField == 'email') {
-            $keyValue = $objSubscriber->getSubscriberEmail();
-        } elseif ($keyField == 'magento_id') {
-            $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId();
-        } else {
-            $keyValue = $objSubscriber->getSubscriberEmail() . "#" . $store->getWebsiteId() . "#" . $objSubscriber->getStoreId();
-        }
-
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
         $buildRequest = [];
-        $buildRequest['key_id'] = $uniqueIdKey;
-        $buildRequest[$uniqueIdKey] = $keyValue;
-
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+        $buildRequest['key_id'] = $emailKey;
         if ($emailKey && $objSubscriber->getSubscriberEmail()) {
             $buildRequest[$emailKey] = $objSubscriber->getSubscriberEmail();
         }
 
-        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
+        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
         if ($subscriberIdKey && $objSubscriber->getId()) {
             $buildRequest[$subscriberIdKey] = $objSubscriber->getId();
         }
 
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
         if ($customerIdKey && $objSubscriber->getCustomerId()) {
             $buildRequest[$customerIdKey] = $objSubscriber->getCustomerId();
         }
 
         // Query to get opt-in Id in emarsys from magento table
-        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
+        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
         $subscriberStatus = $objSubscriber->getSubscriberStatus();
 
-        if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
-            $buildRequest[$optInEmarsysId] = '';
-        } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+        //return single / double opt-in
+        $optInType = $store->getConfig(EmarsysHelper::XPATH_OPTIN_EVERYPAGE_STRATEGY);
+
+        if ($optInType == 'singleOptIn' && !$subscriberStatus) {
             $buildRequest[$optInEmarsysId] = 1;
+        } elseif ($optInType == 'doubleOptIn' && !$subscriberStatus) {
+            $buildRequest[$optInEmarsysId] = '';
         } else {
-            $buildRequest[$optInEmarsysId] = 2;
+            if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
+                $buildRequest[$optInEmarsysId] = '';
+            } elseif ($subscriberStatus == \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+                $buildRequest[$optInEmarsysId] = 1;
+            } else {
+                $buildRequest[$optInEmarsysId] = 2;
+            }
         }
 
         $errorMsg = 0;
@@ -238,7 +231,7 @@ class Subscriber
                 $logsArray['message_type'] = 'Success';
                 $logsArray['description'] = "Created subscriber '" . $objSubscriber->getSubscriberEmail() . "' in Emarsys succcessfully " . $res;
             } else {
-                $this->dataHelper->syncFail($subscribeId, $websiteId, $storeId, $cron, 2);
+                $this->emarsysHelper->syncFail($subscribeId, $websiteId, $storeId, 0, 2);
                 $logsArray['message_type'] = 'Error';
                 $logsArray['description'] = $objSubscriber->getSubscriberEmail() . " - " . $optInResult['body']['replyText'] . $res;
                 $errorMsg = 1;
@@ -284,6 +277,10 @@ class Subscriber
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
 
+        if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
+            return;
+        }
+
         //initial logging of the process
         $logsArray['job_code'] = 'subscriber';
         $logsArray['status'] = 'started';
@@ -309,22 +306,17 @@ class Subscriber
         $this->logsHelper->logs($logsArray);
 
         //prepare subscribers data
-        $keyField = $this->dataHelper->getContactUniqueField($websiteId);
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
-        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
-        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelperData::OPT_IN, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
+        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
 
         $subscriberData = $this->prepareSubscribersInfo(
             $storeId,
-            $websiteId,
             $exportMode,
-            $keyField,
             $emailKey,
             $subscriberIdKey,
             $customerIdKey,
-            $uniqueIdKey,
             $optInEmarsysId
         );
 
@@ -332,7 +324,7 @@ class Subscriber
             //Subscribers data present
 
             //create chunks for easy data sync
-            $subscriberChunks = array_chunk($subscriberData, EmarsysHelperData::BATCH_SIZE);
+            $subscriberChunks = array_chunk($subscriberData, EmarsysHelper::BATCH_SIZE);
             foreach ($subscriberChunks as $subscriberChunk) {
                 //prepare subscribers payload
                 $buildRequest = $this->prepareSubscribersPayload($subscriberChunk, $emailKey);
@@ -361,7 +353,7 @@ class Subscriber
 
                         if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {
                             //clean subscribers from the queue
-                            $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
+                            $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
                             foreach ($subscriberChunk as $value) {
                                 $this->queueModel->create()->load($value[$subscriberIdKey], 'entity_id')->delete();
                             }
@@ -383,12 +375,13 @@ class Subscriber
             //no Subscribers data found
             $logsArray['emarsys_info'] = 'No Subscribers Data Found.';
             $logsArray['action'] = 'Magento to Emarsys';
-            $logsArray['message_type'] = 'Error';
+            $logsArray['message_type'] = 'Success';
             $logsArray['description'] = __('No Subscribers found for the store with store id %1.', $storeId);
             $this->logsHelper->logs($logsArray);
             $this->messageManager->addErrorMessage(
                 __('No Subscribers found for the store with store id %1.', $storeId)
             );
+            $errorStatus = false;
         }
 
         if ($errorStatus) {
@@ -406,25 +399,19 @@ class Subscriber
 
     /**
      * @param $storeId
-     * @param $websiteId
      * @param $exportMode
-     * @param $keyField
      * @param $emailKey
      * @param $subscriberIdKey
      * @param $customerIdKey
-     * @param $uniqueIdKey
      * @param $optInEmarsysId
      * @return array
      */
     public function prepareSubscribersInfo(
         $storeId,
-        $websiteId,
         $exportMode,
-        $keyField,
         $emailKey,
         $subscriberIdKey,
         $customerIdKey,
-        $uniqueIdKey,
         $optInEmarsysId
     ) {
         $websiteStoreIds = [];
@@ -433,72 +420,43 @@ class Subscriber
 
         if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {
             $newsLetSubTableName = $this->resourceConnection->getTableName('newsletter_subscriber');
-            $queueCollection = $this->queueModel->create()->getCollection();
-            $queueCollection->addFieldToSelect('entity_id');
-            $queueCollection->addFieldToFilter('main_table.entity_type_id', 2);
-            $queueCollection->addFieldToFilter('main_table.store_id', $storeId);
-            $queueCollection->getSelect()->joinLeft(
+            $subscriberCollection = $this->queueModel->create()->getCollection();
+            $subscriberCollection->addFieldToSelect('entity_id');
+            $subscriberCollection->addFieldToFilter('main_table.entity_type_id', 2);
+            $subscriberCollection->addFieldToFilter('main_table.store_id', $storeId);
+            $subscriberCollection->getSelect()->joinLeft(
                 ['newsletter_subscriber' => $newsLetSubTableName],
                 'main_table.entity_id = newsletter_subscriber.subscriber_id',
                 ['subscriber_email', 'subscriber_confirm_code', 'subscriber_status', 'customer_id']
             );
 
-            $this->updateLastModifiedContacts($queueCollection, $storeId);
-
-            foreach ($queueCollection as $subscriber) {
-                $values = [];
-                $values[$emailKey] = $subscriber->getSubscriberEmail();
-                $values[$subscriberIdKey] = $subscriber->getEntityId();
-                if ($subscriber->getCustomerId()) {
-                    $values[$customerIdKey] = $subscriber->getCustomerId();
-                }
-
-                if ($keyField == 'email') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail();
-                } elseif ($keyField == 'magento_id') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId;
-                } else {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId . "#" . $storeId;
-                }
-
-                if ($subscriber['subscriber_status'] != 1) {
-                    $values[$optInEmarsysId] = '2';
-                } else {
-                    $values[$optInEmarsysId] = '1';
-                }
-                $subscriberData[] = $values;
-            }
+            $this->updateLastModifiedContacts($subscriberCollection, $storeId);
         } else {
             $subscriberCollection = $this->subscriberFactory->create()->getCollection()
                 ->addFieldToFilter('store_id', $storeId);
-            foreach ($subscriberCollection as $subscriber) {
-                $values = [];
-                $values[$emailKey] = $subscriber->getSubscriberEmail();
-                $values[$subscriberIdKey] = $subscriber->getEntityId();
-                if ($subscriber->getCustomerId()) {
-                    $values[$customerIdKey] = $subscriber->getCustomerId();
-                }
-                if ($keyField == 'email') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail();
-                } elseif ($keyField == 'magento_id') {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId;
-                } else {
-                    $values[$uniqueIdKey] = $subscriber->getSubscriberEmail() . "#" . $websiteId . "#" . $storeId;
-                }
-
-                $subscriberStatus = $subscriber->getSubscriberStatus();
-
-                if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
-                    $values[$optInEmarsysId] = '';
-                } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
-                    $values[$optInEmarsysId] = 1;
-                } else {
-                    $values[$optInEmarsysId] = 2;
-                }
-
-                $subscriberData[] = $values;
-            }
         }
+
+        foreach ($subscriberCollection as $subscriber) {
+            $values = [];
+            $values[$emailKey] = $subscriber->getSubscriberEmail();
+            $values[$subscriberIdKey] = $subscriber->getId();
+            if ($subscriber->getCustomerId()) {
+                $values[$customerIdKey] = $subscriber->getCustomerId();
+            }
+
+            $subscriberStatus = $subscriber->getSubscriberStatus();
+
+            if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
+                $values[$optInEmarsysId] = '';
+            } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+                $values[$optInEmarsysId] = 1;
+            } else {
+                $values[$optInEmarsysId] = 2;
+            }
+
+            $subscriberData[] = $values;
+        }
+
 
         return $subscriberData;
     }
@@ -527,24 +485,24 @@ class Subscriber
     {
         try {
             $currentPageNumber = 1;
-            $collection->setPageSize(EmarsysHelperData::BATCH_SIZE);
+            $collection->setPageSize(EmarsysHelper::BATCH_SIZE);
             $lastPageNumber = $collection->getLastPageNumber();
 
             while ($currentPageNumber <= $lastPageNumber) {
                 if ($currentPageNumber != 1) {
-                    $collection->setPageSize(EmarsysHelperData::BATCH_SIZE)
+                    $collection->setPageSize(EmarsysHelper::BATCH_SIZE)
                         ->setCurPage($currentPageNumber);
                 }
                 if (count($collection)) {
                     $subscriberIds = $collection->getColumnValues('entity_id');
                     if (count($subscriberIds)) {
-                        $this->dataHelper->backgroudTimeBasedOptinSync($subscriberIds, $storeId);
+                        $this->emarsysHelper->backgroudTimeBasedOptinSync($subscriberIds, $storeId);
                     }
                 }
                 $currentPageNumber = $currentPageNumber + 1;
             }
         } catch (\Exception $e) {
-            $this->dataHelper->addErrorLog($e->getMessage(), $storeId, 'updateLastModifiedContacts($collection,$storeId)');
+            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'updateLastModifiedContacts($collection,$storeId)');
         }
     }
 }

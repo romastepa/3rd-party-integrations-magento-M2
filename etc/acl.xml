@@ -11,8 +11,8 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
-                <resource id="Emarsys_Emarsys::emarsys" title="Emarsys Connect" translate="title" sortOrder="100">
-                    <resource id="Emarsys_Emarsys::settings" title="Settings" translate="title" sortOrder="10">
+                <resource id="Emarsys_Emarsys::emarsys" title="Emarsys Connect" sortOrder="100">
+                    <resource id="Emarsys_Emarsys::settings" title="Settings" sortOrder="10">
                         <resource id="Emarsys_Emarsys::emarsys_setting_connection" title="Connection" sortOrder="10"/>
                         <resource id="Emarsys_Emarsys::emarsys_setting_synchronization" title="Contact Synchronization"
                                   sortOrder="20"/>
@@ -24,16 +24,16 @@
                         <resource id="Emarsys_Emarsys::emarsys_web_extend" title="Web Extend" sortOrder="40"/>
                         <resource id="Emarsys_Emarsys::emarsys_emarsys_admin_logs" title="Logs" sortOrder="40"/>
                     </resource>
-                    <resource id="Emarsys_Emarsys::mapping" title="Mappings" translate="title" sortOrder="20">
-                        <resource id="Emarsys_Emarsys::emarsys_customer_mapping" title="Customer Mapping" translate="title" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_field_mapping" title="Customer-Field Mapping" translate="title" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_emarsys_product_mapping" title="Product Mapping" translate="title" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_emarsys_event_mapping" title="Event Mapping" translate="title" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_order_mapping" title="Order Mapping" translate="title" sortOrder="10"/>
+                    <resource id="Emarsys_Emarsys::mapping" title="Mappings" sortOrder="20">
+                        <resource id="Emarsys_Emarsys::emarsys_customer_mapping" title="Customer Mapping" sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_field_mapping" title="Customer-Field Mapping" sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_emarsys_product_mapping" title="Product Mapping" sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_emarsys_event_mapping" title="Event Mapping" sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_order_mapping" title="Order Mapping" sortOrder="10"/>
                     </resource>
-                    <resource id="Emarsys_Emarsys::operations" title="Operations" translate="title" sortOrder="30"/>
-                    <resource id="Emarsys_Emarsys::help" title="Help" translate="title" sortOrder="40"/>
-                    <resource id="Emarsys_Emarsys::support" title="Support" translate="title" sortOrder="40"/>
+                    <resource id="Emarsys_Emarsys::operations" title="Operations" sortOrder="30"/>
+                    <resource id="Emarsys_Emarsys::help" title="Help" sortOrder="40"/>
+                    <resource id="Emarsys_Emarsys::support" title="Support" sortOrder="40"/>
                 </resource>
             </resource>
         </resources>

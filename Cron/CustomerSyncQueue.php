@@ -10,6 +10,7 @@ use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Model\Api\Contact;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class CustomerSyncQueue
@@ -62,6 +63,11 @@ class CustomerSyncQueue
             $stores = $this->storeManagerInterface->getStores(false);
 
             foreach ($stores as $store) {
+                if (!$store->getConfig(EmarsysHelper::XPATH_EMARSYS_ENABLED)
+                    || !$store->getConfig(EmarsysHelper::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
+                ) {
+                    continue;
+                }
                 $storeId = $store->getStoreId();
                 $websiteId = $store->getWebsiteId();
 

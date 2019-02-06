@@ -7,16 +7,23 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Field;
+use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
+use Magento\Backend\Helper\Data;
+use Magento\Backend\Model\Session;
 use Magento\Framework\DataObject;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class FieldOption
  * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer
  */
-class FieldOption extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
+class FieldOption extends AbstractRenderer
 {
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -26,45 +33,48 @@ class FieldOption extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abs
     protected $collectionFactory;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Sync
-     */
-    protected $syncResourceModel;
-
-    /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Field
+     * @var Field
      */
     protected $resourceModelField;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $_storeManager;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * FieldOption constructor.
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Session $session
+     * @param CollectionFactory $collectionFactory
+     * @param Data $backendHelper
+     * @param Field $resourceModelField
+     * @param StoreManagerInterface $storeManager
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
-        \Magento\Backend\Model\Session $session,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory,
-        \Magento\Backend\Helper\Data $backendHelper,
-        \Emarsys\Emarsys\Model\ResourceModel\Field $resourceModelField,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        Session $session,
+        CollectionFactory $collectionFactory,
+        Data $backendHelper,
+        Field $resourceModelField,
+        StoreManagerInterface $storeManager,
+        EmarsysHelper $emarsysHelper
     ) {
         $this->session = $session;
         $this->collectionFactory = $collectionFactory;
         $this->backendHelper = $backendHelper;
         $this->resourceModelField = $resourceModelField;
         $this->_storeManager = $storeManager;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
@@ -76,13 +86,13 @@ class FieldOption extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abs
         $optionId = $row->getData('option_id');
         $url = $this->backendHelper->getUrl('*/*/saveRow');
         $columnAttr = 'emarsys_field_option';
-        $html = '<select name="emarsys_field_option" class="admin__control-select" style="width:350px;" onchange="changeValue(\'' . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>
-            <option value=" ">Please Select</option>';
+        $html = '<select name="emarsys_field_option" class="admin__control-select" style="width:350px;" onchange="changeValue(\'' . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>';
+        $html .= '<option value=" ">Please Select</option>';
         $session = $this->session->getData();
         if (isset($session['store'])) {
             $storeId = $session['store'];
         } else {
-            $storeId = 1;
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $emarsysContactFields = $this->resourceModelField->getEmarsysFieldOption($storeId);
         foreach ($emarsysContactFields as $field) {

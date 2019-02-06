@@ -52,7 +52,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
      * @param string $method
      * @param array $data
      * @param bool $jsonDecode
-     * @return array
+     * @return array|string
      * @throws \Exception
      * @throws \Zend_Http_Client_Exception
      */

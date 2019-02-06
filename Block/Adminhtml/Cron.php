@@ -137,10 +137,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
                 $count++;
             }
         }
-        $storeId = $this->getRequest()->getParam('store');
-        if ($storeId == 0) {
-            $storeId = 1;
-        }
+
         $this->setCollection($collection);
         return parent::_prepareCollection();
     }

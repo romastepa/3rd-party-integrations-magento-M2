@@ -14,7 +14,6 @@ use Magento\Eav\Model\Entity\Attribute;
 use Magento\Framework\Data\Collection;
 use Magento\Framework\DataObjectFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Event;
-use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
 use Emarsys\Emarsys\Model\PlaceholdersFactory;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Module\Manager as ModuleManager;
@@ -83,6 +82,16 @@ class Grid extends Extended
     protected $formKey;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var PlaceholdersFactory
+     */
+    protected $emarsysEventPlaceholderMappingFactory;
+
+    /**
      * Grid constructor.
      * @param Context $context
      * @param Data $backendHelper
@@ -91,9 +100,8 @@ class Grid extends Extended
      * @param Collection $dataCollection
      * @param DataObjectFactory $dataObjectFactory
      * @param Event $resourceModelEvent
-     * @param EmarsyseventmappingFactory $EmarsyseventmappingFactory
      * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
-     * @param EmarsysHelper $EmarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param ModuleManager $moduleManager
      * @param MessageManagerInterface $messageManager
      * @param ResponseFactory $responseFactory
@@ -107,9 +115,8 @@ class Grid extends Extended
         Collection $dataCollection,
         DataObjectFactory $dataObjectFactory,
         Event $resourceModelEvent,
-        EmarsyseventmappingFactory $EmarsyseventmappingFactory,
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
-        EmarsysHelper $EmarsysHelper,
+        EmarsysHelper $emarsysHelper,
         ModuleManager $moduleManager,
         MessageManagerInterface $messageManager,
         ResponseFactory $responseFactory,
@@ -120,13 +127,12 @@ class Grid extends Extended
         $this->attribute = $attribute;
         $this->moduleManager = $moduleManager;
         $this->backendHelper = $backendHelper;
-        $this->EmarsyseventmappingFactory = $EmarsyseventmappingFactory;
         $this->emarsysEventPlaceholderMappingFactory = $emarsysEventPlaceholderMappingFactory;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
         $this->resourceModelEvent = $resourceModelEvent;
         $this->_storeManager = $context->getStoreManager();
-        $this->EmarsysHelper = $EmarsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->_url = $context->getUrlBuilder();
         $this->_responseFactory = $responseFactory;
         $this->_messageManager = $messageManager;
@@ -141,8 +147,8 @@ class Grid extends Extended
     {
         $storeId = $this->getRequest()->getParam('store');
         $mappingId = $this->getRequest()->getParam('mapping_id');
-        if (!isset($storeId)) {
-            $storeId = 1;
+        if (!$storeId) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $EventMappingCollection = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
                                     ->addFieldToFilter("store_id", $storeId)
@@ -155,6 +161,7 @@ class Grid extends Extended
 
     /**
      * @return void
+     * @throws \Exception
      */
     protected function _construct()
     {
@@ -162,9 +169,8 @@ class Grid extends Extended
         $this->session->setData('gridData', '');
         $mapping_id = $this->getRequest()->getParam('mapping_id');
         $storeId = $this->getRequest()->getParam('store_id');
-
-        if (!isset($storeId)) {
-            $storeId = 1;
+        if (!$storeId) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
 
         $emarsysEventPlaceholderMappingColl = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection();
@@ -172,7 +178,7 @@ class Grid extends Extended
         $emarsysEventPlaceholderMappingColl->addFieldToFilter('store_id', $storeId);
 
         if (!$emarsysEventPlaceholderMappingColl->getSize()) {
-            $val = $this->EmarsysHelper->insertFirstTimeMappingPlaceholders($mapping_id, $storeId);
+            $val = $this->emarsysHelper->insertFirstTimeMappingPlaceholders($mapping_id, $storeId);
             if ($val == "") {
                 $this->_messageManager->addErrorMessage(__("Please Assign Email Template to event"));
                 $RedirectUrl = $this->_url->getUrl('emarsys_emarsys/mapping_event/index', ["store_id" => $storeId]);
@@ -183,6 +189,7 @@ class Grid extends Extended
 
     /**
      * @return $this
+     * @throws \Exception
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function _prepareColumns()

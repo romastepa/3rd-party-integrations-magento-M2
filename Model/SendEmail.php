@@ -17,7 +17,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
+    Helper\Data as EmarsysHelper,
     Helper\Logs as EmarsysLogsHelper,
     Model\ResourceModel\Customer as customerResourceModel,
     Model\Api\Api as EmarsysModelApiApi
@@ -30,7 +30,7 @@ use Emarsys\Emarsys\{
 class SendEmail extends AbstractModel
 {
     /**
-     * @var EmarsysHelperData
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -73,7 +73,7 @@ class SendEmail extends AbstractModel
      * SendEmail constructor.
      * @param Context $context
      * @param Registry $registry
-     * @param EmarsysHelperData $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param MessageInterface $message
@@ -88,7 +88,7 @@ class SendEmail extends AbstractModel
     public function __construct(
         Context $context,
         Registry $registry,
-        EmarsysHelperData $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         customerResourceModel $customerResourceModel,
         DateTime $date,
         MessageInterface $message,
@@ -166,7 +166,7 @@ class SendEmail extends AbstractModel
                         $externalId = $message->getRecipients()[0];
                         $buildRequest = [];
 
-                        $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+                        $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
                         $buildRequest[$buildRequest['key_id']] = $externalId;
 
                         $customerId = $this->customerResourceModel->checkCustomerExistsInMagento(
@@ -175,7 +175,7 @@ class SendEmail extends AbstractModel
                         );
 
                         if (!empty($customerId)) {
-                            $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+                            $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
                             $buildRequest[$customerIdKey] = $customerId;
                         }
 
@@ -186,20 +186,13 @@ class SendEmail extends AbstractModel
                         $subscribeId = $this->customerResourceModel->getSubscribeIdFromEmail($data);
 
                         if (!empty($subscribeId)) {
-                            $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::SUBSCRIBER_ID, $storeId);
+                            $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
                             $buildRequest[$subscriberIdKey] = $subscribeId;
                         }
 
-                        $keyField = $this->emarsysHelper->getContactUniqueField($websiteId);
-                        $uniqueIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_UNIQUE_ID, $storeId);
-                        $buildRequest['key_id'] = $uniqueIdKey;
-                        if ($keyField == 'email') {
-                            $buildRequest[$uniqueIdKey] = $externalId;
-                        } elseif ($keyField == 'magento_id') {
-                            $buildRequest[$uniqueIdKey] = $externalId . "#" . $websiteId;
-                        } elseif ($keyField == 'unique_id') {
-                            $buildRequest[$uniqueIdKey] = $externalId . "#" . $websiteId . "#" . $storeId;
-                        }
+                        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+                        $buildRequest['key_id'] = $emailKey;
+                        $buildRequest[$emailKey] = $externalId;
 
                         //log information that is about to send for contact sync
                         $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);

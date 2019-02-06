@@ -8,14 +8,30 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
 
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysHelper,
+    Model\CustomerMagentoAttsFactory,
+    Model\ResourceModel\Customer
+};
+use Magento\{
+    Backend\Block\Template\Context,
+    Backend\Helper\Data as BackendHelper,
+    Eav\Model\Entity\Attribute,
+    Eav\Model\Entity\Type,
+    Framework\Data\Collection,
+    Framework\DataObjectFactory,
+    Framework\Module\Manager
+};
+
 /**
  * Class Grid
+ *
  * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer
  */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
-     * @var \Magento\Framework\Module\Manager
+     * @var Manager
      */
     protected $moduleManager;
 
@@ -30,80 +46,77 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $session;
 
     /**
-     * @var \Magento\Backend\Helper\Data
-     */
-    protected $backendHelper;
-
-    /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer
+     * @var Customer
      */
     protected $resourceModelCustomer;
 
     /**
-     * @var \Magento\Framework\Data\Collection
+     * @var Collection
      */
     protected $dataCollection;
 
     /**
-     * @var \Magento\Framework\DataObjectFactory
+     * @var DataObjectFactory
      */
     protected $dataObjectFactory;
 
     /**
-     * @var \Magento\Eav\Model\Entity\Type
+     * @var Type
      */
     protected $entityType;
 
     /**
-     * @var \Magento\Eav\Model\Entity\Attribute
+     * @var Attribute
      */
     protected $attribute;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
-     * @var \Emarsys\Emarsys\Model\CustomerMagentoAttsFactory
+     * @var CustomerMagentoAttsFactory
      */
     protected $customerMagentoAttsFactory;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Grid constructor.
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Magento\Eav\Model\Entity\Type $entityType
-     * @param \Magento\Eav\Model\Entity\Attribute $attribute
-     * @param \Magento\Framework\Data\Collection $dataCollection
-     * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer
-     * @param \Magento\Framework\Module\Manager $moduleManager
-     * @param \Emarsys\Emarsys\Model\CustomerMagentoAttsFactory $customerMagentoAttsFactory
+     *
+     * @param Context $context
+     * @param BackendHelper $backendHelper
+     * @param Type $entityType
+     * @param Attribute $attribute
+     * @param Collection $dataCollection
+     * @param DataObjectFactory $dataObjectFactory
+     * @param Customer $resourceModelCustomer
+     * @param Manager $moduleManager
+     * @param CustomerMagentoAttsFactory $customerMagentoAttsFactory
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Eav\Model\Entity\Type $entityType,
-        \Magento\Eav\Model\Entity\Attribute $attribute,
-        \Magento\Framework\Data\Collection $dataCollection,
-        \Magento\Framework\DataObjectFactory $dataObjectFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Customer $resourceModelCustomer,
-        \Magento\Framework\Module\Manager $moduleManager,
-        \Emarsys\Emarsys\Model\CustomerMagentoAttsFactory $customerMagentoAttsFactory, 
+        Context $context,
+        BackendHelper $backendHelper,
+        Type $entityType,
+        Attribute $attribute,
+        Collection $dataCollection,
+        DataObjectFactory $dataObjectFactory,
+        Customer $resourceModelCustomer,
+        Manager $moduleManager,
+        CustomerMagentoAttsFactory $customerMagentoAttsFactory,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
-        $this->session               = $context->getBackendSession();
-        $this->entityType            = $entityType;
-        $this->attribute             = $attribute;
-        $this->moduleManager         = $moduleManager;
-        $this->backendHelper         = $backendHelper;
-        $this->dataCollection        = $dataCollection;
-        $this->dataObjectFactory     = $dataObjectFactory;
+        $this->session = $context->getBackendSession();
+        $this->entityType = $entityType;
+        $this->attribute = $attribute;
+        $this->moduleManager = $moduleManager;
+        $this->dataCollection = $dataCollection;
+        $this->dataObjectFactory = $dataObjectFactory;
         $this->resourceModelCustomer = $resourceModelCustomer;
-        $this->_storeManager         = $context->getStoreManager();
         $this->customerMagentoAttsFactory = $customerMagentoAttsFactory;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -114,8 +127,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     {
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = 1;
+        if (!$storeId) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $collection = $this->customerMagentoAttsFactory->create()->getCollection()
             ->addFieldToFilter('store_id', ['eq' => $storeId]);
@@ -126,6 +139,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return $this
+     * @throws \Exception
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function _prepareColumns()
@@ -162,8 +176,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_construct();
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = 1;
+        if (!$storeId) {
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $this->session->setData('store', $storeId);
         $mappingExists = $this->resourceModelCustomer->customerMappingExists($storeId);

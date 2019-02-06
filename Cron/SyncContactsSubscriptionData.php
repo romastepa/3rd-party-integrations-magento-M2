@@ -8,7 +8,7 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\{
-    Helper\Data as EmarsysDataHelper,
+    Helper\Data as EmarsysHelper,
     Helper\Logs,
     Model\ResourceModel\Customer as EmarsysCustomerResourceModel,
     Model\Logs as EmarsysModelLogs
@@ -56,9 +56,9 @@ class SyncContactsSubscriptionData
     protected $emarsysLogs;
 
     /**
-     * @var EmarsysDataHelper
+     * @var EmarsysHelper
      */
-    protected $emarsysDataHelper;
+    protected $emarsysHelper;
 
     /**
      * @var EmarsysCustomerResourceModel
@@ -93,7 +93,7 @@ class SyncContactsSubscriptionData
      * @param Logs $logsHelper
      * @param ScopeConfigInterface $scopeConfig
      * @param EmarsysModelLogs $emarsysLogs
-     * @param EmarsysDataHelper $emarsysDataHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param EmarsysCustomerResourceModel $customerResourceModel
      * @param Http $request
      * @param Registry $registry
@@ -106,7 +106,7 @@ class SyncContactsSubscriptionData
         Logs $logsHelper,
         ScopeConfigInterface $scopeConfig,
         EmarsysModelLogs $emarsysLogs,
-        EmarsysDataHelper $emarsysDataHelper,
+        EmarsysHelper $emarsysHelper,
         EmarsysCustomerResourceModel $customerResourceModel,
         Http $request,
         Registry $registry,
@@ -118,7 +118,7 @@ class SyncContactsSubscriptionData
         $this->logsHelper = $logsHelper;
         $this->scopeConfig = $scopeConfig;
         $this->emarsysLogs = $emarsysLogs;
-        $this->emarsysDataHelper = $emarsysDataHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->customerResourceModel = $customerResourceModel;
         $this->request = $request;
         $this->registry = $registry;
@@ -132,8 +132,13 @@ class SyncContactsSubscriptionData
     public function execute()
     {
         $queue = [];
+
+        /** @var  \Magento\Store\Model\Website $website */
         $websites = $this->storeManager->getWebsites();
         foreach ($websites as $website) {
+            if (!$this->emarsysHelper->isContactsSynchronizationEnable($website->getId())) {
+                continue;
+            }
             $logsArray['job_code'] = 'Sync contact Export';
             $logsArray['status'] = 'started';
             $logsArray['messages'] = __('Running Sync Contacts Subscription Data');
@@ -142,20 +147,24 @@ class SyncContactsSubscriptionData
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['run_mode'] = 'Automatic';
             $logsArray['auto_log'] = 'Complete';
-            $logsArray['website_id'] = $website->getWebsiteId();
-            $logsArray['store_id'] = $website->getDefaultStore()->getId();
+            $logsArray['website_id'] = $website->getId();
+            $logsArray['store_id'] = $website->getDefaultGroup()->getDefaultStoreId();
             $logId = $this->logsHelper->manualLogs($logsArray);
             try {
-                $enable = $this->scopeConfig->getValue('emarsys_settings/emarsys_setting/enable', 'websites', $website->getWebsiteId());
+                $enable = $website->getConfig('emarsys_settings/emarsys_setting/enable');
                 if ($enable) {
-                    $emarsysUserName = $this->scopeConfig->getValue('emarsys_settings/emarsys_setting/emarsys_api_username', 'websites', $website->getWebsiteId());
+                    $emarsysUserName = $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_username');
                     if (!array_key_exists($emarsysUserName, $queue)) {
                         $queue[$emarsysUserName] = [];
                     }
                     $queue[$emarsysUserName][] = $website->getWebsiteId();
                 }
             } catch (\Exception $e) {
-                $this->emarsysLogs->addErrorLog($e->getMessage(), $this->storeManager->getStore()->getId(), 'syncContactsSubscriptionData(helper/data)');
+                $this->emarsysLogs->addErrorLog(
+                    $e->getMessage(),
+                    0,
+                    'syncContactsSubscriptionData(helper/data)'
+                );
             }
         }
         if (!empty($queue)) {
@@ -184,7 +193,7 @@ class SyncContactsSubscriptionData
             $logsArray['run_mode'] = 'Automatic';
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = current($websiteId);
-            $logsArray['store_id'] = $this->storeManager->getWebsite(current($websiteId))->getDefaultStore()->getId();
+            $logsArray['store_id'] = $this->storeManager->getWebsite(current($websiteId))->getDefaultGroup()->getDefaultStoreId();
             $logId = $this->logsHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
             $logsArray['action'] = 'synced to emarsys';
@@ -195,9 +204,9 @@ class SyncContactsSubscriptionData
             if ($isTimeBased) {
                 $timeRange = [$dt->subHour(1)->toString('YYYY-MM-dd'), $dt->addHour(1)->toString('YYYY-MM-dd')];
             }
-            $storeId = $this->storeManager->getWebsite(current($websiteId))->getDefaultStore()->getId();
-            $key_id = $this->customerResourceModel->getKeyId(EmarsysDataHelper::SUBSCRIBER_ID, $storeId);
-            $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysDataHelper::OPT_IN, $storeId);
+            $storeId = $this->storeManager->getWebsite(current($websiteId))->getDefaultGroup()->getDefaultStoreId();
+            $key_id = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
+            $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
             $payload = [
                 'distribution_method' => 'local',
                 'origin' => 'all',
@@ -212,8 +221,8 @@ class SyncContactsSubscriptionData
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->logs($logsArray);
 
-            $this->emarsysDataHelper->getEmarsysAPIDetails($storeId);
-            $client = $this->emarsysDataHelper->getClient();
+            $this->emarsysHelper->getEmarsysAPIDetails($storeId);
+            $client = $this->emarsysHelper->getClient();
             $response = $client->post('contact/getchanges', $payload);
 
             $logsArray['description'] = print_r($response, true);
@@ -229,8 +238,9 @@ class SyncContactsSubscriptionData
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
-                $storeId,
-                'SyncContactsSubscriptionData::requestSubscriptionUpdates(helper/data)');
+                0,
+                'SyncContactsSubscriptionData::requestSubscriptionUpdates(helper/data)'
+            );
         }
     }
 
@@ -263,7 +273,8 @@ class SyncContactsSubscriptionData
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
                 $storeId,
-                'SyncContactsSubscriptionData::getExportsNotificationUrl(helper/data)');
+                'SyncContactsSubscriptionData::getExportsNotificationUrl(helper/data)'
+            );
         }
     }
 
@@ -281,8 +292,9 @@ class SyncContactsSubscriptionData
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
-                'SyncContactsSubscriptionData::setValue(helper/data)');
+                0,
+                'SyncContactsSubscriptionData::setValue(helper/data)'
+            );
         }
     }
 }

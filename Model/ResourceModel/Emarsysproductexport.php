@@ -30,10 +30,10 @@ class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\Abs
      */
     public function saveBulkProducts($products)
     {
-        $lines = $bind = array();
+        $lines = $bind = [];
 
         foreach ($products as $row) {
-            $line = array();
+            $line = [];
             foreach ($row as $value) {
                 $line[] = '?';
                 $bind[] = $value;
