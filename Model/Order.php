@@ -489,9 +489,7 @@ class Order extends AbstractModel
             $logsArray['status'] = 'error';
             $logsArray['messages'] = __('Order export has an error. Please check.');
         } else {
-            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
-                $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
-            }
+            $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
             $logsArray['status'] = 'success';
             $logsArray['messages'] = __('Order export completed');
         }
@@ -676,9 +674,7 @@ class Order extends AbstractModel
             $logsArray['messages'] = __('Order export have an error. Please check');
         } else {
             //clean the queue table after SI export
-            if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC) {
-                $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
-            }
+            $this->cleanOrderQueueTable($orderCollectionClone, $creditMemoCollectionClone);
             $logsArray['status'] = 'success';
             $logsArray['messages'] = __('Order export completed');
         }
@@ -769,6 +765,7 @@ class Order extends AbstractModel
      * @param $logsArray
      * @param null $entityName
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     public function sendRequestToEmarsys($filePath, $csvFileName, $logsArray, $entityName = NULL)
@@ -1189,54 +1186,58 @@ class Order extends AbstractModel
 
     /**
      * clean Order Queue Table
+     *
+     * @param bool $orderCollection
+     * @param bool $creditMemoCollection
+     * @throws \Exception
      */
     public function cleanOrderQueueTable($orderCollection = false, $creditMemoCollection = false)
     {
         //remove order records from queue table
         if ($orderCollection) {
-            $orderIds = [];
-            foreach ($orderCollection as $order) {
-                $orderIds[] = $order['entity_id'];
-            }
+            $allOrderIds = $orderCollection->getAllIds();
+            $orderIdsArrays = array_chunk($allOrderIds, 100);
 
-            $orderExportStatusCollection = $this->orderExportStatusFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('order_id', ['in' => $orderIds]);
-            $allDataExport = $orderExportStatusCollection->getData();
+            foreach ($orderIdsArrays as $orderIds) {
+                $orderExportStatusCollection = $this->orderExportStatusFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('order_id', ['in' => $orderIds]);
 
-            foreach ($allDataExport as $orderExportStat) {
-                $eachOrderStat = $this->orderExportStatusFactory->create()->load($orderExportStat['id']);
-                $eachOrderStat->setExported(1);
-                $eachOrderStat->save();
+                foreach ($orderExportStatusCollection as $orderExportStat) {
+                    $eachOrderStat = $this->orderExportStatusFactory->create()->load($orderExportStat['id']);
+                    $eachOrderStat->setExported(1);
+                    $eachOrderStat->save();
+                }
+
+                $orderQueueCollection = $this->orderQueueFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('entity_id', ['in' => $orderIds])
+                    ->load();
+                $orderQueueCollection->walk('delete');
             }
-            $orderQueueCollection = $this->orderQueueFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('entity_id', ['in' => $orderIds])
-                ->load();
-            $orderQueueCollection->walk('delete');
         }
 
         //remove credit-memo records from queue table
         if ($creditMemoCollection) {
-            $creditmemoOrderIds = [];
-            foreach ($creditMemoCollection as $creditMemo) {
-                $creditmemoOrderIds[] = $creditMemo['entity_id'];
-            }
-            $creditmemoExportStatusCollection = $this->creditmemoExportStatusFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('order_id', ['in' => $creditmemoOrderIds]);
-            $allDataExport = $creditmemoExportStatusCollection->getData();
-            foreach ($allDataExport as $orderExportStat) {
-                $eachOrderStat = $this->creditmemoExportStatusFactory->create()->load($orderExportStat['id']);
-                $eachOrderStat->setExported(1);
-                $eachOrderStat->save();
-            }
+            $allCreditmemoOrderIds = $creditMemoCollection->getAllIds();
+            $creditmemoIdsArrays = array_chunk($allCreditmemoOrderIds, 100);
+            foreach ($creditmemoIdsArrays as $creditmemoIds) {
+                $creditmemoExportStatusCollection = $this->creditmemoExportStatusFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('order_id', ['in' => $creditmemoIds]);
 
-            $creditMemoQueueCollection = $this->orderQueueFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('entity_id', ['in' => $creditmemoOrderIds])
-                ->load();
-            $creditMemoQueueCollection->walk('delete');
+                foreach ($creditmemoExportStatusCollection as $orderExportStat) {
+                    $eachOrderStat = $this->creditmemoExportStatusFactory->create()->load($orderExportStat['id']);
+                    $eachOrderStat->setExported(1);
+                    $eachOrderStat->save();
+                }
+
+                $creditMemoQueueCollection = $this->orderQueueFactory->create()
+                    ->getCollection()
+                    ->addFieldToFilter('entity_id', ['in' => $creditmemoIds])
+                    ->load();
+                $creditMemoQueueCollection->walk('delete');
+            }
         }
 
         return;

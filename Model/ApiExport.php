@@ -108,8 +108,10 @@ class ApiExport extends ZendClient
 
     /**
      * Get API Headers
+     *
      * @param $token
      * @return array|bool
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getApiHeaders($token)
     {
@@ -131,9 +133,10 @@ class ApiExport extends ZendClient
     }
 
     /**
-     * @param $apiUrl
-     * @param $filePath
+     * @param bool $apiUrl
+     * @param bool $filePath
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     public function apiExport($apiUrl = false, $filePath = false)
@@ -166,11 +169,13 @@ class ApiExport extends ZendClient
 
     /**
      * Requests API call
+     *
      * @param $apiCall
      * @param string $method
      * @param array $data
      * @param bool $jsonDecode
      * @return mixed|string|\Zend_Http_Response
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     protected function _request($apiCall, $method = \Zend_Http_Client::GET, $data = [], $jsonDecode = true)
@@ -208,6 +213,7 @@ class ApiExport extends ZendClient
      * @param $apiCall
      * @param array $data
      * @return mixed|string|\Zend_Http_Response
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
     public function post($apiCall, $data = [])
@@ -260,6 +266,7 @@ class ApiExport extends ZendClient
      *
      * @param array $headers
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function sampleDataCatalogExport($headers)
     {
@@ -291,12 +298,13 @@ class ApiExport extends ZendClient
      * @param int $store
      * @param array $headers
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function sampleDataSmartInsightExport($store = 0, $headers)
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManagerInterface->getStore($store);
-        $sampleResult = array();
+        $sampleResult = [];
 
         $emailAsIdentifierStatus = (bool)$store->getConfig(DATA::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         if ($emailAsIdentifierStatus) {

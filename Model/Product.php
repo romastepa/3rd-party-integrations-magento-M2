@@ -284,8 +284,7 @@ class Product extends AbstractModel
             }
 
             foreach ($this->getCredentials() as $websiteId => $website) {
-                $emarsysFieldNames = array();
-                $magentoAttributeNames = array();
+                $emarsysFieldNames = $magentoAttributeNames = [];
 
                 foreach ($website as $storeId => $store) {
                     foreach ($store['mapped_attributes_names'] as $mapAttribute) {
@@ -716,7 +715,7 @@ class Product extends AbstractModel
      * @param $excludedCategories
      * @return array
      */
-    public function getCategoryNames($catIds, $storeId, $excludedCategories = array())
+    public function getCategoryNames($catIds, $storeId, $excludedCategories = [])
     {
         $key = $storeId . '-' . serialize($catIds);
         if (!isset($this->_categoryNames[$key])) {

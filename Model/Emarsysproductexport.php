@@ -220,7 +220,7 @@ class Emarsysproductexport extends AbstractModel
     {
         $this->_mapHeader = $header;
         $this->_processedStores = $processedStores;
-        $this->_preparedData = array();
+        $this->_preparedData = [];
 
         $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $merchantId);
         $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
