@@ -11,7 +11,7 @@ use Magento\{
     Framework\App\Helper\Context,
     Cron\Model\Schedule,
     Cron\Model\ScheduleFactory,
-    Framework\Stdlib\DateTime\DateTime as DateTime
+    Framework\Stdlib\DateTime\TimezoneInterface as TimezoneInterface
 };
 use Emarsys\Emarsys\{
     Model\EmarsysCronDetailsFactory,
@@ -61,9 +61,9 @@ class Cron extends AbstractHelper
     protected $emarsysLogs;
 
     /**
-     * @var DateTime
+     * @var TimezoneInterface
      */
-    protected $dateTime;
+    protected $timezone;
 
     /**
      * Cron constructor.
@@ -72,20 +72,20 @@ class Cron extends AbstractHelper
      * @param ScheduleFactory $scheduleFactory
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
      * @param Emarsyslogs $emarsysLogs
-     * @param DateTime $dateTime
+     * @param TimezoneInterface $timezone
      */
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
         EmarsysCronDetailsFactory $emarsysCronDetails,
         Emarsyslogs $emarsysLogs,
-        DateTime $dateTime
+        TimezoneInterface $timezone
     ) {
         $this->context = $context;
         $this->scheduleFactory = $scheduleFactory;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->emarsysLogs = $emarsysLogs;
-        $this->dateTime = $dateTime;
+        $this->timezone = $timezone;
         parent::__construct($context);
     }
 
@@ -212,8 +212,8 @@ class Cron extends AbstractHelper
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))
-            ->setScheduledAt(strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp() + 60));
+            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp()))
+            ->setScheduledAt(strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp() + 60));
 
         $cron->save();
 
