@@ -99,15 +99,15 @@ class Country extends AbstractHelper
         $this->api->setWebsiteId($store->getWebsiteId());
         $response = $this->api->sendRequest('GET', 'field/14/choice/translate/en');
 
-        if (isset($response['body'])) {
-            foreach ($response['body'] as $item) {
+        if (isset($response['body']['data'])) {
+            foreach ($response['body']['data'] as $item) {
                 $name = $item['choice'];
                 $id = $item['id'];
                 if (isset($countries[$name])) {
                     $_magentoCountryId = $countries[$name];
                     $mappedCountries[$_magentoCountryId] = $id;
-                } elseif (isset($this->_overrides[$item['choice']])) {
-                    $_magentoCountryId = $this->_overrides[$item['choice']];
+                } elseif (isset($this->_overrides[$name])) {
+                    $_magentoCountryId = $this->_overrides[$name];
                     $mappedCountries[$_magentoCountryId] = $id;
                 }
             }
