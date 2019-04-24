@@ -11,7 +11,8 @@ use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper,
     Helper\Logs,
     Model\ResourceModel\Customer as EmarsysCustomerResourceModel,
-    Model\Logs as EmarsysModelLogs
+    Model\Logs as EmarsysModelLogs,
+    Model\Api\Api as EmarsysApiApi
 };
 use Magento\{
     Framework\App\Cache\TypeListInterface,
@@ -66,6 +67,11 @@ class SyncContactsSubscriptionData
     protected $customerResourceModel;
 
     /**
+     * @var EmarsysApiApi
+     */
+    protected $api;
+
+    /**
      * @var Http
      */
     protected $request;
@@ -95,6 +101,7 @@ class SyncContactsSubscriptionData
      * @param EmarsysModelLogs $emarsysLogs
      * @param EmarsysHelper $emarsysHelper
      * @param EmarsysCustomerResourceModel $customerResourceModel
+     * @param EmarsysApiApi $api
      * @param Http $request
      * @param Registry $registry
      * @param Config $resourceConfig
@@ -108,6 +115,7 @@ class SyncContactsSubscriptionData
         EmarsysModelLogs $emarsysLogs,
         EmarsysHelper $emarsysHelper,
         EmarsysCustomerResourceModel $customerResourceModel,
+        EmarsysApiApi $api,
         Http $request,
         Registry $registry,
         Config $resourceConfig,
@@ -120,6 +128,7 @@ class SyncContactsSubscriptionData
         $this->emarsysLogs = $emarsysLogs;
         $this->emarsysHelper = $emarsysHelper;
         $this->customerResourceModel = $customerResourceModel;
+        $this->api = $api;
         $this->request = $request;
         $this->registry = $registry;
         $this->resourceConfig = $resourceConfig;
@@ -150,22 +159,9 @@ class SyncContactsSubscriptionData
             $logsArray['website_id'] = $website->getId();
             $logsArray['store_id'] = $website->getDefaultGroup()->getDefaultStoreId();
             $logId = $this->logsHelper->manualLogs($logsArray);
-            try {
-                $enable = $website->getConfig('emarsys_settings/emarsys_setting/enable');
-                if ($enable) {
-                    $emarsysUserName = $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_username');
-                    if (!array_key_exists($emarsysUserName, $queue)) {
-                        $queue[$emarsysUserName] = [];
-                    }
-                    $queue[$emarsysUserName][] = $website->getWebsiteId();
-                }
-            } catch (\Exception $e) {
-                $this->emarsysLogs->addErrorLog(
-                    $e->getMessage(),
-                    0,
-                    'syncContactsSubscriptionData(helper/data)'
-                );
-            }
+
+            $emarsysUserName = $website->getConfig(EmarsysHelper::XPATH_EMARSYS_API_USER);
+            $queue[$emarsysUserName][] = $website->getWebsiteId();
         }
         if (!empty($queue)) {
             foreach ($queue as $websiteId) {
@@ -221,17 +217,16 @@ class SyncContactsSubscriptionData
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->logs($logsArray);
 
-            $this->emarsysHelper->getEmarsysAPIDetails($storeId);
-            $client = $this->emarsysHelper->getClient();
-            $response = $client->post('contact/getchanges', $payload);
+            $this->api->setWebsiteId(current($websiteId));
+            $response = $this->api->sendRequest('POST', 'contact/getchanges', $payload);
 
             $logsArray['description'] = print_r($response, true);
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->logs($logsArray);
 
-            if (isset($response['data']['id'])) {
-                $this->setValue('export_id', $response['data']['id'], current($websiteId));
-                $logsArray['description'] = $response['data']['id'];
+            if (isset($response['body']['data']['id'])) {
+                $this->setValue('export_id', $response['body']['data']['id'], current($websiteId));
+                $logsArray['description'] = $response['body']['data']['id'];
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->logs($logsArray);
             }

@@ -410,15 +410,19 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
                             $bundleDiscount += $collPrice['discount_amount'];
                         }
                         if ($taxIncluded) {
-                            $price = $useBaseCurrency? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
+                            $price = $useBaseCurrency ? ($item->getBaseRowTotal() + $item->getBaseTaxAmount()) - ($bundleBaseDiscount) : ($item->getRowTotal() + $item->getTaxAmount()) - ($bundleDiscount);
                         } else {
-                            $price = $useBaseCurrency? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
+                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $bundleBaseDiscount : $item->getRowTotal() - $bundleDiscount;
                         }
                     } else {
                         if ($taxIncluded) {
-                            $price = $useBaseCurrency ? ($item->getBaseRowTotal()  + $item->getBaseTaxAmount()) - $item->getBaseDiscountAmount() : ($item->getRowTotal() + $item->getTaxAmount()) - $item->getDiscountAmount();
+                            $price = $useBaseCurrency
+                                ? $item->getBaseRowTotalInclTax()
+                                : $item->getRowTotalInclTax();
                         } else {
-                            $price = $useBaseCurrency ? $item->getBaseRowTotal() - $item->getBaseDiscountAmount() : $item->getRowTotal() - $item->getDiscountAmount();
+                            $price = $useBaseCurrency
+                                ? $item->getBaseRowTotal()
+                                : $item->getRowTotal();
                         }
                     }
 

@@ -94,7 +94,9 @@ class ProductExport extends Action
 
     /**
      * product export action
-     * @return \Magento\Framework\App\ResponseInterface
+     *
+     * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
@@ -109,7 +111,7 @@ class ProductExport extends Action
             if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
 
                 //check feed export enabled for the website
-                if ($this->emarsysHelper->isCatalogExportEnabled($websiteId)) {
+                if ($store->getConfig(EmarsysHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)) {
                     $productCollection = $this->productCollectionFactory->create()->getCollection()
                         ->addStoreFilter($storeId)
                         ->addWebsiteFilter($websiteId)

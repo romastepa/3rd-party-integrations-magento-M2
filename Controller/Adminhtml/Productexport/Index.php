@@ -23,11 +23,6 @@ class Index extends Action
     protected $resultPageFactory;
 
     /**
-     * @var
-     */
-    protected $session;
-
-    /**
      * Index constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
@@ -37,7 +32,6 @@ class Index extends Action
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
-        $this->adminSession = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
     }
 
@@ -47,7 +41,11 @@ class Index extends Action
      */
     public function execute()
     {
-        $data = $this->adminSession->getFormData(true);
+        /*
+        \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Product::class)->consolidatedCatalogExport(
+            \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL
+        );
+        */
         $page = $this->resultPageFactory->create();
         $page->getLayout()->getBlock("head");
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_emarsysadminindex9');

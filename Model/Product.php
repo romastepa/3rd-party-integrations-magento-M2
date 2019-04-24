@@ -428,7 +428,7 @@ class Product extends AbstractModel
             $this->logsHelper->manualLogsUpdate($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception $1", json_encode(error_get_last()));
+            $logsArray['description'] = __("Exception %1", json_encode(error_get_last()));
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->logs($logsArray);
 
@@ -777,9 +777,18 @@ class Product extends AbstractModel
                 }
                 switch ($attributeCode) {
                     case 'quantity_and_stock_status':
-                        $status = ($productObject->getStatus() == Status::STATUS_ENABLED);
-                        $inStock = ($productObject->getData('inventory_in_stock') == 1);
-                        $visibility = ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
+                        $status = $store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS)
+                            ? ($productObject->getStatus() == Status::STATUS_ENABLED)
+                            : true
+                        ;
+                        $inStock = $store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK)
+                            ? $productObject->isAvailable()
+                            : true
+                        ;
+                        $visibility = $store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY)
+                            ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
+                            : true
+                        ;
 
                         if ($status && $inStock && $visibility) {
                             $attributeData[] = 'TRUE';
@@ -849,7 +858,7 @@ class Product extends AbstractModel
             } catch (\Exception $e) {
                 $attributeData[] = '';
                 $logsArray['emarsys_info'] = __('consolidatedCatalogExport _getProductData Exception');
-                $logsArray['description'] = __('$1: $2', $attributeCode, $e->getMessage());
+                $logsArray['description'] = __('%1: %2', $attributeCode, $e->getMessage());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
             }

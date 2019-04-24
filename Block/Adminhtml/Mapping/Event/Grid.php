@@ -65,6 +65,11 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $_storeManager;
 
     /**
+     * @var \Emarsys\Emarsys\Helper\Data
+     */
+    protected $emarsysHelper;
+
+    /**
      * Grid constructor.
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Backend\Helper\Data $backendHelper
@@ -119,7 +124,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         }
         $EventMappingCollection = $this->EmarsyseventmappingFactory->create()->getCollection()->addFieldToFilter("store_id", $storeId);
         if (!$EventMappingCollection->getSize()) {
-            $this->emarsysHelper->insertFirstime($storeId);
+            $this->emarsysHelper->insertFirstTime($storeId);
         }
         $EventMappingCollection = $this->EmarsyseventmappingFactory->create()->getCollection()->addFieldToFilter("store_id", $storeId);
         $tableName = $this->resourceConnection->getTableName('emarsys_magento_events');

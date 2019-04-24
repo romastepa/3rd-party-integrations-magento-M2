@@ -6,7 +6,8 @@
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Testconnection;
 
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Helper\Logs as EmarsysLogs;
@@ -20,9 +21,14 @@ use Magento\Backend\App\Action;
 class Index extends Action
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
+
+    /**
+     * @var EmarsysModelApiApi
+     */
+    protected $api;
 
     /**
      * @var Config
@@ -36,20 +42,23 @@ class Index extends Action
 
     /**
      * Index constructor.
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
+     * @param EmarsysModelApiApi $api
      * @param Context $context
      * @param DateTime $date
      * @param EmarsysLogs $logsHelper
      * @param Config $config
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
+        EmarsysModelApiApi $api,
         Context $context,
         DateTime $date,
         EmarsysLogs $logsHelper,
         Config $config
     ) {
         $this->emarsysHelper = $emarsysHelper;
+        $this->api = $api;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
         $this->config = $config;
@@ -92,17 +101,14 @@ class Index extends Action
                 $scopeType = 'default';
                 $scopeId = 0;
             }
-            $this->emarsysHelper->assignApiCredentials($username, $password, $endpoint, $url);
-            $pingendpoint = 'settings';
-            $response = $this->emarsysHelper->send('GET', $pingendpoint);
 
-            if ($this->is_json($response)) {
-                $jsonDecode = \Zend_Json::decode($response);
-            } else {
-                $jsonDecode['replyCode'] = 10;
-            }
+            $this->api->setWebsiteId($website);
+            $response =  $this->api->sendRequest('GET', 'settings');
 
-            if ($jsonDecode['replyCode'] == 0 && $jsonDecode['replyText'] == "OK") {
+            if (isset($response['status']) && $response['status'] == 200
+                && isset($response['body']['replyCode']) && $response['body']['replyCode'] == 0
+                && isset($response['body']['replyText']) && $response['body']['replyText'] == "OK"
+            ) {
                 try {
                     //save information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/enable', 1, $scopeType, $scopeId);
@@ -185,7 +191,7 @@ class Index extends Action
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. ' . json_encode($jsonDecode, JSON_PRETTY_PRINT);
+                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. ' . json_encode($response, JSON_PRETTY_PRINT);
                 $this->logsHelper->manualLogsUpdate($logsArray);
             }
         } else {
@@ -198,28 +204,5 @@ class Index extends Action
             $logsArray['messages'] = 'Connection failed. Please enter the api credentials.';
             $this->logsHelper->manualLogsUpdate($logsArray);
         }
-    }
-
-    /**
-     * @param $x
-     * @return bool
-     */
-    private function is_json($x)
-    {
-        if (!is_string($x) || !trim($x)) {
-            return false;
-        }
-        return (
-            // Maybe an empty string, array or object
-            $x === '""' ||
-            $x === '[]' ||
-            $x === '{}' ||
-            // Maybe an encoded JSON string
-            $x[0] === '"' ||
-            // Maybe a flat array
-            $x[0] === '[' ||
-            // Maybe an associative array
-            $x[0] === '{'
-        ) && ($x === 'null' || json_decode($x) !== null);
     }
 }

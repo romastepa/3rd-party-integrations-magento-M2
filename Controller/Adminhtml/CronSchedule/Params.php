@@ -46,7 +46,7 @@ class Params extends Action
             if ($cronDetails) {
                 $params = \Zend_Json::decode($cronDetails->getParams());
                 if ($params) {
-                    printf("<pre>" . (\Zend_Json::encode($params, JSON_PRETTY_PRINT)) . "</pre>");
+                    printf("<pre>" . (\Zend_Json::encode($params)) . "</pre>");
                 } else {
                     printf("No Data Available");
                 }

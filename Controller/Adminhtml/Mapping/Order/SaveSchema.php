@@ -72,7 +72,8 @@ class SaveSchema extends Action
     /**
      * Save action
      *
-     * @return \Magento\Backend\Model\View\Result\Page
+     * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Exception
      */
     public function execute()
     {
@@ -84,14 +85,8 @@ class SaveSchema extends Action
             } else {
                 $storeId = $this->emarsysHelper->getFirstStoreId();
             }
-            $store = $this->storeManager->getStore($storeId);
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $errorStatus = true;
-            $emailAsIdentifierStatus = $this->scopeConfig->getValue(
-                Data::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
-                $websiteId
-            );
 
             //initial logging started
             $logsArray['job_code'] = 'Order Mapping';
@@ -110,16 +105,12 @@ class SaveSchema extends Action
 
             $data = $this->orderResourceModel->getSalesOrderColumnNames();
 
-            $header = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
+            $header = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
             foreach ($header as $column) {
                 $manData[$column] = $column;
             }
 
-            if ($emailAsIdentifierStatus == 1) {
-                $this->orderResourceModel->deleteOrderAttributeMapping('customer', $storeId);
-            } else {
-                $this->orderResourceModel->deleteOrderAttributeMapping('email', $storeId);
-            }
+            $this->orderResourceModel->deleteOrderAttributeMapping('customer', $storeId);
             $this->orderResourceModel->insertIntoMappingTableStaticData($manData, $storeId);
             $this->orderResourceModel->insertIntoMappingTable($data, $storeId);
 

@@ -9,12 +9,14 @@ namespace Emarsys\Emarsys\Helper;
 use Magento\{
     Framework\App\Helper\AbstractHelper,
     Framework\App\Helper\Context,
-    Store\Model\StoreManagerInterface,
+    Store\Model\StoreManagerInterface  as StoreManager,
     AdminNotification\Model\InboxFactory
 };
 use Emarsys\Emarsys\{
     Model\ResourceModel\Event as EmarsysResourceModelEvent,
-    Model\EmarsyseventsFactory
+    Model\EmarsyseventsFactory,
+    Helper\Data as EmarsysHelper,
+    Model\Api\Api as EmarsysModelApiApi
 };
 
 /**
@@ -29,29 +31,34 @@ class Event extends AbstractHelper
     protected $logger;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
     /**
-     * @var StoreManagerInterface
+     * @var StoreManager
      */
     protected $storeManager;
 
     /**
+     * @var EmarsysModelApiApi
+     */
+    protected $api;
+
+    /**
      * Event constructor.
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param EmarsysResourceModelEvent $resourceModelEvent
      * @param Context $context
-     * @param StoreManagerInterface $storeManager
+     * @param StoreManager $storeManager
      * @param InboxFactory $adminNotification
      * @param EmarsyseventsFactory $emarsysEvents
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         EmarsysResourceModelEvent $resourceModelEvent,
         Context $context,
-        StoreManagerInterface $storeManager,
+        StoreManager $storeManager,
         InboxFactory $adminNotification,
         EmarsyseventsFactory $emarsysEvents
     ) {
@@ -70,11 +77,13 @@ class Event extends AbstractHelper
      */
     public function getEventSchema()
     {
+        $store = $this->storeManager->getStore();
+        $storeId = $store->getId();
         try {
-            $response = $this->emarsysHelper->send('GET', 'event');
-            return \Zend_Json::decode($response);
+            $this->api->setWebsiteId($store->getWebsiteId());
+            $response = $this->api->sendRequest('GET', 'event');
+            return $response['body'];
         } catch (\Exception $e) {
-            $storeId = $this->storeManager->getStore()->getId();
             $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'getEventSchema');
             return false;
         }
@@ -86,11 +95,13 @@ class Event extends AbstractHelper
      */
     public function getEventTemplateSchema()
     {
+        $store = $this->storeManager->getStore();
+        $storeId = $store->getId();
         try {
-            $response = $this->emarsysHelper->send('GET', 'email/templates');
-            return \Zend_Json::decode($response);
+            $this->api->setWebsiteId($store->getWebsiteId());
+            $response = $this->api->sendRequest('GET', 'email/templates');
+            return $response['body'];
         } catch (\Exception $e) {
-            $storeId = $this->storeManager->getStore()->getId();
             $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'getEventTemplateSchema');
             return false;
         }

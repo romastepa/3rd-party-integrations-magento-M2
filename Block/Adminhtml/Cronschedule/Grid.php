@@ -226,7 +226,7 @@ class Grid extends Extended
     public function decorateTimeFrameCallBack($value)
     {
         if ($value && $value != '0000-00-00 00:00:00') {
-            return $this->timezone->formatDateTime($value, 2);
+            return $value; //$this->timezone->formatDateTime($value, 2);
         } else {
             return '';
         }

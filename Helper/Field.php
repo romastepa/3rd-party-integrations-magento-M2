@@ -9,7 +9,9 @@ namespace Emarsys\Emarsys\Helper;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
-use Emarsys\Emarsys\Model\Api\Api;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Magento\Store\Model\StoreManagerInterface as StoreManager;
 
 /**
  * Class Field
@@ -18,19 +20,19 @@ use Emarsys\Emarsys\Model\Api\Api;
 class Field extends AbstractHelper
 {
     /**
-     * @var Logger
-     */
-    protected $logger;
-
-    /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
     /**
-     * @var Api
+     * @var EmarsysModelApiApi
      */
     protected $api;
+
+    /**
+     * @var StoreManager
+     */
+    protected $storeManager;
 
     /**
      * @var EmarsysResourceModelCustomer
@@ -39,21 +41,24 @@ class Field extends AbstractHelper
 
     /**
      * Field constructor.
-     * @param Data $emarsysHelper
-     * @param Api $api
+     *
+     * @param EmarsysHelper $emarsysHelper
+     * @param EmarsysModelApiApi $api
+     * @param StoreManager $storeManager
      * @param Context $context
      * @param EmarsysResourceModelCustomer $customer
      */
     public function __construct(
-        Data $emarsysHelper,
-        Api $api,
+        EmarsysHelper $emarsysHelper,
+        EmarsysModelApiApi $api,
+        StoreManager $storeManager,
         Context $context,
         EmarsysResourceModelCustomer $customer
     ) {
         ini_set('default_socket_timeout', 5000);
-        $this->logger = $context->getLogger();
-        $this->api = $api;
         $this->emarsysHelper = $emarsysHelper;
+        $this->api = $api;
+        $this->storeManager = $storeManager;
         $this->customerResourceModel = $customer;
     }
 
@@ -65,12 +70,13 @@ class Field extends AbstractHelper
      */
     public function getEmarsysOptionSchema($storeId)
     {
-        $this->emarsysHelper->getEmarsysAPIDetails($storeId);
+        $store = $this->storeManager->getStore($storeId);
+        $this->api->setWebsiteId($store->getWebsiteId());
         $emarsysContactFields = $this->customerResourceModel->getEmarsysContactFields($storeId);
         $emarsysFieldOptions = [];
         foreach ($emarsysContactFields as $emarsysField) {
             if ($emarsysField['type'] == "singlechoice" || $emarsysField['type'] == "multichoice") {
-                $response = $this->emarsysHelper->send('GET', 'field/' . $emarsysField['emarsys_field_id'] . '/choice');
+                $response = $this->api->sendRequest('GET', 'field/' . $emarsysField['emarsys_field_id'] . '/choice');
                 $jsonDecode = \Zend_Json::decode($response);
                 if (is_array($jsonDecode['data'])) {
                     foreach ($jsonDecode['data'] as $optionField) {

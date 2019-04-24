@@ -19,7 +19,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper,
     Helper\Logs as EmarsysLogsHelper,
-    Model\ResourceModel\Customer as customerResourceModel,
+    Model\ResourceModel\Customer as CustomerResourceModel,
     Model\Api\Api as EmarsysModelApiApi
 };
 
@@ -40,9 +40,9 @@ class SendEmail extends AbstractModel
     protected $date;
 
     /**
-     * @var customerResourceModel
+     * @var CustomerResourceModel
      */
-    protected $customerResourceModel;
+    protected $CustomerResourceModel;
 
     /**
      * @var MessageInterface|\Zend_Mail
@@ -74,7 +74,7 @@ class SendEmail extends AbstractModel
      * @param Context $context
      * @param Registry $registry
      * @param EmarsysHelper $emarsysHelper
-     * @param customerResourceModel $customerResourceModel
+     * @param CustomerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param MessageInterface $message
      * @param EmarsysLogsHelper $logs
@@ -89,7 +89,7 @@ class SendEmail extends AbstractModel
         Context $context,
         Registry $registry,
         EmarsysHelper $emarsysHelper,
-        customerResourceModel $customerResourceModel,
+        CustomerResourceModel $customerResourceModel,
         DateTime $date,
         MessageInterface $message,
         EmarsysLogsHelper $logs,
@@ -112,7 +112,7 @@ class SendEmail extends AbstractModel
     }
 
     /**
-     * @param \Zend_Mail $message
+     * @param \Magento\Framework\Mail\MessageInterface $message
      * @return bool
      * @throws \Exception
      */
@@ -163,7 +163,11 @@ class SendEmail extends AbstractModel
                     if ($emarsysApiEventID != '') {
                         //mapping found for event
                         $this->api->setWebsiteId($websiteId);
-                        $externalId = $message->getRecipients()[0];
+                        /** @var \Zend\Mail\Message $zendMessage */
+                        $zendMessage = $message->getZendMessage();
+                        /** @var \Zend\Mail\AddressList $addressList */
+                        $addressList = $zendMessage->getTo();
+                        $externalId = $addressList->current()->getEmail();
                         $buildRequest = [];
 
                         $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);

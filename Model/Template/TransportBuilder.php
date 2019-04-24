@@ -8,6 +8,7 @@
 namespace Emarsys\Emarsys\Model\Template;
 
 use Magento\{
+    Catalog\Helper\Image,
     Framework\App\TemplateTypesInterface,
     Framework\Mail\MessageInterface,
     Framework\Mail\TransportInterfaceFactory,
@@ -35,6 +36,11 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
     protected $storeManager;
 
     /**
+     * @var Image
+     */
+    protected $imageHelper;
+
+    /**
      * TransportBuilder constructor.
      *
      * @param FactoryInterface $templateFactory
@@ -44,6 +50,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
      * @param TransportInterfaceFactory $mailTransportFactory
      * @param StoreManagerInterface $storeManager
      * @param EmarsysHelper $emarsysHelper
+     * @param Image $imageHelper
      */
     public function __construct(
         FactoryInterface $templateFactory,
@@ -52,10 +59,12 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         ObjectManagerInterface $objectManager,
         TransportInterfaceFactory $mailTransportFactory,
         EmarsysHelper $emarsysHelper,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        Image $imageHelper
     ) {
         $this->emarsysHelper = $emarsysHelper;
         $this->storeManager = $storeManager;
+        $this->imageHelper = $imageHelper;
         parent::__construct(
             $templateFactory,
             $message,
@@ -300,7 +309,14 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 
             $base_url = $this->storeManager->getStore($item->getStoreId())->getBaseUrl();
             $base_url = trim($base_url, '/');
-            $order['_external_image_url'] = $base_url . '/media/catalog/product' . $_product->getData('thumbnail');
+
+            /** @var \Magento\Catalog\Helper\Image $helper */
+            $url = $this->imageHelper
+                ->init($_product, 'product_base_image')
+                ->setImageFile($_product->getImage())
+                ->getUrl();
+            $order['_external_image_url'] = $url;
+
             $order['_url'] = $base_url . "/" . $_product->getUrlPath();
             $order['_url_name'] = $order['product_name'];
             $order['product_description'] = $_product->getData('description');

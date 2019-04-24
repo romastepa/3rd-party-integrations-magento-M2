@@ -15,6 +15,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Translate\Inline\StateInterface;
@@ -130,9 +131,10 @@ class CleanLog
 
     public function execute()
     {
-        foreach ($this->storeManager->getStores() as $storeData) {
-            $websiteId = $storeData->getWebsiteId();
-            $storeId = $storeData->getStoreId();
+        /** @var Store $store */
+        foreach ($this->storeManager->getStores() as $store) {
+            $websiteId = $store->getWebsiteId();
+            $storeId = $store->getStoreId();
             $scopeType = 'websites';
 
             $configData = $this->config->getConfigData();
@@ -148,36 +150,25 @@ class CleanLog
             $hostname = escapeshellcmd($hostname);
             $database = escapeshellcmd($database);
 
-            $logCleaning = $this->scopeConfig->getValue('logs/log_setting/log_cleaning', $scopeType, $websiteId);
-            if ($logCleaning == '' && $websiteId == 1) {
-                $logCleaning = $this->scopeConfig->getValue('logs/log_setting/log_cleaning');
-            }
-
-            $archive = $this->scopeConfig->getValue('logs/log_setting/archive_data', $scopeType, $websiteId);
-            if ($archive == '' && $websiteId == 1) {
-                $archive = $this->scopeConfig->getValue('logs/log_setting/archive_data');
-            }
-
+            $logCleaning = $store->getConfig('logs/log_setting/log_cleaning');
+            $archive = $store->getConfig('logs/log_setting/archive_data');
+            $backupFile = '';
             if ($logCleaning) {
-                $logCleaningDays = $this->scopeConfig->getValue('logs/log_setting/log_days', $scopeType, $websiteId);
-                if ($logCleaningDays == '' && $websiteId == 1) {
-                    $logCleaningDays = $this->scopeConfig->getValue('logs/log_setting/log_days');
-                }
+                $logCleaningDays = $store->getConfig('logs/log_setting/log_days');
                 $cleanUpDate = $this->date->date('Y-m-d', strtotime("-" . $logCleaningDays . " days"));
                 $cleanUpDate = $this->emarsysHelper->getDateTimeInLocalTimezone($cleanUpDate);
-                /* Create archive folder*/
 
-                $varDir = $this->baseDirPath->getRoot() . "/";
-                $archivePath = $this->scopeConfig->getValue('logs/log_setting/archive_datapath', $scopeType, $websiteId);
-                if ($archivePath == '' && $storeId == 1) {
-                    $archivePath = $this->scopeConfig->getValue('logs/log_setting/archive_datapath');
+                if ($archive == 'archive') {
+                    /* Create archive folder */
+                    $varDir = $this->baseDirPath->getRoot() . "/";
+                    $archivePath = $store->getConfig('logs/log_setting/archive_datapath');
+
+                    $archiveFolder = $varDir . $archivePath . $this->date->date('Y-m-d');
+                    $this->ioFile->checkAndCreateFolder($archiveFolder);
+
+                    /* backup sql file */
+                    $backupFile = $archiveFolder . "/emarsys_logs.sql";
                 }
-                $archiveFolder = $varDir . $archivePath . $this->date->date('Y-m-d');
-                $this->ioFile->checkAndCreateFolder($archiveFolder);
-
-                /* backup sql file*/
-                $backupFile = $archiveFolder . "/emarsys_logs.sql";
-
                 /* logs table */
                 $logTable = $this->resourceConfig->getTable('emarsys_log_details');
 
@@ -225,20 +216,20 @@ class CleanLog
                 if ($logEmailRecipient == '' && $websiteId == 1) {
                     $logEmailRecipient = $this->scopeConfig->getValue('logs/log_setting/log_email_recipient');
                 }
-                if ($successLog == 1) {
+                if ($successLog == 1 && $archive == 'archive') {
                     $templateOptions = ['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE, 'store' => $storeId];
                     $templateVars = [
                         'store' => $storeId,
-                        'message' => $backupFile
+                        'message' => $backupFile,
                     ];
                     $from = [
                         'email' => $senderEmailId,
-                        'name' => $senderEmailName
+                        'name' => $senderEmailName,
                     ];
                     $this->inlineTranslation->suspend();
                     $to = [
                         'email' => $logEmailRecipient,
-                        'name' => $logEmailRecipient
+                        'name' => $logEmailRecipient,
                     ];
                     $transport = $this->_transportBuilder->setTemplateIdentifier('emarsys_log_cleaning_template')
                         ->setTemplateOptions($templateOptions)
@@ -250,22 +241,22 @@ class CleanLog
                     $this->inlineTranslation->resume();
                 }
 
-                /*Send email for Error in archived File*/
+                /* Send email for Error in archived File */
                 if ($errorLog == 1) {
                     $errorMessage = implode(",", $errorResult);
                     $templateOptions = ['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE, 'store' => $storeId];
                     $templateVars = [
                         'store' => $storeId,
-                        'message' => $errorMessage
+                        'message' => $errorMessage,
                     ];
                     $from = [
                         'email' => $senderEmailId,
-                        'name' => $senderEmailName
+                        'name' => $senderEmailName,
                     ];
                     $this->inlineTranslation->suspend();
                     $to = [
                         'email' => $logEmailRecipient,
-                        'name' => $logEmailRecipient
+                        'name' => $logEmailRecipient,
                     ];
                     $transport = $this->_transportBuilder->setTemplateIdentifier('emarsys_log_cleaning_error_template')
                         ->setTemplateOptions($templateOptions)

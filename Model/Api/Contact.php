@@ -270,7 +270,7 @@ class Contact
             } else {
                 $this->emarsysHelper->syncFail($customer->getId(), $websiteId, $storeId, $cron, 1);
                 $logsArray['message_type'] = 'Error';
-                $logsArray['description'] = $result['body']['replyText'];
+                $logsArray['description'] = \Zend_Json::encode($result);
                 $errorMsg = 1;
             }
             $logsArray['log_action'] = 'sync';
@@ -595,7 +595,7 @@ class Contact
                             //error response from emarsys
                             $logsArray['emarsys_info'] = __('Error while customer export.');
                             $logsArray['message_type'] = 'Error';
-                            $logsArray['description'] = $result['body']['replyText'] . $res;
+                            $logsArray['description'] = \Zend_Json::encode($result) . ' ' . $res;
                             $this->messageManager->addErrorMessage(
                                 __('Customers export have an error. Please check emarsys logs for more details!!')
                             );

@@ -214,7 +214,7 @@ class Subscriber
             $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
+            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
             $this->logsHelper->logs($logsArray);
 
@@ -223,7 +223,7 @@ class Subscriber
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
-            $res = ' [PUT] ' . " contact/?create_if_not_exists=1 " . json_encode($optInResult, JSON_PRETTY_PRINT)
+            $res = ' [PUT] ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($optInResult)
                 . ' [confirmation url] ' . $this->newsletterHelperData->getConfirmationUrl($objSubscriber)
                 . ' [unsubscribe url] ' . $this->newsletterHelperData->getUnsubscribeUrl($objSubscriber)
             ;
@@ -233,7 +233,7 @@ class Subscriber
             } else {
                 $this->emarsysHelper->syncFail($subscribeId, $websiteId, $storeId, 0, 2);
                 $logsArray['message_type'] = 'Error';
-                $logsArray['description'] = $objSubscriber->getSubscriberEmail() . " - " . $optInResult['body']['replyText'] . $res;
+                $logsArray['description'] = $objSubscriber->getSubscriberEmail() . " - " . $res;
                 $errorMsg = 1;
             }
             $logsArray['log_action'] = 'sync';
@@ -313,6 +313,7 @@ class Subscriber
 
         $subscriberData = $this->prepareSubscribersInfo(
             $storeId,
+            $websiteId,
             $exportMode,
             $emailKey,
             $subscriberIdKey,
@@ -333,7 +334,7 @@ class Subscriber
                     $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
                     $logsArray['action'] = 'Magento to Emarsys';
                     $logsArray['message_type'] = 'Success';
-                    $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
+                    $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
                     $this->logsHelper->logs($logsArray);
                     $this->emarsysLogger->info($logsArray['description']);
 
@@ -343,7 +344,7 @@ class Subscriber
 
                     $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
                     $logsArray['action'] = 'Synced to Emarsys';
-                    $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
+                    $res = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($result);
 
                     if ($result['status'] == '200') {
                         //successful response from emarsys
@@ -362,7 +363,7 @@ class Subscriber
                     } else {
                         //error response from emarsys
                         $logsArray['message_type'] = 'Error';
-                        $logsArray['description'] = $result['body']['replyText'] . $res;
+                        $logsArray['description'] = \Zend_Json::encode($result) . ' ' . $res;
                         $this->messageManager->addErrorMessage(
                             __('Subscriber export have an error. Please check emarsys logs for more details!!')
                         );
@@ -399,6 +400,7 @@ class Subscriber
 
     /**
      * @param $storeId
+     * @param $websiteId
      * @param $exportMode
      * @param $emailKey
      * @param $subscriberIdKey
@@ -408,6 +410,7 @@ class Subscriber
      */
     public function prepareSubscribersInfo(
         $storeId,
+        $websiteId,
         $exportMode,
         $emailKey,
         $subscriberIdKey,
@@ -430,7 +433,7 @@ class Subscriber
                 ['subscriber_email', 'subscriber_confirm_code', 'subscriber_status', 'customer_id']
             );
 
-            $this->updateLastModifiedContacts($subscriberCollection, $storeId);
+            $this->updateLastModifiedContacts($subscriberCollection, $websiteId);
         } else {
             $subscriberCollection = $this->subscriberFactory->create()->getCollection()
                 ->addFieldToFilter('store_id', $storeId);
@@ -479,9 +482,9 @@ class Subscriber
 
     /**
      * @param $collection
-     * @param $storeId
+     * @param $websiteId
      */
-    public function updateLastModifiedContacts($collection, $storeId)
+    public function updateLastModifiedContacts($collection, $websiteId = null)
     {
         try {
             $currentPageNumber = 1;
@@ -496,13 +499,20 @@ class Subscriber
                 if (count($collection)) {
                     $subscriberIds = $collection->getColumnValues('entity_id');
                     if (count($subscriberIds)) {
-                        $this->emarsysHelper->backgroudTimeBasedOptinSync($subscriberIds, $storeId);
+                        $this->emarsysHelper
+                            ->setWebsiteId($websiteId)
+                            ->backgroudTimeBasedOptinSync($subscriberIds)
+                        ;
                     }
                 }
                 $currentPageNumber = $currentPageNumber + 1;
             }
         } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'updateLastModifiedContacts($collection,$storeId)');
+            $this->emarsysHelper->addErrorLog(
+                $e->getMessage(),
+                0,
+                'updateLastModifiedContacts($collection, $websiteId)'
+            );
         }
     }
 }

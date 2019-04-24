@@ -87,7 +87,7 @@ class EmarsysOrderField extends \Magento\Backend\Block\Widget\Grid\Column\Render
         if (isset($session['store'])) {
             $storeId = $session['store'];
         }
-        $heading = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId, true);
+        $heading = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
         array_unshift($heading, 'website_id');
         if (in_array($row->getData('emarsys_order_field'), $heading) || (in_array($row->getData('magento_column_name'), $heading))) {
             $html = "<label >" . $row->getData('emarsys_order_field') . "  </label>";

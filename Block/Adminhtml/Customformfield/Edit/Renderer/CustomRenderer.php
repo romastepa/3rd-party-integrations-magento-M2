@@ -1,15 +1,19 @@
 <?php
 namespace Emarsys\Emarsys\Block\Adminhtml\Customformfield\Edit\Renderer;
 
+use Magento\Framework\Data\Form\Element\Factory as Factory;
+
 /**
  * Class CustomRenderer
+ *
  * @package Emarsys\Emarsys\Block\Adminhtml\Customformfield\Edit\Renderer
  */
 class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElement
 {
     /**
      * CustomRenderer constructor.
-     * @param \Magento\Framework\Data\Form\Element\Factory $factoryElement
+     *
+     * @param Factory $factoryElement
      * @param \Magento\Framework\Data\Form\Element\CollectionFactory $factoryCollection
      * @param \Magento\Framework\Escaper $escaper
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
@@ -20,7 +24,7 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\Data\Form\Element\Factory $factoryElement,
+        Factory $factoryElement,
         \Magento\Framework\Data\Form\Element\CollectionFactory $factoryCollection,
         \Magento\Framework\Escaper $escaper,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
@@ -40,22 +44,27 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
 
     /**
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getElementHtml()
     {
         $rootCategoryId = 1;
         list($catTree, $selectedCats) = $this->getTreeCategories($rootCategoryId);
         $html = "
-        <div class=\"emarsys-search\">
+<div class=\"emarsys-search\">
     <div class=\"category-multi-select\">
-        <div class='admin__field'><div class='admin__field-control'>
-     <div class='admin__action-multiselect-wrap action-select-wrap admin__action-multiselect-tree'>
-<div class='admin__action-multiselect' id='selectedCategories'>$selectedCats</div></div></div>
-</div>";
+        <div class='admin__field'>
+            <div class='admin__field-control'>
+                <div class='admin__action-multiselect-wrap action-select-wrap admin__action-multiselect-tree'>
+                    <div class='admin__action-multiselect' id='selectedCategories'>$selectedCats</div>
+                </div>
+            </div>
+        </div>";
         $html .=
             " <ul><li>
-        <div class= 'catg-sub-'><input type= 'checkbox' disabled = 'disabled'name= 'dummy-checkbox'/>Root Category</div>" . $catTree;
+        <div class= 'catg-sub-'><input type='checkbox' disabled='disabled' name='dummy-checkbox'/>Root Category</div>" . $catTree;
 
+        $html .= "</div></div>";
         return $html;
     }
 
@@ -63,16 +72,13 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
      * @param $parentId
      * @param int $level
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getTreeCategories($parentId, $level = 1)
     {
         $storeId = $this->http->getParam('store');
-        $websiteId = $this->storeManagerInterface->getStore($storeId)->getWebsiteId();
-        $categoriesExcluded = $this->scopeConfigInterface->getValue(
-            'emarsys_predict/feed_export/excludedcategories',
-            'websites',
-            $websiteId
-        );
+        $store = $this->storeManagerInterface->getStore($storeId);
+        $categoriesExcluded = $store->getConfig('emarsys_predict/feed_export/excludedcategories');
         $categoriesExcluded = explode(',', $categoriesExcluded);
         $allCategories = $this->categoryFactory->create()->getCollection()
             ->addAttributeToFilter('parent_id', ['eq' => $parentId]);
@@ -86,11 +92,21 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
                 $checked = 'checked=checked';
             }
             $level = $category->getLevel();
+            $disable = '';
+            $name = 'checkbox';
+            if ($level == 1) {
+                $disable = "disabled=disabled";
+                $name = 'dummy-checkbox';
+            }
             $subcats = $category->getChildren();
             $html .= '<li class="catg-sub-$categoryLevel' . $category->getLevel() . '">';
-            $html .= "<div class=\"catg-sub-$level \"><input type=\"checkbox\" $checked disabled=\"disabled\" name= \"checkbox\" onclick=\"categoryClick(this.value,'" . $category->getName() . "')\" id=\"catCheckBox_" . $category->getId() . "\" name=\"vehicle\" value=\"" . $category->getId() . "\">" . $category->getName() . "</div>";
+            $html .= "<div class=\"catg-sub-$level \">";
+            $html .= "<input type=\"checkbox\" $checked $disable name= \"$name\" onclick=\"categoryClick(this.value,'" .
+                $category->getName() . "')\" id=\"catCheckBox_" . $category->getId() . "\" name=\"vehicle\" value=\"" .
+                $category->getId() . "\">" . $category->getName() . "</div>";
             if ($checked != '') {
-                $selectedCats .= '<span id="' . $category->getId() . '" onclick="Unchecked(' . $category->getId() . ')" class="admin__action-multiselect-crumb">' . $category->getName() . '</span>';
+                $selectedCats .= '<span id="' . $category->getId() . '" onclick="Unchecked(' . $category->getId() .
+                    ')" class="admin__action-multiselect-crumb">' . $category->getName() . '</span>';
             }
             if (count(array_filter(explode(",", $subcats))) > 0) {
                 list($catTree, $selectedSubCats) = $this->getTreeCategories($category->getId(), $level);

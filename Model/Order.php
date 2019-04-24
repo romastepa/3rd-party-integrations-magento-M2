@@ -825,7 +825,6 @@ class Order extends AbstractModel
         $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
 
         $guestOrderExportStatus = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
-        $emailAsIdentifierStatus = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
         $taxIncluded = $this->emarsysHelper->isIncludeTax();
         $useBaseCurrency = $this->emarsysHelper->isUseBaseCurrency();
 
@@ -880,13 +879,8 @@ class Order extends AbstractModel
                     $values[] = $orderId;
                     //set timestamp
                     $values[] = $createdDate;
-
                     //set customer
-                    if ($emailAsIdentifierStatus) {
-                        $values[] = $customerEmail;
-                    } else {
-                        $values[] = $customerId;
-                    }
+                    $values[] = $customerEmail;
                     //set product sku/id
                     $values[] = $item->getSku();
 
@@ -930,7 +924,7 @@ class Order extends AbstractModel
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $order->getData($magentoColumnName));
                         }
                     }
-                    if (!($order->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
+                    if (!($order->getCustomerIsGuest() == 1 && $guestOrderExportStatus == 0)) {
                         fputcsv($this->handle, $values);
                     }
                 }
@@ -963,13 +957,8 @@ class Order extends AbstractModel
                     $values[] = $orderId;
                     //set timestamp
                     $values[] = $createdDate;
-
                     //set customer
-                    if ($emailAsIdentifierStatus) {
-                        $values[] = $customerEmail;
-                    } else {
-                        $values[] = $customerId;
-                    }
+                    $values[] = $customerEmail;
                     //set product sku/id
                     $values[] = $item->getSku();
 
@@ -1013,7 +1002,7 @@ class Order extends AbstractModel
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemo->getData($magentoColumnName));
                         }
                     }
-                    if (!($creditMemoOrder->getCustomerIsGuest() == 1 && ($guestOrderExportStatus == 0 || $emailAsIdentifierStatus == 0))) {
+                    if (!($creditMemoOrder->getCustomerIsGuest() == 1 && $guestOrderExportStatus == 0)) {
                         fputcsv($this->handle, $values);
                     }
                 }
@@ -1040,32 +1029,25 @@ class Order extends AbstractModel
 
     /**
      * Get Sales CSV Header
+     *
      * @param int $storeId
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getSalesCsvHeader($storeId = 0)
     {
-        $store = $this->storeManager->getStore($storeId);
-        $emailAsIdentifierStatus = (bool)$store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
-
         if (!isset($this->salesCsvHeader[$storeId])) {
             //default header
-            $header = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
+            $header = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
 
             //header collected from mapped order attributes
             $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
             foreach ($emarsysFields as $field) {
                 $emarsysOrderFieldValue = trim($field['emarsys_order_field']);
                 if ($emarsysOrderFieldValue != '' && $emarsysOrderFieldValue != "'") {
-                    if ($emailAsIdentifierStatus) {
-                        if ($emarsysOrderFieldValue != 'customer') {
-                            $header[] = $emarsysOrderFieldValue;
-                        }
-                    } else {
-                        if ($emarsysOrderFieldValue != 'email') {
-                            $header[] = $emarsysOrderFieldValue;
-                        }
+                    if ($emarsysOrderFieldValue != 'customer') {
+                        $header[] = $emarsysOrderFieldValue;
                     }
                 }
             }

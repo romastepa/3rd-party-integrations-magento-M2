@@ -141,7 +141,7 @@ class Emarsysproductexport extends AbstractModel
                 ->setPageSize(self::BATCH_SIZE)
                 ->setCurPage($currentPageNumber)
                 ->addAttributeToSelect($attributes)
-                ->addAttributeToSelect(['visibility'])
+                ->addAttributeToSelect(['visibility', 'status'])
                 ->addUrlRewrite();
 
             if (is_null($includeBundle)) {
@@ -156,20 +156,30 @@ class Emarsysproductexport extends AbstractModel
                 $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 
+            $connection = $collection->getSelect()->getConnection();
             //If we have multistock (custom module) we have to add
-            //{{table}}.website_id = $store->getWebsiteId() to condition
-            $collection->joinField(
-                'inventory_in_stock',
-                'cataloginventory_stock_item',
-                'is_in_stock',
-                'product_id = entity_id',
-                null,
-                'left'
+            //$websiteId = $store->getWebsiteId() to condition
+            $websiteId = 0;
+            $joinCondition = $connection->quoteInto(
+                'e.entity_id = stock_status_index.product_id' . ' AND stock_status_index.website_id = ?',
+                $websiteId
+            );
+
+            $joinCondition .= $connection->quoteInto(
+                ' AND stock_status_index.stock_id = ?',
+                1
+            );
+
+            $collection->getSelect()->joinLeft(
+                ['stock_status_index' => $connection->getTableName('cataloginventory_stock_status')],
+                $joinCondition,
+                [
+                    'is_salable' => 'stock_status',
+                    'qty'
+                ]
             );
 
             //Minimal price left join
-            $connection = $collection->getSelect()->getConnection();
-
             $cond = $connection->prepareSqlCondition('price_index.customer_group_id', 0)
                 . ' ' . \Magento\Framework\DB\Select::SQL_AND . ' '
                 . $connection->prepareSqlCondition('price_index.website_id', $store->getWebsiteId());
