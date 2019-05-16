@@ -89,31 +89,8 @@ class Grid extends Extended
     protected function _prepareCollection()
     {
         $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
-
-        $store = $this->_storeManager->getStore($storeId);
 
         $eventMappingCollection = $this->emarsysEventsFactory->create()->getCollection()->addFieldToFilter('store_id', $storeId);
-        if ($this->emarsysHelper->isEmarsysEnabled($store->getWebsiteId())) {
-            if (!$eventMappingCollection->getSize()) {
-                $logsArray['job_code'] = 'Event Mapping';
-                $logsArray['status'] = 'started';
-                $logsArray['messages'] = 'Running Update Schema';
-                $logsArray['created_at'] = date('Y-m-d H:i:s');
-                $logsArray['executed_at'] = date('Y-m-d H:i:s');
-                $logsArray['run_mode'] = 'Automatic';
-                $logsArray['auto_log'] = 'Complete';
-                $logsArray['store_id'] = $storeId;
-                $logsArray['website_id'] = $store->getWebsiteId();
-                $logId = $this->logHelper->manualLogs($logsArray);
-                $logsArray['id'] = $logId;
-
-                $this->emarsysHelper->insertFirstTime($storeId);
-                $this->emarsysHelper->importEvents($logId);
-            }
-        }
 
         $eventMappingCollection->getSelect()->joinLeft(
             ['magento_events' => $this->resourceConnection->getTableName('emarsys_magento_events')],

@@ -111,11 +111,8 @@ class EmarsysEvent extends AbstractRenderer
 			<option value="0">Please Select</option>';
 
         foreach ($emarsysEvents as $emarsysEvent) {
-            $sel = '';
-            if ($row->getData("emarsys_event_id") == $emarsysEvent->getId()) {
-                $sel .= 'selected = selected';
-            }
-            $html .= '<option ' . $sel . ' value="' . $emarsysEvent->getId() . '">' . $emarsysEvent->getEmarsysEvent() . '</option>';
+            $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId()) ? ' selected = selected' : '';
+            $html .= '<option value="' . $emarsysEvent->getId() . '"' . $selected . '>' . $emarsysEvent->getEmarsysEvent() . '</option>';
         }
 
         $html .= '</select>';

@@ -783,18 +783,17 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @param int|null $storeId
      * @param null $logId
      * @throws \Exception
      */
-    public function importEvents($logId = null)
+    public function importEvents($storeId = null, $logId = null)
     {
         $logsArray['id'] = $logId;
         $logsArray['emarsys_info'] = 'Update Schema';
 
         try {
-            $storeId = "";
-
-            if ($this->session->getStoreId()) {
+            if (!$storeId && $this->session->getStoreId()) {
                 $storeId = $this->session->getStoreId();
             }
             //get emarsys events and store it into array
@@ -810,6 +809,7 @@ class Data extends AbstractHelper
             foreach ($emarsysEvents as $emarsysEvent) {
                 if (!array_key_exists($emarsysEvent->getEventId(), $eventArray)) {
                     $this->eventsResourceModel->deleteEvent($emarsysEvent->getEventId(), $storeId);
+                    $this->eventsResourceModel->deleteEventMapping($emarsysEvent->getId(), $storeId);
                 }
             }
             //Update & create new events found in Emarsys
@@ -866,7 +866,7 @@ class Data extends AbstractHelper
                     foreach ($response['body']['data'] as $item) {
                         $result[$item['id']] = $item['name'];
                     }
-                    $logsArray['description'] = print_r($result, true);
+                    $logsArray['description'] = \Zend_Json::encode($result);
                     $logsArray['action'] = 'Update Schema';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'True';

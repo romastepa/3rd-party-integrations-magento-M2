@@ -120,4 +120,18 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             .  $this->getConnection()->quoteInto("AND event_id = ? ", $eventId)
         );
     }
+
+    /**
+     * @param $emarsysEventId
+     * @param $storeId
+     * @return int
+     */
+    public function deleteEventMapping($emarsysEventId, $storeId)
+    {
+        return $this->getConnection()->delete(
+            $this->getTable('emarsys_event_mapping'),
+            $this->getConnection()->quoteInto("store_id = ? ", $storeId)
+            .  $this->getConnection()->quoteInto("AND emarsys_event_id = ? ", $emarsysEventId)
+        );
+    }
 }
