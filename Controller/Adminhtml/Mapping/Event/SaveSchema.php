@@ -110,7 +110,7 @@ class SaveSchema extends Action
 
             if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 $errorStatus = false;
-                $this->emarsysHelper->importEvents($logId);
+                $this->emarsysHelper->importEvents($storeId, $logId);
                 $this->messageManager->addSuccessMessage('Event schema added/updated successfully');
             } else {
                 $logsArray['messages'] = 'Emarsys is Disabled for this Store';

@@ -797,7 +797,6 @@ class Data extends AbstractHelper
                 $storeId = $this->session->getStoreId();
             }
             //get emarsys events and store it into array
-            $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $eventArray = $this->getEvents($storeId, $logId);
 
             if (!count($eventArray)) {
@@ -837,7 +836,7 @@ class Data extends AbstractHelper
             $logsArray['store_id'] = $storeId;
             $logsArray['message_type'] = 'Error';
             $logsArray['log_action'] = 'True';
-            $logsArray['website_id'] = $websiteId;
+            $logsArray['website_id'] = 0;
             $this->logHelper->logs($logsArray);
 
             return;
