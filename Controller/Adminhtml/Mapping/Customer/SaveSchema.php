@@ -162,8 +162,11 @@ class SaveSchema extends Action
             if (isset($schemaData['data']) && !empty($schemaData['data'])) {
                 $this->customerResourceModel->updateCustomerSchema($schemaData, $storeId);
                 $this->messageManager->addSuccessMessage('Customer schema added/updated successfully');
-            } else {
+            } elseif (isset($schemaData['replyText'])) {
                 $this->messageManager->addErrorMessage($schemaData['replyText']);
+            } elseif (isset($schemaData['errorMessage'])) {
+                $this->messageManager->addErrorMessage($schemaData['errorMessage']);
+                $this->emarsysLogs->addErrorLog($schemaData['errorMessage'], $storeId, 'SaveSchema(Customer)');
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveSchema(Customer)');

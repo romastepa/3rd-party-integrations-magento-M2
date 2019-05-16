@@ -94,7 +94,6 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         $body = $template->processTemplate();
 
         $storeId = $template->getEmailStoreId();
-        $store = $this->storeManager->getStore($storeId);
         $templateIdentifier = $this->templateIdentifier;
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
@@ -169,7 +168,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         $processedVariables = [];
 
         /** @var \Magento\Sales\Model\Order $order */
-        if ($order = $template->checkOrder()) {
+        if (method_exists($template, 'checkOrder') && ($order = $template->checkOrder())) {
             $orderData = [];
             foreach ($order->getAllVisibleItems() as $item) {
                 $orderData[] = $this->getOrderData($item);
@@ -178,7 +177,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         }
 
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
-        if ($shipment = $template->checkShipment()) {
+        if (method_exists($template, 'checkShipment') && ($shipment = $template->checkShipment())) {
             $shipmentData = [];
             /** @var \Magento\Sales\Model\Order $rmaOrder */
             $shipmentOrder = $shipment->getOrder();
@@ -195,7 +194,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         }
 
         /** @var \Magento\Sales\Model\Order\Invoice $invoce */
-        if ($invoice = $template->checkInvoice()) {
+        if (method_exists($template, 'checkInvoice') && ($invoice = $template->checkInvoice())) {
             $invoiceData = [];
             /** @var \Magento\Sales\Model\Order $rmaOrder */
             $invoiceOrder = $invoice->getOrder();
@@ -210,7 +209,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         }
 
         /** @var \Magento\Rma\Model\Rma $rma */
-        if ($rma = $template->checkRma()) {
+        if (method_exists($template, 'checkRma') && ($rma = $template->checkRma())) {
             $returnItems = [];
             /** @var \Magento\Sales\Model\Order $rmaOrder */
             $rmaOrder = $rma->getOrder();
@@ -311,10 +310,15 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             $base_url = trim($base_url, '/');
 
             /** @var \Magento\Catalog\Helper\Image $helper */
-            $url = $this->imageHelper
-                ->init($_product, 'product_base_image')
-                ->setImageFile($_product->getImage())
-                ->getUrl();
+            try {
+                $url = $this->imageHelper
+                    ->init($_product, 'product_base_image')
+                    ->setImageFile($_product->getImage())
+                    ->getUrl();
+            } catch (\Exception $e) {
+                $url = '';
+            }
+
             $order['_external_image_url'] = $url;
 
             $order['_url'] = $base_url . "/" . $_product->getUrlPath();

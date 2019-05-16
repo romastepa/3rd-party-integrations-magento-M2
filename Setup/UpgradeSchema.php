@@ -19,6 +19,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
     const EMARSYS_CRON_SUPPORT_TABLE = 'emarsys_cron_details';
     const MAGENTO_CRON_SCHEDULE = 'cron_schedule';
 
+    const EMARSYS_LOG_DETAILS = 'emarsys_log_details';
+    const EMARSYS_LOG_CRON_SCHEDULE = 'emarsys_log_cron_schedule';
+
     /**
      * {@inheritdoc}
      */
@@ -70,6 +73,46 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     $setup->getTable('cron_schedule'),
                     'schedule_id',
                     \Magento\Framework\DB\Ddl\Table::ACTION_CASCADE
+                );
+            }
+
+            $emarsysLogDetailsTable =  $setup->getTable(self::EMARSYS_LOG_DETAILS);
+            $emarsysLogCronScheduleTable =  $setup->getTable(self::EMARSYS_LOG_CRON_SCHEDULE);
+
+            if ($connection->isTableExists($emarsysLogDetailsTable) && $connection->isTableExists($emarsysLogCronScheduleTable)) {
+                $connection->truncateTable($emarsysLogDetailsTable);
+                $connection->truncateTable($emarsysLogCronScheduleTable);
+
+                $connection->changeColumn(
+                    $emarsysLogDetailsTable,
+                    'log_exec_id',
+                    'log_exec_id',
+                    [
+                        'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        'unsigned' => true,
+                        'nullable' => false,
+                        'length'   => 10,
+                        'comment' => 'emarsys_log_cron_schedule id',
+                    ]
+                );
+
+                $connection->addIndex(
+                    $emarsysLogDetailsTable,
+                    $setup->getIdxName($emarsysLogDetailsTable, 'log_exec_id'),
+                    ['log_exec_id']
+                );
+
+                $connection->addForeignKey(
+                    $setup->getFkName(
+                        $emarsysLogDetailsTable,
+                        'log_exec_id',
+                        $emarsysLogCronScheduleTable,
+                        'id'
+                    ),
+                    $emarsysLogDetailsTable,
+                    'log_exec_id',
+                    $emarsysLogCronScheduleTable,
+                    'id'
                 );
             }
         }

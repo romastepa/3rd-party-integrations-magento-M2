@@ -11,7 +11,9 @@ use Magento\{
     Framework\App\Helper\Context,
     Cron\Model\Schedule,
     Cron\Model\ScheduleFactory,
-    Framework\Stdlib\DateTime\DateTime as MagentoDateTime
+    Framework\App\ObjectManager,
+    Framework\Stdlib\DateTime\DateTime as MagentoDateTime,
+    Framework\Stdlib\DateTime\TimezoneInterface
 };
 use Emarsys\Emarsys\{
     Model\EmarsysCronDetailsFactory,
@@ -66,6 +68,11 @@ class Cron extends AbstractHelper
     protected $dateTime;
 
     /**
+     * @var TimezoneInterface
+     */
+    private $timezoneConverter;
+
+    /**
      * Cron constructor.
      *
      * @param Context $context
@@ -73,19 +80,22 @@ class Cron extends AbstractHelper
      * @param EmarsysCronDetailsFactory $emarsysCronDetails
      * @param Emarsyslogs $emarsysLogs
      * @param MagentoDateTime $dateTime
+     * @param TimezoneInterface $timezoneConverter
      */
     public function __construct(
         Context $context,
         ScheduleFactory $scheduleFactory,
         EmarsysCronDetailsFactory $emarsysCronDetails,
         Emarsyslogs $emarsysLogs,
-        MagentoDateTime $dateTime
+        MagentoDateTime $dateTime,
+        TimezoneInterface $timezoneConverter = null
     ) {
         parent::__construct($context);
         $this->scheduleFactory = $scheduleFactory;
         $this->emarsysCronDetails = $emarsysCronDetails;
         $this->emarsysLogs = $emarsysLogs;
         $this->dateTime = $dateTime;
+        $this->timezoneConverter = $timezoneConverter ?: ObjectManager::getInstance()->get(TimezoneInterface::class);
     }
 
     /**
@@ -208,17 +218,24 @@ class Cron extends AbstractHelper
             $cron = $this->scheduleFactory->create();
         }
 
+        $time = $this->timezoneConverter->date($this->dateTime->gmtTimestamp())->format('Y-m-d H:i');
+        $time = strtotime($time);
+
         /** @var ScheduleFactory $cron */
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
-            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))
-            ->setScheduledAt(strftime('%Y-%m-%d %H:%M', $this->dateTime->gmtTimestamp() + 60));
+            ->setCreatedAt(strftime('%Y-%m-%d %H:%M:%S', $time))
+            ->setScheduledAt(strftime('%Y-%m-%d %H:%M', $time + 60));
 
-        $oldZone = @date_default_timezone_get();
-        @date_default_timezone_set('UTC');
-        $cron->save();
-        @date_default_timezone_set($oldZone);
+        $valid = $cron->trySchedule();
+
+        if ($valid) {
+            $cron->save();
+        } else {
+            $result = false;
+        }
+
 
         return $result;
     }

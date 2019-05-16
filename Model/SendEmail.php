@@ -163,11 +163,15 @@ class SendEmail extends AbstractModel
                     if ($emarsysApiEventID != '') {
                         //mapping found for event
                         $this->api->setWebsiteId($websiteId);
-                        /** @var \Zend\Mail\Message $zendMessage */
-                        $zendMessage = $message->getZendMessage();
-                        /** @var \Zend\Mail\AddressList $addressList */
-                        $addressList = $zendMessage->getTo();
-                        $externalId = $addressList->current()->getEmail();
+                        if (method_exists($message, 'zendMessage')) {
+                            /** @var \Zend\Mail\Message $zendMessage */
+                            $zendMessage = $message->getZendMessage();
+                            /** @var \Zend\Mail\AddressList $addressList */
+                            $addressList = $zendMessage->getTo();
+                            $externalId = $addressList->current()->getEmail();
+                        } else {
+                            $externalId = $message->getRecipients()[0];
+                        }
                         $buildRequest = [];
 
                         $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);

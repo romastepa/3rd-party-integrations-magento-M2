@@ -777,15 +777,15 @@ class Product extends AbstractModel
                 }
                 switch ($attributeCode) {
                     case 'quantity_and_stock_status':
-                        $status = $store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS)
+                        $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
                             ? ($productObject->getStatus() == Status::STATUS_ENABLED)
                             : true
                         ;
-                        $inStock = $store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK)
+                        $inStock = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK) == 1)
                             ? $productObject->isAvailable()
                             : true
                         ;
-                        $visibility = $store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY)
+                        $visibility = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY) == 1)
                             ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
                             : true
                         ;

@@ -227,7 +227,7 @@ class Data extends AbstractHelper
     protected $productMetadataInterface;
 
     /**
-     * @var Logs
+     * @var EmarsysHelperLogs
      */
     protected $logHelper;
 
@@ -382,7 +382,7 @@ class Data extends AbstractHelper
      * @param Context $context
      * @param DateTime $date
      * @param Timezone $timezone
-     * @param Logs $logHelper
+     * @param EmarsysHelperLogs $logHelper
      * @param StoreManagerInterface $storeManager
      * @param ModelResourceModelCustomer $customerResourceModel
      * @param Queue $queueModel
@@ -751,10 +751,9 @@ class Data extends AbstractHelper
         $magentoEvents = $this->magentoEventsCollection->create();
 
         foreach ($magentoEvents as $magentoEvent) {
-            $magentoEvent->getId();
             $eventMappingModel = $this->emarsysEventMapping->create();
             $eventMappingModel->setMagentoEventId($magentoEvent->getId());
-            $eventMappingModel->setEmarsysEventId('');
+            $eventMappingModel->setEmarsysEventId(0);
             $eventMappingModel->setStoreId($storeId);
             $eventMappingModel->save();
         }
@@ -800,15 +799,10 @@ class Data extends AbstractHelper
             }
             //get emarsys events and store it into array
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
-            $apiEvents = $this->getEvents($storeId, $logId);
+            $eventArray = $this->getEvents($storeId, $logId);
 
-            if (!count($apiEvents)) {
+            if (!count($eventArray)) {
                 return;
-            }
-
-            $eventArray = [];
-            foreach ($apiEvents as $key => $value) {
-                $eventArray[$key] = $value;
             }
 
             //Delete unwanted events exist in database
