@@ -173,8 +173,6 @@ class Data extends AbstractHelper
 
     const XPATH_WEBEXTEND_MODE = 'web_extend/javascript_tracking/testmode';
 
-    const XPATH_WEBEXTEND_IDENTITY = 'web_extend/javascript_tracking/identityregistered';
-
     const XPATH_WEBEXTEND_UNIQUE_ID = 'web_extend/javascript_tracking/uniqueidentifier';
 
     const XPATH_WEBEXTEND_USE_BASE_CURRENCY = 'web_extend/javascript_tracking/use_base_currency';
@@ -486,17 +484,6 @@ class Data extends AbstractHelper
     {
         return (bool)$this->scopeConfig->getValue(
             self::XPATH_WEBEXTEND_MODE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getIdentityRegistered()
-    {
-        return $this->scopeConfig->getValue(
-            self::XPATH_WEBEXTEND_IDENTITY,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
     }
@@ -2106,6 +2093,7 @@ class Data extends AbstractHelper
 
     /**
      * @param $subscriber
+     * @return $this
      */
     public function realtimeTimeBasedOptinSync($subscriber)
     {
@@ -2144,12 +2132,22 @@ class Data extends AbstractHelper
                     }
                     if (!in_array($magentoOptinValue, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])
                         && !in_array($statusToBeChanged, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED]
-                        )) {
+                    )) {
                         $subscriber->setSubscriberStatus($statusToBeChanged)
                             ->setEmarsysNoExport(true)
                             ->save();
                     }
                 }
+                return false;
+            } elseif (isset($response['body']['data']['errors'][0]['errorCode']) && $response['body']['data']['errors'][0]['errorCode'] == 2008) {
+                $this->addNoticeLog(
+                    \Zend_Json::encode($response),
+                    $subscriber->getStoreId(),
+                    'realtimeTimeBasedOptinSync'
+                );
+            } elseif (isset($response['status']) && $response['status'] == 200) {
+                $subscriber->setEmarsysNoExport(true);
+                return false;
             } else {
                 $this->addErrorLog(
                     \Zend_Json::encode($response),
@@ -2164,6 +2162,8 @@ class Data extends AbstractHelper
                 'realtimeTimeBasedOptinSync'
             );
         }
+
+        return true;
     }
 
     /**
@@ -2600,6 +2600,16 @@ class Data extends AbstractHelper
     public function addErrorLog($messages, $storeId, $info)
     {
         return $this->emarsysLogs->addErrorLog($messages, $storeId, $info);
+    }
+
+    /**
+     * @param $messages
+     * @param $storeId
+     * @param $info
+     */
+    public function addNoticeLog($messages, $storeId, $info)
+    {
+        return $this->emarsysLogs->addNoticeLog($messages, $storeId, $info);
     }
 
     /**

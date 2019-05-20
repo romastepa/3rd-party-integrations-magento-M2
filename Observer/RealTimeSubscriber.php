@@ -106,12 +106,13 @@ class RealTimeSubscriber implements ObserverInterface
 
         try {
             $frontendFlag = 1;
-            $this->emarsysHelper->realtimeTimeBasedOptinSync($subscriber);
-            $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag);
+            $createSubscriber = $this->emarsysHelper->realtimeTimeBasedOptinSync($subscriber);
 
-            if ($result['apiResponseStatus'] == '200') {
-                return true;
+            if ($createSubscriber) {
+                return $this->subscriberModel->syncSubscriber($subscriberId, $storeId, $frontendFlag);
             }
+
+            return true;
         } catch (\Exception $e) {
             $this->emarsysHelper->syncFail($subscriberId, $websiteId, $storeId, 0, 2);
             $this->emarsysHelper->addErrorLog(

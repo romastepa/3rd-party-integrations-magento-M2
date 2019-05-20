@@ -104,29 +104,26 @@ class Emarsyseventmapping extends AbstractRenderer
         $gridSessionData = $session->getMappingGridData();
         $url = $this->_urlInterface->getUrl('*/*/changeValue');
         $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id', ['eq' => $storeId]);
-        $ronly = '';
-        $dbEvents = [];
-        foreach ($emarsysEvents as $emarsysEvent) {
-            $dbEvents[] = $emarsysEvent->getId();
-        }
+        $dbEvents = $emarsysEvents->getAllIds();
+
+        $readOnly = '';
         if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
-            $ronly .= ' disabled = disabled';
+            $readOnly .= 'disabled = disabled ';
         }
-        $html = '<select ' . $ronly . ' name="directions"  style="width:200px;" onchange="changeEmarsysValue(\'' . $url . '\',this.value, \'' . $row->getData('magento_event_id') . '\', \'' . $row->getData('id') . '\')";>
+
+        $html = '<select ' . $readOnly . 'name="directions" style="width:200px;" onchange="changeEmarsysValue(\'' . $url . '\', this.value, \'' . $row->getData('magento_event_id') . '\', \'' . $row->getData('id') . '\')";>
 			<option value="0">Please Select</option>';
+
         foreach ($emarsysEvents as $emarsysEvent) {
             $sel = '';
             $id = $row->getId();
             $magento_event_id = $row->getMagentoEventId();
             $gridSessionData[$id]['magento_event_id'] = $magento_event_id;
 
-            if ($row->getEmasysEventId() == $emarsysEvent->getId()) {
-                $sel .= 'selected = selected';
-                $gridSessionData[$id]['emarsys_event_id'] = $emarsysEvent->getId();
-            } elseif (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() == 0)) {
-                $sel .= 'selected = selected';
-                $gridSessionData[$id]['emarsys_event_id'] = $emarsysEvent->getId();
-            } elseif (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() != 0) && !in_array($row->getEmarsysEventId(), $dbEvents)) {
+            if (($row->getEmasysEventId() == $emarsysEvent->getId())
+                || (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() == 0))
+                || (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() != 0) && !in_array($row->getEmarsysEventId(), $dbEvents))
+            ) {
                 $sel .= 'selected = selected';
                 $gridSessionData[$id]['emarsys_event_id'] = $emarsysEvent->getId();
             }

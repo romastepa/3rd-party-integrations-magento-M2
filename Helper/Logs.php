@@ -124,7 +124,7 @@ class Logs extends AbstractHelper
             }
 
             if (isset($logsArray['messages'])) {
-                $this->cronSchedule->setMessages($logsArray['messages']);
+                $this->cronSchedule->setMessages(str_replace(',"', ' ,"', $logsArray['messages']));
             }
 
             if (isset($logsArray['created_at'])) {
@@ -177,7 +177,7 @@ class Logs extends AbstractHelper
                 }
 
                 if (isset($logsArray['messages'])) {
-                    $collection->setMessages($logsArray['messages']);
+                    $collection->setMessages(str_replace(',"', ' ,"', $logsArray['messages']));
                 }
 
                 if (isset($logsArray['scheduled_at'])) {
@@ -214,11 +214,11 @@ class Logs extends AbstractHelper
         $logsModel = $this->logsFactory->create();
         $logsModel->setLogExecId($schedulerId)
             ->setCreatedAt($currentDate)
-            ->setEmarsysInfo(@$logsArray['emarsys_info'])
-            ->setDescription(@$logsArray['description'])
+            ->setEmarsysInfo(isset($logsArray['emarsys_info']) ? $logsArray['emarsys_info'] : '')
+            ->setDescription(isset($logsArray['description']) ? str_replace(',"',' ,"', $logsArray['description']) : '')
             ->setAction(isset($logsArray['action']) ? $logsArray['action'] : 'synced to emarsys')
-            ->setMessageType(@$logsArray['message_type'])
-            ->setStoreId(@$logsArray['store_id'])
+            ->setMessageType(isset($logsArray['message_type']) ? $logsArray['message_type'] : '')
+            ->setStoreId(isset($logsArray['store_id']) ? $logsArray['store_id'] : 0)
             ->setWebsiteId(isset($logsArray['website_id']) ? $logsArray['website_id'] : 0)
             ->setLogAction(isset($logsArray['log_action']) ? $logsArray['log_action'] : 'sync');
 
@@ -247,6 +247,9 @@ class Logs extends AbstractHelper
     /**
      * @param $title
      * @param $errorMsg
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\MailException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function errorLogEmail($title, $errorMsg)
     {
@@ -288,28 +291,6 @@ class Logs extends AbstractHelper
                 }
             }
             $this->inlineTranslation->resume();
-        }
-    }
-
-    /**
-     * @param $logId
-     * @param $mesage
-     * @param $websiteId
-     */
-    public function childLogs($logId, $mesage, $websiteId)
-    {
-        try {
-            $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = 'Backgroud Time Based Optin Sync Success';
-            $logsArray['description'] = $mesage;
-            $logsArray['action'] = 'Backgroud Time Based Optin Sync';
-            $logsArray['message_type'] = 'Success';
-            $logsArray['log_action'] = 'True';
-            $logsArray['website_id'] = $websiteId;
-            $logsArray['store_id'] = $this->storeManager->getWebsite($websiteId)->getDefaultStore()->getId();
-            $this->logs($logsArray);
-        } catch (\Exception $e) {
-            $this->_logger->debug($e->getMessage());
         }
     }
 }

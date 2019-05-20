@@ -50,7 +50,7 @@ class Messagetype extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abs
         } elseif (strtolower($rowData['message_type']) == 'error') {
             $usermsg = "<span style='color:red'>Failed</span>";
         } elseif(strtolower($rowData['message_type']) == 'notice') {
-            $usermsg = "<span style='color:#EB5202'>Notice</span>";
+            $usermsg = "<span style='color:orange'>Notice</span>";
         } else {
             $usermsg = "<span style='color:green'>Success</span>";
         }

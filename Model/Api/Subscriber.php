@@ -189,23 +189,15 @@ class Subscriber
 
         // Query to get opt-in Id in emarsys from magento table
         $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
-        $subscriberStatus = $objSubscriber->getSubscriberStatus();
+        //$subscriberStatus = $objSubscriber->getSubscriberStatus();
 
         //return single / double opt-in
         $optInType = $store->getConfig(EmarsysHelper::XPATH_OPTIN_EVERYPAGE_STRATEGY);
 
-        if ($optInType == 'singleOptIn' && !$subscriberStatus) {
+        if ($optInType == 'singleOptIn') {
             $buildRequest[$optInEmarsysId] = 1;
-        } elseif ($optInType == 'doubleOptIn' && !$subscriberStatus) {
+        } elseif ($optInType == 'doubleOptIn') {
             $buildRequest[$optInEmarsysId] = '';
-        } else {
-            if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
-                $buildRequest[$optInEmarsysId] = '';
-            } elseif ($subscriberStatus == \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
-                $buildRequest[$optInEmarsysId] = 1;
-            } else {
-                $buildRequest[$optInEmarsysId] = 2;
-            }
         }
 
         $errorMsg = 0;
@@ -221,7 +213,7 @@ class Subscriber
             $optInResult = $this->api->createContactInEmarsys($buildRequest);
 
             $logsArray['id'] = $logId;
-            $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
+            $logsArray['emarsys_info'] = 'Created Subscriber in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
             $res = ' [PUT] ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($optInResult)
                 . ' [confirmation url] ' . $this->newsletterHelperData->getConfirmationUrl($objSubscriber)
@@ -229,7 +221,7 @@ class Subscriber
             ;
             if ($optInResult['status'] == '200') {
                 $logsArray['message_type'] = 'Success';
-                $logsArray['description'] = "Created subscriber '" . $objSubscriber->getSubscriberEmail() . "' in Emarsys succcessfully " . $res;
+                $logsArray['description'] = "Created subscriber '" . $objSubscriber->getSubscriberEmail() . "' in Emarsys successfully " . $res;
             } else {
                 $this->emarsysHelper->syncFail($subscribeId, $websiteId, $storeId, 0, 2);
                 $logsArray['message_type'] = 'Error';
@@ -248,18 +240,15 @@ class Subscriber
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         if ($errorMsg == 1) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Error in creating subscriber !!!';
+            $logsArray['messages'] = 'Error in creating Subscriber !!!';
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = 'Created subscriber in Emarsys';
+            $logsArray['messages'] = 'Created Subscriber in Emarsys';
         }
         $this->logsHelper->manualLogsUpdate($logsArray);
 
         if ($frontendFlag != '') {
-            $responseData = [
-                'apiResponseStatus' => $optInResult['status']
-            ];
-            return $responseData;
+            return ($optInResult['status'] == 200) ? true : false;
         }
     }
 
@@ -387,12 +376,12 @@ class Subscriber
 
         if ($errorStatus) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Error in creating subscriber !!!';
+            $logsArray['messages'] = 'Error in creating Subscriber !!!';
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = 'Created subscriber in Emarsys';
+            $logsArray['messages'] = 'Created Subscriber in Emarsys';
         }
-        $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+        $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s');
         $this->logsHelper->manualLogsUpdate($logsArray);
 
         return $errorStatus ? false : true;

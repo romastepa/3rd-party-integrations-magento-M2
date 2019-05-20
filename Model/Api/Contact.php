@@ -293,13 +293,13 @@ class Contact
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         if ($errorMsg == 1) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Create customer in Emarsys with ERROR !!!';
+            $logsArray['messages'] = 'ERROR on Customer creation in Emarsys';
             if (empty($getEmarsysMappedFields)) {
-                $logsArray['messages'] = 'Create customer in Emarsys with ERROR! Mapping is empty!';
+                $logsArray['messages'] = 'ERROR on Customer creation in Emarsys! Mapping is empty!';
             }
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = 'Customer in Emarsys created';
+            $logsArray['messages'] = 'Created Customer in Emarsys';
         }
         $this->logsHelper->manualLogsUpdate($logsArray);
     }
@@ -312,6 +312,7 @@ class Contact
      * @param null|\Magento\Customer\Model\Address $customerAddress
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Json_Exception
      */
     public function getMappedCustomersAddressAttributes($customer, $storeId, $customerAddress = null)
     {
@@ -332,24 +333,15 @@ class Contact
             }
 
             $mappedCountries = $this->emarsysCountryHelper->getMapping($storeId);
-            $headers = $headerIndex = [];
 
-            foreach ($mappedAttributes as $attribute) {
+            foreach ($mappedAttributes as $key => $attribute) {
                 if (!$attribute['emarsys_contact_field']) {
                     continue;
                 }
-                $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($attribute, $storeId);
-                $headers[$attribute['magento_custom_attribute_id']] = $emarsysField['name'];
-                $headerIndex[$attribute['emarsys_contact_field']] = $attribute['magento_custom_attribute_id'];
-            }
-
-            foreach ($headers as $key => $value) {
-                //using the custom magento id from the emarsys_magento_customer_attributes table
-                $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($key, $storeId);
-                if ($attributeCode['entity_type_id'] == 2) { // If the field type is Address
+                $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($attribute['magento_custom_attribute_id'], $storeId);
+                if (!empty($attributeCode) && $attributeCode['entity_type_id'] == 2) { // If the field type is Address
                     $isShippingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_shipping_') !== false) ? true : false;
                     $isBillingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_billing_') !== false) ? true : false;
-                    $index = array_search($key, $headerIndex);
                     $attrValue = '';
                     if ($isShippingAttr && $primaryShipping) {
                         $attrValue = $primaryShipping->getData($attributeCode['attribute_code']);
@@ -357,12 +349,12 @@ class Contact
                         $attrValue = $primaryBilling->getData($attributeCode['attribute_code']);
                     }
                     if ($attributeCode['attribute_code'] == 'country_id') {
-                        $attrValue = (isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '');
+                        $attrValue = isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '';
                     } elseif ($attributeCode['attribute_code'] == 'street') {
-                        $attrValue = str_replace("\n", ',', $attrValue);
+                        $attrValue = str_replace("\n", ', ', $attrValue);
                     }
 
-                    $addressFields[$index] = $attrValue;
+                    $addressFields[$attribute['emarsys_contact_field']] = $attrValue;
                 }
             }
         }

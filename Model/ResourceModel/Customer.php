@@ -649,8 +649,8 @@ class Customer extends AbstractDb
 
     /**
      *
-     * @param type $attdata
-     * @param type $storeId
+     * @param int $attdata
+     * @param int $storeId
      * @return array
      */
     public function getEmarsysFieldNameContact($attdata, $storeId)
@@ -666,8 +666,8 @@ class Customer extends AbstractDb
 
     /**
      *
-     * @param type $id
-     * @param type $storeId
+     * @param int $id
+     * @param int $storeId
      * @return array
      */
     public function getMagentoAttributeCode($id, $storeId)

@@ -108,4 +108,38 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             );
         }
     }
+
+    /**
+     * @param $messages
+     * @param $storeId
+     * @param $info
+     */
+    public function addNoticeLog($messages = '', $storeId = 0, $info = '')
+    {
+        try {
+            $logsArray['job_code'] = 'Notice';
+            $logsArray['status'] = 'notice';
+            $logsArray['messages'] = $messages;
+            $logsArray['created_at'] = $this->dateTime->date('Y-m-d H:i:s', time());
+            $logsArray['executed_at'] = $this->dateTime->date('Y-m-d H:i:s', time());
+            $logsArray['run_mode'] = '';
+            $logsArray['auto_log'] = '';
+            $logsArray['store_id'] = $storeId;
+            $logId = $this->emarsysLog->manualLogs($logsArray);
+            if ($logId) {
+                $logsArray['id'] = $logId;
+                $logsArray['emarsys_info'] = $info;
+                $logsArray['description'] = $messages;
+                $logsArray['action'] = '';
+                $logsArray['message_type'] = 'notice';
+                $logsArray['log_action'] = 'fail';
+                $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
+                $this->emarsysLog->logs($logsArray);
+            }
+        } catch (\Exception $e) {
+            $this->messageManagerInterface->addErrorMessage(
+                'Unable to Log: ' . $e->getMessage()
+            );
+        }
+    }
 }

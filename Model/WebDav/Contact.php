@@ -164,7 +164,7 @@ class Contact extends \Magento\Framework\DataObject
                 );
                 if ($checkWebDavConnection['status']) {
                     $mappedAttributes = $this->customerResourceModel->getMappedCustomerAttribute($storeId);
-                    if (isset($mappedAttributes) && count($mappedAttributes) != '') {
+                    if (count($mappedAttributes)) {
                         $headers = [];
                         $headerIndex = [];
                         $indexCount = 0;
