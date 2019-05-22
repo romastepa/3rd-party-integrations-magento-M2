@@ -119,7 +119,7 @@ class Index extends Action
                     $logsArray['action'] = 'Synced to Magento';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
 
                     //save api_endpoint information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $endpoint, $scopeType, $scopeId);
@@ -130,7 +130,7 @@ class Index extends Action
                     $logsArray['action'] = 'Synced to Magento';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
 
                     if ($endpoint == 'custom') {
                         //save custom_url information in respected configuration.
@@ -142,7 +142,7 @@ class Index extends Action
                         $logsArray['action'] = 'Synced to Magento';
                         $logsArray['message_type'] = 'Success';
                         $logsArray['log_action'] = 'sync';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
 
                     //save api username information in respected configuration.
@@ -154,7 +154,7 @@ class Index extends Action
                     $logsArray['action'] = 'Synced to Magento';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
 
                     //save api password information in respected configuration.
                     $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_password', $password, $scopeType, $scopeId);
@@ -165,7 +165,7 @@ class Index extends Action
                     $logsArray['action'] = 'Synced to Magento';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'sync';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                     $this->messageManager->addSuccessMessage('Test connection is successful.');
 
                     $logsArray['id'] = $logId;
@@ -173,7 +173,7 @@ class Index extends Action
                     $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                     $logsArray['status'] = 'success';
                     $logsArray['messages'] = 'Test connection Completed';
-                    $this->logsHelper->manualLogsUpdate($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 } catch (\Exception $e) {
                     $this->messageManager->addErrorMessage($e->getMessage());
                     $this->messageManager->addErrorMessage('Test connection is failed.');
@@ -182,7 +182,7 @@ class Index extends Action
                     $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                     $logsArray['status'] = 'error';
                     $logsArray['messages'] = 'Test connection failed';
-                    $this->logsHelper->manualLogsUpdate($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
             } else {
                 //test api connecton failed.
@@ -191,8 +191,8 @@ class Index extends Action
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. ' . json_encode($response, JSON_PRETTY_PRINT);
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. | ' . \Zend_Json::encode($response);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //no api credentials found.
@@ -202,7 +202,7 @@ class Index extends Action
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['status'] = 'error';
             $logsArray['messages'] = 'Connection failed. Please enter the api credentials.';
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
     }
 }

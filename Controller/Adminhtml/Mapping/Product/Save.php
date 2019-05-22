@@ -57,7 +57,7 @@ class Save extends Action
     /**
      * @var Logs
      */
-    protected $logHelper;
+    protected $logsHelper;
 
     /**
      * @var DateTime
@@ -75,7 +75,7 @@ class Save extends Action
      * @param ProductFactory $productFactory
      * @param Data $emsrsysHelper
      * @param StoreManagerInterface $storeManager
-     * @param Logs $logHelper
+     * @param Logs $logsHelper
      * @param EmarsysModelLogs $emarsysLogs
      * @param DateTime $date
      * @param Product $resourceModelProduct
@@ -86,7 +86,7 @@ class Save extends Action
         ProductFactory $productFactory,
         Data $emsrsysHelper,
         StoreManagerInterface $storeManager,
-        Logs $logHelper,
+        Logs $logsHelper,
         EmarsysModelLogs $emarsysLogs,
         DateTime $date,
         Product $resourceModelProduct,
@@ -100,7 +100,7 @@ class Save extends Action
         $this->emarsysLogs = $emarsysLogs;
         $this->resourceModelProduct = $resourceModelProduct;
         $this->emsrsysHelper = $emsrsysHelper;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->date = $date;
         $this->storeManager = $storeManager;
     }
@@ -113,11 +113,11 @@ class Save extends Action
     public function execute()
     {
         $resultRedirect = $this->resultRedirectFactory->create();
+        $gridSessionStoreId = 0;
         try {
             $savedValues = [];
             $model = $this->productFactory->create();
             $session = $this->session->getData();
-            $gridSessionStoreId = '';
             $gridSessionData = [];
             if (isset($session['gridData'])) {
                 $gridSessionData = $session['gridData'];
@@ -139,7 +139,7 @@ class Save extends Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $gridSessionStoreId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
             foreach ($gridSessionData as $key => $value) {
                 if ($key == '') {
                     continue;
@@ -189,15 +189,19 @@ class Save extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Product Mapping Saved Successfully';
-            $this->logHelper->logs($logsArray);
-            $this->logHelper->manualLogs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             /**
              * Truncating the Mapping Table first
              */
             $this->resourceModelProduct->deleteUnmappedRows($gridSessionStoreId);
             $this->messageManager->addSuccessMessage("Product attributes Mapped successfully");
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $gridSessionStoreId, 'Save(Product)');
+            $this->emarsysLogs->addErrorLog(
+                'Saving Product Mapping',
+                $e->getMessage(),
+                $gridSessionStoreId,
+                'Save(Product)'
+            );
             $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
         }
         return $resultRedirect->setRefererOrBaseUrl();

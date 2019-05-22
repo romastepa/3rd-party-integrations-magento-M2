@@ -84,9 +84,14 @@ class Event extends AbstractHelper
             $response = $this->api->sendRequest('GET', 'event');
             return $response['body'];
         } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'getEventSchema');
-            return false;
+            $this->emarsysHelper->addErrorLog(
+                'getEventSchema',
+                $e->getMessage(),
+                $storeId,
+                'Event::getEventSchema'
+            );
         }
+        return false;
     }
 
     /**
@@ -102,9 +107,14 @@ class Event extends AbstractHelper
             $response = $this->api->sendRequest('GET', 'email/templates');
             return $response['body'];
         } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'getEventTemplateSchema');
-            return false;
+            $this->emarsysHelper->addErrorLog(
+                'getEventTemplateSchema',
+                $e->getMessage(),
+                $storeId,
+                'Event::getEventTemplateSchema'
+            );
         }
+        return false;
     }
 
     /**
@@ -119,12 +129,18 @@ class Event extends AbstractHelper
             $adminNotiColl->setTitle('Emarsys Events Updates');
             $adminNotiColl->setDescription('Emarsys events has been update, Please update the emarsys event schema');
             $adminNotiColl->save();
+            return true;
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'saveEmarsysEventSchemaNotification');
-            return false;
+            $this->emarsysHelper->addErrorLog(
+                'saveEmarsysEventSchemaNotification',
+                $e->getMessage(),
+                $storeId,
+                'Event::saveEmarsysEventSchemaNotification'
+            );
         }
-        return true;
+        return false;
+
     }
 
     /**
@@ -149,27 +165,13 @@ class Event extends AbstractHelper
             }
         } catch (\Exception $e) {
             $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'getLocalEmarsysEvents');
+            $this->emarsysHelper->addErrorLog(
+                'getLocalEmarsysEvents',
+                $e->getMessage(),
+                $storeId,
+                'Event::getLocalEmarsysEvents'
+            );
         }
         return $emarsysLocalIds;
-    }
-
-    /**
-     * @return bool
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
-    public function getEmar()
-    {
-        try {
-            $adminNotiColl = $this->emarsysEvents->create()->getCollection();
-            print_r($adminNotiColl->getData());
-            foreach ($adminNotiColl as $_adminNotiColl) {
-                print_r($_adminNotiColl->getData());
-            }
-        } catch (\Exception $e) {
-            $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysHelper->addErrorLog($e->getMessage(), $storeId, 'getEmar');
-            return false;
-        }
     }
 }

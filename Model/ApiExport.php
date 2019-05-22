@@ -128,7 +128,12 @@ class ApiExport extends ZendClient
             return $headers;
         }
         $storeId = $this->storeManagerInterface->getStore()->getId();
-        $this->emarsysHelper->addErrorLog('Api Token Not Found', $storeId, 'ApiExport::getApiHeaders()');
+        $this->emarsysHelper->addErrorLog(
+            'Api Export',
+            'Api Token Not Found',
+            $storeId,
+            'ApiExport::getApiHeaders()'
+        );
 
         return false;
     }
@@ -162,7 +167,12 @@ class ApiExport extends ZendClient
                 $result['resultBody'] = 'Api Export Failed. Empty response';
             }
         } else {
-            $this->emarsysHelper->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
+            $this->emarsysHelper->addErrorLog(
+                'Api Export',
+                'Api Export Failed. API URL or CSV File Not Found.',
+                $storeId,
+                'ApiExport::apiExport()')
+            ;
         }
 
         return $result;
@@ -201,7 +211,8 @@ class ApiExport extends ZendClient
             }
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
-                'API Test Connection Failed. ' . $e->getMessage(),
+                'API Test Connection',
+                'API Test Connection Failed. | ' . $e->getMessage(),
                 $this->storeManagerInterface->getStore()->getId(),
                 'ApiExport::_request()'
             );

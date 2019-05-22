@@ -118,7 +118,7 @@ class SaveSchema extends Action
             $logsArray['emarsys_info'] = 'Update Schema Successful';
             $logsArray['description'] = 'Inserted Entries ' . print_r($data,true);
             $logsArray['message_type'] = 'Success';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage('Order Schema Updated Successfully.');
         } catch (\Exception $e) {
             if ($logId) {
@@ -126,7 +126,7 @@ class SaveSchema extends Action
                 $logsArray['emarsys_info'] = 'Update Schema not Successful';
                 $logsArray['description'] = $e->getMessage();
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
             $this->messageManager->addErrorMessage(
                 __('There was a problem while updating order schema. Please refer emarsys logs for more information.
@@ -142,7 +142,7 @@ class SaveSchema extends Action
             $logsArray['status'] = 'success';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $resultRedirect->setRefererOrBaseUrl();
     }

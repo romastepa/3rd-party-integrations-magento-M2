@@ -138,14 +138,14 @@ class WebDav extends DataObject
                 $logsArray['emarsys_info'] = 'Invalid WebDAV credentials.';
                 $logsArray['description'] = 'Invalid WebDAV credentials. Please check your settings and try again';
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //Emarsys is disabled for the store
             $logsArray['emarsys_info'] = __('Emarsys is disabled');
             $logsArray['description'] = __('Emarsys is disabled for the store');
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         if ($errorStatus) {
@@ -156,7 +156,7 @@ class WebDav extends DataObject
             $logsArray['messages'] = 'Contacts successfully synced';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return;
     }

@@ -163,6 +163,7 @@ class ProductExport extends Action
         } catch (\Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
+                'ProductExport',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'ProductExport::execute()'

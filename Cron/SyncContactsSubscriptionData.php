@@ -215,23 +215,24 @@ class SyncContactsSubscriptionData
 
             $logsArray['description'] = $this->getExportsNotificationUrl($websiteId, $isTimeBased, $storeId);
             $logsArray['message_type'] = 'Success';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
 
             $this->api->setWebsiteId(current($websiteId));
             $response = $this->api->sendRequest('POST', 'contact/getchanges', $payload);
 
             $logsArray['description'] = \Zend_Json::encode($response);
             $logsArray['message_type'] = 'Success';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
 
             if (isset($response['body']['data']['id'])) {
                 $this->setValue('export_id', $response['body']['data']['id'], current($websiteId));
                 $logsArray['description'] = $response['body']['data']['id'];
                 $logsArray['message_type'] = 'Success';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'Running requestSubscriptionUpdates',
                 $e->getMessage(),
                 0,
                 'SyncContactsSubscriptionData::requestSubscriptionUpdates(helper/data)'
@@ -244,33 +245,30 @@ class SyncContactsSubscriptionData
      * @param bool $isTimeBased
      * @param $storeId
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getExportsNotificationUrl($websiteId = 0, $isTimeBased = false, $storeId)
+    public function getExportsNotificationUrl($websiteId = 0, $isTimeBased = false, $storeId = 0)
     {
-        try {
-            $oldEntryPoint = $this->registry->registry('custom_entry_point');
-            if ($oldEntryPoint) {
-                $this->registry->unregister('custom_entry_point');
-            }
-            $this->registry->register('custom_entry_point', 'index.php');
-
-            if ($isTimeBased) {
-                $url = $this->storeManager->getStore($storeId)->getBaseUrl() . 'emarsys/index/sync?_store=' . $storeId . '&secret=' . $this->scopeConfig->getValue('contacts_synchronization/emarsys_emarsys/notification_secret_key') . '&website_ids=' . implode(',', $websiteId) . '&timebased=1';
-            }
+        $oldEntryPoint = $this->registry->registry('custom_entry_point');
+        if ($oldEntryPoint) {
             $this->registry->unregister('custom_entry_point');
-
-            if ($oldEntryPoint) {
-                $this->registry->register('custom_entry_point', $oldEntryPoint);
-            }
-
-            return $url;
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
-                $e->getMessage(),
-                $storeId,
-                'SyncContactsSubscriptionData::getExportsNotificationUrl(helper/data)'
-            );
         }
+        $this->registry->register('custom_entry_point', 'index.php');
+
+        if ($isTimeBased) {
+            $url = $this->storeManager->getStore($storeId)->getBaseUrl()
+                . 'emarsys/index/sync?_store=' . $storeId
+                . '&secret=' . $this->scopeConfig->getValue('contacts_synchronization/emarsys_emarsys/notification_secret_key')
+                . '&website_ids=' . implode(',', $websiteId)
+                . '&timebased=1';
+        }
+        $this->registry->unregister('custom_entry_point');
+
+        if ($oldEntryPoint) {
+            $this->registry->register('custom_entry_point', $oldEntryPoint);
+        }
+
+        return $url;
     }
 
     /**
@@ -281,15 +279,7 @@ class SyncContactsSubscriptionData
      */
     public function setValue($key, $value, $websiteId)
     {
-        try {
-            $this->resourceConfig->saveConfig('emarsys_suite2/storage/' . $key, $value, 'websites', $websiteId);
-            $this->_cacheTypeList->cleanType('config');
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
-                $e->getMessage(),
-                0,
-                'SyncContactsSubscriptionData::setValue(helper/data)'
-            );
-        }
+        $this->resourceConfig->saveConfig('emarsys_suite2/storage/' . $key, $value, 'websites', $websiteId);
+        $this->_cacheTypeList->cleanType('config');
     }
 }

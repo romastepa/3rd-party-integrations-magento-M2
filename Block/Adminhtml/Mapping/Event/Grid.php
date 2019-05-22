@@ -51,7 +51,7 @@ class Grid extends Extended
     /**
      * @var EmarsysHelperLogs
      */
-    protected $logHelper;
+    protected $logsHelper;
 
     /**
      * Grid constructor.
@@ -59,7 +59,7 @@ class Grid extends Extended
      * @param EmarsysEventsFactory $emarsysEventsFactory
      * @param EmarsysHelper $emarsysHelper
      * @param ResourceConnection $resourceConnection
-     * @param EmarsysHelperLogs $logHelper
+     * @param EmarsysHelperLogs $logsHelper
      * @param Context $context
      * @param Data $backendHelper
      * @param array $data
@@ -68,7 +68,7 @@ class Grid extends Extended
         EmarsyseventsFactory $emarsysEventsFactory,
         EmarsysHelper $emarsysHelper,
         ResourceConnection $resourceConnection,
-        EmarsysHelperLogs $logHelper,
+        EmarsysHelperLogs $logsHelper,
         Context $context,
         Data $backendHelper,
         $data = []
@@ -78,7 +78,7 @@ class Grid extends Extended
         $this->_storeManager = $context->getStoreManager();
         $this->emarsysHelper = $emarsysHelper;
         $this->resourceConnection = $resourceConnection;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         parent::__construct($context, $backendHelper, $data);
     }
 

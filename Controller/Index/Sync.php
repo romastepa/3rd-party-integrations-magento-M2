@@ -66,10 +66,20 @@ class Sync extends \Magento\Framework\App\Action\Action
                     $this->emarsysHelper->importSubscriptionUpdates($websiteId, true);
                 }
             } else {
-                $this->emarsysLogs->addErrorLog('Unauthorized Access', 0, 'sync action index');
+                $this->emarsysLogs->addErrorLog(
+                    'Emarsys Customer Sync',
+                    'Unauthorized Access',
+                    0,
+                    'sync action index'
+                );
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), 0, 'sync action index');
+            $this->emarsysLogs->addErrorLog(
+                'Emarsys Customer Sync',
+                $e->getMessage(),
+                0,
+                'sync action index'
+            );
         }
     }
 }

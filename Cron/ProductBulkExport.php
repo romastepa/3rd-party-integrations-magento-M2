@@ -71,6 +71,7 @@ class ProductBulkExport
 
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'ProductBulkExport',
                 $e->getMessage(),
                 0,
                 'ProductBulkExport::execute()'

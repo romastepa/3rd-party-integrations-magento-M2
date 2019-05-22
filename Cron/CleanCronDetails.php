@@ -45,6 +45,7 @@ class CleanCronDetails
             $this->emarsysCronDetails->clearEmarsysCronDetails();
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'CleanCronDetails',
                 $e->getMessage(),
                 0,
                 'CleanCronDetails::execute()'

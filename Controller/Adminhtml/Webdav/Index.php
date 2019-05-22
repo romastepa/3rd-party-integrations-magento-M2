@@ -117,7 +117,7 @@ class Index extends Action
                 $logsArray['action'] = 'Synced to Magento';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
 
                 //save webdav_user information in respected configuration.
                 $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_user', $webDavUser, $scopeType, $scopeId);
@@ -127,7 +127,7 @@ class Index extends Action
                 $logsArray['action'] = 'Synced to Magento';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
 
                 //save webdav_password information in respected configuration.
                 $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_password', $webDavPass, $scopeType, $scopeId);
@@ -137,7 +137,7 @@ class Index extends Action
                 $logsArray['action'] = 'Synced to Magento';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['log_action'] = 'sync';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addSuccessMessage('Test connection is successful.');
 
                 $logsArray['id'] = $logId;
@@ -145,7 +145,7 @@ class Index extends Action
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'WebDav test connection completed';
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             } else {
                 //test connection is failed.
                 $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
@@ -154,7 +154,7 @@ class Index extends Action
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'WebDav connection failed. Please check your credentials and try again. ' . $checkWebDavConnection['response_body'];
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //valid credentials not found.
@@ -164,7 +164,7 @@ class Index extends Action
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['status'] = 'error';
             $logsArray['messages'] = 'WebDav connection failed. Please enter valid credentials.';
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
     }
 }

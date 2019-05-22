@@ -182,6 +182,7 @@ class SubscriberExport extends Action
         } catch (\Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
+                'SubscriberExport',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'SubscriberExport::execute()'

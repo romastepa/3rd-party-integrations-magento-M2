@@ -194,8 +194,9 @@ class CustomerExport extends Action
         } catch (\Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
+                'CustomerExport',
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'CustomerExport::execute()'
             );
             //report error

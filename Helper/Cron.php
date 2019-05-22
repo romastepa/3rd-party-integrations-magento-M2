@@ -124,7 +124,7 @@ class Cron extends AbstractHelper
 
             if ($cronJobs->getSize()) {
                 foreach ($cronJobs as $job) {
-                    $jobsParams = json_decode($job->getParams(), true);
+                    $jobsParams = \Zend_Json::decode($job->getParams(), true);
                     if (json_last_error() !== JSON_ERROR_NONE) {
                         throw new \InvalidArgumentException('Unable to unserialize value.');
                     }
@@ -148,6 +148,7 @@ class Cron extends AbstractHelper
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'CheckCronjobScheduled',
                 $e->getMessage(),
                 0,
                 'Cron::checkCronjobScheduled()'
@@ -236,7 +237,6 @@ class Cron extends AbstractHelper
             $result = false;
         }
 
-
         return $result;
     }
 
@@ -263,6 +263,7 @@ class Cron extends AbstractHelper
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getCurrentCronInformation',
                 $e->getMessage(),
                 0,
                 'Cron::getCurrentCronInformation()'
@@ -316,6 +317,6 @@ class Cron extends AbstractHelper
             unset($params['form_key']);
         }
 
-        return json_encode($params);
+        return \Zend_Json::encode($params);
     }
 }

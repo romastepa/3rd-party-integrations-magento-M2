@@ -61,6 +61,7 @@ class AjaxUpdateCart extends \Magento\Framework\App\Action\Action
             $result['status'] = 1;
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'AjaxUpdateCart',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'AjaxUpdateCart::execute()'

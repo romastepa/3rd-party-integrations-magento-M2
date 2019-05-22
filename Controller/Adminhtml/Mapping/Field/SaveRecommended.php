@@ -67,7 +67,7 @@ class SaveRecommended extends Action
     /**
      * @var Logs
      */
-    protected $logHelper;
+    protected $logsHelper;
 
     /**
      * SaveRecommended constructor.
@@ -75,7 +75,7 @@ class SaveRecommended extends Action
      * @param FieldFactory $fieldFactory
      * @param Field $resourceModelField
      * @param PageFactory $resultPageFactory
-     * @param Logs $logHelper
+     * @param Logs $logsHelper
      * @param DateTime $date
      * @param EmarsysModelLogs $emarsysLogs
      * @param ScopeConfigInterface $scopeConfigInterface
@@ -86,7 +86,7 @@ class SaveRecommended extends Action
         FieldFactory $fieldFactory,
         Field $resourceModelField,
         PageFactory $resultPageFactory,
-        Logs $logHelper,
+        Logs $logsHelper,
         DateTime $date,
         EmarsysModelLogs $emarsysLogs,
         ScopeConfigInterface $scopeConfigInterface,
@@ -101,11 +101,12 @@ class SaveRecommended extends Action
         $this->resourceModelField = $resourceModelField;
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->_storeManager = $storeManager;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
     }
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
@@ -136,7 +137,7 @@ class SaveRecommended extends Action
                         $model->save();
                     }
                 }
-                $logId = $this->logHelper->manualLogs($logsArray);
+                $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
                 $logsArray['description'] = 'Saved Recommended Mapping as ' .print_r($recommendedData,true);
@@ -147,11 +148,10 @@ class SaveRecommended extends Action
                 $logsArray['log_action'] = 'True';
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Saved Recommended Mapping Successful';
-                $this->logHelper->logs($logsArray);
-                $this->logHelper->manualLogs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addSuccessMessage("Recommended Customer-Field attributes mapped successfully");
             } else {
-                $logId = $this->logHelper->manualLogs($logsArray);
+                $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
                 $logsArray['description'] = 'No Recommended Mappings';
@@ -162,12 +162,16 @@ class SaveRecommended extends Action
                 $logsArray['log_action'] = 'True';
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Saved Recommended Mapping Completed';
-                $this->logHelper->logs($logsArray);
-                $this->logHelper->manualLogs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage("No Recommendations are added");
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveRecommended (Customer Filed)');
+            $this->emarsysLogs->addErrorLog(
+                'Running Customer Filed Recommended Mapping',
+                $e->getMessage(),
+                $storeId,
+                'SaveRecommended (Customer Filed)'
+            );
             $this->messageManager->addErrorMessage("Error occurred while mapping Customer-Field");
         }
 

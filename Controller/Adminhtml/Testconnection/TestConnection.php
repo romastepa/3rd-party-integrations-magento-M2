@@ -24,27 +24,4 @@ abstract class TestConnection extends Action
     ) {
         parent::__construct($context);
     }
-
-    /**
-     * @param $x
-     * @return bool
-     */
-    public function is_json($x)
-    {
-        if (!is_string($x) || !trim($x)) {
-            return false;
-        }
-        return (
-            // Maybe an empty string, array or object
-            $x === '""' ||
-            $x === '[]' ||
-            $x === '{}' ||
-            // Maybe an encoded JSON string
-            $x[0] === '"' ||
-            // Maybe a flat array
-            $x[0] === '[' ||
-            // Maybe an associative array
-            $x[0] === '{'
-        ) && ($x === 'null' || json_decode($x) !== null);
-    }
 }

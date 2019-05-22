@@ -71,6 +71,7 @@ class Clear extends Action
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'Cron Details tables cleaning',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'Clear::execute()'

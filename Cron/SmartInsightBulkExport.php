@@ -9,7 +9,6 @@ namespace Emarsys\Emarsys\Cron;
 use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class SmartInsightBulkExport
@@ -33,28 +32,20 @@ class SmartInsightBulkExport
     protected $emarsysLogs;
 
     /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
-
-    /**
      * SmartInsightBulkExport constructor.
      *
      * @param EmarsysCronHelper $cronHelper
      * @param EmarsysOrderModel $order
      * @param Logs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
         EmarsysOrderModel $order,
-        Logs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
         $this->emarsysOrderModel =  $order;
         $this->emarsysLogs = $emarsysLogs;
-        $this->storeManager = $storeManager;
     }
 
     public function execute()
@@ -81,8 +72,9 @@ class SmartInsightBulkExport
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'SmartInsightBulkExport',
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'SmartInsightBulkExport::execute()'
             );
         }

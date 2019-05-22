@@ -68,7 +68,7 @@ class Saveplaceholdermapping extends Action
             $resultRedirect = $this->resultRedirectFactory->create();
             $placeholderData = $this->getRequest()->getPost('placeholderData');
             $placeholders = html_entity_decode($placeholderData);
-            $placeholderDataDecode = json_decode($placeholders, true);
+            $placeholderDataDecode = \Zend_Json::decode($placeholders, true);
 
             foreach ($placeholderDataDecode as $placeholderItem) {
                 foreach ($placeholderItem as $key => $value) {

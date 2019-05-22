@@ -77,10 +77,11 @@ class Logs extends \Magento\Framework\Model\AbstractModel
 
     /**
      * @param $messages
+     * @param $description
      * @param $storeId
      * @param $info
      */
-    public function addErrorLog($messages = '', $storeId = 0, $info = '')
+    public function addErrorLog($messages = '', $description = '', $storeId = 0, $info = '')
     {
         try {
             $logsArray['job_code'] = 'Exception';
@@ -91,17 +92,13 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             $logsArray['run_mode'] = '';
             $logsArray['auto_log'] = '';
             $logsArray['store_id'] = $storeId;
-            $logId = $this->emarsysLog->manualLogs($logsArray);
-            if ($logId) {
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = $info;
-                $logsArray['description'] = $messages;
-                $logsArray['action'] = '';
-                $logsArray['message_type'] = 'error';
-                $logsArray['log_action'] = 'fail';
-                $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
-                $this->emarsysLog->logs($logsArray);
-            }
+            $logsArray['emarsys_info'] = $info;
+            $logsArray['description'] = $description;
+            $logsArray['action'] = '';
+            $logsArray['message_type'] = 'error';
+            $logsArray['log_action'] = 'fail';
+            $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
+            $this->emarsysLog->manualLogs($logsArray);
         } catch (\Exception $e) {
             $this->messageManagerInterface->addErrorMessage(
                 'Unable to Log: ' . $e->getMessage()
@@ -111,10 +108,11 @@ class Logs extends \Magento\Framework\Model\AbstractModel
 
     /**
      * @param $messages
+     * @param $description
      * @param $storeId
      * @param $info
      */
-    public function addNoticeLog($messages = '', $storeId = 0, $info = '')
+    public function addNoticeLog($messages = '', $description = '', $storeId = 0, $info = '')
     {
         try {
             $logsArray['job_code'] = 'Notice';
@@ -125,17 +123,13 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             $logsArray['run_mode'] = '';
             $logsArray['auto_log'] = '';
             $logsArray['store_id'] = $storeId;
-            $logId = $this->emarsysLog->manualLogs($logsArray);
-            if ($logId) {
-                $logsArray['id'] = $logId;
-                $logsArray['emarsys_info'] = $info;
-                $logsArray['description'] = $messages;
-                $logsArray['action'] = '';
-                $logsArray['message_type'] = 'notice';
-                $logsArray['log_action'] = 'fail';
-                $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
-                $this->emarsysLog->logs($logsArray);
-            }
+            $logsArray['emarsys_info'] = $info;
+            $logsArray['description'] = $description;
+            $logsArray['action'] = '';
+            $logsArray['message_type'] = 'notice';
+            $logsArray['log_action'] = 'fail';
+            $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
+            $this->emarsysLog->manualLogs($logsArray);
         } catch (\Exception $e) {
             $this->messageManagerInterface->addErrorMessage(
                 'Unable to Log: ' . $e->getMessage()

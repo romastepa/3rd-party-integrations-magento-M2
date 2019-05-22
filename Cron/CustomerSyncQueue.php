@@ -83,8 +83,9 @@ class CustomerSyncQueue
             }
         } catch (\Excepiton $e) {
             $this->emarsysLogs->addErrorLog(
+                \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_CUSTOMER,
                 $e->getMessage(),
-                $storeId,
+                0,
                 'CustomerSyncQueue::execute()'
             );
         }

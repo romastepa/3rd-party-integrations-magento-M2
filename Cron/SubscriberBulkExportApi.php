@@ -79,6 +79,7 @@ class SubscriberBulkExportApi
             );
         } catch (\Excepiton $e) {
             $this->emarsysLogs->addErrorLog(
+                \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_SUBSCRIBER,
                 $e->getMessage(),
                 0,
                 'SubscriberBulkExportApi::execute()'

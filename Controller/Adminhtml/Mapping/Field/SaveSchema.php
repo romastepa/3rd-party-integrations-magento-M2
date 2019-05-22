@@ -54,7 +54,7 @@ class SaveSchema extends Action
      * @param Field $fieldHelper
      * @param EmarsysResourceModelField $fieldResourceModel
      * @param PageFactory $resultPageFactory
-     * @param Logs $logHelper
+     * @param Logs $logsHelper
      * @param DateTime $date
      * @param EmarsysModelLogs $emarsysLogs
      * @param StoreManagerInterface $storeManager
@@ -64,7 +64,7 @@ class SaveSchema extends Action
         Field $fieldHelper,
         EmarsysResourceModelField $fieldResourceModel,
         PageFactory $resultPageFactory,
-        Logs $logHelper,
+        Logs $logsHelper,
         DateTime $date,
         EmarsysModelLogs $emarsysLogs,
         StoreManagerInterface $storeManager
@@ -78,7 +78,7 @@ class SaveSchema extends Action
         $this->_storeManager = $storeManager;
         $this->date = $date;
         $this->emarsysLogs = $emarsysLogs;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
     }
 
     /**
@@ -105,7 +105,7 @@ class SaveSchema extends Action
             if (count($schemaData) > 0) {
                 $this->fieldResourceModel->updateOptionSchema($schemaData, $storeId);
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $logId = $this->logHelper->manualLogs($logsArray);
+                $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Update Schema';
                 $logsArray['description'] = 'Updated Schema as ' .print_r($schemaData,true);
@@ -116,12 +116,11 @@ class SaveSchema extends Action
                 $logsArray['log_action'] = 'True';
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Update Schema Completed Successfully';
-                $this->logHelper->logs($logsArray);
-                $this->logHelper->manualLogs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addSuccessMessage('Customer-Field schema added/updated successfully');
             } else {
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $logId = $this->logHelper->manualLogs($logsArray);
+                $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Update Schema';
                 $logsArray['description'] = 'Failed to update Customer-Field Schema';
@@ -132,13 +131,17 @@ class SaveSchema extends Action
                 $logsArray['log_action'] = 'True';
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Failed Update Schema';
-                $this->logHelper->logs($logsArray);
-                $this->logHelper->manualLogs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
             }
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveSchema(Field)');
+            $this->emarsysLogs->addErrorLog(
+                'Customer Field Update Schema',
+                $e->getMessage(),
+                $storeId,
+                'SaveSchema(Field)'
+            );
         }
 
         return $resultRedirect->setRefererOrBaseUrl();

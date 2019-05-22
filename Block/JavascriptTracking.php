@@ -182,6 +182,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getCurrentCategory',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getCurrentCategory()'
@@ -215,6 +216,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getCurrentProductSku',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getCurrentProductSku()'
@@ -287,6 +289,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getSearchResult',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getSearchResult()'
@@ -443,6 +446,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getOrderData',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getOrderData()'
@@ -499,6 +503,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getCartItemsJsonData',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getCartItemsJsonData()'
@@ -525,6 +530,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getCustomerId',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getCustomerId'
@@ -556,6 +562,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getLoggedInCustomerEmail',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getLoggedInCustomerEmail()'
@@ -584,6 +591,7 @@ class JavascriptTracking extends \Magento\Framework\View\Element\Template
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'getCustomerEmailAddress',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getCustomerEmailAddress()'

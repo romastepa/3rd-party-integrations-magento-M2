@@ -66,7 +66,7 @@ class SaveSchema extends Action
     /**
      * @var EmarsysHelperLogs
      */
-    protected $logHelper;
+    protected $logsHelper;
 
     /**
      * @var Logs
@@ -85,7 +85,7 @@ class SaveSchema extends Action
      * @param EmarsysResourceModelCustomer $customerResourceModel
      * @param PageFactory $resultPageFactory
      * @param Logs $emarsysLogs
-     * @param EmarsysHelperLogs $logHelper
+     * @param EmarsysHelperLogs $logsHelper
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
      * @param Attribute $attribute
@@ -96,7 +96,7 @@ class SaveSchema extends Action
         EmarsysResourceModelCustomer $customerResourceModel,
         PageFactory $resultPageFactory,
         Logs $emarsysLogs,
-        EmarsysHelperLogs $logHelper,
+        EmarsysHelperLogs $logsHelper,
         DateTime $date,
         StoreManagerInterface $storeManager,
         Attribute $attribute
@@ -108,7 +108,7 @@ class SaveSchema extends Action
         $this->customerResourceModel = $customerResourceModel;
         $this->date = $date;
         $this->emarsysLogs = $emarsysLogs;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->_storeManager = $storeManager;
         $this->attribute = $attribute;
     }
@@ -135,7 +135,7 @@ class SaveSchema extends Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
 
             $customerAttData = $this->attribute->getCollection()
                 ->addFieldToSelect('frontend_label')
@@ -155,8 +155,7 @@ class SaveSchema extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Update Schema Completed Successfully';
-            $this->logHelper->logs($logsArray);
-            $this->logHelper->manualLogs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $schemaData = $this->emarsysCustomerHelper->getEmarsysCustomerSchema($storeId);
 
             if (isset($schemaData['data']) && !empty($schemaData['data'])) {
@@ -166,10 +165,20 @@ class SaveSchema extends Action
                 $this->messageManager->addErrorMessage($schemaData['replyText']);
             } elseif (isset($schemaData['errorMessage'])) {
                 $this->messageManager->addErrorMessage($schemaData['errorMessage']);
-                $this->emarsysLogs->addErrorLog($schemaData['errorMessage'], $storeId, 'SaveSchema(Customer)');
+                $this->emarsysLogs->addErrorLog(
+                    'Customer schema added/updated',
+                    $schemaData['errorMessage'],
+                    $storeId,
+                    'SaveSchema(Customer)'
+                );
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveSchema(Customer)');
+            $this->emarsysLogs->addErrorLog(
+                'Customer schema added/updated',
+                $e->getMessage(),
+                $storeId,
+                'SaveSchema(Customer)'
+            );
         }
 
         return $resultRedirect->setRefererOrBaseUrl();

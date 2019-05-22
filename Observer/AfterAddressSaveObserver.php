@@ -7,15 +7,18 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Event\Observer;
-use Magento\Framework\Registry;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Customer\Model\CustomerFactory;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Model\Api\Contact;
-use Emarsys\Emarsys\Model\Logs;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Magento\{
+    Framework\Event\ObserverInterface,
+    Framework\Event\Observer,
+    Framework\Registry,
+    Store\Model\StoreManagerInterface,
+    Customer\Model\CustomerFactory
+};
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysHelper,
+    Model\Api\Contact,
+    Model\ResourceModel\Customer
+};
 
 /**
  * Class AfterAddressSaveObserver
@@ -24,58 +27,51 @@ use Emarsys\Emarsys\Model\ResourceModel\Customer;
 class AfterAddressSaveObserver implements ObserverInterface
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
-    private $emarsysHelper;
+    protected $emarsysHelper;
 
     /**
      * @var Registry
      */
-    private $registry;
+    protected $registry;
 
     /**
      * @var Contact
      */
-    private $contactModel;
+    protected $contactModel;
 
     /**
      * @var StoreManagerInterface
      */
-    private $storeManager;
+    protected $storeManager;
 
     /**
      * @var Customer
      */
-    private $customerResourceModel;
-
-    /**
-     * @var Logs
-     */
-    private $emarsysLogs;
+    protected $customerResourceModel;
 
     /**
      * @var CustomerFactory
      */
-    private $customerFactory;
+    protected $customerFactory;
 
     /**
      * AfterAddressSaveObserver constructor.
      *
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Registry $registry
      * @param Contact $contactModel
      * @param StoreManagerInterface $storeManager
      * @param Customer $customerResourceModel
-     * @param Logs $emarsysLogs
      * @param CustomerFactory $customerFactory
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Registry $registry,
         Contact $contactModel,
         StoreManagerInterface $storeManager,
         Customer $customerResourceModel,
-        Logs $emarsysLogs,
         CustomerFactory $customerFactory
     ) {
         $this->emarsysHelper = $emarsysHelper;
@@ -83,7 +79,6 @@ class AfterAddressSaveObserver implements ObserverInterface
         $this->contactModel = $contactModel;
         $this->storeManager = $storeManager;
         $this->customerResourceModel = $customerResourceModel;
-        $this->emarsysLogs = $emarsysLogs;
         $this->customerFactory = $customerFactory;
     }
 
@@ -123,7 +118,8 @@ class AfterAddressSaveObserver implements ObserverInterface
             $this->contactModel->syncContact($customer, $websiteId, $storeId, 0, $customerAddress);
             $this->registry->register($customerVar, 'created');
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->emarsysHelper->addErrorLog(
+                EmarsysHelper::LOG_MESSAGE_CUSTOMER,
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'AfterAddressSaveObserver::execute()'

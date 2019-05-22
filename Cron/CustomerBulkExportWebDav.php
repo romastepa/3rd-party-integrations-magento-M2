@@ -66,6 +66,7 @@ class CustomerBulkExportWebDav
             );
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_CUSTOMER,
                 $e->getMessage(),
                 0,
                 'CustomerBulkExportWebDav::execute()'

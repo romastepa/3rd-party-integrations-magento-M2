@@ -358,6 +358,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             return $order;
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
+                'TransportBuilder::getOrderData()',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'TransportBuilder::getOrderData()'
@@ -433,6 +434,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             }
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
+                'TransportBuilder::getRmaData()',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'TransportBuilder::getRmaData()'

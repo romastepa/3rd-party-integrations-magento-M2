@@ -56,7 +56,7 @@ class SaveRecommended extends Action
     /**
      * @var EmarsysHelperLogs
      */
-    protected $logHelper;
+    protected $logsHelper;
 
     /**
      * @var DateTime
@@ -76,7 +76,7 @@ class SaveRecommended extends Action
      * @param Data $emarsysHelper
      * @param StoreManagerInterface $storeManager
      * @param Logs $emarsysLogs
-     * @param EmarsysHelperLogs $logHelper
+     * @param EmarsysHelperLogs $logsHelper
      * @param DateTime $date
      * @param Product $resourceModelProduct
      */
@@ -87,7 +87,7 @@ class SaveRecommended extends Action
         Data $emarsysHelper,
         StoreManagerInterface $storeManager,
         Logs $emarsysLogs,
-        EmarsysHelperLogs $logHelper,
+        EmarsysHelperLogs $logsHelper,
         DateTime $date,
         Product $resourceModelProduct
     )
@@ -98,7 +98,7 @@ class SaveRecommended extends Action
         $this->emarsysHelper = $emarsysHelper;
         $this->storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->date = $date;
         $this->resourceModelProduct = $resourceModelProduct;
 
@@ -106,6 +106,7 @@ class SaveRecommended extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
@@ -129,7 +130,7 @@ class SaveRecommended extends Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
             /**
              *Here We need set the recommended attribute values
              */
@@ -169,11 +170,15 @@ class SaveRecommended extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Product Recommended Mapping Saved Successfully';
-            $this->logHelper->logs($logsArray);
-            $this->logHelper->manualLogs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage("Recommended Product attributes mapped successfully");
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'Save Recommended(Product)');
+            $this->emarsysLogs->addErrorLog(
+                'Product Recommended Mapping',
+                $e->getMessage(),
+                $storeId,
+                'Save Recommended(Product)'
+            );
             $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
         }
         $resultRedirect = $this->resultRedirectFactory->create();

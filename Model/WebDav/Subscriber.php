@@ -198,26 +198,26 @@ class Subscriber extends DataObject
                         $logsArray['description'] = $exportStatus['response_body'];
                         $logsArray['message_type'] = 'Error';
                     }
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 } else {
                     //Failed to Login with WebDav Server
                     $logsArray['emarsys_info'] = 'Failed to Login with WebDav Server.';
                     $logsArray['description'] = 'Failed to Login with WebDav Server. Please check your settings and try again. ' . $checkWebDavConnection['response_body'];
                     $logsArray['message_type'] = 'Error';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
             } else {
                 //Invalid WebDAV credentials
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Invalid WebDAV credentials.';
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //No Subscribers found
             $logsArray['emarsys_info'] = __('No Subscribers found');
             $logsArray['description'] = __('No Subscribers found for store %1', $store->getName());
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         //set error/success state
@@ -229,7 +229,7 @@ class Subscriber extends DataObject
             $logsArray['messages'] = 'Initial DB data completed';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $errorCount ? false : true;
     }

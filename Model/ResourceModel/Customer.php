@@ -365,14 +365,10 @@ class Customer extends AbstractDb
      */
     public function getDataFromCoreConfig($path, $scope = NULL, $scopeId = NULL)
     {
-        try {
-            if ($scope && $scopeId) {
-                return $this->scopeConfigInterface->getValue($path, $scope, $scopeId);
-            } else {
-                return $this->scopeConfigInterface->getValue($path);
-            }
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $scopeId, 'getDataFromCoreConfig in Customer.php');
+        if ($scope && $scopeId) {
+            return $this->scopeConfigInterface->getValue($path, $scope, $scopeId);
+        } else {
+            return $this->scopeConfigInterface->getValue($path);
         }
     }
 
@@ -625,7 +621,12 @@ class Customer extends AbstractDb
                     }
                 }
             } catch (\Exception $e) {
-                $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'insertCustomerMageAtts(ResourceModel)');
+                $this->emarsysLogs->addErrorLog(
+                    'insertCustomerMageAtts',
+                    $e->getMessage(),
+                    $storeId,
+                    'insertCustomerMageAtts(ResourceModel)'
+                );
             }
         }
     }

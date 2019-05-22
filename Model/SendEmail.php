@@ -52,7 +52,7 @@ class SendEmail extends AbstractModel
     /**
      * @var EmarsysLogsHelper
      */
-    protected $logs;
+    protected $logsHelper;
 
     /**
      * @var StoreManagerInterface
@@ -77,7 +77,7 @@ class SendEmail extends AbstractModel
      * @param CustomerResourceModel $customerResourceModel
      * @param DateTime $date
      * @param MessageInterface $message
-     * @param EmarsysLogsHelper $logs
+     * @param EmarsysLogsHelper $logsHelper
      * @param StoreManagerInterface $storeManagerInterface
      * @param EmarsysModelApiApi $api
      * @param EmarsyseventsFactory $emarsyseventsFactory
@@ -92,7 +92,7 @@ class SendEmail extends AbstractModel
         CustomerResourceModel $customerResourceModel,
         DateTime $date,
         MessageInterface $message,
-        EmarsysLogsHelper $logs,
+        EmarsysLogsHelper $logsHelper,
         StoreManagerInterface $storeManagerInterface,
         EmarsysModelApiApi $api,
         EmarsyseventsFactory $emarsyseventsFactory,
@@ -104,7 +104,7 @@ class SendEmail extends AbstractModel
         $this->date = $date;
         $this->customerResourceModel = $customerResourceModel;
         $this->_message = $message;
-        $this->logs = $logs;
+        $this->logsHelper = $logsHelper;
         $this->storeManager = $storeManagerInterface;
         $this->api = $api;
         $this->emarsyseventsFactory = $emarsyseventsFactory;
@@ -140,7 +140,7 @@ class SendEmail extends AbstractModel
             $logsArray['auto_log'] = 'Complete';
             $logsArray['store_id'] = $storeId;
             $logsArray['website_id'] = $websiteId;
-            $logId = $this->logs->manualLogs($logsArray, 1);
+            $logId = $this->logsHelper->manualLogs($logsArray, 1);
             $logsArray['id'] = $logId;
 
             //check emarsys module status
@@ -163,9 +163,11 @@ class SendEmail extends AbstractModel
                     if ($emarsysApiEventID != '') {
                         //mapping found for event
                         $this->api->setWebsiteId($websiteId);
-                        if (method_exists($message, 'getZendMessage')) {
-                            /** @var \Zend\Mail\Message $zendMessage */
-                            $zendMessage = $message->getZendMessage();
+                        /** @var \Zend\Mail\Message $zendMessage */
+                        if (is_callable([$message, 'getZendMessage'])
+                            && method_exists($message, 'getZendMessage')
+                            && $zendMessage = $message->getZendMessage()
+                        ) {
                             /** @var \Zend\Mail\AddressList $addressList */
                             $addressList = $zendMessage->getTo();
                             $externalId = $addressList->current()->getEmail();
@@ -203,13 +205,12 @@ class SendEmail extends AbstractModel
                         $buildRequest[$emailKey] = $externalId;
 
                         //log information that is about to send for contact sync
-                        $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
-                        $logsArray['emarsys_info'] = 'Send Contact to Emarsys';
-                        $logsArray['description'] = $contactSyncReq;
+                        $logsArray['emarsys_info'] = 'Create contact if not exists';
+                        $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
                         $logsArray['action'] = 'Magento to Emarsys';
                         $logsArray['message_type'] = 'Success';
                         $logsArray['log_action'] = 'sync';
-                        $this->logs->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
 
                         //sync contact to emarsys
                         $response = $this->api->sendRequest(
@@ -221,13 +222,14 @@ class SendEmail extends AbstractModel
                             //contact synced to emarsys successfully
 
                             //log contact sync response
-                            $contactSyncReq = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($response, JSON_PRETTY_PRINT);
-                            $logsArray['emarsys_info'] = 'Emarsys response from customer creation';
-                            $logsArray['description'] = 'Created customer ' . $externalId . ' in Emarsys succcessfully ' . $contactSyncReq;
+                            $contactSyncReq =
+                            $logsArray['emarsys_info'] = 'Emarsys response on Contact creation';
+                            $logsArray['description'] = 'Created Contact ' . $externalId . ' in Emarsys successfully | '
+                                . 'PUT  contact/?create_if_not_exists=1 ' . \Zend_Json::encode($response);;
                             $logsArray['action'] = 'Synced to Emarsys';
                             $logsArray['message_type'] = 'Success';
                             $logsArray['log_action'] = 'True';
-                            $this->logs->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
 
                             $arrCustomerData = [
                                 "key_id" => $buildRequest['key_id'],
@@ -236,13 +238,12 @@ class SendEmail extends AbstractModel
                             ];
 
                             //log information that is about to send for email sync
-                            $emailtriggerReq = 'POST ' . " event/$emarsysApiEventID/trigger: " . json_encode($arrCustomerData, JSON_PRETTY_PRINT);
-                            $logsArray['emarsys_info'] = 'Transactional Mail request';
-                            $logsArray['description'] = $emailtriggerReq;
+                            $logsArray['emarsys_info'] = 'Trigger Event';
+                            $logsArray['description'] = 'POST ' . " event/$emarsysApiEventID/trigger: " . \Zend_Json::encode($arrCustomerData);
                             $logsArray['action'] = 'Mail Sent';
                             $logsArray['message_type'] = 'Success';
                             $logsArray['log_action'] = 'True';
-                            $this->logs->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
 
                             //trigger email event
                             $emailEventResponse = $this->api->sendRequest(
@@ -259,65 +260,76 @@ class SendEmail extends AbstractModel
                                 $logsArray['action'] = 'Mail Sent';
                                 $logsArray['message_type'] = 'Success';
                                 $logsArray['log_action'] = 'True';
-                                $this->logs->logs($logsArray);
+                                $this->logsHelper->manualLogs($logsArray);
                             } else {
                                 //email send event failed
                                 $emarsysErrorStatus = true;
-                                $logsArray['emarsys_info'] = 'Transactional Mails';
-                                $logsArray['description'] = 'Failed to send email from emarsys. Emarsys Event ID :' . $emarsysApiEventID . ', Store Id : ' . $storeId . ', Response : ' . print_r($emailEventResponse, true);
+                                $logsArray['emarsys_info'] = 'Transactional Mails response';
+                                $logsArray['description'] = 'Failed to send email from emarsys. '
+                                    . 'Emarsys Event ID : ' . $emarsysApiEventID
+                                    . ', Store Id : ' . $storeId
+                                    . ' | Response : ' . print_r($emailEventResponse, true);
                                 $logsArray['action'] = 'Mail Sent Fail';
                                 $logsArray['message_type'] = 'Error';
                                 $logsArray['log_action'] = 'False';
-                                $this->logs->logs($logsArray);
+                                $this->logsHelper->manualLogs($logsArray);
                             }
                         } else {
                             //failed to sync contact to emarsys
                             $logsArray['emarsys_info'] = 'Transactional Mails';
-                            $logsArray['description'] = 'Failed to Sync Contact to Emarsys. Emarsys Event ID :' . $emarsysApiEventID . ', Store Id : ' . $storeId . ' Request: ' . print_r($buildRequest, true) . '\n Response: ' . print_r($response, true);
+                            $logsArray['description'] = 'Failed to Sync Contact to Emarsys. '
+                                . 'Emarsys Event ID :' . $emarsysApiEventID
+                                . ', Store Id : ' . $storeId
+                                . ' | Request: ' . print_r($buildRequest, true)
+                                . ' | Response: ' . print_r($response, true);
                             $logsArray['action'] = 'Mail Sent Fail';
                             $logsArray['message_type'] = 'Error';
                             $logsArray['log_action'] = 'False';
-                            $this->logs->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
                         }
                     } else {
                         //no mapping found for emarsys event
                         $errorStatus = true;
-                        $logsArray['emarsys_info'] = 'Transactional Mails';
+                        $logsArray['status'] = 'error';
+                        $logsArray['emarsys_info'] = 'Error';
                         $logsArray['description'] = 'No Mapping Found for the Emarsys Event ID : ' . $emarsysApiEventID . '. Email sent from Magento for the store .' . $storeId;
                         $logsArray['action'] = 'Mail Sent';
                         $logsArray['message_type'] = 'Error';
                         $logsArray['log_action'] = 'True';
-                        $this->logs->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
                 } else {
                     //emarsys transaction emails disable
                     $errorStatus = true;
+                    $logsArray['status'] = 'notice';
                     $logsArray['emarsys_info'] = 'Transactional Mails';
                     $logsArray['description'] = 'Emarsys Transaction Email Either Disabled or Some Extension Conflict (if enabled). Email sent from Magento for store id ' . $storeId;
                     $logsArray['action'] = 'Mail Sent';
-                    $logsArray['message_type'] = 'Success';
+                    $logsArray['message_type'] = 'notice';
                     $logsArray['log_action'] = 'True';
-                    $this->logs->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
             } else {
                 //emarsys module disabled
                 $errorStatus = true;
+                $logsArray['status'] = 'notice';
                 $logsArray['emarsys_info'] = 'Transactional Mails';
                 $logsArray['description'] = 'Emarsys is not enabled. Email sent from Magento for Store Id ' . $storeId;
                 $logsArray['action'] = 'Mail Sent';
-                $logsArray['message_type'] = 'Error';
+                $logsArray['message_type'] = 'notice';
                 $logsArray['log_action'] = 'True';
-                $this->logs->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } catch (\Exception $e) {
             //log exception
             $errorStatus = true;
+            $logsArray['status'] = 'error';
             $logsArray['emarsys_info'] = 'Emarsys Transactional Email Error';
             $logsArray['description'] = $e->getMessage() . " Due to this error, Email Sent From Magento for Store Id " . $storeId;
             $logsArray['action'] = 'Mail Sending Fail';
             $logsArray['message_type'] = 'Error';
             $logsArray['log_action'] = 'Fail';
-            $this->logs->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         $emarsysEvent = '';
@@ -331,14 +343,18 @@ class SendEmail extends AbstractModel
 
         if ($errorStatus || $emarsysErrorStatus) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = __('Error while sending Transactional Email. %1', $emarsysEvent);
+            $logsArray['message_type'] = 'Error';
+            $logsArray['emarsys_info'] = 'Error';
+            $logsArray['description'] = __('Error while sending Transactional Email. %1', $emarsysEvent);
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = __('Transactional Email Completed. %1', $emarsysEvent);
+            $logsArray['message_type'] = 'Success';
+            $logsArray['emarsys_info'] = 'Success';
+            $logsArray['description'] = __('Transactional Email Completed. %1', $emarsysEvent);
         }
 
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logs->manualLogs($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $errorStatus;
     }

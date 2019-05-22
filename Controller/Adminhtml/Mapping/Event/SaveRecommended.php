@@ -61,7 +61,7 @@ class SaveRecommended extends Action
      * @param Data $emarsysHelper
      * @param DateTime $date
      * @param CollectionFactory $EmarsyseventCollection
-     * @param Logs $logHelper
+     * @param Logs $logsHelper
      * @param EmarsysmagentoeventsCollectionFactory $magentoEventsCollection
      * @param Api $api
      */
@@ -74,7 +74,7 @@ class SaveRecommended extends Action
         Data $emarsysHelper,
         DateTime $date,
         CollectionFactory $EmarsyseventCollection,
-        Logs $logHelper,
+        Logs $logsHelper,
         EmarsysmagentoeventsCollectionFactory $magentoEventsCollection,
         Api $api
     ) {
@@ -89,7 +89,7 @@ class SaveRecommended extends Action
         $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $context->getUrl();
         $this->date = $date;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->api = $api;
     }
 
@@ -115,7 +115,7 @@ class SaveRecommended extends Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['store_id'] = $storeId;
             $logsArray['website_id'] = $websiteId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
 
             if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
@@ -125,7 +125,7 @@ class SaveRecommended extends Action
                 $logsArray['action'] = 'Reccommended Mapping';
                 $logsArray['message_type'] = 'Error';
                 $logsArray['log_action'] = 'True';
-                $this->logHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage('Emarsys is not Enabled for this store');
             } else {
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
@@ -134,7 +134,7 @@ class SaveRecommended extends Action
                 $logsArray['message_type'] = 'Success';
                 $logsArray['log_action'] = 'True';
                 $logsArray['website_id'] = $websiteId;
-                $this->logHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
 
                 $this->emarsysHelper->importEvents($storeId, $logId);
                 $emarsysEvents = $this->emarsysEventCollection->create();
@@ -163,7 +163,7 @@ class SaveRecommended extends Action
                     $logsArray['action'] = 'Recommended Mapping';
                     $logsArray['message_type'] = 'Success';
                     $logsArray['log_action'] = 'True';
-                    $this->logHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
                 if ($hasNewEvents) {
                     $this->emarsysHelper->importEvents($storeId, $logId);
@@ -181,7 +181,7 @@ class SaveRecommended extends Action
             $logsArray['message_type'] = 'Error';
             $logsArray['log_action'] = 'True';
             $logsArray['website_id'] = $websiteId;
-            $this->logHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addErrorMessage('Error occurred while Recommended Mapping' . $e->getMessage());
         }
 
@@ -193,7 +193,7 @@ class SaveRecommended extends Action
             $logsArray['status'] = 'success';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         if ($urlHasRecommendation) {
             return $resultRedirect->setUrl(

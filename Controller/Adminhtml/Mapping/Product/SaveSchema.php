@@ -43,7 +43,7 @@ class SaveSchema extends \Magento\Backend\App\Action
         \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Stdlib\DateTime\DateTime $date,
-        \Emarsys\Emarsys\Helper\Logs $logHelper,
+        \Emarsys\Emarsys\Helper\Logs $logsHelper,
         \Emarsys\Emarsys\Model\Logs $emarsysLogs,
         PageFactory $resultPageFactory
     ) {
@@ -54,7 +54,7 @@ class SaveSchema extends \Magento\Backend\App\Action
         $this->date = $date;
         $this->_storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->productResourceModel = $productResourceModel;
     }
 
@@ -78,7 +78,7 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
 
             $productFields = $this->productResourceModel->updateProductSchema($storeId);
 
@@ -92,8 +92,7 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Update Product Mapping Saved Successfully';
-            $this->logHelper->logs($logsArray);
-            $this->logHelper->manualLogs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage("Product schema added/updated successfully");
         } catch (\Exception $e) {
             if ($logId) {
@@ -106,8 +105,7 @@ class SaveSchema extends \Magento\Backend\App\Action
                 $logsArray['messages'] = 'Update Product Mapping not Successful';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $this->logsHelper->logs($logsArray);
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
             $this->messageManager->addErrorMessage(
                 __('There was a problem while Updating Product Mapping. Please refer emarsys logs for more information.')

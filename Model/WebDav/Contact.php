@@ -278,34 +278,34 @@ class Contact extends \Magento\Framework\DataObject
                             $logsArray['description'] = $exportStatus['response_body'];
                             $logsArray['message_type'] = 'Error';
                         }
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     } else {
                         //Attributes are not mapped for given store
                         $logsArray['emarsys_info'] = __('Attributes are not mapped for the store %1', $store->getName());
                         $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped for the store %1', $store->getName());
                         $logsArray['message_type'] = 'Error';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
                 } else {
                     //failed to login on webdav server
                     $logsArray['emarsys_info'] = 'Failed to Login with WebDav Server.';
                     $logsArray['description'] = 'Failed to Login with WebDav Server. Please check your settings and try again. ' . $checkWebDavConnection['response_body'];
                     $logsArray['message_type'] = 'Error';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
             } else {
                 //Invalid WebDAV credentials
                 $logsArray['emarsys_info'] = 'Invalid WebDAV credentials.';
                 $logsArray['description'] = 'Invalid WebDAV credentials. Please check credentials and try again.';
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //No Customers Found
             $logsArray['emarsys_info'] = __('No Customers Found');
             $logsArray['description'] = __('No Customers Found for store %1', $store->getName());
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         //set error/success state
@@ -317,7 +317,7 @@ class Contact extends \Magento\Framework\DataObject
             $logsArray['messages'] = 'Initial DB data completed';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $errorCount ? false : true;
     }

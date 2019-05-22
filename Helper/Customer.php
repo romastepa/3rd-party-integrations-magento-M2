@@ -71,8 +71,13 @@ class Customer extends AbstractHelper
             $response = $this->api->sendRequest('GET', 'field/translate/en');
             return $response['body'];
         } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog(htmlentities($e->getMessage()), $storeId, 'getEmarsysCustomerSchema');
-            return false;
+            $this->emarsysHelper->addErrorLog(
+                'getEmarsysCustomerSchema',
+                htmlentities($e->getMessage()),
+                $storeId,
+                'getEmarsysCustomerSchema'
+            );
         }
+        return false;
     }
 }

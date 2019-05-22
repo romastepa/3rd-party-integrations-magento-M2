@@ -154,6 +154,7 @@ class About extends MagentoBackendBlockWidgetForm
                     $errorStatus = true;
                     $notificationMessage .= "<div style='color:red; text-align: center; padding: 15px; border: 1px solid red;background: #fff;font-size: 16px;margin:  8px 0;'>Sorry, No Latest Release Found</div> ";
                     $this->emarsysLogs->addErrorLog(
+                        'Emarsys Version Info',
                         $emarsysLatestVersionInfo['message'],
                         $this->storeManager->getStore()->getId(),
                         'getEmarsysVersionInfo()'
@@ -167,6 +168,7 @@ class About extends MagentoBackendBlockWidgetForm
             ];
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'Emarsys Version Info',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'getEmarsysVersionInfo()'

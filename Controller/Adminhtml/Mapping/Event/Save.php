@@ -44,7 +44,7 @@ class Save extends Action
      * @param Event $eventResourceModel
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
-     * @param Logs $logHelper
+     * @param Logs $logsHelper
      * @param EmarsyseventmappingFactory $emarsysEventMappingFactory
      * @param PageFactory $resultPageFactory
      */
@@ -54,7 +54,7 @@ class Save extends Action
         Event $eventResourceModel,
         DateTime $date,
         StoreManagerInterface $storeManager,
-        Logs $logHelper,
+        Logs $logsHelper,
         EmarsyseventmappingFactory $emarsysEventMappingFactory,
         PageFactory $resultPageFactory
     ) {
@@ -66,7 +66,7 @@ class Save extends Action
         $this->resultPageFactory = $resultPageFactory;
         $this->date = $date;
         $this->eventFactory = $eventFactory;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->_urlInterface = $context->getUrl();
     }
 
@@ -90,7 +90,7 @@ class Save extends Action
         $logsArray['auto_log'] = 'Complete';
         $logsArray['store_id'] = $storeId;
         $logsArray['website_id'] = $websiteId;
-        $logId = $this->logHelper->manualLogs($logsArray);
+        $logId = $this->logsHelper->manualLogs($logsArray);
         $logsArray['id'] = $logId;
         $logsArray['log_action'] = 'True';
 
@@ -110,7 +110,7 @@ class Save extends Action
             $logsArray['action'] = 'Event Mapping';
             $logsArray['message_type'] = 'Success';
 
-            $this->logHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage("Events mapped successfully");
         } catch (\Exception $e) {
             $logsArray['emarsys_info'] = 'Save Event Mapping';
@@ -128,7 +128,7 @@ class Save extends Action
             $logsArray['status'] = 'success';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         if ($returnToStore) {
             return $resultRedirect->setUrl(

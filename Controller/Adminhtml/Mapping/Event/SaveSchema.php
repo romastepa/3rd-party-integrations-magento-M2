@@ -59,7 +59,7 @@ class SaveSchema extends Action
      * @param Data $emarsysHelper
      * @param EmarsysResourceModelEvent $eventResourceModel
      * @param PageFactory $resultPageFactory
-     * @param Logs $logHelper
+     * @param Logs $logsHelper
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
      */
@@ -69,7 +69,7 @@ class SaveSchema extends Action
         Data $emarsysHelper,
         EmarsysResourceModelEvent $eventResourceModel,
         PageFactory $resultPageFactory,
-        Logs $logHelper,
+        Logs $logsHelper,
         DateTime $date,
         StoreManagerInterface $storeManager
     ) {
@@ -78,7 +78,7 @@ class SaveSchema extends Action
         $this->resultPageFactory = $resultPageFactory;
         $this->eventResourceModel = $eventResourceModel;
         $this->eventHelper = $eventHelper;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->date = $date;
         $this->_storeManager = $storeManager;
         $this->emarsysHelper = $emarsysHelper;
@@ -105,7 +105,7 @@ class SaveSchema extends Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['store_id'] = $storeId;
             $logsArray['website_id'] = $websiteId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
 
             if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
@@ -119,7 +119,7 @@ class SaveSchema extends Action
                 $logsArray['action'] = 'Schame Updated';
                 $logsArray['message_type'] = 'Error';
                 $logsArray['log_action'] = 'True';
-                $this->logHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage('Emarsys is not Enabled for this store');
             }
         } catch (\Exception $e) {
@@ -128,7 +128,7 @@ class SaveSchema extends Action
             $logsArray['action'] = 'Update Schema not successful';
             $logsArray['message_type'] = 'Error';
             $logsArray['log_action'] = 'True';
-            $this->logHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addErrorMessage('Error occurred while Updating Schema' . $e->getMessage());
         }
 
@@ -140,7 +140,7 @@ class SaveSchema extends Action
             $logsArray['status'] = 'success';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $resultRedirect->setRefererOrBaseUrl();
     }

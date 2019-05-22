@@ -73,7 +73,12 @@ class ClearLogs extends Action
 
             $this->messageManager->addSuccessMessage(__('Log tables have been truncated successfully.'));
         } catch (\Exception $e) {
-            $this->logs->addErrorLog($e->getMessage(), $storeId, 'Save (Customer Filed)');
+            $this->logs->addErrorLog(
+                'ClearLogs',
+                $e->getMessage(),
+                $storeId,
+                'ClearLogs'
+            );
             $this->messageManager->addErrorMessage('Something went wrong while deleting logs.');
         }
 

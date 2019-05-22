@@ -39,7 +39,7 @@ class Index extends Action
     /**
      * @var EmarsysHelperLogs
      */
-    protected $logHelper;
+    protected $logsHelper;
 
     /**
      * @var StoreManager
@@ -53,21 +53,21 @@ class Index extends Action
      * @param PageFactory $resultPageFactory
      * @param EmarsysHelper $emarsysHelper
      * @param EmarsysEventsFactory $emarsysEventsFactory
-     * @param EmarsysHelperLogs $logHelper
+     * @param EmarsysHelperLogs $logsHelper
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
         EmarsysHelper $emarsysHelper,
         EmarsyseventsFactory $emarsysEventsFactory,
-        EmarsysHelperLogs $logHelper,
+        EmarsysHelperLogs $logsHelper,
         StoreManager $storeManager
     ) {
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
         $this->emarsysHelper = $emarsysHelper;
         $this->emarsysEventsFactory = $emarsysEventsFactory;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->storeManager = $storeManager;
     }
 
@@ -99,7 +99,7 @@ class Index extends Action
                 $logsArray['auto_log'] = 'Complete';
                 $logsArray['store_id'] = $storeId;
                 $logsArray['website_id'] = $store->getWebsiteId();
-                $logId = $this->logHelper->manualLogs($logsArray);
+                $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
 
                 $this->emarsysHelper->importEvents($storeId, $logId);

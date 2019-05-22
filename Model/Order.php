@@ -288,21 +288,21 @@ class Order extends AbstractModel
                 $logsArray['emarsys_info'] = __('Smart Insight is disabled');
                 $logsArray['description'] = __('Smart Insight is disabled for the store %1.', $store->getName());
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             $errorCount = true;
             $logsArray['emarsys_info'] = __('Emarsys is Disabled for this website %1', $websiteId);
             $logsArray['description'] = __('Emarsys is Disabled for this website %1', $websiteId);
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         if ($errorCount) {
             $logsArray['status'] = 'error';
             $logsArray['messages'] = __('Smart Insight export have an error. Please check');
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         return;
@@ -388,13 +388,13 @@ class Order extends AbstractModel
                             $logsArray['emarsys_info'] = __('Export Orders Data Using Api');
                             $logsArray['description'] = __($e->getMessage());
                             $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
                         }
                     } else {
                         $logsArray['emarsys_info'] = __('Export Orders Data Using Api');
                         $logsArray['description'] = __('No orders for store: %1', $storeId);
                         $logsArray['message_type'] = 'Notice';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
                     if (!empty($creditMemoCollection) && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
                         try {
@@ -410,13 +410,13 @@ class Order extends AbstractModel
                             $logsArray['emarsys_info'] = __('Export CreditMemos Data Using Api');
                             $logsArray['description'] = __($e->getMessage());
                             $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
                         }
                     } else {
                         $logsArray['emarsys_info'] = __('Export CreditMemos Data Using Api');
                         $logsArray['description'] = __('No CreditMemos for store: %1', $storeId);
                         $logsArray['message_type'] = 'Notice';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
 
                     if ($orderSyncStatus && $cmSyncStatus) {
@@ -437,18 +437,18 @@ class Order extends AbstractModel
                             $logsArray['emarsys_info'] = __('File uploaded to Emarsys successfully.');
                             $logsArray['description'] = $url . ' > ' . $outputFile;
                             $logsArray['message_type'] = 'Success';
-                            $this->logsHelper->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
                         } else {
                             $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
                             $logsArray['description'] = __('Failed to upload %1 on Emarsys %2', $url, $outputFile);
                             $logsArray['message_type'] = 'Error';
-                            $this->logsHelper->logs($logsArray);
+                            $this->logsHelper->manualLogs($logsArray);
                         }
                     } catch (\Exception $e) {
                         $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
                         $logsArray['description'] = __($e->getMessage());
                         $logsArray['message_type'] = 'Error';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
                     //unset file handle
                     $this->unsetFileHandle();
@@ -456,8 +456,8 @@ class Order extends AbstractModel
             } else {
                 //smart insight api test connection is failed
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Smart Insight API test connection is failed. Please check credentials. ' . json_encode($response, JSON_PRETTY_PRINT);
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $logsArray['messages'] = 'Smart Insight API test connection is failed. Please check credentials. ' . \Zend_Json::encode($response);
+                $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage('Smart Insight API Test connection is failed. Please check credentials.');
                 }
@@ -467,7 +467,7 @@ class Order extends AbstractModel
             $logsArray['emarsys_info'] = __('Invalid API credentials. Either Merchant Id or Token is not present.');
             $logsArray['description'] = __('Invalid API credentials. Either Merchant Id or Token is not present. Please check your settings and try again');
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __("Invalid API credentials. Either Merchant Id or Token is not present. Please check your settings and try again !!!")
@@ -482,7 +482,7 @@ class Order extends AbstractModel
             $logsArray['emarsys_info'] = __('Failed to remove exported files.');
             $logsArray['description'] = __($e->getMessage());
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         if ($errorCount) {
@@ -494,7 +494,7 @@ class Order extends AbstractModel
             $logsArray['messages'] = __('Order export completed');
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return true;
     }
@@ -552,14 +552,14 @@ class Order extends AbstractModel
                         $logsArray['emarsys_info'] = __('Order\'s iteration %1 of %2', $i, $pages);
                         $logsArray['description'] = __('Order\'s iteration %1 of %2', $i, $pages);
                         $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
                 }
             } catch (\Exception $e) {
                 $logsArray['emarsys_info'] = __('Export Orders Data Using FTP');
                 $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
 
             try {
@@ -587,14 +587,14 @@ class Order extends AbstractModel
                         $logsArray['emarsys_info'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
                         $logsArray['description'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
                         $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                     }
                 }
             } catch (\Exception $e) {
                 $logsArray['emarsys_info'] = __('Export CreditMemos Data Using FTP');
                 $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
 
             //CSV upload to FTP process starts
@@ -618,7 +618,7 @@ class Order extends AbstractModel
                         $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
                         $logsArray['description'] = $url . ' > ' . $remoteFileName;
                         $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                         if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addSuccessMessage(
                                 __("File uploaded to FTP server successfully !!!")
@@ -631,7 +631,7 @@ class Order extends AbstractModel
                         $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
                         $logsArray['description'] = __('Failed to upload %1 on FTP server. %2', $url, $msg);
                         $logsArray['message_type'] = 'Error';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                         if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
                                 __("Failed to upload file on FTP server !!! %1", $msg)
@@ -648,20 +648,20 @@ class Order extends AbstractModel
                     $logsArray['emarsys_info'] = __('No Sales Data found for the store . ' . $store->getCode());
                     $logsArray['description'] = __('No Sales Data found for the store . ' . $store->getCode());
                     $logsArray['message_type'] = 'Error';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
             } catch (\Exception $e) {
                 $logsArray['emarsys_info'] = __('Failed to Upload CSV to FTP.');
                 $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //failed to connect with FTP server with given credentials
             $logsArray['emarsys_info'] = __('Failed to connect with FTP server.');
             $logsArray['description'] = __('Failed to connect with FTP server.');
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
                     __('"Failed to connect with FTP server. Please check your settings and try again !!!"')
@@ -679,7 +679,7 @@ class Order extends AbstractModel
             $logsArray['messages'] = __('Order export completed');
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return;
     }
@@ -731,13 +731,13 @@ class Order extends AbstractModel
                 $logsArray['emarsys_info'] = __('File uploaded to Emarsys.');
                 $logsArray['description'] = $url . ' > ' . $outputFile;
                 $logsArray['message_type'] = 'Success';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             } else {
                 array_push($messageCollector, 0);
                 $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
                 $logsArray['description'] = __('Failed to upload %1 on Emarsys %2', $url, $outputFile);
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
             //unset file handle
             $this->unsetFileHandle();
@@ -788,7 +788,7 @@ class Order extends AbstractModel
             $logsArray['description'] = __('File: "%1" uploaded to Emarsys. Emarasys response: "%2"', $csvFileName, $apiExportResult['resultBody']);
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Success';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $syncResult['status'] = true;
         } else {
             //failed to upload file on emarsys
@@ -796,7 +796,7 @@ class Order extends AbstractModel
             $logsArray['description'] = __('Failed to upload file: "%1" on Emarsys. Emarasys response: "%2"', $csvFileName, $apiExportResult['resultBody']);
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $syncResult['status'] = false;
         }
         $syncResult['message'] = $apiExportResult['resultBody'];

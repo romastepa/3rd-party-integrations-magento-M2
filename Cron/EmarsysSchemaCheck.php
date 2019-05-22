@@ -83,8 +83,9 @@ class EmarsysSchemaCheck
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'EmarsysSchemaCheck',
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'EmarsysSchemaCheck::execute()'
             );
         }

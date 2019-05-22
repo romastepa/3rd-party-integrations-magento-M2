@@ -70,7 +70,8 @@ class Placeholderjson extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return void
+     * @throws \Magento\Framework\Excseption\NoSuchEntityException
      */
     public function execute()
     {
@@ -111,7 +112,7 @@ class Placeholderjson extends Action
                 $dataArray['product_purchases'] = $dataProductPurchasesArray;
             }
             $finalArray1 = ["external_id" => "RECIPIENT_EMAIL", "key_id" => "KEY_ID", "data" => $dataArray];
-            printf("<pre>" . json_encode($finalArray1, JSON_PRETTY_PRINT) . "</pre>");
+            printf("<pre>" . \Zend_Json::encode($finalArray1) . "</pre>");
         } else {
             printf("No Placeholders Available");
         }

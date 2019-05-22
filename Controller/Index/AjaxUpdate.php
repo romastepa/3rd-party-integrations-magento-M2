@@ -66,6 +66,7 @@ class AjaxUpdate extends \Magento\Framework\App\Action\Action
             $result['status'] = 1;
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'AjaxUpdate',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'AjaxUpdate::execute()'
