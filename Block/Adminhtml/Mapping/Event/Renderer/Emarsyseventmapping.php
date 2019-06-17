@@ -7,12 +7,13 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
 
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Customer\Collection;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Emarsys\Emarsys\Model\ResourceModel\Sync;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
+use Magento\Backend\Helper\Data;
 use Magento\Backend\Model\Session;
 use Magento\Framework\DataObject;
 use Magento\Framework\UrlInterface;
@@ -35,7 +36,7 @@ class Emarsyseventmapping extends AbstractRenderer
     protected $collectionFactory;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
@@ -55,21 +56,36 @@ class Emarsyseventmapping extends AbstractRenderer
     protected $_storeManager;
 
     /**
+     * @var CollectionFactory
+     */
+    protected $emarsysEventCollection;
+
+    /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory
+     */
+    protected $magentoEventCollection;
+
+    /**
      * Emarsyseventmapping constructor.
      * @param Session $session
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory
-     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param Data $backendHelper
      * @param Event $resourceModelEvent
      * @param StoreManagerInterface $storeManager
      * @param UrlInterface $urlInterface
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param \Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory $magentoEventCollection
      * @param CollectionFactory $emarsysEventCollection
      */
     public function __construct(
         Session $session,
         \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory,
-        \Magento\Backend\Helper\Data $backendHelper,
+        Data $backendHelper,
         Event $resourceModelEvent,
         StoreManagerInterface $storeManager,
         UrlInterface $urlInterface,
@@ -94,10 +110,12 @@ class Emarsyseventmapping extends AbstractRenderer
      */
     public function render(DataObject $row)
     {
+        $id = $row->getId();
         $magentoEventName = $this->magentoEventCollection->create()
-            ->addFieldToFilter("id", $row->getData("magento_event_id"))
+            ->addFieldToFilter('id', $id)
             ->getFirstItem()
             ->getData('magento_event');
+
         $emarsysEventname = trim(str_replace(" ", "_", strtolower($magentoEventName)));
         $session = $this->session;
         $storeId = $session->getStoreId();
@@ -107,28 +125,24 @@ class Emarsyseventmapping extends AbstractRenderer
         $dbEvents = $emarsysEvents->getAllIds();
 
         $readOnly = '';
-        if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
+        if ($this->emarsysHelper->isReadonlyMagentoEventId($id)) {
             $readOnly .= 'disabled = disabled ';
         }
 
-        $html = '<select ' . $readOnly . 'name="directions" style="width:200px;" onchange="changeEmarsysValue(\'' . $url . '\', this.value, \'' . $row->getData('magento_event_id') . '\', \'' . $row->getData('id') . '\')";>
+        $html = '<select ' . $readOnly . 'name="directions" style="width:200px;" onchange="changeEmarsysValue(\'' . $url . '\', this.value, \'' . $id . '\', \'' . $id . '\')";>
 			<option value="0">Please Select</option>';
 
+        $gridSessionData[$id]['magento_event_id'] = $id;
         foreach ($emarsysEvents as $emarsysEvent) {
             $sel = '';
-            $id = $row->getId();
-            $magento_event_id = $row->getMagentoEventId();
-            $gridSessionData[$id]['magento_event_id'] = $magento_event_id;
 
-            if (($row->getEmasysEventId() == $emarsysEvent->getId())
-                || (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() == 0))
-                || (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() != 0) && !in_array($row->getEmarsysEventId(), $dbEvents))
+            if (($row->getEmarsysEventId() == $emarsysEvent->getId())
+                || (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() == null))
+                || (($emarsysEventname == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() != null) && !in_array($row->getEmarsysEventId(), $dbEvents))
             ) {
                 $sel .= 'selected = selected';
                 $gridSessionData[$id]['emarsys_event_id'] = $emarsysEvent->getId();
-            }
-            if ($row->getEmarsysEventId() == $emarsysEvent->getId()) {
-                $sel .= 'selected = selected';
+                $gridSessionData[$id]['recommended'] = 1;
             }
             $html .= '<option ' . $sel . ' value="' . $emarsysEvent->getId() . '">' . $emarsysEvent->getEmarsysEvent() . '</option>';
         }

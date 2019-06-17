@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Block\Adminhtml\Support;
 
 use Magento\Backend\Block\Widget\Context;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Widget\Form as BlockForm;
 
 /**
@@ -17,7 +17,7 @@ use Magento\Backend\Block\Widget\Form as BlockForm;
 class Requirements extends BlockForm
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $helper;
 
@@ -25,12 +25,12 @@ class Requirements extends BlockForm
      * Requirements constructor.
      *
      * @param Context $context
-     * @param Data $helper
+     * @param EmarsysHelper $helper
      * @param array $data
      */
     public function __construct(
         Context $context,
-        Data $helper,
+        EmarsysHelper $helper,
         array $data = []
     ) {
         parent::__construct($context, $data);

@@ -255,12 +255,12 @@ class Subscriber
     }
 
     /**
-     * Sync Multiple Subscribers record to Emarsys
      * @param $exportMode
      * @param $params
      * @param null $logId
-     * @return bool
-     * @throws \Exception
+     * @return bool|void
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function syncMultipleSubscriber($exportMode, $params, $logId = null)
     {
@@ -318,49 +318,56 @@ class Subscriber
             //create chunks for easy data sync
             $subscriberChunks = array_chunk($subscriberData, EmarsysHelper::BATCH_SIZE);
             foreach ($subscriberChunks as $subscriberChunk) {
-                //prepare subscribers payload
-                $buildRequest = $this->prepareSubscribersPayload($subscriberChunk, $emailKey);
 
-                if (count($buildRequest) > 0) {
-                    $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
-                    $logsArray['action'] = 'Magento to Emarsys';
-                    $logsArray['message_type'] = 'Success';
-                    $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
-                    $this->logsHelper->manualLogs($logsArray);
-                    $this->emarsysLogger->info($logsArray['description']);
+                try {
+                    //prepare subscribers payload
+                    $buildRequest = $this->prepareSubscribersPayload($subscriberChunk, $emailKey);
 
-                    //Send request to Emarsys with Customer's Data
-                    $this->api->setWebsiteId($websiteId);
-                    $result = $this->api->createContactInEmarsys($buildRequest);
-
-                    $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
-                    $logsArray['action'] = 'Synced to Emarsys';
-                    $res = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($result);
-
-                    if ($result['status'] == '200') {
-                        //successful response from emarsys
-                        $errorStatus = false;
+                    if (count($buildRequest) > 0) {
+                        $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
+                        $logsArray['action'] = 'Magento to Emarsys';
                         $logsArray['message_type'] = 'Success';
-                        $logsArray['description'] = "Created subscribers in Emarsys succcessfully " . $res;
+                        $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
+                        $this->logsHelper->manualLogs($logsArray);
+                        $this->emarsysLogger->info($logsArray['description']);
 
-                        if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {
-                            //clean subscribers from the queue
-                            $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
-                            foreach ($subscriberChunk as $value) {
-                                $this->queueModel->create()->load($value[$subscriberIdKey], 'entity_id')->delete();
+                        //Send request to Emarsys with Customer's Data
+                        $this->api->setWebsiteId($websiteId);
+                        $result = $this->api->createContactInEmarsys($buildRequest);
+
+                        $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
+                        $logsArray['action'] = 'Synced to Emarsys';
+                        $res = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($result);
+
+                        if ($result['status'] == '200') {
+                            //successful response from emarsys
+                            $errorStatus = false;
+                            $logsArray['message_type'] = 'Success';
+                            $logsArray['description'] = "Created subscribers in Emarsys succcessfully " . $res;
+
+                            if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {
+                                //clean subscribers from the queue
+                                $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
+                                foreach ($subscriberChunk as $value) {
+                                    $this->queueModel->create()->load($value[$subscriberIdKey], 'entity_id')->delete();
+                                }
                             }
+                            $this->messageManager->addSuccessMessage(__('Created subscribers in Emarsys succcessfully!!'));
+                        } else {
+                            //error response from emarsys
+                            $logsArray['message_type'] = 'Error';
+                            $logsArray['description'] = \Zend_Json::encode($result) . ' ' . $res;
+                            $this->messageManager->addErrorMessage(
+                                __('Subscriber export have an error. Please check emarsys logs for more details!!')
+                            );
                         }
-                        $this->messageManager->addSuccessMessage(__('Created subscribers in Emarsys succcessfully!!'));
-                    } else {
-                        //error response from emarsys
-                        $logsArray['message_type'] = 'Error';
-                        $logsArray['description'] = \Zend_Json::encode($result) . ' ' . $res;
-                        $this->messageManager->addErrorMessage(
-                            __('Subscriber export have an error. Please check emarsys logs for more details!!')
-                        );
+
+                        $this->emarsysLogger->info($logsArray['description']);
                     }
+                } catch (\Exception $e) {
+                    $logsArray['message_type'] = 'Error';
+                    $logsArray['description'] = $e->getMessage(). ' | ' . $e->getTraceAsString();
                     $this->logsHelper->manualLogs($logsArray);
-                    $this->emarsysLogger->info($logsArray['description']);
                 }
             }
         } else {

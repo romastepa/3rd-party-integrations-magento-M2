@@ -8,7 +8,7 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Support;
 
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Backend\Block\Widget\Context;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\AdminNotification\Model\Inbox;
 use Magento\AdminNotification\Model\ResourceModel\Inbox\Collection;
 use Magento\AdminNotification\Model\InboxFactory;
@@ -27,7 +27,7 @@ class About extends MagentoBackendBlockWidgetForm
     CONST NOTIFICATION_DESCRIPTION = 'This update addressing various reported issues / enhancements. <a href="RELEASE_URL" target="_blank">Click Here</a> for more information';
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -70,7 +70,7 @@ class About extends MagentoBackendBlockWidgetForm
      * About constructor.
      *
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Inbox $adminNotification
      * @param Collection $notificationCollectionFactory
      * @param InboxFactory $inboxFactory
@@ -80,7 +80,7 @@ class About extends MagentoBackendBlockWidgetForm
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Inbox $adminNotification,
         Collection $notificationCollectionFactory,
         InboxFactory $inboxFactory,

@@ -11,7 +11,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\ProductFactory;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
@@ -50,7 +50,7 @@ class Save extends Action
     protected $resourceModelProduct;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emsrsysHelper;
 
@@ -73,7 +73,7 @@ class Save extends Action
      * Save constructor.
      * @param Context $context
      * @param ProductFactory $productFactory
-     * @param Data $emsrsysHelper
+     * @param EmarsysHelper $emsrsysHelper
      * @param StoreManagerInterface $storeManager
      * @param Logs $logsHelper
      * @param EmarsysModelLogs $emarsysLogs
@@ -84,7 +84,7 @@ class Save extends Action
     public function __construct(
         Context $context,
         ProductFactory $productFactory,
-        Data $emsrsysHelper,
+        EmarsysHelper $emsrsysHelper,
         StoreManagerInterface $storeManager,
         Logs $logsHelper,
         EmarsysModelLogs $emarsysLogs,
@@ -183,7 +183,7 @@ class Save extends Action
             $logsArray['emarsys_info'] = 'Save Product Mapping';
             $logsArray['action'] = 'Save Product Mapping Successful';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Product Mapping Saved as ' . print_r($savedValues, true);
+            $logsArray['description'] = 'Product Mapping Saved as ' . \Zend_Json::encode($savedValues);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';

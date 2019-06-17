@@ -253,7 +253,7 @@ class Product extends AbstractModel
      * @return bool
      * @throws \Exception
      */
-    public function consolidatedCatalogExport($mode = EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
+    public function consolidatedCatalogExport($mode = EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null)
     {
         set_time_limit(0);
 
@@ -306,9 +306,8 @@ class Product extends AbstractModel
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
                     }
 
-                    if (is_null($excludedCategories)) {
-                        $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
-                    }
+                    $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
+
                     if ($excludedCategories) {
                         $excludedCategories = explode(',', str_replace(' ', '', $excludedCategories));
                     }
@@ -392,7 +391,6 @@ class Product extends AbstractModel
                         $websiteId,
                         $this->_mapHeader,
                         $this->_processedStores,
-                        $store['merchant_id'],
                         $logsArray
                     );
 
@@ -428,7 +426,7 @@ class Product extends AbstractModel
             $this->logsHelper->manualLogs($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception %1", \Zend_Json::encode(error_get_last()));
+            $logsArray['description'] = __("Exception %1", $e->getMessage());
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->manualLogs($logsArray);
 

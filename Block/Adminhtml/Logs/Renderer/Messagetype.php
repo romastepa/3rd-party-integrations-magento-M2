@@ -44,7 +44,6 @@ class Messagetype extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abs
     public function render(DataObject $row)
     {
         $rowData = $row->getData();
-        $url = $this->backendHelper->getUrl('logs/logs/detail', ['id' => $rowData['id']]); //adminhtml indicates the admin module, rest is the url
         if (strtolower($rowData['message_type']) == 'success') {
             $usermsg = "<span style='color:green'>Success</span>";
         } elseif (strtolower($rowData['message_type']) == 'error') {

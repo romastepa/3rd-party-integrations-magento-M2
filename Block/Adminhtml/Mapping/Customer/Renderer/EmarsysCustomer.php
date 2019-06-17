@@ -82,14 +82,12 @@ class EmarsysCustomer extends AbstractRenderer
      */
     public function render(DataObject $row)
     {
-        $session = $this->session->getData();
-        if (isset($session['store'])) {
-            $storeId = $session['store'];
-        }
+        $storeId = $this->session->getStore();
+
         $emarsysContactFields = $this->resourceModelCustomer->getEmarsysContactFields($storeId);
         $chkSelected = $this->resourceModelCustomer->checkAttributeUsed($row->getId(), $storeId);
 
-        $html = '<select name="' . $row->getData('attribute_code_custom') . '" class="admin__control-select emaryscustomervalues" style="width:200px;" >
+        $html = '<select name="' . $row->getData('attribute_code_custom') . '" class="admin__control-select emaryscustomervalues" style="width:200px;">
                  <option value=" ">Please Select</option>';
         foreach ($emarsysContactFields as $field) {
             $selected = ($chkSelected && in_array($field['emarsys_field_id'], $chkSelected)) ? 'selected = selected' : "";

@@ -14,7 +14,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs\Proxy as EmarsysLogs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysLogs;
 
 /**
  * Class Logs

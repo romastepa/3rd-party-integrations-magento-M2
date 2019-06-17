@@ -14,7 +14,7 @@ use Emarsys\Emarsys\Helper\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
@@ -34,6 +34,11 @@ class SaveSchema extends Action
     protected $session;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * @var Order
      */
     protected $orderResourceModel;
@@ -46,7 +51,7 @@ class SaveSchema extends Action
      * @param DateTime $date
      * @param Order $orderResourceModel
      * @param StoreManagerInterface $storeManager
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Context $context,
@@ -55,7 +60,7 @@ class SaveSchema extends Action
         DateTime $date,
         Order $orderResourceModel,
         StoreManagerInterface $storeManager,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($context);
@@ -116,7 +121,7 @@ class SaveSchema extends Action
 
             $errorStatus = false;
             $logsArray['emarsys_info'] = 'Update Schema Successful';
-            $logsArray['description'] = 'Inserted Entries ' . print_r($data,true);
+            $logsArray['description'] = 'Inserted Entries ' . \Zend_Json::encode($data);
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage('Order Schema Updated Successfully.');

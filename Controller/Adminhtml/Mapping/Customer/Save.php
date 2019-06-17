@@ -12,7 +12,7 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\CustomerFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
@@ -61,7 +61,7 @@ class Save extends Action
     protected $emarsysLogs;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emsrsysHelper;
 
@@ -71,7 +71,7 @@ class Save extends Action
      * @param Context $context
      * @param CustomerFactory $customerFactory
      * @param Customer $resourceModelCustomer
-     * @param Data $emsrsysHelper
+     * @param EmarsysHelper $emsrsysHelper
      * @param EmarsysHelperLogs $logsHelper
      * @param Logs $emarsysLogs
      * @param DateTime $date
@@ -82,7 +82,7 @@ class Save extends Action
         Context $context,
         CustomerFactory $customerFactory,
         Customer $resourceModelCustomer,
-        Data $emsrsysHelper,
+        EmarsysHelper $emsrsysHelper,
         EmarsysHelperLogs $logsHelper,
         Logs $emarsysLogs,
         DateTime $date,
@@ -156,7 +156,7 @@ class Save extends Action
                 $attModel->save();
             }
             if ($savedFields) {
-                $logsArray['description'] = 'Saved Fields Id(s) ' . print_r(implode(",", $savedFields), true);
+                $logsArray['description'] = 'Saved Fields Id(s) ' . \Zend_Json::encode($savedFields);
             } else {
                 $logsArray['description'] = 'Customer Mapping Saved';
             }

@@ -14,7 +14,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Emarsys\Emarsys\Model\PlaceholdersFactory;
 use Emarsys\Emarsys\Model\EmarsysmagentoeventsFactory;
 use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 
 /**
  * Class Placeholderjson
@@ -38,6 +38,11 @@ class Placeholderjson extends Action
     protected $eventFactory;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Placeholderjson constructor.
      * @param Context $context
      * @param EventFactory $eventFactory
@@ -45,7 +50,7 @@ class Placeholderjson extends Action
      * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
      * @param EmarsysmagentoeventsFactory $emarsysMagentoEventsFactory
      * @param EmarsyseventmappingFactory $emarsysEventMappingFactory
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
@@ -55,7 +60,7 @@ class Placeholderjson extends Action
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
         EmarsysmagentoeventsFactory $emarsysMagentoEventsFactory,
         EmarsyseventmappingFactory $emarsysEventMappingFactory,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);

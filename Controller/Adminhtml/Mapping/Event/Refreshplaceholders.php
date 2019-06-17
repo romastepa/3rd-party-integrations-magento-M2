@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 
 /**
  * Class Refreshplaceholders
@@ -18,18 +18,18 @@ use Emarsys\Emarsys\Helper\Data;
 class Refreshplaceholders extends Action
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
     /**
      * Refreshplaceholders constructor.
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper
+        EmarsysHelper $emarsysHelper
     ) {
         parent::__construct($context);
         $this->emarsysHelper = $emarsysHelper;

@@ -151,7 +151,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 }
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
-                $logsArray['description'] = 'Saved Recommended Mapping as ' . print_r($emarsysCodes,true);
+                $logsArray['description'] = 'Saved Recommended Mapping as ' . \Zend_Json::encode($emarsysCodes);
                 $logsArray['action'] = 'Update Schema Successful';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());

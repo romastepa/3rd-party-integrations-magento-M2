@@ -164,7 +164,7 @@ class SaveRecommended extends Action
             $logsArray['emarsys_info'] = 'Saved Recommended Mapping';
             $logsArray['action'] = 'Saved Recommended Mapping';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Saved Recommended Mapping as ' . print_r($recommendedArray, true);
+            $logsArray['description'] = 'Saved Recommended Mapping as ' . \Zend_Json::encode($recommendedArray);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';

@@ -6,7 +6,7 @@
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\Webdav;
 
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Helper\Logs;
@@ -21,7 +21,7 @@ use Magento\Backend\App\Action;
 class Index extends Action
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -42,7 +42,7 @@ class Index extends Action
 
     /**
      * Index constructor.
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param DateTime $date
      * @param Logs $logsHelper
@@ -50,7 +50,7 @@ class Index extends Action
      * @param WebDavExport $webDavExport
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Context $context,
         DateTime $date,
         Logs $logsHelper,
@@ -71,7 +71,7 @@ class Index extends Action
         if (isset($params['store'])) {
             $storeId = $params['store'];
         } else {
-            $storeId = 1;
+            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $website = $this->getRequest()->getParam('website');
         $logsArray['job_code'] = 'testconnection';

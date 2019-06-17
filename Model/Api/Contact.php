@@ -114,6 +114,21 @@ class Contact
     protected $mappedCustomerAttribute = [];
 
     /**
+     * @var int
+     */
+    protected $storeId;
+
+    /**
+     * @var int
+     */
+    protected $websiteId;
+
+    /**
+     * @var string
+     */
+    protected $exportMode;
+
+    /**
      * Contact constructor.
      *
      * @param Api $api
@@ -447,6 +462,10 @@ class Contact
         } else {
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
+
+        $this->exportMode = $exportMode;
+        $this->storeId = $storeId;
+        $this->websiteId = $websiteId;
 
         $params = [
             'website' => $websiteId,

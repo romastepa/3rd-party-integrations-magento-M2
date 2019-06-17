@@ -34,7 +34,6 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     protected $entityType;
 
     /**
-     * 
      * @param Context $context
      * @param Type $entityType
      * @param Attribute $attribute
@@ -48,7 +47,6 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         StoreRepositoryInterface $storeRepository,
         $connectionName = null
     ) {
-    
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;
@@ -101,7 +99,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $select = $this->getConnection()
             ->select()
-            ->from($this->getTable('emarsys_event_mapping'), 'count(*)')
+            ->from($this->getTable('emarsys_events'), 'count(*)')
             ->where("store_id = ?", $storeId);
 
         return $this->getConnection()->fetchOne($select);
@@ -116,8 +114,8 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         return $this->getConnection()->delete(
             $this->getTable('emarsys_events'),
-            $this->getConnection()->quoteInto("store_id = ? ", $storeId)
-            .  $this->getConnection()->quoteInto("AND event_id = ? ", $eventId)
+            $this->getConnection()->quoteInto("store_id = ?", $storeId)
+            .  $this->getConnection()->quoteInto(" AND event_id = ?", $eventId)
         );
     }
 
@@ -130,8 +128,8 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         return $this->getConnection()->delete(
             $this->getTable('emarsys_event_mapping'),
-            $this->getConnection()->quoteInto("store_id = ? ", $storeId)
-            .  $this->getConnection()->quoteInto("AND emarsys_event_id = ? ", $emarsysEventId)
+            $this->getConnection()->quoteInto("store_id = ?", $storeId)
+            .  $this->getConnection()->quoteInto(" AND emarsys_event_id = ?", $emarsysEventId)
         );
     }
 }

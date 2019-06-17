@@ -2,7 +2,7 @@
 
 namespace Emarsys\Emarsys\Controller\Index;
 
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -16,7 +16,7 @@ class Sync extends \Magento\Framework\App\Action\Action
     protected $scopeConfig;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -36,14 +36,14 @@ class Sync extends \Magento\Framework\App\Action\Action
      * @param Context $context
      * @param ScopeConfigInterface $scopeConfig
      * @param Http $request
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Logs $emarsysLogs
      */
     public function __construct(
         Context $context,
         ScopeConfigInterface $scopeConfig,
         Http $request,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Logs $emarsysLogs
     ) {
         parent::__construct($context);

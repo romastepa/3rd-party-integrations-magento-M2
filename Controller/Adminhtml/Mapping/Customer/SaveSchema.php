@@ -147,7 +147,7 @@ class SaveSchema extends Action
 
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Update Schema';
-            $logsArray['description'] = 'Updated Schema as ' . print_r($customerAttData, true);
+            $logsArray['description'] = 'Updated Schema as ' . \Zend_Json::encode($customerAttData);
             $logsArray['action'] = 'Update Schema Successful';
             $logsArray['message_type'] = 'Success';
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());

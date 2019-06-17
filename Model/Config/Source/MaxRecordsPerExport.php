@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Model\Config\Source;
 
 use Magento\Framework\Option\ArrayInterface;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**

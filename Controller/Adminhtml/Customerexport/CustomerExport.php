@@ -67,9 +67,14 @@ class CustomerExport extends Action
     protected $emarsysHelper;
 
     /**
-     * @var
+     * @var EmarsysCronDetails
      */
-    protected $messageManager;
+    protected $emarsysCronDetails;
+
+    /**
+     * @var EmarsysCronHelper
+     */
+    protected $cronHelper;
 
     /**
      * @var Logs
@@ -117,53 +122,41 @@ class CustomerExport extends Action
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
-        try {
-            $data = $this->request->getParams();
-            $storeId = $data['storeId'];
-            $store = $this->storeManager->getStore($storeId);
-            $websiteId = $store->getWebsiteId();
-            $data['website'] = $websiteId;
-            $resultRedirect = $this->resultRedirectFactory->create();
-            $returnUrl = $this->getUrl("emarsys_emarsys/customerexport/index", ["store" => $storeId]);
+        $data = $this->request->getParams();
+        $storeId = $data['storeId'];
+        $store = $this->storeManager->getStore($storeId);
+        $websiteId = $store->getWebsiteId();
+        $data['website'] = $websiteId;
+        $resultRedirect = $this->resultRedirectFactory->create();
+        $returnUrl = $this->getUrl("emarsys_emarsys/customerexport/index", ["store" => $storeId]);
 
+        try {
             //check emarsys enable for website
             if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+                //calculate time difference
                 if (isset($data['fromDate']) && $data['fromDate'] != '') {
                     $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate'])) . ' 00:00:01';
                 }
-
                 if (isset($data['toDate']) && $data['toDate'] != '') {
                     $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
                 }
 
-                //get customer collection
+                /** @var Customer $customerCollection */
                 $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
-                if (!empty($customerCollection)) {
+                if ($customerCollection->getSize()) {
+                    //export customers through API
+                    $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
                     $cronJobScheduled = false;
-                    $cronJobName = '';
-
-                    if ($customerCollection->getSize() <= self::MAX_CUSTOMER_RECORDS) {
-                        //export customers through API
-                        $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
-                        if (!$isCronjobScheduled) {
-                            //no cron job scheduled yet, schedule a new cron job
-                            $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
-                            $cronJobScheduled = true;
-                            $cronJobName = EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API;
-                        }
-                    } else {
-                        //export customers through WebDav
-                        $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV, $storeId);
-                        if (!$isCronjobScheduled) {
-                            $cron = $this->cronHelper->scheduleCronJob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV, $storeId);
-                            $cronJobScheduled = true;
-                            $cronJobName = EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV;
-                        }
+                    if (!$isCronjobScheduled) {
+                        //no cron job scheduled yet, schedule a new cron job
+                        $cron = $this->cronHelper->scheduleCronjob(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
+                        $cronJobScheduled = true;
+                        $cronJobName = EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API;
                     }
 
                     if ($cronJobScheduled) {
@@ -173,12 +166,11 @@ class CustomerExport extends Action
                         //save details in cron details table
                         $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-                        $this->messageManager->addSuccessMessage(
-                            __(
-                                'A cron named "%1" have been scheduled for customers export for the store %2.',
-                                $cronJobName,
-                                $store->getName()
-                            ));
+                        $this->messageManager->addSuccessMessage(__(
+                            'A cron named "%1" have been scheduled for customers export for the store %2.',
+                            $cronJobName,
+                            $store->getName()
+                        ));
                     } else {
                         //cron job already scheduled
                         $this->messageManager->addErrorMessage(__('A cron is already scheduled to export customers for the store %1 ', $store->getName()));

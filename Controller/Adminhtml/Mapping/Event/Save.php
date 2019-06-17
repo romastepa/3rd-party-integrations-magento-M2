@@ -10,11 +10,10 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\EventFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping;
 
 /**
  * Class Save
@@ -38,35 +37,42 @@ class Save extends Action
     protected $eventFactory;
 
     /**
+     * @var Emarsyseventmapping
+     */
+    protected $emarsysEventMappingResourse;
+
+    /**
+     * @var EmarsyseventmappingFactory
+     */
+    protected $emarsysEventMappingFactory;
+
+    /**
      * Save constructor.
      * @param Context $context
      * @param EventFactory $eventFactory
-     * @param Event $eventResourceModel
      * @param DateTime $date
-     * @param StoreManagerInterface $storeManager
-     * @param Logs $logsHelper
+     * @param Logs $logHelper
      * @param EmarsyseventmappingFactory $emarsysEventMappingFactory
+     * @param Emarsyseventmapping $emarsysEventMappingResourse
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
         EventFactory $eventFactory,
-        Event $eventResourceModel,
         DateTime $date,
-        StoreManagerInterface $storeManager,
-        Logs $logsHelper,
+        Logs $logHelper,
         EmarsyseventmappingFactory $emarsysEventMappingFactory,
+        Emarsyseventmapping $emarsysEventMappingResourse,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
         $this->session = $context->getSession();
-        $this->eventResourceModel = $eventResourceModel;
-        $this->storeManager = $storeManager;
         $this->emarsysEventMappingFactory = $emarsysEventMappingFactory;
+        $this->emarsysEventMappingResourse = $emarsysEventMappingResourse;
         $this->resultPageFactory = $resultPageFactory;
         $this->date = $date;
         $this->eventFactory = $eventFactory;
-        $this->logsHelper = $logsHelper;
+        $this->logHelper = $logHelper;
         $this->_urlInterface = $context->getUrl();
     }
 
@@ -77,7 +83,6 @@ class Save extends Action
     {
         $storeId = $this->session->getStoreId();
         $gridSessionData = $this->session->getMappingGridData();
-        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $resultRedirect = $this->resultRedirectFactory->create();
         $errorStatus = true;
         $returnToStore = false;
@@ -89,18 +94,30 @@ class Save extends Action
         $logsArray['run_mode'] = 'Automatic';
         $logsArray['auto_log'] = 'Complete';
         $logsArray['store_id'] = $storeId;
-        $logsArray['website_id'] = $websiteId;
-        $logId = $this->logsHelper->manualLogs($logsArray);
+        $logsArray['website_id'] = 0;
+        $logId = $this->logHelper->manualLogs($logsArray);
         $logsArray['id'] = $logId;
         $logsArray['log_action'] = 'True';
 
         try {
+            if (!empty($gridSessionData)) {
+                $this->emarsysEventMappingResourse->truncateMappingTable($storeId);
+            }
+            $emarsysEventIds = [];
             foreach ($gridSessionData as $key => $value) {
+                if (!isset($gridSessionData[$key]['magento_event_id'])
+                    || empty($gridSessionData[$key]['magento_event_id'])
+                    || !isset($gridSessionData[$key]['emarsys_event_id'])
+                    || empty($gridSessionData[$key]['emarsys_event_id'])
+                    || in_array((int)$gridSessionData[$key]['emarsys_event_id'], $emarsysEventIds)
+                ) {
+                    continue;
+                }
+                $emarsysEventIds[] = (int)$gridSessionData[$key]['emarsys_event_id'];
                 $model = $this->emarsysEventMappingFactory->create();
-                $model->setId($key);
                 $model->setStoreId($storeId);
-                $model->setMagentoEventId($gridSessionData[$key]['magento_event_id']);
-                $model->setEmarsysEventId($gridSessionData[$key]['emarsys_event_id']);
+                $model->setMagentoEventId((int)$gridSessionData[$key]['magento_event_id']);
+                $model->setEmarsysEventId((int)$gridSessionData[$key]['emarsys_event_id']);
                 $model->save();
             }
             $errorStatus = false;
@@ -110,7 +127,7 @@ class Save extends Action
             $logsArray['action'] = 'Event Mapping';
             $logsArray['message_type'] = 'Success';
 
-            $this->logsHelper->manualLogs($logsArray);
+            $this->logHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage("Events mapped successfully");
         } catch (\Exception $e) {
             $logsArray['emarsys_info'] = 'Save Event Mapping';
@@ -128,7 +145,7 @@ class Save extends Action
             $logsArray['status'] = 'success';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogs($logsArray);
+        $this->logHelper->manualLogs($logsArray);
 
         if ($returnToStore) {
             return $resultRedirect->setUrl(

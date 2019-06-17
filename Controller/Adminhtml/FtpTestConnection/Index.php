@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Controller\Adminhtml\FtpTestConnection;
 
 use Magento\Backend\App\Action;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\View\Result\PageFactory;
 use Psr\Log\LoggerInterface as Logger;

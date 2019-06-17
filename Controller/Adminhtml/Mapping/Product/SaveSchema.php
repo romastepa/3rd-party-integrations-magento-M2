@@ -86,7 +86,7 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['emarsys_info'] = 'Update Product Mapping';
             $logsArray['action'] = 'Update Product Mapping Successful';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Product Mapping Updated as ' .print_r($productFields,true);
+            $logsArray['description'] = 'Product Mapping Updated as ' . \Zend_Json::encode($productFields);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';

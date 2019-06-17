@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 /** @var \Emarsys\Emarsys\Block\JavascriptTracking $block */
@@ -11,84 +11,198 @@
 <?php $merchantId = $block->getMerchantId(); ?>
 <?php $webExtendStatus = $block->getJsEnableStatusForAllPages(); ?>
 
-<!-- This code will embeded on all pages -->
 <?php if ($webExtendStatus && !empty($merchantId)): ?>
-    <?php $helper = $this->helper('Emarsys\Emarsys\Helper\Data'); ?>
     <script type="text/javascript">
         var ScarabQueue = ScarabQueue || [];
-        (function (subdomain, id) {
+        (function(id) {
             if (document.getElementById(id)) return;
-            var js = document.createElement('script');
-            js.id = id;
-            js.src = subdomain + '.scarabresearch.com/js/<?php echo $merchantId; ?>/scarab-v2.js';
+            var js = document.createElement('script'); js.id = id;
+            js.src = '\/' + '\/' + 'cdn.scarabresearch.com/js/<?php echo $block->getMerchantId(); ?>/scarab-v2.js';
             var fs = document.getElementsByTagName('script')[0];
             fs.parentNode.insertBefore(js, fs);
-        })('https:' == document.location.protocol ? 'https://recommender' : 'http://cdn', 'scarab-js-api');
+        })('scarab-js-api');
+
+        <?php if ($block->isTestModeEnabled()):?>
+        ScarabQueue.push(['testMode']);
+        <?php endif;?>
     </script>
-
-    <?php if ($helper->isTestModeEnabled()): ?>
-        <script>ScarabQueue.push(['testMode']);</script>
+    <?php $pageHandleData = $block->getPageHandleStatus(); ?>
+    <?php if ($pageHandleData['status'] == 'Valid' && $pageHandleData['logic'] != ''): ?>
+        <script type="text/html" id="<?php echo (string)$pageHandleData['templateId']; ?>">
+            <![CDATA[
+            {{ if (SC.page.products.length) { }}
+            <div class="scarab-itemlist">
+                <div class="scarab-prev">◀</div>
+                {{ for (var i=0; i < SC.page.products.length; i++) { }}
+                {{ var p = SC.page.products[i]; }}
+                <span data-scarabitem="{{=p.id}}" class="scarab-item">
+                    <a href="{{=p.link}}"><img src="{{=p.image}}">{{=p.title}}</a>
+                </span>
+                {{ } }}
+                <div class="scarab-next">▶</div>
+            </div>
+            {{ } }}
+            ]]>
+        </script>
+        <div id="recommended-product-container">
+            <div id="recommended-product"></div>
+        </div>
     <?php endif; ?>
-
-    <div id="webextend-code"></div>
-    <div id="webextend-cart"></div>
-    <script>
+    <script type="text/javascript">
+        window.Emarsys = window.Emarsys || {};
+        window.Emarsys.Magento2 = window.Emarsys.Magento2 || {};
+        var data = <?php echo $block->getTrackingData(); ?>;
         require([
-            'jquery'
-        ], function (jQuery) {
-            jQuery.ajax({
-                url: '<?php echo $block->getAjaxUpdateUrl() ?>',
-                data: {
-                    'unique_key': Math.floor((Math.random() * 1000000) + 1),
-                    'full_action_name': '<?php echo $block->getPageHandle(); ?>'
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function (result) {
-                    if (result.status == 1) {
-                        <?php if ($currentCategory = $block->getCurrentCategory()): ?>
-                        ScarabQueue.push(['category', '<?php echo $currentCategory; ?>']);
-                        <?php endif; ?>
+            'jquery',
+            'Magento_Customer/js/customer-data'
+        ], function (jQuery, customerData) {
+            data.order = window.Emarsys.Magento2.orderData;
+            data.exchangeRate = data.exchangeRate || 1;
+            let firstOnData = true;
+            let timeout;
 
-                        <?php if ($currentProduct = $block->getCurrentProductSku()): ?>
-                        ScarabQueue.push(['view', '<?php echo $currentProduct; ?>']);
-                        <?php endif; ?>
+            <?php if ($pageHandleData['status'] == 'Valid' && $pageHandleData['logic'] != ''): ?>
+            ScarabQueue.push(['recommend', {
+                logic: '<?php echo (string)$pageHandleData["logic"]; ?>',
+                containerId: 'recommended-product',
+                templateId: '<?php echo (string)$pageHandleData['templateId']; ?>',
+                limit: 10
+            }]);
+            <?php endif; ?>
 
-                        <?php if ($searchResult = $block->getSearchResult()): ?>
-                        ScarabQueue.push(['searchTerm', '<?php echo $searchResult; ?>']);
-                        <?php endif; ?>
-
-                        <?php if ($block->getStoreCode()): ?>
-                        ScarabQueue.push(['availabilityZone', '<?php echo $block->getStoreCode() ?>']);
-                        <?php endif; ?>
-                        jQuery('#webextend-code').html(result.content);
-                    }
-                },
-                error: function (xhr, textStatus, thrownError) {
-                    console.log("Emarsys WebExtend Ajax Error: " + thrownError);
+            const onData = function () {
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = undefined;
                 }
+
+                if (data.customer && data.customer.email) {
+                    ScarabQueue.push(['setEmail', data.customer.email]);
+                }
+
+                if (firstOnData) {
+                    var processed = 0;
+                    if (data.product) {
+                        ScarabQueue.push(['view', data.product.sku]);
+                    }
+
+                    if (!data.product && data.category) {
+                        ScarabQueue.push(['category', data.category.names.join(' > ')]);
+                    }
+
+                    if (data.search) {
+                        ScarabQueue.push(['searchTerm', data.search.term]);
+                    }
+
+                    if (data.slug) {
+                        ScarabQueue.push(['availabilityZone', data.slug]);
+                        ScarabQueue.push(['displayCurrency', data.displayCurrency]);
+                        ScarabQueue.push(['language', data.slug]);
+                    }
+
+                    if (data.order) {
+                        jQuery.each(data.order, function() {
+                            if (this.email) {
+                                ScarabQueue.push(['setEmail', this.email]);
+                                delete this.email;
+                            }
+                            ScarabQueue.push(['purchase', this]);
+                            ScarabQueue.push(['go']);
+                            processed = 1;
+                        });
+                    }
+                }
+
+                if (data.cart) {
+                    ScarabQueue.push([
+                        'cart',
+                        data.cart.items.map(product => {
+                            return {
+                                item: product.product_sku,
+                                price: product.product_price_value / data.exchangeRate,
+                                quantity: product.qty
+                            };
+                        })
+                    ]);
+                }
+
+                if (!processed) {
+                    ScarabQueue.push(['go']);
+                }
+                firstOnData = false;
+            };
+
+
+            customerData.get('customer').subscribe(function (customer) {
+                data.customer = customer;
+                if (!timeout) timeout = setTimeout(onData, 0);
             });
 
-            var miniCart = jQuery('[data-block=\'minicart\']');
-            miniCart.on('cartUpdated', function () {
-                jQuery.ajax({
-                    url: '<?php echo $block->getAjaxUpdateCartUrl() ?>',
-                    data: {
-                        'unique_key': Math.random() * Math.random(),
-                        'full_action_name': '<?php echo $block->getPageHandle(); ?>'
-                    },
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (result) {
-                        if (result.status == 1) {
-                            jQuery('#webextend-cart').html(result.content);
-                        }
-                    },
-                    error: function (xhr, textStatus, thrownError) {
-                        console.log("Emarsys WebExtend Ajax Error: " + thrownError);
-                    }
-                });
+            customerData.get('cart').subscribe(function (cart) {
+                data.cart = cart;
+                if (!timeout) timeout = setTimeout(onData, 0);
             });
+
+            if (firstOnData && !(customerData.get('customer')) && !(customerData.get('cart'))) {
+                onData();
+            }
         });
     </script>
+    <?php if ($pageHandleData['status'] == 'Valid' && $pageHandleData['logic'] != ''): ?>
+        <style>
+            .rec-item {
+                text-align: center;
+            }
+
+            .rec-image {
+                max-width: 80px;
+                max-height: 80px;
+            }
+
+            .scarab-itemlist {
+                padding: 0px 20px;
+                position: relative;
+                border: 1px solid #C5D7EF;
+            }
+
+            .scarab-item {
+                display: inline-block;
+                width: 120px;
+                margin: 5px;
+                vertical-align: top;
+                font-size: 12px;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            .scarab-item img {
+                max-width: 100px;
+                max-height: 100px;
+                display: block;
+                margin: 0px auto;
+                border: 0px;
+            }
+
+            .scarab-prev, .scarab-next {
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                top: 50%;
+                margin-top: -10px;
+                cursor: pointer;
+                text-align: center;
+                font-size: 16px;
+                color: #C5D7EF;
+            }
+
+            .scarab-prev {
+                left: 0px;
+            }
+
+            .scarab-next {
+                right: 0px;
+            }
+        </style>
+    <?php endif; ?>
 <?php endif; ?>

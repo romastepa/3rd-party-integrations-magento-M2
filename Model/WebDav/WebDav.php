@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Magento\Framework\DataObject;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
@@ -22,7 +22,7 @@ use Magento\Store\Model\ScopeInterface;
 class WebDav extends DataObject
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -53,7 +53,7 @@ class WebDav extends DataObject
 
     /**
      * WebDav constructor.
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Logs $logsHelper
      * @param DateTime $date
      * @param Subscriber $webDavSubscriber
@@ -61,7 +61,7 @@ class WebDav extends DataObject
      * @param EmarsysCronHelper $cronHelper
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Logs $logsHelper,
         DateTime $date,
         WebDavSubscriber $webDavSubscriber,
