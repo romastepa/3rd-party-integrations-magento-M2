@@ -86,36 +86,31 @@ class EmarsysEvent extends AbstractRenderer
     {
         $storeId = $this->session->getData('store');
         $url = $this->_urlInterface->getUrl('*/*/changeValue');
-        $row->getData('id');
-        $params = ['mapping_id' => $row->getData('id'), 'store' => $storeId];
+        $params = ['mapping_id' => $row->getId(), 'store' => $storeId];
         $placeHolderUrl = $this->backendHelper->getUrl("*/*/placeholders", $params);
-        $placeholderJsonRequestUrl = $this->backendHelper->getUrl(
-            "*/*/placeholderjson",
+        $placeholderJsonRequestUrl = $this->backendHelper->getUrl("*/*/placeholderjson",
             [
-                "mapping_id" => $row->getData('id'),
-                "store_id" => $storeId
+                'mapping_id' => $row->getId(),
+                'store_id' => $storeId
             ]
         );
         $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id', ['eq' => $storeId]);
-        $ronly = '';
+        $readOnly = '';
         $buttonClass = '';
 
-        if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getData('magento_event_id'))) {
-            $ronly .= ' disabled = disabled';
+        if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getId())) {
+            $readOnly .= ' disabled = disabled';
             $buttonClass = ' disabled';
         }
 
-        $html = '<select class="admin__control-select mapping-select" ' . $ronly .
+        $html = '<select class="admin__control-select mapping-select" ' . $readOnly .
             ' name="directions"  style="width:200px;" onchange="changeEmarsysValue(\'' . $url .
-            '\',this.value, \'' . $row->getData('magento_event_id') . '\', \'' . $row->getData('id') . '\')";>
+            '\',this.value, \'' . $row->getId() . '\', \'' . $row->getId() . '\')";>
 			<option value="0">Please Select</option>';
 
         foreach ($emarsysEvents as $emarsysEvent) {
-            $sel = '';
-            if ($row->getData("emarsys_event_id") == $emarsysEvent->getId()) {
-                $sel .= 'selected = selected';
-            }
-            $html .= '<option ' . $sel . ' value="' . $emarsysEvent->getId() . '">' . $emarsysEvent->getEmarsysEvent() . '</option>';
+            $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId()) ? ' selected = selected' : '';
+            $html .= '<option value="' . $emarsysEvent->getId() . '"' . $selected . '>' . $emarsysEvent->getEmarsysEvent() . '</option>';
         }
 
         $html .= '</select>';

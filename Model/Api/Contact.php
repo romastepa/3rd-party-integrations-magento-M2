@@ -114,6 +114,21 @@ class Contact
     protected $mappedCustomerAttribute = [];
 
     /**
+     * @var int
+     */
+    protected $storeId;
+
+    /**
+     * @var int
+     */
+    protected $websiteId;
+
+    /**
+     * @var string
+     */
+    protected $exportMode;
+
+    /**
      * Contact constructor.
      *
      * @param Api $api
@@ -178,7 +193,7 @@ class Contact
     {
         $logsArray['job_code'] = 'customer';
         $logsArray['status'] = 'started';
-        $logsArray['messages'] = 'Customer is sync to Emarsys';
+        $logsArray['messages'] = 'Created Customer in Emarsys';
         $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logsArray['run_mode'] = 'Manual';
         $logsArray['auto_log'] = 'Complete';
@@ -242,13 +257,12 @@ class Contact
             $logsArray['emarsys_info'] = 'Send Customer to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
+            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
 
             $result = $this->api->createContactInEmarsys($buildRequest);
 
-            $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Create customer in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
 
@@ -264,17 +278,17 @@ class Contact
                         );
                 }
 
-                $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
-                $logsArray['description'] = 'Created customer ' . $customer->getEmail() . ' in Emarsys succcessfully ' . $res . $confirmUrl;
+                $res = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($result);
+                $logsArray['description'] = 'Created customer ' . $customer->getEmail() . ' in Emarsys succcessfully | ' . $res . ' | ' . $confirmUrl;
                 $this->emarsysHelper->syncSuccess($customer->getId(), $websiteId, $storeId, $cron);
             } else {
                 $this->emarsysHelper->syncFail($customer->getId(), $websiteId, $storeId, $cron, 1);
                 $logsArray['message_type'] = 'Error';
-                $logsArray['description'] = $result['body']['replyText'];
+                $logsArray['description'] = \Zend_Json::encode($result);
                 $errorMsg = 1;
             }
             $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         } else {
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Create customer';
@@ -282,7 +296,7 @@ class Contact
             $logsArray['message_type'] = 'error';
             $logsArray['description'] = 'Customer attribute mapping not working.';
             $logsArray['log_action'] = 'sync';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         /**
@@ -293,15 +307,19 @@ class Contact
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         if ($errorMsg == 1) {
             $logsArray['status'] = 'error';
-            $logsArray['messages'] = 'Create customer in Emarsys with ERROR !!!';
+            $logsArray['message_type'] = 'Error';
+            $logsArray['emarsys_info'] = 'Error';
+            $logsArray['description'] = 'ERROR on Customer creation';
             if (empty($getEmarsysMappedFields)) {
-                $logsArray['messages'] = 'Create customer in Emarsys with ERROR! Mapping is empty!';
+                $logsArray['description'] = 'ERROR on Customer creation. Mapping is empty.';
             }
         } else {
             $logsArray['status'] = 'success';
-            $logsArray['messages'] = 'Customer in Emarsys created';
+            $logsArray['message_type'] = 'Success';
+            $logsArray['emarsys_info'] = 'Success';
+            $logsArray['description'] = 'Created Customer in Emarsys';
         }
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
     }
 
     /**
@@ -312,6 +330,7 @@ class Contact
      * @param null|\Magento\Customer\Model\Address $customerAddress
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Json_Exception
      */
     public function getMappedCustomersAddressAttributes($customer, $storeId, $customerAddress = null)
     {
@@ -332,24 +351,15 @@ class Contact
             }
 
             $mappedCountries = $this->emarsysCountryHelper->getMapping($storeId);
-            $headers = $headerIndex = [];
 
-            foreach ($mappedAttributes as $attribute) {
+            foreach ($mappedAttributes as $key => $attribute) {
                 if (!$attribute['emarsys_contact_field']) {
                     continue;
                 }
-                $emarsysField = $this->customerResourceModel->getEmarsysFieldNameContact($attribute, $storeId);
-                $headers[$attribute['magento_custom_attribute_id']] = $emarsysField['name'];
-                $headerIndex[$attribute['emarsys_contact_field']] = $attribute['magento_custom_attribute_id'];
-            }
-
-            foreach ($headers as $key => $value) {
-                //using the custom magento id from the emarsys_magento_customer_attributes table
-                $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($key, $storeId);
-                if ($attributeCode['entity_type_id'] == 2) { // If the field type is Address
+                $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($attribute['magento_custom_attribute_id'], $storeId);
+                if (!empty($attributeCode) && $attributeCode['entity_type_id'] == 2) { // If the field type is Address
                     $isShippingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_shipping_') !== false) ? true : false;
                     $isBillingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_billing_') !== false) ? true : false;
-                    $index = array_search($key, $headerIndex);
                     $attrValue = '';
                     if ($isShippingAttr && $primaryShipping) {
                         $attrValue = $primaryShipping->getData($attributeCode['attribute_code']);
@@ -357,12 +367,12 @@ class Contact
                         $attrValue = $primaryBilling->getData($attributeCode['attribute_code']);
                     }
                     if ($attributeCode['attribute_code'] == 'country_id') {
-                        $attrValue = (isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '');
+                        $attrValue = isset($mappedCountries[$attrValue]) ? $mappedCountries[$attrValue] : '';
                     } elseif ($attributeCode['attribute_code'] == 'street') {
-                        $attrValue = str_replace("\n", ',', $attrValue);
+                        $attrValue = str_replace("\n", ', ', $attrValue);
                     }
 
-                    $addressFields[$index] = $attrValue;
+                    $addressFields[$attribute['emarsys_contact_field']] = $attrValue;
                 }
             }
         }
@@ -453,6 +463,10 @@ class Contact
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
 
+        $this->exportMode = $exportMode;
+        $this->storeId = $storeId;
+        $this->websiteId = $websiteId;
+
         $params = [
             'website' => $websiteId,
             'storeId' => $storeId,
@@ -484,7 +498,7 @@ class Contact
         $logsArray['emarsys_info'] = __('Customer Export Started');
         $logsArray['description'] = __('Customer Export Started for Store ID : %1', $storeId);
         $logsArray['message_type'] = 'Success';
-        $this->logsHelper->logs($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
@@ -531,8 +545,8 @@ class Contact
                         $logsArray['emarsys_info'] = 'Send customers to Emarsys';
                         $logsArray['action'] = 'Magento to Emarsys';
                         $logsArray['message_type'] = 'Success';
-                        $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
-                        $this->logsHelper->logs($logsArray);
+                        $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
+                        $this->logsHelper->manualLogs($logsArray);
                         $this->emarsysLogger->info($logsArray['description']);
 
                         //Send request to Emarsys with Customer's Data
@@ -541,7 +555,7 @@ class Contact
 
                         $logsArray['emarsys_info'] = 'Create customers in Emarsys';
                         $logsArray['action'] = 'Synced to Emarsys';
-                        $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
+                        $res = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($result);
 
                         if ($result['status'] == '200') {
                             $errorStatus = false;
@@ -595,12 +609,12 @@ class Contact
                             //error response from emarsys
                             $logsArray['emarsys_info'] = __('Error while customer export.');
                             $logsArray['message_type'] = 'Error';
-                            $logsArray['description'] = $result['body']['replyText'] . $res;
+                            $logsArray['description'] = \Zend_Json::encode($result) . ' ' . $res;
                             $this->messageManager->addErrorMessage(
                                 __('Customers export have an error. Please check emarsys logs for more details!!')
                             );
                         }
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
                         $this->emarsysLogger->info($logsArray['description']);
                     }
                 }
@@ -610,7 +624,7 @@ class Contact
                 $logsArray['action'] = 'Magento to Emarsys';
                 $logsArray['message_type'] = 'Error';
                 $logsArray['description'] = __('No Customers for the store with store id %1.', $storeId);
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage(
                     __('No Customers found for the store with store id %1.', $storeId)
                 );
@@ -620,7 +634,7 @@ class Contact
             $logsArray['description'] = 'Failed to sync contacts. Customer attributes are not mapped.';
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addErrorMessage("Attributes are not mapped for this store view !!!");
         }
 
@@ -632,7 +646,7 @@ class Contact
             $logsArray['messages'] = 'Customer export completed';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $errorStatus ? false : true;
     }
@@ -695,7 +709,7 @@ class Contact
             $logsArray['emarsys_info'] = __('Emarsys is disabled');
             $logsArray['description'] = __('Emarsys is disabled for the store');
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         if ($errorStatus) {
@@ -706,7 +720,7 @@ class Contact
             $logsArray['messages'] = 'Contacts successfully synced';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return;
     }

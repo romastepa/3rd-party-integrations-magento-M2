@@ -7,10 +7,12 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Magento\Framework\Event\ObserverInterface;
-use Magento\Customer\Model\Session;
-use Emarsys\Emarsys\Model\Logs;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\{
+    Framework\Event\Observer,
+    Framework\Event\ObserverInterface,
+    Customer\Model\Session,
+    Framework\Exception\NoSuchEntityException
+};
 
 /**
  * Class CustomerRegisterSuccess
@@ -19,51 +21,27 @@ use Magento\Store\Model\StoreManagerInterface;
 class CustomerRegisterSuccess implements ObserverInterface
 {
     /**
-     * @var \Magento\Customer\Model\Session
+     * @var Session
      */
     protected $customerSession;
 
     /**
-     * @var \Emarsys\Emarsys\Model\Logs
-     */
-    protected $emarsysLogs;
-
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $storeManager;
-
-    /**
      * CustomerRegisterSuccess constructor.
      * @param Session $customerSession
-     * @param Logs $emarsysLogs
-     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
-        Session $customerSession,
-        Logs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        Session $customerSession
     ) {
         $this->customerSession = $customerSession;
-        $this->emarsysLogs = $emarsysLogs;
-        $this->storeManager = $storeManager;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @param Observer $observer
+     * @throws NoSuchEntityException
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
-        try {
-            $customer = $observer->getEvent()->getCustomer();
-            $this->customerSession->setWebExtendCustomerEmail($customer->getEmail());
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
-                $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
-                'CustomerRegisterSuccess Observer'
-            );
-        }
+        $customer = $observer->getEvent()->getCustomer();
+        $this->customerSession->setWebExtendCustomerEmail($customer->getEmail());
     }
 }

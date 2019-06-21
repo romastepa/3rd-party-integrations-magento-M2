@@ -13,8 +13,7 @@ use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\FieldFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
 use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -47,7 +46,22 @@ class Save extends Action
     /**
      * @var StoreManagerInterface
      */
-    protected $_storeManager;
+    protected $storeManager;
+
+    /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var Logs
+     */
+    protected $logsHelper;
+
+    /**
+     * @var DateTime 
+     */
+    protected $date;
 
     /**
      * Save constructor.
@@ -55,9 +69,8 @@ class Save extends Action
      * @param FieldFactory $fieldFactory
      * @param Field $resourceModelField
      * @param PageFactory $resultPageFactory
-     * @param Logs $logHelper
-     * @param EmarsysModelLogs $emarsysLogs
-     * @param Data $emarsysHelper
+     * @param Logs $logsHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
      */
@@ -66,9 +79,8 @@ class Save extends Action
         FieldFactory $fieldFactory,
         Field $resourceModelField,
         PageFactory $resultPageFactory,
-        Logs $logHelper,
-        EmarsysModelLogs $emarsysLogs,
-        Data $emarsysHelper,
+        Logs $logsHelper,
+        EmarsysHelper $emarsysHelper,
         DateTime $date,
         StoreManagerInterface $storeManager
     ) {
@@ -77,11 +89,10 @@ class Save extends Action
         $this->date = $date;
         $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
-        $this->emarsysLogs = $emarsysLogs;
         $this->resourceModelField = $resourceModelField;
         $this->fieldFactory = $fieldFactory;
-        $this->logHelper = $logHelper;
-        $this->_storeManager = $storeManager;
+        $this->logsHelper = $logsHelper;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -89,12 +100,13 @@ class Save extends Action
      */
     public function execute()
     {
-        if (isset($session['store'])) {
-            $storeId = $session['store'];
+        $session = $this->session->getData();
+        if (isset($session['storeId'])) {
+            $storeId = $session['storeId'];
         } else {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
-        $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $resultRedirect = $this->resultRedirectFactory->create();
         try {
             $logsArray['job_code'] = 'Customer Filed Mapping';
@@ -109,7 +121,6 @@ class Save extends Action
             $model = $this->fieldFactory->create();
             $session = $this->session->getData();
 
-            $gridSessionStoreId = '';
             $gridSessionData = [];
             if (isset($session['gridData'])) {
                 $gridSessionData = $session['gridData'];
@@ -154,7 +165,7 @@ class Save extends Action
                     }
                 }
             }
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Save Customer Filed Mapping';
             $logsArray['description'] = 'Save Customer Filed Mapping Successful';
@@ -165,11 +176,15 @@ class Save extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Customer Filed Mapping Successful';
-            $this->logHelper->logs($logsArray);
-            $this->logHelper->manualLogs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage('Customer-Field attributes mapped successfully');
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'Save (Customer Filed)');
+            $this->emarsysHelper->addErrorLog(
+                'Customer Filed Mapping',
+                $e->getMessage(),
+                $storeId,
+                'Save (Customer Filed)'
+            );
             $this->messageManager->addErrorMessage('Error occurred while mapping Customer-Field');
         }
 

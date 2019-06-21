@@ -6,11 +6,11 @@
  */
 namespace Emarsys\Emarsys\Observer;
 
-use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\{
+    Framework\Event\Observer,
     Framework\Event\ObserverInterface,
     Store\Model\StoreManagerInterface,
-    Framework\Registry as Registry,
     Customer\Model\CustomerFactory
 };
 
@@ -21,19 +21,14 @@ use Magento\{
 class CustomerSaveBefore implements ObserverInterface
 {
     /**
-     * @var Logs
+     * @var EmarsysHelper
      */
-    protected $emarsysLogs;
+    protected $emarsysHelper;
 
     /**
      * @var StoreManagerInterface
      */
     protected $storeManager;
-
-    /**
-     * @var Registry
-     */
-    protected $_registry;
 
     /**
      * @var CustomerFactory
@@ -42,24 +37,21 @@ class CustomerSaveBefore implements ObserverInterface
 
     /**
      * CustomerSaveBefore constructor.
-     * @param Logs $emarsysLogs
+     * @param EmarsysHelper $emarsysHelper
      * @param StoreManagerInterface $storeManager
-     * @param Registry $registry
      * @param CustomerFactory $customerFactory
      */
     public function __construct(
-        Logs $emarsysLogs,
+        EmarsysHelper $emarsysHelper,
         StoreManagerInterface $storeManager,
-        Registry $registry,
         CustomerFactory $customerFactory
     ) {
-        $this->emarsysLogs = $emarsysLogs;
+        $this->emarsysHelper = $emarsysHelper;
         $this->storeManager = $storeManager;
-        $this->_registry = $registry;
         $this->customerFactory = $customerFactory;
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
         try {
             $customer = $observer->getEvent()->getCustomer();
@@ -69,7 +61,8 @@ class CustomerSaveBefore implements ObserverInterface
                 $customer->setOrigData('NewCustomerCheck', true);
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog(
+            $this->emarsysHelper->addErrorLog(
+                EmarsysHelper::LOG_MESSAGE_CUSTOMER,
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'GetCustomerBeforeSave Observer'

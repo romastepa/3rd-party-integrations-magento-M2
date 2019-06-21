@@ -264,7 +264,7 @@ class Order extends AbstractDb
     public function getEmarsysOrderFields($storeId)
     {
         if (!isset($this->emarsysOrderFields[$storeId])) {
-            $heading = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
+            $heading = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
             $select = $this->getConnection()
                 ->select()
                 ->from($this->getMainTable())

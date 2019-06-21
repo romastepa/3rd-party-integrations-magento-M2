@@ -67,8 +67,9 @@ class OrderSyncQueue
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'OrderSyncQueue',
                 $e->getMessage(),
-                $this->storeManager->getStore()->getId(),
+                0,
                 'OrderSyncQueue::execute()'
             );
         }

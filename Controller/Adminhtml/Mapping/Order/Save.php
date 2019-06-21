@@ -87,14 +87,14 @@ class Save extends Action
             $logsArray['website_id'] = $websiteId;
             $logId = $this->logsHelper->manualLogs($logsArray);
 
-            $stringJSONData = json_decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
+            $stringJSONData = \Zend_Json::decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
 
             $this->orderResourceModel->insertIntoMappingTableCustomValue($stringArrayData, $storeId);
 
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Saved Order Mapping Successfully';
-            $logsArray['description'] = 'Save Entries as ' .print_r($stringArrayData,true);
+            $logsArray['description'] = 'Save Entries as ' . \Zend_Json::encode($stringArrayData);
             $logsArray['action'] = 'Save Order Schema';
             $logsArray['message_type'] = 'Success';
             $logsArray['status'] = 'Success';
@@ -102,8 +102,7 @@ class Save extends Action
             $logsArray['messages'] = 'Save Order Schema Successful';
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->logs($logsArray);
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage(__('Order attributes mapped successfully'));
         } catch (\Exception $e) {
             if ($logId) {
@@ -116,8 +115,7 @@ class Save extends Action
                 $logsArray['messages'] = 'Save Order Mapping not Successful';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $this->logsHelper->logs($logsArray);
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
             $this->messageManager->addErrorMessage(
                 __('There was a problem while saving the order mapping. Please refer emarsys logs for more information.')

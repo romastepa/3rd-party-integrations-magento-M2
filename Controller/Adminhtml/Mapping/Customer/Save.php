@@ -12,7 +12,7 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\CustomerFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
@@ -48,7 +48,22 @@ class Save extends Action
     /**
      * @var StoreManagerInterface
      */
-    protected $_storeManager;
+    protected $storeManager;
+
+    /**
+     * @var EmarsysHelperLogs 
+     */
+    protected $logsHelper;
+
+    /**
+     * @var Logs
+     */
+    protected $emarsysLogs;
+
+    /**
+     * @var EmarsysHelper
+     */
+    protected $emsrsysHelper;
 
     /**
      * Save constructor.
@@ -56,8 +71,8 @@ class Save extends Action
      * @param Context $context
      * @param CustomerFactory $customerFactory
      * @param Customer $resourceModelCustomer
-     * @param Data $emsrsysHelper
-     * @param EmarsysHelperLogs $logHelper
+     * @param EmarsysHelper $emsrsysHelper
+     * @param EmarsysHelperLogs $logsHelper
      * @param Logs $emarsysLogs
      * @param DateTime $date
      * @param PageFactory $resultPageFactory
@@ -67,8 +82,8 @@ class Save extends Action
         Context $context,
         CustomerFactory $customerFactory,
         Customer $resourceModelCustomer,
-        Data $emsrsysHelper,
-        EmarsysHelperLogs $logHelper,
+        EmarsysHelper $emsrsysHelper,
+        EmarsysHelperLogs $logsHelper,
         Logs $emarsysLogs,
         DateTime $date,
         PageFactory $resultPageFactory,
@@ -81,9 +96,9 @@ class Save extends Action
         $this->resultPageFactory = $resultPageFactory;
         $this->resourceModelCustomer = $resourceModelCustomer;
         $this->customerFactory = $customerFactory;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
         $this->date = $date;
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -99,7 +114,7 @@ class Save extends Action
         }
         try {
             $savedFields = [];
-            $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+            $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $logsArray['job_code'] = 'Customer Mapping';
             $logsArray['status'] = 'started';
             $logsArray['messages'] = 'Running Update Schema';
@@ -109,8 +124,8 @@ class Save extends Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
-            $logId = $this->logHelper->manualLogs($logsArray);
-            $stringJSONData = json_decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
+            $logId = $this->logsHelper->manualLogs($logsArray);
+            $stringJSONData = \Zend_Json::decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
 
             foreach ($stringArrayData as $key => $value) {
@@ -141,7 +156,7 @@ class Save extends Action
                 $attModel->save();
             }
             if ($savedFields) {
-                $logsArray['description'] = 'Saved Fields Id(s) ' . print_r(implode(",", $savedFields), true);
+                $logsArray['description'] = 'Saved Fields Id(s) ' . \Zend_Json::encode($savedFields);
             } else {
                 $logsArray['description'] = 'Customer Mapping Saved';
             }
@@ -154,11 +169,15 @@ class Save extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Customer Mapping Saved Successfully';
-            $this->logHelper->logs($logsArray);
-            $this->logHelper->manualLogs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage('Customer attributes mapped successfully');
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveSchema(Customer)');
+            $this->emarsysLogs->addErrorLog(
+                'Customer Mapping',
+                $e->getMessage(),
+                $storeId,
+                'SaveSchema(Customer)'
+            );
             $this->messageManager->addErrorMessage('Error occurred while mapping Customer attribute');
         }
         $resultRedirect = $this->resultRedirectFactory->create();

@@ -162,6 +162,7 @@ class OrderSaveFrontend implements ObserverInterface
 
     /**
      * @param $observer
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function newOrderEmailAddress($observer)
     {
@@ -173,13 +174,11 @@ class OrderSaveFrontend implements ObserverInterface
             foreach ($orderIds as $orderId) {
                 $order = $this->order->load($orderId);
                 $this->customerSession->setWebExtendCustomerEmail($order->getCustomerEmail());
-                if ($order->getCustomerId()) {
-                    $this->customerSession->setWebExtendCustomerId($order->getCustomerId());
-                }
             }
             $this->customerSession->setWebExtendNewOrderIds($orderIds);
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'setWebExtendCustomerEmail',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'newOrderEmailAddress()'

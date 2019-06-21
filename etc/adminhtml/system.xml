@@ -116,24 +116,6 @@
             </group>
             <group id="emarsys_emarsys" type="text" sortOrder="11" showInDefault="0" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization Settings</label>
-                <!--field id="realtime_sync" translate="label comment" sortOrder="24" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
-                    <label>Realtime-failsafe</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="background_runtime" translate="label comment" sortOrder="25" type="time" showInDefault="0" showInWebsite="1" showInStore="0">
-                    <label>Background Runtime</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\Backgroundruntime</source_model>
-                </field>
-                <field id="background_frequency" translate="label comment" sortOrder="26" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
-                    <label>Background Frequency</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\Frequency</source_model>
-                    <backend_model>Emarsys\Emarsys\Model\Config\CronConfig</backend_model>
-                    <comment>If you select Hourly,Hours and Minutes not applicable together</comment>
-                </field>
-                <field id="unique_field" translate="label comment" sortOrder="27" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
-                    <label>Unique Field</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\Uniquefield</source_model>
-                </field-->
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Notification secret key</label>
                 </field>
@@ -157,10 +139,6 @@
                 <field id="opt_in_strategy" translate="label comment" sortOrder="30" type="select" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Opt-In Strategy</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\OptInStrategy</source_model>
-                </field>
-                <field id="force_optin_confirmation" translate="label" type="select" sortOrder="40" showInDefault="0" showInWebsite="1" showInStore="0">
-                    <label>Force Optin Confirmation</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
             <group id="subscription_checkout_process" type="text" sortOrder="12" showInDefault="0" showInWebsite="1" showInStore="0">
@@ -240,16 +218,6 @@
                 <field id="smartinsight_enabled" translate="label" type="select" sortOrder="20" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Smart Insight Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="exportusing_emailidentifier" translate="label" type="select" sortOrder="21" showInDefault="0" showInWebsite="1" showInStore="0">
-                    <label>Export using email as identifier</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment><![CDATA[<script type='text/javascript'>
-                            document.getElementById("smart_insight_smart_insight_exportusing_emailidentifier").addEventListener("change", myFunction);
-                            function myFunction() {
-                                alert("Note: Please run Update Schema at Order Mapping Screen after changing this configuration.");
-                            }
-                        </script>]]></comment>
                 </field>
                 <field id="exportguest_checkoutorders" translate="label" type="select" sortOrder="22" showInDefault="0" showInWebsite="1" showInStore="0">
                     <label>Export guest checkout orders</label>
@@ -397,10 +365,6 @@
                     <label>Test Mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="identityregistered" translate="label comment" type="select" sortOrder="40" showInDefault="0" showInWebsite="1" showInStore="1">
-                    <label>Identify Registered Logged In Customer By</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\IdentityRegistered</source_model>
-                </field>
                 <field id="uniqueidentifier" translate="label comment" type="select" sortOrder="50" showInDefault="0" showInWebsite="1" showInStore="1">
                     <label>Item Unique Identification</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\UniqueIdentifier</source_model>
@@ -433,10 +397,6 @@
             <label>Logs</label>
             <tab>emarsys_connect</tab>
             <resource>Emarsys_Emarsys::settings</resource>
-            <group id="emarsys_info" translate="label" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Please switch to website level!</label>
-                <field id="emarsys_info" translate="label" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" />
-            </group>
             <group id="log_setting" translate="label" type="text" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Log Setting</label>
                 <field id="log_days" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">

@@ -136,6 +136,7 @@ class EmarsysCronDetails extends \Magento\Framework\Model\AbstractModel
             return true;
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'clearEmarsysCronDetails',
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'EmarsysCronDetails::clearEmarsysCronDetails()'

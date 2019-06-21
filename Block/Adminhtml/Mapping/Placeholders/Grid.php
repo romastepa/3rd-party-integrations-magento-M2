@@ -6,19 +6,24 @@
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders;
 
-use Magento\Backend\Block\Widget\Grid\Extended;
-use Magento\Backend\Block\Template\Context;
-use Magento\Backend\Helper\Data;
-use Magento\Eav\Model\Entity\Type;
-use Magento\Eav\Model\Entity\Attribute;
-use Magento\Framework\Data\Collection;
-use Magento\Framework\DataObjectFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Event;
-use Emarsys\Emarsys\Model\PlaceholdersFactory;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Magento\Framework\Module\Manager as ModuleManager;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Framework\App\ResponseFactory;
+use Magento\{
+    Backend\Block\Widget\Grid\Extended,
+    Backend\Block\Template\Context,
+    Backend\Helper\Data,
+    Eav\Model\Entity\Type,
+    Eav\Model\Entity\Attribute,
+    Framework\Data\Collection,
+    Framework\DataObjectFactory,
+    Framework\Module\Manager as ModuleManager,
+    Framework\Message\ManagerInterface as MessageManagerInterface,
+    Framework\App\ResponseFactory
+};
+use Emarsys\Emarsys\{
+    Model\ResourceModel\Event,
+    Model\EmarsyseventmappingFactory,
+    Model\PlaceholdersFactory,
+    Helper\Data as EmarsysHelper
+};
 
 /**
  * Class Grid
@@ -82,14 +87,19 @@ class Grid extends Extended
     protected $formKey;
 
     /**
-     * @var EmarsysHelper
+     * @var EmarsyseventmappingFactory
      */
-    protected $emarsysHelper;
+    protected $emarsysEventMappingFactory;
 
     /**
      * @var PlaceholdersFactory
      */
     protected $emarsysEventPlaceholderMappingFactory;
+
+    /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
 
     /**
      * Grid constructor.
@@ -100,6 +110,7 @@ class Grid extends Extended
      * @param Collection $dataCollection
      * @param DataObjectFactory $dataObjectFactory
      * @param Event $resourceModelEvent
+     * @param EmarsyseventmappingFactory $emarsysEventMappingFactory
      * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
      * @param EmarsysHelper $emarsysHelper
      * @param ModuleManager $moduleManager
@@ -115,6 +126,7 @@ class Grid extends Extended
         Collection $dataCollection,
         DataObjectFactory $dataObjectFactory,
         Event $resourceModelEvent,
+        EmarsyseventmappingFactory $emarsysEventMappingFactory,
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
         EmarsysHelper $emarsysHelper,
         ModuleManager $moduleManager,
@@ -127,6 +139,7 @@ class Grid extends Extended
         $this->attribute = $attribute;
         $this->moduleManager = $moduleManager;
         $this->backendHelper = $backendHelper;
+        $this->emarsysEventMappingFactory = $emarsysEventMappingFactory;
         $this->emarsysEventPlaceholderMappingFactory = $emarsysEventPlaceholderMappingFactory;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
@@ -147,12 +160,14 @@ class Grid extends Extended
     {
         $storeId = $this->getRequest()->getParam('store');
         $mappingId = $this->getRequest()->getParam('mapping_id');
+
         if (!$storeId) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
+
         $EventMappingCollection = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
-                                    ->addFieldToFilter("store_id", $storeId)
-                                    ->addFieldToFilter("event_mapping_id", $mappingId);
+            ->addFieldToFilter("store_id", $storeId)
+            ->addFieldToFilter("event_mapping_id", $mappingId);
 
         $this->setCollection($EventMappingCollection);
 
@@ -160,25 +175,25 @@ class Grid extends Extended
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     protected function _construct()
     {
         parent::_construct();
         $this->session->setData('gridData', '');
-        $mapping_id = $this->getRequest()->getParam('mapping_id');
+        $mappingId = $this->getRequest()->getParam('mapping_id');
         $storeId = $this->getRequest()->getParam('store_id');
+
         if (!$storeId) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
 
-        $emarsysEventPlaceholderMappingColl = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection();
-        $emarsysEventPlaceholderMappingColl->addFieldToFilter('event_mapping_id', $mapping_id);
-        $emarsysEventPlaceholderMappingColl->addFieldToFilter('store_id', $storeId);
+        $emarsysEventPlaceholderMappingColl = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
+            ->addFieldToFilter('event_mapping_id', $mappingId)
+            ->addFieldToFilter('store_id', $storeId);
 
         if (!$emarsysEventPlaceholderMappingColl->getSize()) {
-            $val = $this->emarsysHelper->insertFirstTimeMappingPlaceholders($mapping_id, $storeId);
+            $val = $this->emarsysHelper->insertFirstTimeMappingPlaceholders($mappingId, $storeId);
             if ($val == "") {
                 $this->_messageManager->addErrorMessage(__("Please Assign Email Template to event"));
                 $RedirectUrl = $this->_url->getUrl('emarsys_emarsys/mapping_event/index', ["store_id" => $storeId]);
@@ -188,9 +203,8 @@ class Grid extends Extended
     }
 
     /**
-     * @return $this
+     * @return Extended
      * @throws \Exception
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function _prepareColumns()
     {
@@ -228,10 +242,10 @@ class Grid extends Extended
     public function getMainButtonsHtml()
     {
         $url = $this->backendHelper->getUrl('emarsys_emarsys/mapping_event/saveplaceholdermapping');
-        $form = '<form id="eventsPlaceholderForm"  method="post" action="' . $url . '">';
-        $form .= '<input name="form_key" type="hidden" value="' . $this->formKey->getFormKey() . '" />';
-        $form .= '<input type="hidden" id="placeholderData" name="placeholderData" value="">';
-        $form .= '</form>';
+        $form = '<form id="eventsPlaceholderForm"  method="post" action="' . $url . '">'
+        . '<input name="form_key" type="hidden" value="' . $this->formKey->getFormKey() . '" />'
+        . '<input type="hidden" id="placeholderData" name="placeholderData" value="">'
+        . '</form>';
 
         return $form;
     }

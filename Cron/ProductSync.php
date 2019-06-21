@@ -45,6 +45,7 @@ class ProductSync
             $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC);
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                'ProductSync',
                 $e->getMessage(),
                 0,
                 'ProductSync::execute()'

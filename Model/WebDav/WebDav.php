@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Magento\Framework\DataObject;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
@@ -22,7 +22,7 @@ use Magento\Store\Model\ScopeInterface;
 class WebDav extends DataObject
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -53,7 +53,7 @@ class WebDav extends DataObject
 
     /**
      * WebDav constructor.
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Logs $logsHelper
      * @param DateTime $date
      * @param Subscriber $webDavSubscriber
@@ -61,7 +61,7 @@ class WebDav extends DataObject
      * @param EmarsysCronHelper $cronHelper
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Logs $logsHelper,
         DateTime $date,
         WebDavSubscriber $webDavSubscriber,
@@ -138,14 +138,14 @@ class WebDav extends DataObject
                 $logsArray['emarsys_info'] = 'Invalid WebDAV credentials.';
                 $logsArray['description'] = 'Invalid WebDAV credentials. Please check your settings and try again';
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->manualLogsUpdate($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //Emarsys is disabled for the store
             $logsArray['emarsys_info'] = __('Emarsys is disabled');
             $logsArray['description'] = __('Emarsys is disabled for the store');
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
         }
 
         if ($errorStatus) {
@@ -156,7 +156,7 @@ class WebDav extends DataObject
             $logsArray['messages'] = 'Contacts successfully synced';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return;
     }

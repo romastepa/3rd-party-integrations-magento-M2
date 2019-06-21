@@ -6,11 +6,13 @@
  */
 namespace Emarsys\Emarsys\Model\Checkout;
 
-use Magento\Checkout\Model\Session;
-use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Checkout\Model\ShippingInformationManagement as CheckoutShippingInformationManagement;
-use Magento\Checkout\Api\Data\ShippingInformationInterface;
+use Magento\{
+    Checkout\Model\Session,
+    Store\Model\StoreManagerInterface,
+    Checkout\Model\ShippingInformationManagement as CheckoutShippingInformationManagement,
+    Checkout\Api\Data\ShippingInformationInterface
+};
 
 /**
  * Class ShippingInformationManagement
@@ -54,15 +56,16 @@ class ShippingInformationManagement
      * @param CheckoutShippingInformationManagement $subject
      * @param $cartId
      * @param ShippingInformationInterface $addressInformation
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function beforeSaveAddressInformation(
         CheckoutShippingInformationManagement $subject,
         $cartId,
         ShippingInformationInterface $addressInformation
     ) {
+        $storeId = $this->storeManager->getStore()->getStoreId();
         try {
             $extAttributes = $addressInformation->getExtensionAttributes();
-            $storeId = $this->storeManager->getStore()->getStoreId();
 
             if ($extAttributes && is_object($extAttributes)) {
                 $isCustomerSubscribed = $extAttributes->getSubscribe();
@@ -75,7 +78,12 @@ class ShippingInformationManagement
                 }
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'beforeSaveAddressInformation');
+            $this->emarsysLogs->addErrorLog(
+                \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_SUBSCRIBER,
+                $e->getMessage(),
+                $storeId,
+                'beforeSaveAddressInformation'
+            );
         }
     }
 }

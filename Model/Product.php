@@ -253,7 +253,7 @@ class Product extends AbstractModel
      * @return bool
      * @throws \Exception
      */
-    public function consolidatedCatalogExport($mode = EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null, $excludedCategories = null)
+    public function consolidatedCatalogExport($mode = EmarsysHelper::ENTITY_EXPORT_MODE_AUTOMATIC, $includeBundle = null)
     {
         set_time_limit(0);
 
@@ -306,9 +306,8 @@ class Product extends AbstractModel
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
                     }
 
-                    if (is_null($excludedCategories)) {
-                        $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
-                    }
+                    $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
+
                     if ($excludedCategories) {
                         $excludedCategories = explode(',', str_replace(' ', '', $excludedCategories));
                     }
@@ -351,7 +350,7 @@ class Product extends AbstractModel
                         $logsArray['emarsys_info'] = __('Processing data for store %1', $storeId);
                         $logsArray['description'] = __('%1 of %2', $currentPageNumber, $lastPageNumber);
                         $logsArray['message_type'] = 'Success';
-                        $this->logsHelper->logs($logsArray);
+                        $this->logsHelper->manualLogs($logsArray);
 
                         $products = [];
                         foreach ($collection as $product) {
@@ -378,7 +377,7 @@ class Product extends AbstractModel
                     $logsArray['emarsys_info'] = __('Data for store %1 prepared', $storeId);
                     $logsArray['description'] = __('Data for store %1 prepared', $storeId);
                     $logsArray['message_type'] = 'Success';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                     $this->appEmulation->stopEnvironmentEmulation();
                 }
 
@@ -386,13 +385,12 @@ class Product extends AbstractModel
                     $logsArray['emarsys_info'] = __('Starting data uploading');
                     $logsArray['description'] = __('Starting data uploading');
                     $logsArray['message_type'] = 'Success';
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
 
                     $csvFilePath = $this->productExportModel->saveToCsv(
                         $websiteId,
                         $this->_mapHeader,
                         $this->_processedStores,
-                        $store['merchant_id'],
                         $logsArray
                     );
 
@@ -406,7 +404,7 @@ class Product extends AbstractModel
                         $logsArray['description'] = __('Error during data uploading');
                         $logsArray['message_type'] = 'Error';
                     }
-                    $this->logsHelper->logs($logsArray);
+                    $this->logsHelper->manualLogs($logsArray);
                 }
             }
 
@@ -418,19 +416,19 @@ class Product extends AbstractModel
                 $logsArray['messages'] = __('Product export completed');
             }
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $result = true;
         } catch (\Exception $e) {
             $msg = $e->getMessage();
             $logsArray['messages'] = __('consolidatedCatalogExport Exception');
             $logsArray['status'] = 'error';
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-            $this->logsHelper->manualLogsUpdate($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
 
             $logsArray['emarsys_info'] = __('consolidatedCatalogExport Exception');
-            $logsArray['description'] = __("Exception $1", json_encode(error_get_last()));
+            $logsArray['description'] = __("Exception %1", $e->getMessage());
             $logsArray['message_type'] = 'Error';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
 
             if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                 $this->messageManager->addErrorMessage(
@@ -527,7 +525,7 @@ class Product extends AbstractModel
                 $logsArray['emarsys_info'] = __('File uploaded to Emarsys');
                 $logsArray['description'] = __('File uploaded to Emarsys. File Name: %1. API Export result: %2', $url, $apiExportResult['resultBody']);
                 $logsArray['message_type'] = 'Success';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->_errorCount = false;
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addSuccessMessage(
@@ -541,7 +539,7 @@ class Product extends AbstractModel
                 $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
                 $logsArray['description'] = __('Failed to upload %1 on Emarsys. %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
                         __("Failed to upload file on Emarsys !!! " . $msg)
@@ -558,7 +556,7 @@ class Product extends AbstractModel
                 $logsArray['emarsys_info'] = __('File uploaded to FTP server successfully');
                 $logsArray['description'] = $url . ' > ' . $outputFile;
                 $logsArray['message_type'] = 'Success';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addSuccessMessage(
                         __("File uploaded to FTP server successfully !!!")
@@ -572,7 +570,7 @@ class Product extends AbstractModel
                 $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
                 $logsArray['description'] = __('Failed to upload %1 on FTP server %2' , $url, $msg);
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                     $this->messageManager->addErrorMessage(
                         __("Failed to upload file on FTP server !!! " . $msg)
@@ -777,9 +775,18 @@ class Product extends AbstractModel
                 }
                 switch ($attributeCode) {
                     case 'quantity_and_stock_status':
-                        $status = ($productObject->getStatus() == Status::STATUS_ENABLED);
-                        $inStock = ($productObject->getData('inventory_in_stock') == 1);
-                        $visibility = ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
+                        $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
+                            ? ($productObject->getStatus() == Status::STATUS_ENABLED)
+                            : true
+                        ;
+                        $inStock = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK) == 1)
+                            ? $productObject->isAvailable()
+                            : true
+                        ;
+                        $visibility = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY) == 1)
+                            ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
+                            : true
+                        ;
 
                         if ($status && $inStock && $visibility) {
                             $attributeData[] = 'TRUE';
@@ -849,7 +856,7 @@ class Product extends AbstractModel
             } catch (\Exception $e) {
                 $attributeData[] = '';
                 $logsArray['emarsys_info'] = __('consolidatedCatalogExport _getProductData Exception');
-                $logsArray['description'] = __('$1: $2', $attributeCode, $e->getMessage());
+                $logsArray['description'] = __('%1: %2', $attributeCode, $e->getMessage());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($logsArray);
             }

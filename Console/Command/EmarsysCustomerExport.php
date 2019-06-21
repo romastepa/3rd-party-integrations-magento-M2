@@ -42,8 +42,7 @@ class EmarsysCustomerExport extends Command
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Emarsys\Emarsys\Model\ResourceModel\Customer $customerResourceModel,
         \Magento\Framework\App\State $state
-    )
-    {
+    ) {
         $this->storeManager = $storeManager;
         $this->customerResourceModel = $customerResourceModel;
         $this->state = $state;
@@ -68,10 +67,16 @@ class EmarsysCustomerExport extends Command
                 InputOption::VALUE_OPTIONAL,
                 '--to="Y-m-d" (2017-12-31)'
             ),
+            new InputOption(
+                'page',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                '--page="1"'
+            ),
         ];
 
         $this->setName('emarsys:export:customer')
-            ->setDescription('Customer bulk export (--from=\'Y-m-d\' (2016-01-31) --to=\'Y-m-d\' (2017-12-31))')
+            ->setDescription('Customer bulk export (--from=\'Y-m-d\' (2016-01-31) --to=\'Y-m-d\' (2017-12-31)) --page=\'1\'')
             ->setDefinition($options);
         parent::configure();
     }
@@ -82,7 +87,6 @@ class EmarsysCustomerExport extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
-        $this->updateMemoryLimit();
         $output->writeln('');
         $output->writeln('<info>Starting customer bulk export.</info>');
 
@@ -90,30 +94,19 @@ class EmarsysCustomerExport extends Command
         foreach ($this->storeManager->getStores() as $storeId => $store) {
             if ($store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED) && $store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED)) {
                 $data = [];
-                $data['fromDate'] = ($input->getOption('from') && !empty($input->getOption('from'))) ? $input->getOption('from') . ' 00:00:00' : '';
+                $data['page'] = ($input->getOption('page') && !empty($input->getOption('page'))) ? $input->getOption('page') : 1;
+                $data['fromDate'] = ($input->getOption('from') && !empty($input->getOption('from'))) ? $input->getOption('from') . ' 00:00:01' : '';
                 $data['toDate'] = ($input->getOption('to') && !empty($input->getOption('to'))) ? $input->getOption('to') . ' 23:59:59' : '';
                 $data['website'] = $store->getWebsiteId();
                 $data['storeId'] = $storeId;
-                $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
-                if ($customerCollection->getSize() <= 100000) {
-                    try {
-                        \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Api\Contact::class)->syncFullContactUsingApi(
-                            \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
-                            $data
-                        );
-                    } catch (\Exception $e) {
-                        $output->writeln($e->getMessage());
-                        $output->writeln($e->getTrace());
-                    }
-                } else {
-                    try {
-                        \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\WebDav\WebDav::class)->syncFullContactUsingWebDav(
-                            \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV,
-                            $data
-                        );
-                    } catch (\Exception $e) {
-                        $output->writeln($e->getMessage());
-                    }
+                try {
+                    \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Api\Contact::class)->syncFullContactUsingApi(
+                        \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
+                        $data
+                    );
+                } catch (\Exception $e) {
+                    $output->writeln($e->getMessage());
+                    $output->writeln($e->getTrace());
                 }
             }
         }
@@ -125,40 +118,5 @@ class EmarsysCustomerExport extends Command
 
         $output->writeln('<info>Customer bulk export complete</info>');
         $output->writeln('');
-    }
-
-    /**
-     * @return void
-     */
-    private function updateMemoryLimit()
-    {
-        if (function_exists('ini_set')) {
-            @ini_set('display_errors', 1);
-            $memoryLimit = trim(ini_get('memory_limit'));
-            if ($memoryLimit != -1 && $this->getMemoryInBytes($memoryLimit) < 756 * 1024 * 1024) {
-                @ini_set('memory_limit', '756M');
-            }
-        }
-    }
-
-    /**
-     * @param string $value
-     * @return int
-     */
-    private function getMemoryInBytes($value)
-    {
-        $unit = strtolower(substr($value, -1, 1));
-        $value = (int)$value;
-        switch ($unit) {
-            case 'g':
-                $value *= 1024 * 1024 * 1024;
-                break;
-            case 'm':
-                $value *= 1024 * 1024;
-                break;
-            case 'k':
-                $value *= 1024;
-        }
-        return $value;
     }
 }

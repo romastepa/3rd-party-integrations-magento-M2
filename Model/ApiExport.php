@@ -123,11 +123,17 @@ class ApiExport extends ZendClient
             $headers[] = "Authorization: bearer " . $token;
             $headers[] = "Content-type: text/csv";
             $headers[] = "Accept: text/plain";
+            $headers[] = "Extension-Version: 1.0.15";
 
             return $headers;
         }
         $storeId = $this->storeManagerInterface->getStore()->getId();
-        $this->emarsysHelper->addErrorLog('Api Token Not Found', $storeId, 'ApiExport::getApiHeaders()');
+        $this->emarsysHelper->addErrorLog(
+            'Api Export',
+            'Api Token Not Found',
+            $storeId,
+            'ApiExport::getApiHeaders()'
+        );
 
         return false;
     }
@@ -161,7 +167,12 @@ class ApiExport extends ZendClient
                 $result['resultBody'] = 'Api Export Failed. Empty response';
             }
         } else {
-            $this->emarsysHelper->addErrorLog('Api Export Failed. API URL or CSV File Not Found.', $storeId, 'ApiExport::apiExport()');
+            $this->emarsysHelper->addErrorLog(
+                'Api Export',
+                'Api Export Failed. API URL or CSV File Not Found.',
+                $storeId,
+                'ApiExport::apiExport()')
+            ;
         }
 
         return $result;
@@ -200,7 +211,8 @@ class ApiExport extends ZendClient
             }
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
-                'API Test Connection Failed. ' . $e->getMessage(),
+                'API Test Connection',
+                'API Test Connection Failed. | ' . $e->getMessage(),
                 $this->storeManagerInterface->getStore()->getId(),
                 'ApiExport::_request()'
             );
@@ -295,39 +307,23 @@ class ApiExport extends ZendClient
     /**
      * Get Sales Order Sample Data for Test Connection Button.
      *
-     * @param int $store
      * @param array $headers
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function sampleDataSmartInsightExport($store = 0, $headers)
+    public function sampleDataSmartInsightExport($headers)
     {
         /** @var \Magento\Store\Model\Store $store */
-        $store = $this->storeManagerInterface->getStore($store);
         $sampleResult = [];
 
-        $emailAsIdentifierStatus = (bool)$store->getConfig(DATA::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER);
-        if ($emailAsIdentifierStatus) {
-            //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
-            $sampleData = [
-                'order' => '00000',
-                'timestamp' => '2017-07-07T07:07:07Z',
-                'email' => 'sample@data.com',
-                'item' => 'test_product_item_1',
-                'price' => '0.00',
-                'quantity' => '0'
-            ];
-        } else {
-            //header ['order', 'timestamp', 'customer', 'item', 'price', 'quantity'];
-            $sampleData = [
-                'order' => '00000',
-                'timestamp' => '2017-07-07T07:07:07Z',
-                'customer' => 'cutomer_id',
-                'item' => 'test_product_item_1',
-                'price' => '0.00',
-                'quantity' => '0'
-            ];
-        }
+        //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
+        $sampleData = [
+            'order' => '00000',
+            'timestamp' => '2017-07-07T07:07:07Z',
+            'email' => 'sample@data.com',
+            'item' => 'test_product_item_1',
+            'price' => '0.00',
+            'quantity' => '0'
+        ];
 
         foreach ($headers as $item) {
             $itemVal = '';
@@ -396,9 +392,9 @@ class ApiExport extends ZendClient
             //get sales mapped attributes
             $emptyFileHeader = $this->orderResourceModel->getSalesMappedAttrs($storeId);
             if (empty($emptyFileHeader)) {
-                $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
+                $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
             }
-            $sampleData = $this->sampleDataSmartInsightExport($storeId, $emptyFileHeader);
+            $sampleData = $this->sampleDataSmartInsightExport($emptyFileHeader);
         }
 
         $data = [

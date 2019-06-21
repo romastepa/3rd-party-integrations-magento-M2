@@ -10,6 +10,9 @@ require(
     ],
     function ($) {
         $(document).ready(function () {
+            if (document.getElementById('emarsys_predict_feed_export_excludedcategories')) {
+                document.getElementById('emarsys_predict_feed_export_excludedcategories').style.display = 'none';
+            }
             //use the jquery only after the complete document has loaded so jquery event gets bound to the html elements
             $("#emarsyssync_customersync_syncdirection").on('change', function () {
                 alert('If you change sync direction then attribute mapping direction will also change according to sync direction');

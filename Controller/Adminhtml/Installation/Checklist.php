@@ -8,7 +8,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Installation;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Checklist
@@ -22,14 +22,19 @@ class Checklist extends Action
     protected $resultPageFactory;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Checklist constructor.
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);

@@ -7,8 +7,7 @@
 
 namespace Emarsys\Emarsys\Model\Api;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Zend_Http_Client;
+use Magento\Store\Model\StoreManagerInterface as StoreManager;
 use Zend_Json;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
@@ -23,9 +22,9 @@ class Api extends \Magento\Framework\DataObject
     protected $apiUrl;
 
     /**
-     * @var ScopeConfigInterface
+     * @var StoreManager
      */
-    protected $scopeConfigInterface;
+    protected $storeManager;
 
     /**
      * @var EmarsysHelper
@@ -37,14 +36,14 @@ class Api extends \Magento\Framework\DataObject
      * By default is looking for first argument as array and assigns it as object
      * attributes This behavior may change in child classes
      *
-     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param StoreManager $storeManager
      * @param array $data
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfigInterface,
+        StoreManager $storeManager,
         array $data = []
     ) {
-        $this->scopeConfigInterface = $scopeConfigInterface;
+        $this->storeManager = $storeManager;
         parent::__construct($data);
     }
 
@@ -70,11 +69,9 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getApiUsername()
     {
-        $username = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_api_username', $this->scope, $this->websiteId);
-        if ($username == '' && $this->websiteId == 1) {
-            $username = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_api_username');
-        }
-        return $username;
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
+        $website = $this->storeManager->getWebsite($this->websiteId);
+        return $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_username');
     }
 
     /**
@@ -84,11 +81,9 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getApiPassword()
     {
-        $password = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_api_password', $this->scope, $this->websiteId);
-        if ($password == '' && $this->websiteId == 1) {
-            $password = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_api_password');
-        }
-        return $password;
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
+        $website = $this->storeManager->getWebsite($this->websiteId);
+        return $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_password');
     }
 
     /**
@@ -98,21 +93,22 @@ class Api extends \Magento\Framework\DataObject
      */
     public function setApiUrl()
     {
-        $endpoint = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $this->scope, $this->websiteId);
-        if ($endpoint == '' && $this->websiteId == 1) {
-            $endpoint = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_api_endpoint');
-        }
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
+        $website = $this->storeManager->getWebsite($this->websiteId);
+        $endpoint = $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint');
         if ($endpoint == 'custom') {
-            $url = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_custom_url', $this->scope, $this->websiteId);
-            if ($url == '' && $this->websiteId == 1) {
-                $url = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/emarsys_custom_url');
+            $url = $website->getConfig('emarsys_settings/emarsys_setting/emarsys_custom_url');
+            if (trim($url) == '') {
+                $url = EmarsysHelper::EMARSYS_DEFAULT_API_URL;
             }
-            return $this->apiUrl = rtrim($url, '/') . "/";
+            $this->apiUrl = rtrim($url, '/') . "/";
         } elseif ($endpoint == 'cdn') {
-            return $this->apiUrl = EmarsysHelper::EMARSYS_CDN_API_URL;
-        } elseif ($endpoint == 'default') {
-            return $this->apiUrl = EmarsysHelper::EMARSYS_DEFAULT_API_URL;
+            $this->apiUrl = EmarsysHelper::EMARSYS_CDN_API_URL;
+        } else {
+            $this->apiUrl = EmarsysHelper::EMARSYS_DEFAULT_API_URL;
         }
+
+        return $this->apiUrl;
     }
 
     /**
@@ -123,75 +119,6 @@ class Api extends \Magento\Framework\DataObject
     public function getApiUrl()
     {
         return $this->setApiUrl();
-    }
-
-    /**
-     * Returns emarsys enabled based on the current scope
-     *
-     * @return boolean
-     */
-    protected function _isEnabled()
-    {
-        $enable = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/enable', $this->scope, $this->websiteId);
-        if ($enable == '' && $this->websiteId == 1) {
-            $enable = $this->scopeConfigInterface->getValue('emarsys_settings/emarsys_setting/enable');
-        }
-        return $enable;
-    }
-
-    /**
-     * @param $requestType
-     * @param $urlParam
-     * @param array $requestBody
-     * @return array
-     * @throws \Zend_Http_Client_Exception
-     * @throws \Zend_Json_Exception
-     */
-    public function sendRequestOrig($requestType, $urlParam, $requestBody = [])
-    {
-        $client = new Zend_Http_Client();
-        $requestUrl = $this->getApiUrl() . $urlParam;
-        $client->setUri($requestUrl);
-        switch ($requestType) {
-            case 'GET':
-                $client->setMethod(Zend_Http_Client::GET);
-                $client->setParameterGet($requestBody);
-                break;
-            case 'POST':
-                $client->setMethod(Zend_Http_Client::POST);
-                $client->setRawData(Zend_Json::encode($requestBody));
-                break;
-            case 'PUT':
-                $client->setMethod(Zend_Http_Client::PUT);
-                $client->setRawData(Zend_Json::encode($requestBody));
-                break;
-            case 'DELETE':
-                $client->setMethod(Zend_Http_Client::DELETE);
-                $client->setRawData(Zend_Json::encode($requestBody));
-                break;
-        }
-        $nonce = time();
-        $timestamp = gmdate("c");
-        $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));
-        $client->setHeaders([
-            'Content-Type' => 'application/json',
-            'Accept-encoding' => 'utf-8',
-            'X-WSSE' => [
-                'X-WSSE: UsernameToken' .
-                'Username="' . $this->getApiUsername() . '", ' .
-                'PasswordDigest="' . $passwordDigest . '", ' .
-                'Nonce="' . $nonce . '", ' .
-                'Created="' . $timestamp . '"',
-                'Content-type: application/json;charset="utf-8"',
-            ],
-            'Extension-Version' => '1.0.13',
-        ]);
-        $response = $client->request();
-
-        return [
-            'status' => Zend_Json::decode($response->getStatus()),
-            'body' => Zend_Json::decode($response->getBody()),
-        ];
     }
 
     /**
@@ -250,9 +177,16 @@ class Api extends \Magento\Framework\DataObject
             'Nonce="' . $nonce . '", ' .
             'Created="' . $timestamp . '"',
             'Content-type: application/json;charset="utf-8"',
-            'Extension-Version: 1.0.13',
+            'Extension-Version: 1.0.15',
         ]);
+
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Zend_Http_Client');
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+
         $response = curl_exec($ch);
+        $header = curl_getinfo($ch);
 
         $http_code = 200;
         if (!curl_errno($ch)) {
@@ -260,9 +194,20 @@ class Api extends \Magento\Framework\DataObject
         }
         curl_close($ch);
 
+        try {
+            $decodedResponse = \Zend_Json::decode($response);
+        } catch (\Exception $e) {
+            $decodedResponse = false;
+        }
+
+        if ($decodedResponse) {
+            $response = $decodedResponse;
+        }
+
         return [
             'status' => $http_code,
-            'body' => json_decode($response, true),
+            'header' => $header,
+            'body' => $response,
         ];
     }
 

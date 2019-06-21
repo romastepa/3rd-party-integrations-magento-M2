@@ -8,9 +8,8 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Log;
 
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Model\Logs;
-use Emarsys\Emarsys\Model\LogSchedule;
+use Emarsys\Emarsys\Model\ResourceModel\LogSchedule;
 use Magento\Backend\App\Action;
-use Emarsys\Emarsys\Helper\Data;
 
 /**
  * Class ClearLogs
@@ -29,27 +28,19 @@ class ClearLogs extends Action
     protected $logSchedule;
 
     /**
-     * @var Data
-     */
-    protected $emarsysHelper;
-
-    /**
      * ClearLogs constructor.
      * @param Context $context
      * @param Logs $logs
      * @param LogSchedule $logSchedule
-     * @param Data $emarsysHelper
      */
     public function __construct(
         Context $context,
         Logs $logs,
-        LogSchedule $logSchedule,
-        Data $emarsysHelper
+        LogSchedule $logSchedule
     ) {
         parent::__construct($context);
         $this->logs = $logs;
         $this->logSchedule = $logSchedule;
-        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
@@ -60,20 +51,20 @@ class ClearLogs extends Action
     {
         $resultRedirect = $this->resultRedirectFactory->create();
         $resultRedirect->setRefererOrBaseUrl();
-        $storeId = $this->emarsysHelper->getFirstStoreId();
 
         try {
-            $connection = $this->logSchedule->getResource()->getConnection();
-            $tableName = $this->logSchedule->getResource()->getMainTable();
-            $connection->truncateTable($tableName);
-
-            $logsConnection = $this->logs->getResource()->getConnection();
-            $logsTableName = $this->logs->getResource()->getMainTable();
-            $logsConnection->truncateTable($logsTableName);
+            $connection = $this->logSchedule->getConnection();
+            $tableName = $this->logSchedule->getMainTable();
+            $connection->delete($tableName);
 
             $this->messageManager->addSuccessMessage(__('Log tables have been truncated successfully.'));
         } catch (\Exception $e) {
-            $this->logs->addErrorLog($e->getMessage(), $storeId, 'Save (Customer Filed)');
+            $this->logs->addErrorLog(
+                'ClearLogs',
+                $e->getMessage(),
+                0,
+                'ClearLogs'
+            );
             $this->messageManager->addErrorMessage('Something went wrong while deleting logs.');
         }
 

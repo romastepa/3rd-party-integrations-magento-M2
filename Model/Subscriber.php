@@ -11,8 +11,11 @@ use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\{
     Customer\Api\AccountManagementInterface,
     Customer\Api\CustomerRepositoryInterface,
+    Customer\Api\Data\CustomerInterfaceFactory,
     Customer\Model\Session,
+    Framework\Api\DataObjectHelper,
     Framework\App\Config\ScopeConfigInterface,
+    Framework\App\ProductMetadataInterface,
     Framework\Data\Collection\AbstractDb,
     Framework\Mail\Template\TransportBuilder,
     Framework\Model\Context,
@@ -37,6 +40,11 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
     protected $emarsysHelper;
 
     /**
+     * @var ProductMetadataInterface
+     */
+    protected $productMetadata;
+
+    /**
      * Subscriber constructor.
      *
      * @param EmarsysHelper $emarsysHelper
@@ -52,12 +60,15 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
      * @param StateInterface $inlineTranslation
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
-     * @param DateTime|null $dateTime
      * @param array $data
+     * @param DateTime|null $dateTime
+     * @param CustomerInterfaceFactory|null $customerFactory
+     * @param DataObjectHelper|null $dataObjectHelper
      */
     public function __construct
     (
         EmarsysHelper $emarsysHelper,
+        ProductMetadataInterface $productMetadata,
         Context $context,
         Registry $registry,
         Data $newsletterData,
@@ -70,25 +81,51 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         StateInterface $inlineTranslation,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
+        array $data = [],
         DateTime $dateTime = null,
-        array $data = []
+        CustomerInterfaceFactory $customerFactory = null,
+        DataObjectHelper $dataObjectHelper = null
     ) {
         $this->emarsysHelper = $emarsysHelper;
-        parent::__construct(
-            $context,
-            $registry,
-            $newsletterData,
-            $scopeConfig,
-            $transportBuilder,
-            $storeManager,
-            $customerSession,
-            $customerRepository,
-            $customerAccountManagement,
-            $inlineTranslation,
-            $resource,
-            $resourceCollection,
-            $data
-        );
+        $this->productMetadata = $productMetadata;
+
+        if (version_compare($this->productMetadata->getVersion(), '2.2.6', '>=')) {
+            parent::__construct(
+                $context,
+                $registry,
+                $newsletterData,
+                $scopeConfig,
+                $transportBuilder,
+                $storeManager,
+                $customerSession,
+                $customerRepository,
+                $customerAccountManagement,
+                $inlineTranslation,
+                $resource,
+                $resourceCollection,
+                $data,
+                $dateTime
+            );
+        } else {
+            parent::__construct(
+                $context,
+                $registry,
+                $newsletterData,
+                $scopeConfig,
+                $transportBuilder,
+                $storeManager,
+                $customerSession,
+                $customerRepository,
+                $customerAccountManagement,
+                $inlineTranslation,
+                $resource,
+                $resourceCollection,
+                $data,
+                $dateTime,
+                $customerFactory,
+                $dataObjectHelper
+            );
+        }
     }
 
     /**
@@ -135,22 +172,16 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         //It will return boolean value, If customer is logged in and email Id is the same.
         $isSubscribeOwnEmail = $this->_customerSession->isLoggedIn()
             && $this->_customerSession->getCustomerDataObject()->getEmail() == $email;
-        $optinForcedConfirmation = $this->emarsysHelper->isOptinForcedConfirmationEnabled($store->getWebsiteId());
-        $isOwnSubscribes = $isSubscribeOwnEmail;
 
-        if ($this->getStatus() == self::STATUS_UNSUBSCRIBED || $this->getStatus() == self::STATUS_NOT_ACTIVE) {
-            if ($isConfirmNeed && $optinForcedConfirmation) {
-                $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed && !$optinForcedConfirmation) {
+        if (!$this->getId() || $this->getStatus() == self::STATUS_UNSUBSCRIBED || $this->getStatus() == self::STATUS_NOT_ACTIVE) {
+            if ($isConfirmNeed) {
                 $this->setStatus(self::STATUS_NOT_ACTIVE);
             } else {
                 $this->setStatus(self::STATUS_SUBSCRIBED);
             }
-        } elseif (($this->getId() && $this->getStatus() == self::STATUS_SUBSCRIBED) || $isOwnSubscribes) {
-            if ($isConfirmNeed && $optinForcedConfirmation) {
+        } elseif ($this->getId() && $this->getStatus() == self::STATUS_SUBSCRIBED) {
+            if ($isConfirmNeed) {
                 $this->setStatus(self::STATUS_NOT_ACTIVE);
-            } elseif ($isConfirmNeed && !$optinForcedConfirmation) {
-                $this->setStatus(self::STATUS_SUBSCRIBED);
             } else {
                 $this->setStatus(self::STATUS_SUBSCRIBED);
             }

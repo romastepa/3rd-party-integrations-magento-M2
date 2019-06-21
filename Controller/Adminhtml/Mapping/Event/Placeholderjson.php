@@ -14,7 +14,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Emarsys\Emarsys\Model\PlaceholdersFactory;
 use Emarsys\Emarsys\Model\EmarsysmagentoeventsFactory;
 use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 
 /**
  * Class Placeholderjson
@@ -38,6 +38,11 @@ class Placeholderjson extends Action
     protected $eventFactory;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Placeholderjson constructor.
      * @param Context $context
      * @param EventFactory $eventFactory
@@ -45,7 +50,7 @@ class Placeholderjson extends Action
      * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
      * @param EmarsysmagentoeventsFactory $emarsysMagentoEventsFactory
      * @param EmarsyseventmappingFactory $emarsysEventMappingFactory
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
@@ -55,7 +60,7 @@ class Placeholderjson extends Action
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
         EmarsysmagentoeventsFactory $emarsysMagentoEventsFactory,
         EmarsyseventmappingFactory $emarsysEventMappingFactory,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
@@ -70,7 +75,8 @@ class Placeholderjson extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return void
+     * @throws \Magento\Framework\Excseption\NoSuchEntityException
      */
     public function execute()
     {
@@ -111,7 +117,7 @@ class Placeholderjson extends Action
                 $dataArray['product_purchases'] = $dataProductPurchasesArray;
             }
             $finalArray1 = ["external_id" => "RECIPIENT_EMAIL", "key_id" => "KEY_ID", "data" => $dataArray];
-            printf("<pre>" . json_encode($finalArray1, JSON_PRETTY_PRINT) . "</pre>");
+            printf("<pre>" . \Zend_Json::encode($finalArray1) . "</pre>");
         } else {
             printf("No Placeholders Available");
         }

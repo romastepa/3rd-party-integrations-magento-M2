@@ -10,7 +10,6 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Scheduler;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data;
 
 /**
  * Class Index
@@ -27,15 +26,12 @@ class Index extends Action
      * Index constructor.
      * @param Context $context
      * @param PageFactory $resultPageFactory
-     * @param Data $emarsysHelper
      */
     public function __construct(
         Context $context,
-        PageFactory $resultPageFactory,
-        Data $emarsysHelper
+        PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
-        $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
     }
 

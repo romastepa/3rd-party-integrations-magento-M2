@@ -5,7 +5,6 @@
  * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
  */
 
-
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
 
 use Emarsys\Emarsys\{
@@ -177,7 +176,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
         if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
+            //$storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $this->session->setData('store', $storeId);
         $mappingExists = $this->resourceModelCustomer->customerMappingExists($storeId);

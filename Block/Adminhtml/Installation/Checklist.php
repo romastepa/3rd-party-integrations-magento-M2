@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Installation;
 
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Customer;
 use Magento\Backend\Block\Template\Context;
 
@@ -28,7 +28,7 @@ class Checklist extends \Magento\Backend\Block\Template
     protected $requestInterface;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -40,13 +40,13 @@ class Checklist extends \Magento\Backend\Block\Template
     /**
      * Checklist constructor.
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Customer $emarsysHelperCustomer
      * @param array $data
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Customer $emarsysHelperCustomer,
         array $data = []
     )

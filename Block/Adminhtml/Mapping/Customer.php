@@ -6,11 +6,16 @@
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping;
 
+use Magento\Backend\Block\Widget\Container;
+use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\Exception\LocalizedException;
+
 /**
  * Class Customer
+ *
  * @package Emarsys\Emarsys\Block\Adminhtml\Mapping
  */
-class Customer extends \Magento\Backend\Block\Widget\Container
+class Customer extends Container
 {
     /**
      * @var string
@@ -19,11 +24,11 @@ class Customer extends \Magento\Backend\Block\Widget\Container
 
     /**
      * Customer constructor.
-     * @param \Magento\Backend\Block\Widget\Context $context
+     * @param Context $context
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Widget\Context $context,
+        Context $context,
         $data = []
     ) {
         parent::__construct($context, $data);
@@ -31,7 +36,7 @@ class Customer extends \Magento\Backend\Block\Widget\Container
 
     /**
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _prepareLayout()
     {

@@ -94,8 +94,6 @@ class Sync extends AbstractDb
         $this->_init('emarsys_attribute_sync', 'id');
     }
 
-
-
     /**
      * 
      * @param type $entity
@@ -134,39 +132,6 @@ class Sync extends AbstractDb
 
     /**
      * 
-     * @param type $syncId
-     * @param int $storeId
-     * @return array
-     */
-    public function getLastSyncDate($syncId = null, $storeId = null)
-    {
-        if ($storeId == null) {
-            $storeId = 1;
-        }
-        $subselect = $this->getConnection()->select()
-            ->from($this->getTable('emarsys_syncstatus'), 'MAX(id)')
-            ->where('status = ?', 'SUCCESS')
-            ->where('sync_id = ?', '$syncId')
-            ->where('store_id = ?', $storeId);
-
-        $select = $this->getConnection()->select()
-            ->from($this->getTable('emarsys_syncstatus'), ['syncdate' => 'DATE_FORMAT(MAX(finished_at), "%Y-%m-%d %H:%i:%s")'])
-            ->where('id in (?)', $subselect);
-
-        try {
-            $lastsyncDate = $this->getConnection()->fetchOne($select);
-            if ($lastsyncDate == null || $lastsyncDate == '') {
-                $lastsyncDate = $this->date->date('Y-m-d H:i:s', strtotime('-5 days'));
-            }
-
-            return $lastsyncDate;
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'getLastSyncDate');
-        }
-    }
-
-    /**
-     * 
      * @param type $path
      * @param type $scope
      * @param type $scopeId
@@ -174,14 +139,10 @@ class Sync extends AbstractDb
      */
     public function getDataFromCoreConfig($path, $scope = null, $scopeId = null)
     {
-        try {
-            if ($scope && $scopeId) {
-                return $this->scopeConfigInterface->getValue($path, $scope, $scopeId);
-            } else {
-                return  $this->scopeConfigInterface->getValue($path);
-            }
-        } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $scopeId, 'getDataFromCoreConfig in Sync.php');
+        if ($scope && $scopeId) {
+            return $this->scopeConfigInterface->getValue($path, $scope, $scopeId);
+        } else {
+            return $this->scopeConfigInterface->getValue($path);
         }
     }
 }

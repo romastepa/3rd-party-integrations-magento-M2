@@ -122,6 +122,7 @@ class RealTimeCustomer implements ObserverInterface
         } catch (\Exception $e) {
             $this->emarsysHelper->syncFail($customerId, $websiteId, $storeId, 0, 1);
             $this->emarsysHelper->addErrorLog(
+                EmarsysHelper::LOG_MESSAGE_CUSTOMER,
                 $e->getMessage(),
                 $this->storeManager->getStore()->getId(),
                 'RealTimeCustomer::execute()'

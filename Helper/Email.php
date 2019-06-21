@@ -26,7 +26,7 @@ class Email extends AbstractHelper
     /**
      * @var StoreManagerInterface
      */
-    protected $_storeManager;
+    protected $storeManager;
 
     /**
      * @var StateInterface
@@ -58,24 +58,9 @@ class Email extends AbstractHelper
     ) {
         parent::__construct($context);
         $this->_scopeConfig = $context->getScopeConfig();
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->inlineTranslation = $inlineTranslation;
         $this->_transportBuilder = $transportBuilder;
-    }
-
-    /**
-     * Return store configuration value of your template field that which id you set for template
-     * @param $path
-     * @param $storeId
-     * @return mixed
-     */
-    protected function getConfigValue($path, $storeId)
-    {
-        return $this->scopeConfig->getValue(
-            $path,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
     }
 
     /**
@@ -86,7 +71,7 @@ class Email extends AbstractHelper
      */
     public function getStore()
     {
-        return $this->_storeManager->getStore();
+        return $this->storeManager->getStore();
     }
 
     /**

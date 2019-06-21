@@ -65,6 +65,7 @@ class SubscriberBulkExportWebDav
             );
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
+                \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_SUBSCRIBER,
                 $e->getMessage(),
                 0,
                 'SubscriberBulkExportWebDav::execute()'

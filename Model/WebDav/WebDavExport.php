@@ -6,9 +6,8 @@
  */
 namespace Emarsys\Emarsys\Model\WebDav;
 
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\HTTP\Client\Curl;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\File\Csv;
 
 /**
@@ -18,7 +17,7 @@ use Magento\Framework\File\Csv;
 class WebDavExport extends Curl
 {
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
@@ -29,11 +28,11 @@ class WebDavExport extends Curl
 
     /**
      * WebDavExport constructor.
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param Csv $csvWriter
      */
     public function __construct(
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         Csv $csvWriter
     ) {
         $this->emarsysHelper = $emarsysHelper;

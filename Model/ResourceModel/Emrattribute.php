@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Magento\Framework\Model\AbstractModel;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Framework\App\Cache\Manager;
 use Magento\Framework\Model\ResourceModel\Db\Context;
 use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;

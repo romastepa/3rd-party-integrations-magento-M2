@@ -63,7 +63,7 @@ class Api extends \Magento\Framework\HTTP\ZendClient
             'Content-Type' => 'application/json',
             'Accept-encoding' => 'utf-8',
             'X-WSSE' => $this->_getWSSEHeader(),
-            'Extension-Version' => '1.0.13',
+            'Extension-Version' => '1.0.15',
         ]);
         $response = [];
         try {
@@ -71,13 +71,13 @@ class Api extends \Magento\Framework\HTTP\ZendClient
                 $this->setParameterGet($data);
             } else {
                 if (!empty($data)) {
-                    $this->setRawData(json_encode($data));
+                    $this->setRawData(\Zend_Json::encode($data));
                 }
             }
             $responseObject = $this->request($method);
             $response = $responseObject->getBody();
             if ($jsonDecode) {
-                $response = json_decode($response, true);
+                $response = \Zend_Json::decode($response);
             }
         } catch (\Exception $e) {
             

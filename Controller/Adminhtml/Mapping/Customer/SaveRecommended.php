@@ -62,7 +62,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
      * @param Logs $emarsysLogs
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param DateTime $date
-     * @param EmarsysHelperLogs $logHelper
+     * @param EmarsysHelperLogs $logsHelper
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
@@ -73,7 +73,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
         Logs $emarsysLogs,
         ScopeConfigInterface $scopeConfigInterface,
         DateTime $date,
-        EmarsysHelperLogs $logHelper,
+        EmarsysHelperLogs $logsHelper,
         StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
@@ -86,7 +86,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->emarsysLogs = $emarsysLogs;
         $this->_storeManager = $storeManager;
-        $this->logHelper = $logHelper;
+        $this->logsHelper = $logsHelper;
     }
 
     /**
@@ -107,7 +107,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
             $logsArray['auto_log'] = 'Complete';
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
-            $logId = $this->logHelper->manualLogs($logsArray);
+            $logId = $this->logsHelper->manualLogs($logsArray);
 
             //Collect custom customer attribute mapping
             $customerCustomMappedAttrs = $this->resourceModelCustomer->getCustomMappedCustomerAttribute($storeId);
@@ -151,7 +151,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 }
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
-                $logsArray['description'] = 'Saved Recommended Mapping as ' . print_r($emarsysCodes,true);
+                $logsArray['description'] = 'Saved Recommended Mapping as ' . \Zend_Json::encode($emarsysCodes);
                 $logsArray['action'] = 'Update Schema Successful';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -159,14 +159,18 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 $logsArray['log_action'] = 'True';
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Update Schema Completed Successfully';
-                $this->logHelper->logs($logsArray);
-                $this->logHelper->manualLogs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addSuccessMessage("Recommended Customer attributes mapped successfully");
             } else {
                 $this->messageManager->addErrorMessage("No Recommendations are added");
             }
         } catch (\Exception $e) {
-            $this->emarsysLogs->addErrorLog($e->getMessage(), $storeId, 'SaveSchema(Customer)');
+            $this->emarsysLogs->addErrorLog(
+                'Running Customer Recommended Mapping',
+                $e->getMessage(),
+                $storeId,
+                'SaveSchema(Customer)'
+            );
             $this->messageManager->addErrorMessage("Error occurred while mapping Customer attribute");
         }
         $resultRedirect = $this->resultRedirectFactory->create();

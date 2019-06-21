@@ -14,7 +14,7 @@ use Emarsys\Emarsys\Helper\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
@@ -34,6 +34,11 @@ class SaveSchema extends Action
     protected $session;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * @var Order
      */
     protected $orderResourceModel;
@@ -46,7 +51,7 @@ class SaveSchema extends Action
      * @param DateTime $date
      * @param Order $orderResourceModel
      * @param StoreManagerInterface $storeManager
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Context $context,
@@ -55,7 +60,7 @@ class SaveSchema extends Action
         DateTime $date,
         Order $orderResourceModel,
         StoreManagerInterface $storeManager,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($context);
@@ -72,7 +77,8 @@ class SaveSchema extends Action
     /**
      * Save action
      *
-     * @return \Magento\Backend\Model\View\Result\Page
+     * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Exception
      */
     public function execute()
     {
@@ -84,14 +90,8 @@ class SaveSchema extends Action
             } else {
                 $storeId = $this->emarsysHelper->getFirstStoreId();
             }
-            $store = $this->storeManager->getStore($storeId);
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $errorStatus = true;
-            $emailAsIdentifierStatus = $this->scopeConfig->getValue(
-                Data::XPATH_SMARTINSIGHT_EXPORTUSING_EMAILIDENTIFIER,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
-                $websiteId
-            );
 
             //initial logging started
             $logsArray['job_code'] = 'Order Mapping';
@@ -110,24 +110,20 @@ class SaveSchema extends Action
 
             $data = $this->orderResourceModel->getSalesOrderColumnNames();
 
-            $header = $this->emarsysHelper->getSalesOrderCsvDefaultHeader($storeId);
+            $header = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
             foreach ($header as $column) {
                 $manData[$column] = $column;
             }
 
-            if ($emailAsIdentifierStatus == 1) {
-                $this->orderResourceModel->deleteOrderAttributeMapping('customer', $storeId);
-            } else {
-                $this->orderResourceModel->deleteOrderAttributeMapping('email', $storeId);
-            }
+            $this->orderResourceModel->deleteOrderAttributeMapping('customer', $storeId);
             $this->orderResourceModel->insertIntoMappingTableStaticData($manData, $storeId);
             $this->orderResourceModel->insertIntoMappingTable($data, $storeId);
 
             $errorStatus = false;
             $logsArray['emarsys_info'] = 'Update Schema Successful';
-            $logsArray['description'] = 'Inserted Entries ' . print_r($data,true);
+            $logsArray['description'] = 'Inserted Entries ' . \Zend_Json::encode($data);
             $logsArray['message_type'] = 'Success';
-            $this->logsHelper->logs($logsArray);
+            $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage('Order Schema Updated Successfully.');
         } catch (\Exception $e) {
             if ($logId) {
@@ -135,7 +131,7 @@ class SaveSchema extends Action
                 $logsArray['emarsys_info'] = 'Update Schema not Successful';
                 $logsArray['description'] = $e->getMessage();
                 $logsArray['message_type'] = 'Error';
-                $this->logsHelper->logs($logsArray);
+                $this->logsHelper->manualLogs($logsArray);
             }
             $this->messageManager->addErrorMessage(
                 __('There was a problem while updating order schema. Please refer emarsys logs for more information.
@@ -151,7 +147,7 @@ class SaveSchema extends Action
             $logsArray['status'] = 'success';
         }
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-        $this->logsHelper->manualLogsUpdate($logsArray);
+        $this->logsHelper->manualLogs($logsArray);
 
         return $resultRedirect->setRefererOrBaseUrl();
     }

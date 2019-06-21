@@ -8,6 +8,9 @@ namespace Emarsys\Emarsys\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Magento\Store\Model\StoreManagerInterface as StoreManager;
 
 /**
  * Class Customer
@@ -26,17 +29,34 @@ class Customer extends AbstractHelper
     protected $emarsysHelper;
 
     /**
+     * @var EmarsysModelApiApi
+     */
+    protected $api;
+
+    /**
+     * @var StoreManager
+     */
+    protected $storeManager;
+
+    /**
      * Customer constructor.
+     *
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
+     * @param EmarsysModelApiApi $api
+     * @param StoreManager $storeManager
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper
+        EmarsysHelper $emarsysHelper,
+        EmarsysModelApiApi $api,
+        StoreManager $storeManager
     ) {
         ini_set('default_socket_timeout', 1000);
         $this->context = $context;
         $this->emarsysHelper = $emarsysHelper;
+        $this->api = $api;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -46,12 +66,18 @@ class Customer extends AbstractHelper
     public function getEmarsysCustomerSchema($storeId)
     {
         try {
-            $this->emarsysHelper->getEmarsysAPIDetails($storeId);
-            $response = $this->emarsysHelper->send('GET', 'field/translate/en');
-            return \Zend_Json::decode($response);
+            $store = $this->storeManager->getStore($storeId);
+            $this->api->setWebsiteId($store->getWebsiteId());
+            $response = $this->api->sendRequest('GET', 'field/translate/en');
+            return $response['body'];
         } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog(htmlentities($e->getMessage()), $storeId, 'getEmarsysCustomerSchema');
-            return false;
+            $this->emarsysHelper->addErrorLog(
+                'getEmarsysCustomerSchema',
+                htmlentities($e->getMessage()),
+                $storeId,
+                'getEmarsysCustomerSchema'
+            );
         }
+        return false;
     }
 }

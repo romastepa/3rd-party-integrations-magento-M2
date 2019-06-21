@@ -79,32 +79,30 @@ class Categorytree extends Field
         $html .= "</div>";
         $html .= "</div>";
         $html .= "<input type='hidden' id='feed_export_categories' value='$categoriesExcluded' name='groups[feed_export][fields][categories][value]' />";
-        $html .= "<ul><li><div class= 'catg-sub-'><input type= 'checkbox' disabled = 'disabled' name='dummy-checkbox' />Root Category</div>" . $catTree  . "</ul></li>";
-        $html .= "
-<script>
-function Unchecked(value) {
-  document.getElementById('catCheckBox_'+value).click();
-}
-document.getElementById('emarsys_predict_feed_export_excludedcategories').style.display='none'
-function categoryClick(value,catName) {
-    var checkboxes = document.getElementsByName('checkbox');
-    var checkboxesChecked = [];
-    // loop over them all
-    for (var i=0; i<checkboxes.length; i++) {
-        // And stick the checked ones onto an array...
-        if (checkboxes[i].checked) {
-            checkboxesChecked.push(checkboxes[i].value);
-        }
-    }
-    document.getElementById('emarsys_predict_feed_export_excludedcategories').value= checkboxesChecked;
-    document.getElementById('feed_export_categories').value= checkboxesChecked;
-    if (document.getElementById('catCheckBox_'+value).checked == true) {
-        document.getElementById('selectedCategories').innerHTML += '<span id=\''+value+'\' onclick=\'Unchecked('+value+')\' class=\"admin__action-multiselect-crumb\">'+catName+'<button class=\"action-close\" type=\"button\"><span class=\"action-close-text\"></span></button></span>';
-    } else {
-        document.getElementById(value).remove();
-    }
-}
-</script>";
+        $html .= "<ul><li><div class= 'catg-sub-'><input type='checkbox' disabled ='disabled' name='dummy-checkbox' />Root Category</div>" . $catTree  . "</ul></li>";
+        $html .= "</div></div><script>
+                function Unchecked(value) {
+                    document.getElementById('catCheckBox_'+value).click();
+                }
+                function categoryClick(value,catName) {
+                    var checkboxes = document.getElementsByName('checkbox');
+                    var checkboxesChecked = [];
+                    // loop over them all
+                    for (var i=0; i<checkboxes.length; i++) {
+                        // And stick the checked ones onto an array...
+                        if (checkboxes[i].checked) {
+                            checkboxesChecked.push(checkboxes[i].value);
+                        }
+                    }
+                    document.getElementById('emarsys_predict_feed_export_excludedcategories').value= checkboxesChecked;
+                    document.getElementById('feed_export_categories').value= checkboxesChecked;
+                    if (document.getElementById('catCheckBox_'+value).checked == true) {
+                        document.getElementById('selectedCategories').innerHTML += '<span id=\''+value+'\' onclick=\'Unchecked('+value+')\' class=\"admin__action-multiselect-crumb\">'+catName+'<button class=\"action-close\" type=\"button\"><span class=\"action-close-text\"></span></button></span>';
+                    } else {
+                        document.getElementById(value).remove();
+                    }
+                }
+        </script>";
 
         return $html;
     }

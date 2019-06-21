@@ -10,7 +10,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 
 /**
  * Class Index
@@ -24,19 +24,19 @@ class Index extends Action
     protected $resultPageFactory;
 
     /**
-     * @var Data
+     * @var EmarsysHelper
      */
     protected $emarsysHelper;
 
     /**
      * Index constructor.
      * @param Context $context
-     * @param Data $emarsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        Data $emarsysHelper,
+        EmarsysHelper $emarsysHelper,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
