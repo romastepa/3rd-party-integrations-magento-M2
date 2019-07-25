@@ -3,7 +3,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
@@ -39,24 +39,9 @@
             <schedule>30 1 * * *</schedule>
         </job>
 
-
-        <job name="emarsys_customer_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\CustomerBulkExportWebDav" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
-        <job name="emarsys_customer_bulk_export_api" instance="Emarsys\Emarsys\Cron\CustomerBulkExportApi" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
-        <job name="emarsys_subscriber_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportWebDav" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
-        <job name="emarsys_subscriber_bulk_export_api" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportApi" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
-        <job name="emarsys_catalog_bulk_export" instance="Emarsys\Emarsys\Cron\ProductBulkExport" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
-        <job name="emarsys_smartinsight_bulk_export" instance="Emarsys\Emarsys\Cron\SmartInsightBulkExport" method="execute">
-            <schedule>0 0 30 2 3</schedule>
-        </job>
+        <job name="emarsys_customer_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\CustomerBulkExportWebDav" method="execute" />
+        <job name="emarsys_customer_bulk_export_api" instance="Emarsys\Emarsys\Cron\CustomerBulkExportApi" method="execute" />
+        <job name="emarsys_subscriber_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportWebDav" method="execute" />
+        <job name="emarsys_subscriber_bulk_export_api" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportApi" method="execute" />
     </group>
 </config>

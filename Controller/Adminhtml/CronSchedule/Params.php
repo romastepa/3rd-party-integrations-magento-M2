@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Controller\Adminhtml\CronSchedule;
 
@@ -36,7 +36,7 @@ class Params extends Action
 
     /**
      * @return void|$this
-     * @throws \RuntimeException
+     * @throws \Zend_Json_Exception
      */
     public function execute()
     {

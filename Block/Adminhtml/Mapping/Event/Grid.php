@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event;
@@ -110,11 +110,14 @@ class Grid extends Extended
     protected function _construct()
     {
         parent::_construct();
+        $this->setId('mappingEventGrid');
+        $this->setSaveParametersInSession(true);
         $storeId = $this->getRequest()->getParam('store');
         if (!isset($storeId)) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
         }
         $this->session->setData('store', $storeId);
+        $this->session->setData('storeId', $storeId);
         $this->session->setMappingGridData([]);
         $collection = $this->emarsysEventsFactory->create()->getCollection()
             ->addFieldToFilter('store_id', $storeId);

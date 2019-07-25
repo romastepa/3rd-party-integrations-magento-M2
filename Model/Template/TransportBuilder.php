@@ -113,13 +113,8 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
 
         $storeId = $template->getEmailStoreId();
         $templateIdentifier = $this->templateIdentifier;
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 
-        list($magentoEventID, $configPath) = $this->emarsysHelper->getMagentoEventIdAndPath(
-            $templateIdentifier,
-            $storeScope,
-            $storeId
-        );
+        $magentoEventID = $this->emarsysHelper->getMagentoEventId($templateIdentifier, $storeId);
 
         if (!$magentoEventID) {
             $this->message->setMessageType($types[$template->getType()])
@@ -156,22 +151,16 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             $emarsysPlaceholders = $this->emarsysHelper->getPlaceHolders($magentoEventID, $storeId);
         }
 
-        $emarsysHeaderPlaceholders = $this->emarsysHelper->emarsysHeaderPlaceholders($magentoEventID, $storeId);
+        $emarsysHeaderPlaceholders = $this->emarsysHelper->emarsysHeaderPlaceholders($storeId);
         if (!$emarsysHeaderPlaceholders) {
-            $this->emarsysHelper->insertFirstTimeHeaderMappingPlaceholders(
-                $magentoEventID,
-                $storeId
-            );
-            $emarsysHeaderPlaceholders = $this->emarsysHelper->emarsysHeaderPlaceholders($magentoEventID, $storeId);
+            $this->emarsysHelper->insertFirstTimeHeaderMappingPlaceholders($storeId);
+            $emarsysHeaderPlaceholders = $this->emarsysHelper->emarsysHeaderPlaceholders($storeId);
         }
 
-        $emarsysFooterPlaceholders = $this->emarsysHelper->emarsysFooterPlaceholders($magentoEventID, $storeId);
+        $emarsysFooterPlaceholders = $this->emarsysHelper->emarsysFooterPlaceholders($storeId);
         if (!$emarsysFooterPlaceholders) {
-            $this->emarsysHelper->insertFirstTimeFooterMappingPlaceholders(
-                $magentoEventID,
-                $storeId
-            );
-            $emarsysFooterPlaceholders = $this->emarsysHelper->emarsysFooterPlaceholders($magentoEventID, $storeId);
+            $this->emarsysHelper->insertFirstTimeFooterMappingPlaceholders($storeId);
+            $emarsysFooterPlaceholders = $this->emarsysHelper->emarsysFooterPlaceholders($storeId);
         }
 
         $processedVariables = [];
@@ -188,7 +177,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
         if (method_exists($template, 'checkShipment') && ($shipment = $template->checkShipment())) {
             $shipmentData = [];
-            /** @var \Magento\Sales\Model\Order $rmaOrder */
+            /** @var \Magento\Sales\Model\Order $shipmentOrder */
             $shipmentOrder = $shipment->getOrder();
             /** @var \Magento\Sales\Model\Order\Shipment\Item $item */
             foreach ($shipment->getItems() as $item) {
@@ -281,7 +270,7 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
     }
 
     /**
-     * @param $item
+     * @param \Magento\Sales\Model\Order\Item $item
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -315,41 +304,43 @@ class TransportBuilder extends \Magento\Framework\Mail\Template\TransportBuilder
             $order['price_line_total'] = $this->_formatPrice($order['qty_ordered'] * $order['price']);
 
             $_product = $item->getProduct();
-            $_product->setStoreId($item->getStoreId());
+            if (is_object($_product)) {
+                $_product->setStoreId($item->getStoreId());
 
-            $base_url = $this->storeManager->getStore($item->getStoreId())->getBaseUrl();
-            $base_url = trim($base_url, '/');
+                $base_url = $this->storeManager->getStore($item->getStoreId())->getBaseUrl();
+                $base_url = trim($base_url, '/');
 
-            /** @var \Magento\Catalog\Helper\Image $helper */
-            try {
-                $url = $this->imageHelper
-                    ->init($_product, 'product_base_image')
-                    ->setImageFile($_product->getImage())
-                    ->getUrl();
-            } catch (\Exception $e) {
-                $url = '';
-            }
+                /** @var \Magento\Catalog\Helper\Image $helper */
+                try {
+                    $url = $this->imageHelper
+                        ->init($_product, 'product_base_image')
+                        ->setImageFile($_product->getImage())
+                        ->getUrl();
+                } catch (\Exception $e) {
+                    $url = '';
+                }
 
-            $order['_external_image_url'] = $url;
+                $order['_external_image_url'] = $url;
 
-            $order['_url'] = $base_url . "/" . $_product->getUrlPath();
-            $order['_url_name'] = $order['product_name'];
-            $order['product_description'] = $_product->getData('description');
-            $order['short_description'] = $_product->getData('short_description');
+                $order['_url'] = $base_url . "/" . $_product->getUrlPath();
+                $order['_url_name'] = $order['product_name'];
+                $order['product_description'] = $_product->getData('description');
+                $order['short_description'] = $_product->getData('short_description');
 
-            $attributes = $_product->getAttributes();
-            $prodData = $_product->getData();
-            foreach ($attributes as $attribute) {
-                if ($attribute->getFrontendInput() != "gallery" && $attribute->getFrontendInput() != 'price') {
-                    if (isset($prodData[$attribute->getAttributeCode()])) {
-                        if (!is_array($prodData[$attribute->getAttributeCode()])
-                            && ($attributeText = $_product->getAttributeText($attribute->getAttributeCode()))
-                        ) {
-                            $text = is_object($attributeText) ? $attributeText->getText() : $attributeText;
-                        } else {
-                            $text = $prodData[$attribute->getAttributeCode()];
+                $attributes = $_product->getAttributes();
+                $prodData = $_product->getData();
+                foreach ($attributes as $attribute) {
+                    if ($attribute->getFrontendInput() != "gallery" && $attribute->getFrontendInput() != 'price') {
+                        if (isset($prodData[$attribute->getAttributeCode()])) {
+                            if (!is_array($prodData[$attribute->getAttributeCode()])
+                                && ($attributeText = $_product->getAttributeText($attribute->getAttributeCode()))
+                            ) {
+                                $text = is_object($attributeText) ? $attributeText->getText() : $attributeText;
+                            } else {
+                                $text = $prodData[$attribute->getAttributeCode()];
+                            }
+                            $order['attribute_' . $attribute->getAttributeCode()] = $text;
                         }
-                        $order['attribute_' . $attribute->getAttributeCode()] = $text;
                     }
                 }
             }

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
@@ -88,7 +88,8 @@ class EmarsysEvent extends AbstractRenderer
         $url = $this->_urlInterface->getUrl('*/*/changeValue');
         $params = ['mapping_id' => $row->getId(), 'store' => $storeId];
         $placeHolderUrl = $this->backendHelper->getUrl("*/*/placeholders", $params);
-        $placeholderJsonRequestUrl = $this->backendHelper->getUrl("*/*/placeholderjson",
+        $placeholderJsonRequestUrl = $this->backendHelper->getUrl(
+            "*/*/placeholderjson",
             [
                 'mapping_id' => $row->getId(),
                 'store_id' => $storeId
@@ -117,8 +118,7 @@ class EmarsysEvent extends AbstractRenderer
         $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button ' .
             $buttonClass . '" name="json" id="json"  onclick="openMyPopup(\'' . $placeholderJsonRequestUrl .
             '\');" >JSON Request</button>';
-        $html .= '&nbsp;&nbsp;<button class="scalable task form-button" name="placeholders" id="placeholders"  onclick="placeholderRedirect(\'' .
-            $placeHolderUrl . '\');" >Placeholders</button>';
+        $html .= '&nbsp;&nbsp;<a class="scalable task form-button" name="placeholders" id="placeholders"  href="' . $placeHolderUrl . '">Placeholders</button>';
 
         return $html;
     }

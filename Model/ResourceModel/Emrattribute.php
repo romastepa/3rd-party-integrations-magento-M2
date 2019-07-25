@@ -2,17 +2,9 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\ResourceModel;
-
-use Magento\Framework\Model\AbstractModel;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
-use Magento\Framework\App\Cache\Manager;
-use Magento\Framework\Model\ResourceModel\Db\Context;
-use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
-use Symfony\Component\Config\Definition\Exception\Exception;
-use Psr\Log\LoggerInterface as Logger;
 
 /**
  * Class Product

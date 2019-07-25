@@ -2,14 +2,17 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute;
 
+use Emarsys\Emarsys\Model\Emrattribute;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Edit
@@ -18,34 +21,35 @@ use Magento\Framework\View\Result\PageFactory;
 class Edit extends Action
 {
     /**
-     * @var \Emarsys\Emarsys\Model\Emrattribute
+     * @var Emrattribute
      */
     protected $emrattribute;
 
     /**
-     * @var \Magento\Framework\Controller\Result\JsonFactory
+     * @var JsonFactory
      */
     protected $resultJsonFactory;
 
     /**
      * Edit constructor.
+     *
      * @param Context $context
-     * @param \Emarsys\Emarsys\Model\Emrattribute $emrattribute
+     * @param Emrattribute $emrattribute
+     * @param JsonFactory $resultJsonFactory
      */
     public function __construct(
         Context $context,
-        \Emarsys\Emarsys\Model\Emrattribute $emrattribute,
-        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-    )
-    {
+        Emrattribute $emrattribute,
+        JsonFactory $resultJsonFactory
+    ) {
         parent::__construct($context);
         $this->emrattribute = $emrattribute;
         $this->resultJsonFactory = $resultJsonFactory;
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws \Exception
      */
     public function execute()
     {

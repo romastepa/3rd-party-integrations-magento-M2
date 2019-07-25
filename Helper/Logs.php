@@ -169,7 +169,7 @@ class Logs extends AbstractHelper
         if ((isset($logsArray['emarsys_info']) && !empty($logsArray['emarsys_info']))
             || (isset($logsArray['description']) && !empty($logsArray['description']))
         ) {
-            $this->manualLogs($logsArray);
+            $this->logs($logsArray);
         }
 
         return $id;

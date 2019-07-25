@@ -48,6 +48,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
      * Subscriber constructor.
      *
      * @param EmarsysHelper $emarsysHelper
+     * @param ProductMetadataInterface $productMetadata
      * @param Context $context
      * @param Registry $registry
      * @param Data $newsletterData

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute;
@@ -11,6 +11,8 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Model\EmrattributeFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Emrattribute\CollectionFactory;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Save
@@ -38,15 +40,15 @@ class Save extends Action
         Context $context,
         EmrattributeFactory $emrattributeFactory,
         CollectionFactory $emrattributeCollectionFactory
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->emrattributeFactory = $emrattributeFactory;
         $this->emrattributeCollectionFactory = $emrattributeCollectionFactory;
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws \Exception
      */
     public function execute()
     {
