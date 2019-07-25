@@ -55,8 +55,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
-    )
-    {
+    ) {
         $this->emarsysLog = $emarsysLog;
         $this->storeManager = $storeManager;
         $this->messageManagerInterface = $managerInterface;

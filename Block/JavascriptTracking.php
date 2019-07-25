@@ -18,11 +18,9 @@ use Magento\{
     Framework\App\Request\Http,
     Framework\Registry,
     Directory\Model\CurrencyFactory,
-    Framework\EntityManager\MetadataPool,
-    Catalog\Api\Data\CategoryInterface,
     Store\Model\StoreManagerInterface
 };
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data;
 
 /**
  * Class JavascriptTracking
@@ -56,11 +54,6 @@ class JavascriptTracking extends Template
     protected $categoryCollectionFactory;
 
     /**
-     * @var MetadataPool
-     */
-    protected $metadataPool;
-
-    /**
      * JavascriptTracking constructor.
      *
      * @param Context                   $context
@@ -69,7 +62,6 @@ class JavascriptTracking extends Template
      * @param Registry                  $registry
      * @param CurrencyFactory           $currencyFactory
      * @param CategoryCollectionFactory $categoryCollectionFactory
-     * @param MetadataPool              $metadataPool
      * @param array                     $data
      */
     public function __construct(
@@ -79,7 +71,6 @@ class JavascriptTracking extends Template
         Registry $registry,
         CurrencyFactory $currencyFactory,
         CategoryCollectionFactory $categoryCollectionFactory,
-        MetadataPool $metadataPool,
         array $data = []
     ) {
         $this->storeManager = $context->getStoreManager();
@@ -88,7 +79,6 @@ class JavascriptTracking extends Template
         $this->coreRegistry = $registry;
         $this->currencyFactory = $currencyFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->metadataPool = $metadataPool;
         parent::__construct($context, $data);
     }
 
@@ -162,6 +152,15 @@ class JavascriptTracking extends Template
     }
 
     /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function useBaseCurrency()
+    {
+        return (bool)$this->storeManager->getStore()->getConfig(Data::XPATH_WEBEXTEND_USE_BASE_CURRENCY);
+    }
+
+    /**
      * Get Tracking Data
      *
      * @return mixed
@@ -213,13 +212,11 @@ class JavascriptTracking extends Template
 
             $categoryIds = $this->removeDefaultCategories($category->getPathIds());
 
-            $linkField = $this->metadataPool->getMetadata(CategoryInterface::class)->getLinkField();
-
             /** @var Collection $categoryCollection */
             $categoryCollection = $this->categoryCollectionFactory->create()
+                ->addIdFilter($categoryIds)
                 ->setStore($this->storeManager->getStore())
-                ->addAttributeToSelect('name')
-                ->addFieldToFilter($linkField, ['in' => $categoryIds]);
+                ->addAttributeToSelect('name');
 
             /** @var Category $category */
             foreach ($categoryCollection as $categoryItem) {
@@ -279,9 +276,13 @@ class JavascriptTracking extends Template
      */
     public function getExchangeRate()
     {
-        $currentCurrency = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
-        $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
-        return (float)$this->currencyFactory->create()->load($baseCurrency)->getAnyRate($currentCurrency);
+        if ($this->useBaseCurrency()) {
+            return 1;
+        } else {
+            $currentCurrency = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
+            $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
+            return (float)$this->currencyFactory->create()->load($baseCurrency)->getAnyRate($currentCurrency);
+        }
     }
 
     /**
@@ -290,7 +291,11 @@ class JavascriptTracking extends Template
      */
     public function getDisplayCurrency()
     {
-        return $this->storeManager->getStore()->getCurrentCurrency()->getCode();
+        if ($this->useBaseCurrency()) {
+            return $this->storeManager->getStore()->getBaseCurrency()->getCode();
+        } else {
+            return $this->storeManager->getStore()->getCurrentCurrency()->getCode();
+        }
     }
 
     /**
@@ -300,5 +305,13 @@ class JavascriptTracking extends Template
     public function getStoreSlug()
     {
         return $this->storeManager->getStore()->getCode();
+    }
+
+    public function getAjaxUrl()
+    {
+        return $this->getUrl(
+            'emarsys/index/ajax',
+            ['_secure' => true]
+        );
     }
 }

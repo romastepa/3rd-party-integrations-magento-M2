@@ -93,16 +93,6 @@ class Order extends AbstractModel
     protected $orderQueueFactory;
 
     /**
-     * @var CreditmemoExportStatusFactory
-     */
-    protected $creditmemoExportStatusFactory;
-
-    /**
-     * @var OrderExportStatusFactory
-     */
-    protected $orderExportStatusFactory;
-
-    /**
      * @var TimeZone
      */
     protected $timezone;
@@ -170,8 +160,6 @@ class Order extends AbstractModel
      * @param CreditmemoItemCollectionFactory $creditmemoItemCollectionFactory
      * @param SnapshotFactory $snapshotFactory
      * @param OrderQueueFactory $orderQueueFactory
-     * @param CreditmemoExportStatusFactory $creditmemoExportStatusFactory
-     * @param OrderExportStatusFactory $orderExportStatusFactory
      * @param TimeZone $timezone
      * @param ApiExport $apiExport
      * @param DirectoryList $directoryList
@@ -196,8 +184,6 @@ class Order extends AbstractModel
         CreditmemoItemCollectionFactory $creditmemoItemCollectionFactory,
         SnapshotFactory $snapshotFactory,
         OrderQueueFactory $orderQueueFactory,
-        CreditmemoExportStatusFactory $creditmemoExportStatusFactory,
-        OrderExportStatusFactory $orderExportStatusFactory,
         TimeZone $timezone,
         ApiExport $apiExport,
         DirectoryList $directoryList,
@@ -219,8 +205,6 @@ class Order extends AbstractModel
         $this->creditmemoItemCollectionFactory = $creditmemoItemCollectionFactory;
         $this->snapshotFactory = $snapshotFactory;
         $this->orderQueueFactory = $orderQueueFactory;
-        $this->creditmemoExportStatusFactory = $creditmemoExportStatusFactory;
-        $this->orderExportStatusFactory = $orderExportStatusFactory;
         $this->timezone = $timezone;
         $this->apiExport = $apiExport;
         $this->directoryList = $directoryList;
@@ -511,6 +495,7 @@ class Order extends AbstractModel
     {
         $store = $this->storeManager->getStore($storeId);
         $errorCount = true;
+        $moveFile = false;
 
         $bulkDir = $store->getConfig(EmarsysHelper::XPATH_EMARSYS_FTP_BULK_EXPORT_DIR);
 
@@ -560,6 +545,7 @@ class Order extends AbstractModel
                 $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->manualLogs($logsArray);
+                $moveFile = false;
             }
 
             try {
@@ -595,6 +581,7 @@ class Order extends AbstractModel
                 $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->manualLogs($logsArray);
+                $moveFile = false;
             }
 
             //CSV upload to FTP process starts
@@ -828,15 +815,7 @@ class Order extends AbstractModel
         $taxIncluded = $this->emarsysHelper->isIncludeTax($storeId);
         $useBaseCurrency = $this->emarsysHelper->isUseBaseCurrency($storeId);
 
-        if ($sameFile && !$this->handle) {
-            $this->handle = fopen($filePath, 'w');
-
-            //Get Header for sales csv
-            $header = $this->getSalesCsvHeader($storeId);
-
-            //put headers in sales csv
-            fputcsv($this->handle, $header);
-        } elseif (!$sameFile) {
+        if (($sameFile && !$this->handle) || !$sameFile) {
             $this->handle = fopen($filePath, 'w');
 
             //Get Header for sales csv
@@ -847,7 +826,7 @@ class Order extends AbstractModel
         }
 
         //write data for orders into csv
-        if ($orderCollection) {
+        if ($orderCollection && $orderCollection->getSize()) {
             $dummySnapshot = $this->snapshotFactory->create();
             /** @var \Magento\Sales\Model\Order $order */
             foreach ($orderCollection as $order) {
@@ -932,7 +911,7 @@ class Order extends AbstractModel
         }
 
         //write data for credit-memo into csv
-        if ($creditMemoCollection) {
+        if ($creditMemoCollection && $creditMemoCollection->getSize()) {
             $dummySnapshot = $this->snapshotFactory->create();
             /** @var \Magento\Sales\Model\Order\Creditmemo $creditMemo */
             foreach ($creditMemoCollection as $creditMemo) {
@@ -1181,16 +1160,6 @@ class Order extends AbstractModel
             $orderIdsArrays = array_chunk($allOrderIds, 100);
 
             foreach ($orderIdsArrays as $orderIds) {
-                $orderExportStatusCollection = $this->orderExportStatusFactory->create()
-                    ->getCollection()
-                    ->addFieldToFilter('order_id', ['in' => $orderIds]);
-
-                foreach ($orderExportStatusCollection as $orderExportStat) {
-                    $eachOrderStat = $this->orderExportStatusFactory->create()->load($orderExportStat['id']);
-                    $eachOrderStat->setExported(1);
-                    $eachOrderStat->save();
-                }
-
                 $orderQueueCollection = $this->orderQueueFactory->create()
                     ->getCollection()
                     ->addFieldToFilter('entity_id', ['in' => $orderIds])
@@ -1204,16 +1173,6 @@ class Order extends AbstractModel
             $allCreditmemoOrderIds = $creditMemoCollection->getAllIds();
             $creditmemoIdsArrays = array_chunk($allCreditmemoOrderIds, 100);
             foreach ($creditmemoIdsArrays as $creditmemoIds) {
-                $creditmemoExportStatusCollection = $this->creditmemoExportStatusFactory->create()
-                    ->getCollection()
-                    ->addFieldToFilter('order_id', ['in' => $creditmemoIds]);
-
-                foreach ($creditmemoExportStatusCollection as $orderExportStat) {
-                    $eachOrderStat = $this->creditmemoExportStatusFactory->create()->load($orderExportStat['id']);
-                    $eachOrderStat->setExported(1);
-                    $eachOrderStat->save();
-                }
-
                 $creditMemoQueueCollection = $this->orderQueueFactory->create()
                     ->getCollection()
                     ->addFieldToFilter('entity_id', ['in' => $creditmemoIds])

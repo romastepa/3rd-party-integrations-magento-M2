@@ -7,7 +7,7 @@
 namespace Emarsys\Emarsys\Model\Config\Source;
 
 use Magento\Framework\Option\ArrayInterface;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
@@ -36,7 +36,7 @@ class MaxRecordsPerExport implements ArrayInterface
      */
     public function toOptionArray()
     {
-        $maxRecordsPerExport = $this->scopeConfig->getValue(Data::XPATH_EMARSYS_SIEXPORT_MAX_RECORDS_OPT);
+        $maxRecordsPerExport = $this->scopeConfig->getValue(EmarsysHelper::XPATH_EMARSYS_SIEXPORT_MAX_RECORDS_OPT);
         $list = explode(',', $maxRecordsPerExport);
         $result = [];
         $result[] = ['value' => '', 'label' => 'Please Select'];

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Productexport;
@@ -41,11 +41,6 @@ class Index extends Action
      */
     public function execute()
     {
-        /*
-        \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Product::class)->consolidatedCatalogExport(
-            \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL
-        );
-        */
         $page = $this->resultPageFactory->create();
         $page->getLayout()->getBlock("head");
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_emarsysadminindex9');

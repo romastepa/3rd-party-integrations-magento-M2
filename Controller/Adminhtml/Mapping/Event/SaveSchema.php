@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
@@ -15,9 +15,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Event,
-    Helper\Data,
-    Model\ResourceModel\Event as EmarsysResourceModelEvent,
+    Helper\Data as EmarsysHelper,
     Helper\Logs
 };
 
@@ -33,31 +31,34 @@ class SaveSchema extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
-     */
-    protected $session;
-
-    /**
      * @var
      */
     protected $customerHelper;
 
     /**
-     * @var
-     */
-    protected $customerResourceModel;
-
-    /**
      * @var StoreManagerInterface
      */
-    protected $_storeManager;
+    protected $storeManager;
+
+    /**
+     * @var Logs
+     */
+    protected $logsHelper;
+
+    /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var DateTime
+     */
+    protected $date;
 
     /**
      * SaveSchema constructor.
      * @param Context $context
-     * @param Event $eventHelper
-     * @param Data $emarsysHelper
-     * @param EmarsysResourceModelEvent $eventResourceModel
+     * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
      * @param Logs $logsHelper
      * @param DateTime $date
@@ -65,22 +66,17 @@ class SaveSchema extends Action
      */
     public function __construct(
         Context $context,
-        Event $eventHelper,
-        Data $emarsysHelper,
-        EmarsysResourceModelEvent $eventResourceModel,
+        EmarsysHelper $emarsysHelper,
         PageFactory $resultPageFactory,
         Logs $logsHelper,
         DateTime $date,
         StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
-        $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
-        $this->eventResourceModel = $eventResourceModel;
-        $this->eventHelper = $eventHelper;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->emarsysHelper = $emarsysHelper;
     }
 
@@ -92,7 +88,7 @@ class SaveSchema extends Action
     public function execute()
     {
         $storeId = $this->getRequest()->getParam('store');
-        $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $resultRedirect = $this->resultRedirectFactory->create();
         $errorStatus = true;
         try {

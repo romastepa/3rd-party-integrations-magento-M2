@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
@@ -14,8 +14,7 @@ use Emarsys\Emarsys\Helper\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class SaveSchema
@@ -60,8 +59,7 @@ class SaveSchema extends Action
         DateTime $date,
         Order $orderResourceModel,
         StoreManagerInterface $storeManager,
-        EmarsysHelper $emarsysHelper,
-        ScopeConfigInterface $scopeConfig
+        EmarsysHelper $emarsysHelper
     ) {
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
@@ -71,7 +69,6 @@ class SaveSchema extends Action
         $this->date = $date;
         $this->storeManager = $storeManager;
         $this->emarsysHelper = $emarsysHelper;
-        $this->scopeConfig = $scopeConfig;
     }
 
     /**

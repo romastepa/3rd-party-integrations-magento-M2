@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Observer;
@@ -108,7 +108,7 @@ class RealTimeSubscriber implements ObserverInterface
             $createSubscriber = $this->emarsysHelper->realtimeTimeBasedOptinSync($subscriber, $logMessage);
 
             if ($createSubscriber) {
-                $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId, 1);
+                $result = $this->subscriberModel->syncSubscriber($subscriberId, $storeId);
                 $subscriber->setEmarsysNoExport(true);
                 return $result;
             }

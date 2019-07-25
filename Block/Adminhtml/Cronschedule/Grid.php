@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Cronschedule;
 
@@ -11,6 +11,7 @@ use Magento\Cron\Model\Schedule;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Helper\Data;
 use Magento\Backend\Block\Widget\Grid\Extended;
+
 /**
  * Class Grid
  * @package Emarsys\Emarsys\Block\Adminhtml\Cronschedule
@@ -24,7 +25,6 @@ class Grid extends Extended
 
     /**
      * Grid constructor.
-     * @param ScheduleFactory $scheduleFactory
      * @param Context $context
      * @param Data $backendHelper
      * @param array $data
