@@ -51,9 +51,23 @@
                     {{ } }}
                     ]]>
                 </script>
-            <?php endif; ?>
-
-            <?php if ($pageHandleData['logic'] != 'DEPARTMENT'): ?>
+                <script type="text/html" language="JavaScript">
+                    for (var i = 1; i < 11; i++) {
+                        ScarabQueue.push(['recommend', {
+                            logic: 'DEPARTMENT_' + i,
+                            limit: 5,
+                            containerId: 'dept' + i,
+                            templateId: '<?php echo $pageHandleData['templateId']; ?>',
+                            success: function (SC, render) {
+                                if (SC.topicLocalized) {
+                                    SC.title = SC.topicLocalized.replace(/Root Catalog>/g, '');
+                                    render(SC);
+                                }
+                            }
+                        }]);
+                    }
+                </script>
+            <?php else: ?>
                 <div id="recommended-product-container">
                     <div id="recommended-product"></div>
                 </div>
@@ -73,10 +87,16 @@
                     {{ } }}
                     ]]>
                 </script>
+                <script type="text/html" language="JavaScript">
+                    ScarabQueue.push(['recommend', {
+                        logic: '<?php echo $pageHandleData["logic"]; ?>',
+                        containerId: 'recommended-product',
+                        templateId: '<?php echo $pageHandleData['templateId']; ?>',
+                        limit: '6'
+                    }]);
+                </script>
             <?php endif; ?>
-        <?php endif; ?>
-
-        <?php if ($pageHandleData['logic'] == "HOME_"): ?>
+        <?php else: ?>
             <div id="home1"></div>
             <div id="home2"></div>
             <div id="home3"></div>
@@ -98,6 +118,22 @@
                 {{ } }}
                 ]]>
             </script>
+            <script type="text/html" language="JavaScript">
+                for (var i = 1; i < 11; i++) {
+                    ScarabQueue.push(['recommend', {
+                        logic: '<?php echo $pageHandleData['logic'] ?>' + i,
+                        limit: 6,
+                        containerId: 'home' + i,
+                        templateId: '<?php echo $pageHandleData['templateId'] ?>',
+                        success: function (SC, render) {
+                            if (SC.topicLocalized) {
+                                SC.title = SC.topicLocalized.replace(/Root Catalog>/g, '');
+                                render(SC);
+                            }
+                        }
+                    }]);
+                }
+            </script>
         <?php endif; ?>
     <?php endif; ?>
     <script type="text/javascript">
@@ -113,49 +149,6 @@
             dataEmarsys.exchangeRate = dataEmarsys.exchangeRate || 1;
             let firstOnData = true;
             let timeout;
-
-            <?php if ($pageHandleData['status'] && $pageHandleData['logic'] != ''): ?>
-                <?php if ($pageHandleData['logic'] != 'HOME_'): ?>
-                    <?php if ($pageHandleData['logic'] == 'DEPARTMENT'): ?>
-                        for (var i = 1; i < 11; i++) {
-                            ScarabQueue.push(['recommend', {
-                                logic: 'DEPARTMENT_' + i,
-                                limit: 5,
-                                containerId: 'dept' + i,
-                                templateId: '<?php echo $pageHandleData['templateId']; ?>',
-                                success: function (SC, render) {
-                                    if (SC.topicLocalized) {
-                                        SC.title = SC.topicLocalized.replace(/Root Catalog>/g, '');
-                                        render(SC);
-                                    }
-                                }
-                            }]);
-                        }
-                    <?php else: ?>
-                        ScarabQueue.push(['recommend', {
-                            logic: '<?php echo $pageHandleData["logic"]; ?>',
-                            containerId: 'recommended-product',
-                            templateId: '<?php echo $pageHandleData['templateId']; ?>',
-                            limit: '6'
-                        }]);
-                    <?php endif; ?>
-                <?php else: ?>
-                    for (var i = 1; i < 11; i++) {
-                        ScarabQueue.push(['recommend', {
-                            logic: '<?php echo $pageHandleData['logic'] ?>' + i,
-                            limit: 6,
-                            containerId: 'home' + i,
-                            templateId: '<?php echo $pageHandleData['templateId'] ?>',
-                            success: function (SC, render) {
-                                if (SC.topicLocalized) {
-                                    SC.title = SC.topicLocalized.replace(/Root Catalog>/g, '');
-                                    render(SC);
-                                }
-                            }
-                        }]);
-                    }
-                <?php endif; ?>
-            <?php endif; ?>
 
             const onData = function () {
                 if (timeout) {
