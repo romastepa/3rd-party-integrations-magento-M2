@@ -90,7 +90,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
         $this->emarsysHelper = $emarsysHelper;
         $this->productMetadata = $productMetadata;
 
-        if (version_compare($this->productMetadata->getVersion(), '2.0.18', '>=')) {
+        if (version_compare($this->productMetadata->getVersion(), '2.0.18', '<=')) {
             parent::__construct(
                 $context,
                 $registry,
@@ -98,7 +98,7 @@ class Subscriber extends \Magento\Newsletter\Model\Subscriber
                 $resourceCollection,
                 $data
             );
-        } elseif (version_compare($this->productMetadata->getVersion(), '2.2.6', '>=')) {
+        } elseif (version_compare($this->productMetadata->getVersion(), '2.2.6', '<=')) {
             parent::__construct(
                 $context,
                 $registry,
