@@ -279,8 +279,8 @@ class JavascriptTracking extends Template
         if ($this->useBaseCurrency()) {
             return 1;
         } else {
-            $currentCurrency = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
-            $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
+            $currentCurrency = $this->storeManager->getStore()->getCurrentCurrencyCode();
+            $baseCurrency = $this->storeManager->getStore()->getBaseCurrencyCode();
             return (float)$this->currencyFactory->create()->load($baseCurrency)->getAnyRate($currentCurrency);
         }
     }
@@ -292,9 +292,9 @@ class JavascriptTracking extends Template
     public function getDisplayCurrency()
     {
         if ($this->useBaseCurrency()) {
-            return $this->storeManager->getStore()->getBaseCurrency()->getCode();
+            return $this->storeManager->getStore()->getBaseCurrencyCode();
         } else {
-            return $this->storeManager->getStore()->getCurrentCurrency()->getCode();
+            return $this->storeManager->getStore()->getCurrentCurrencyCode();
         }
     }
 
@@ -304,6 +304,9 @@ class JavascriptTracking extends Template
      */
     public function getStoreSlug()
     {
+        if ($this->storeManager->getStore()->isDefault()) {
+            return '';
+        }
         return $this->storeManager->getStore()->getCode();
     }
 
