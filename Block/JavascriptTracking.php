@@ -304,10 +304,22 @@ class JavascriptTracking extends Template
      */
     public function getStoreSlug()
     {
-        if ($this->storeManager->getStore()->isDefault()) {
+        if ($this->isDefault($this->storeManager->getStore())) {
             return '';
         }
         return $this->storeManager->getStore()->getCode();
+    }
+
+    /**
+     * @param $store
+     * @return bool
+     */
+    public function isDefault($store)
+    {
+        if (!$store->getId() && $store->getWebsite() && $store->getWebsite()->getStoresCount() == 0) {
+            return true;
+        }
+        return $store->getGroup()->getDefaultStoreId() == $store->getId();
     }
 
     public function getAjaxUrl()
