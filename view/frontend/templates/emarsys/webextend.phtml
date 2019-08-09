@@ -26,10 +26,10 @@
         <?php if ($block->isTestModeEnabled()):?>
         ScarabQueue.push(['testMode']);
         <?php endif;?>
-    </script>
-    <script type="text/javascript">
+
         window.Emarsys = window.Emarsys || {};
         window.Emarsys.Magento2 = window.Emarsys.Magento2 || {};
+
         var dataEmarsys = <?php echo $block->getTrackingData(); ?>;
 
         require([
