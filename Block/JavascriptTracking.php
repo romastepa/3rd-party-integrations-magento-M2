@@ -109,12 +109,12 @@ class JavascriptTracking extends Template
                 $pageData = explode('||', $pageValue);
                 $pageResult['logic'] = $pageData[0];
                 $pageResult['templateId'] = $pageData[1];
-                $pageResult['status'] = 'Valid';
+                $pageResult['status'] = true;
             } else {
-                $pageResult['status'] = 'Invalid';
+                $pageResult['status'] = false;
             }
         } else {
-            $pageResult['status'] = 'Invalid';
+            $pageResult['status'] = true;
         }
 
         return $pageResult;
