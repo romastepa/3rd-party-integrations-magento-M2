@@ -40,4 +40,10 @@
     <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
         <plugin name="subscription" type="Emarsys\Emarsys\Plugin\Checkout\Model\Checkout\LayoutProcessor"/>
     </type>
+    <type name="Magento\Customer\CustomerData\Customer">
+        <plugin name="emarsys_subscriber" type="Emarsys\Emarsys\Plugin\CustomerData" sortOrder="100"/>
+    </type>
+    <type name="Magento\Checkout\CustomerData\Cart">
+        <plugin name="emarsys_cart" type="Emarsys\Emarsys\Plugin\CustomerDataCart" sortOrder="100"/>
+    </type>
 </config>

@@ -161,6 +161,15 @@ class JavascriptTracking extends Template
     }
 
     /**
+     * @return mixed
+     * @throws NoSuchEntityException
+     */
+    public function getUniqueIdentifier()
+    {
+        return $this->storeManager->getStore()->getConfig(Data::XPATH_WEBEXTEND_UNIQUE_ID);
+    }
+
+    /**
      * Get Tracking Data
      *
      * @return mixed
@@ -279,8 +288,8 @@ class JavascriptTracking extends Template
         if ($this->useBaseCurrency()) {
             return 1;
         } else {
-            $currentCurrency = $this->storeManager->getStore()->getCurrentCurrencyCode();
-            $baseCurrency = $this->storeManager->getStore()->getBaseCurrencyCode();
+            $currentCurrency = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
+            $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
             return (float)$this->currencyFactory->create()->load($baseCurrency)->getAnyRate($currentCurrency);
         }
     }
@@ -292,9 +301,9 @@ class JavascriptTracking extends Template
     public function getDisplayCurrency()
     {
         if ($this->useBaseCurrency()) {
-            return $this->storeManager->getStore()->getBaseCurrencyCode();
+            return $this->storeManager->getStore()->getBaseCurrency()->getCode();
         } else {
-            return $this->storeManager->getStore()->getCurrentCurrencyCode();
+            return $this->storeManager->getStore()->getCurrentCurrency()->getCode();
         }
     }
 
@@ -320,13 +329,5 @@ class JavascriptTracking extends Template
             return true;
         }
         return $store->getGroup()->getDefaultStoreId() == $store->getId();
-    }
-
-    public function getAjaxUrl()
-    {
-        return $this->getUrl(
-            'emarsys/index/ajax',
-            ['_secure' => true]
-        );
     }
 }
