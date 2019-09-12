@@ -38,7 +38,7 @@
             'Magento_Customer/js/customer-data'
         ], function (jQuery, customerData) {
             dataEmarsys.order = window.Emarsys.Magento2.orderData;
-            dataEmarsys.exchangeRate = dataEmarsys.exchangeRate || 1;
+
             let firstOnData = true;
             let timeout;
 
@@ -97,7 +97,7 @@
                         dataEmarsys.cart.items.map(product => {
                             return {
                                 item: (uniqueIdentifier == 'product_id') ? product.product_real_id : product.product_sku,
-                                price: parseFloat(parseFloat(product.product_price_value / dataEmarsys.exchangeRate).toFixed(2)),
+                                price: dataEmarsys.useBaseCurrency ? product.base_product_price_value : product.product_price_value,
                                 quantity: parseInt(product.qty)
                             };
                         })

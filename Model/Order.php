@@ -920,17 +920,19 @@ class Order extends AbstractModel
                 $createdDate = date('Y-m-d', strtotime($creditMemo->getCreatedAt()));
                 $customerEmail = $creditMemo->getOrder()->getCustomerEmail();
 
-                $parentId = null;
+                $parentSku = null;
                 $items = $this->creditmemoItemCollectionFactory->create(['entitySnapshot' => $dummySnapshot])
                     ->addFieldToFilter('parent_id', ['eq' => $creditMemo->getId()]);
 
                 /** @var \Magento\Sales\Model\Order\Creditmemo\Item $item */
                 foreach ($items as $item) {
                     if ($item->getOrderItem()->getProductType() == Configurable::TYPE_CODE) {
-                        $parentId = $item->getId();
+                        $parentSku = $item->getSku();
                     }
-                    if ($parentId && $item->getOrderItem()->getParentItemId() == $parentId) {
-                        $parentId = null;
+                    if ($parentSku && $item->getOrderItem()->getSku() == $parentSku
+                        && $item->getOrderItem()->getProductType() != Configurable::TYPE_CODE
+                    ) {
+                        $parentSku = null;
                         continue;
                     }
 

@@ -182,7 +182,7 @@ class JavascriptTracking extends Template
             'product' => $this->getCurrentProduct(),
             'category' => $this->getCategory(),
             'search' => $this->getSearchData(),
-            'exchangeRate' => $this->getExchangeRate(),
+            'useBaseCurrency' => $this->useBaseCurrency(),
             'slug' => $this->getStoreSlug(),
             'displayCurrency' => $this->getDisplayCurrency(),
         ]);
@@ -277,21 +277,6 @@ class JavascriptTracking extends Template
             ];
         }
         return false;
-    }
-
-    /**
-     * @return float
-     * @throws NoSuchEntityException
-     */
-    public function getExchangeRate()
-    {
-        if ($this->useBaseCurrency()) {
-            return 1;
-        } else {
-            $currentCurrency = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
-            $baseCurrency = $this->storeManager->getStore()->getBaseCurrency()->getCode();
-            return (float)$this->currencyFactory->create()->load($baseCurrency)->getAnyRate($currentCurrency);
-        }
     }
 
     /**
