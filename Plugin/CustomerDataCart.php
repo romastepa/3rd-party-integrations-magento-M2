@@ -8,6 +8,7 @@
 namespace Emarsys\Emarsys\Plugin;
 
 use Magento\Checkout\CustomerData\Cart;
+use Magento\Quote\Model\Quote\Item;
 use Magento\Catalog\Model\Product;
 
 /**
@@ -20,10 +21,12 @@ class CustomerDataCart
     /**
      * CustomerDataCart constructor.
      *
-     * @param Product $session
+     * @param Item $item
+     * @param Product $product
      */
-    public function __construct(Product $product)
+    public function __construct(Item $item, Product $product)
     {
+        $this->item = $item;
         $this->product = $product;
     }
 
@@ -37,7 +40,10 @@ class CustomerDataCart
     {
         if (!empty($result['items'])) {
             foreach ($result['items'] as &$item) {
+                /** @var \Magento\Quote\Model\Quote\Item $itemModel */
+                $itemModel = $this->item->load($item['item_id']);
                 $item['product_real_id'] = $this->product->getIdBySku($item['product_sku']);
+                $item['base_product_price_value'] = round($itemModel->getBaseCalculationPrice(), 2);
             }
         }
 
