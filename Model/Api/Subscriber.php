@@ -505,7 +505,7 @@ class Subscriber
 
         unset($subscriberCollection);
 
-        return array($subscriberData, $lastPageNumber);
+        return [$subscriberData, $lastPageNumber];
     }
 
     /**

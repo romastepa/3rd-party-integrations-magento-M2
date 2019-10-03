@@ -899,7 +899,7 @@ class Order extends AbstractModel
                     foreach ($emarsysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         $magentoColumnName = trim($field['magento_column_name']);
-                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
+                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, ["'", '"']) && !empty($magentoColumnName)) {
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $order->getData($magentoColumnName));
                         }
                     }
@@ -982,7 +982,7 @@ class Order extends AbstractModel
                     foreach ($emarsysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         $magentoColumnName = trim($field['magento_column_name']);
-                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, array("'", '"')) && !empty($magentoColumnName)) {
+                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, ["'", '"']) && !empty($magentoColumnName)) {
                             $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemo->getData($magentoColumnName));
                         }
                     }

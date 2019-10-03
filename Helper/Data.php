@@ -1832,12 +1832,14 @@ class Data extends AbstractHelper
 
     /**
      * Checks whether emarsys is enabled or not.
+     *
      * @param null $websiteId
      * @return boolean
+     * @throws LocalizedException
      */
     public function isEmarsysEnabled($websiteId = null)
     {
-        return (bool)$this->storeManager->getWebsite($websiteId)->getConfig('emarsys_settings/emarsys_setting/enable');
+        return (bool)$this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_EMARSYS_ENABLED);
     }
 
     /**

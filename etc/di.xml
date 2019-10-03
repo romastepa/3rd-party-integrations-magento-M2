@@ -7,9 +7,6 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <type name="Magento\Checkout\Model\ShippingInformationManagement">
-        <plugin name="emarsys-save-in-quote" type="Emarsys\Emarsys\Model\Checkout\ShippingInformationManagement" sortOrder="9"/>
-    </type>
     <type name="Emarsys\Emarsys\Logger\Handler">
         <arguments>
             <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
@@ -37,8 +34,11 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Checkout\Model\ShippingInformationManagement">
+        <plugin name="emarsys_save_in_quote" type="Emarsys\Emarsys\Plugin\Checkout\ShippingInformationManagement" sortOrder="100"/>
+    </type>
     <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
-        <plugin name="subscription" type="Emarsys\Emarsys\Plugin\Checkout\Model\Checkout\LayoutProcessor"/>
+        <plugin name="emarsys_checkout_subscription_layoutprocessor" type="Emarsys\Emarsys\Plugin\Checkout\Model\Checkout\LayoutProcessor" sortOrder="100"/>
     </type>
     <type name="Magento\Customer\CustomerData\Customer">
         <plugin name="emarsys_subscriber" type="Emarsys\Emarsys\Plugin\CustomerData" sortOrder="100"/>

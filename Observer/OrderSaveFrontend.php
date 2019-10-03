@@ -85,14 +85,11 @@ class OrderSaveFrontend implements ObserverInterface
         $orderIds = $observer->getEvent()->getOrderIds();
         $order = $this->order->load($orderIds[0]);
         $emailId = $order->getCustomerEmail();
-        $checkoutNewsSub = false;
+        $checkoutNewsSub = $this->checkoutSession->getData('newsletter_sub_checkout', false);
 
         //Set customer email, Id and order Ids in session
         $this->newOrderEmailAddress($observer);
 
-        if (isset($this->checkoutSession->getData()['newsletter_sub_checkout'])) {
-            $checkoutNewsSub = $this->checkoutSession->getData('newsletter_sub_checkout');
-        }
         if ($checkoutNewsSub) {
             $this->subscriberFactory->create()->subscribe($emailId);
         }

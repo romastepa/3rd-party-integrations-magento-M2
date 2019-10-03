@@ -35,12 +35,12 @@ class NewsLetterSaveBefore implements ObserverInterface
         $subscriber = $observer->getSubscriber();
         $subscriberId = $subscriber->getSubscriberId();
         $oldSubscriptionStatus = $this->subscriberModel->create()->load($subscriberId)->getSubscriberStatus();
-        $CurrentSubscriptionStatus = $observer->getSubscriber()->getSubscriberStatus();
+        $currentSubscriptionStatus = $observer->getSubscriber()->getSubscriberStatus();
         $subscriber->setOrigData('subscriber_status', $oldSubscriptionStatus);
         $oldSubscriptionEmail = $this->subscriberModel->create()->load($subscriberId)->getEmail();
         $subscriber->setOrigData('subscriber_email', $oldSubscriptionEmail);
 
-        if ($oldSubscriptionStatus != $CurrentSubscriptionStatus ) {
+        if ($oldSubscriptionStatus != $currentSubscriptionStatus) {
             $subscriber['change_status_at'] = (date("Y-m-d H:i:s", time()));
         }
     }
