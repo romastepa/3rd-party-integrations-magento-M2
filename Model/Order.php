@@ -509,7 +509,6 @@ class Order extends AbstractModel
                 $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(
                     \Magento\Sales\Model\Order::ENTITY
                 );
-                $moveFile = false;
 
                 //Check and create directory for csv generation
                 $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
@@ -582,11 +581,10 @@ class Order extends AbstractModel
                 $logsArray['description'] = __($e->getMessage());
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->manualLogs($logsArray);
-                $moveFile = false;
+                $moveFile = $moveFile ?: false;
             }
 
             //CSV upload to FTP process starts
-
             try {
                 $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
 
@@ -705,9 +703,9 @@ class Order extends AbstractModel
             $filePath = $fileDirectory . "/" . $outputFile;
 
             if ($entity == \Magento\Sales\Model\Order::ENTITY) {
-                $this->generateOrderCsv($storeId, $filePath, $entityCollection, '');
+                $this->generateOrderCsv($storeId, $filePath, $entityCollection, false);
             } else {
-                $this->generateOrderCsv($storeId, $filePath, '', $entityCollection);
+                $this->generateOrderCsv($storeId, $filePath, false, $entityCollection);
             }
 
             $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
