@@ -7,15 +7,13 @@
 
 namespace Emarsys\Emarsys\Plugin\Checkout\Model\Checkout;
 
-use Emarsys\Emarsys\{
-    Helper\Data,
-    Model\Subscriber
-};
+use Emarsys\Emarsys\Helper\Data;
 use Magento\{
     Framework\App\Config\ScopeConfigInterface,
     Framework\Exception\NoSuchEntityException,
     Store\Model\StoreManagerInterface,
-    Customer\Model\Session
+    Customer\Model\Session,
+    Newsletter\Model\Subscriber
 };
 
 /**

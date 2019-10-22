@@ -104,8 +104,6 @@ class Data extends AbstractHelper
 
     const XPATH_EMARSYS_BACKGROUND_RUNTIME = 'contacts_synchronization/emarsys_emarsys/background_runtime';
 
-    const XPATH_EMARSYS_UNIQUE_FIELD = 'contacts_synchronization/emarsys_emarsys/unique_field';
-
     //Opt In Settings
     const XPATH_OPTIN_ENABLED = 'opt_in/optin_enable/enable_optin';
 

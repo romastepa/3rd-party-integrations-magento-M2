@@ -20,11 +20,12 @@
             </argument>
         </arguments>
     </type>
+
     <preference for="Magento\Framework\Mail\TransportInterface" type="Emarsys\Emarsys\Model\Transport"/>
     <preference for="Magento\Framework\Mail\Message" type="Emarsys\Emarsys\Model\Message"/>
     <preference for="Magento\Framework\Mail\Template\TransportBuilder" type="Emarsys\Emarsys\Model\Template\TransportBuilder"/>
     <preference for="Magento\Email\Model\Template" type="Emarsys\Emarsys\Model\Template"/>
-    <preference for="Magento\Newsletter\Model\Subscriber" type="Emarsys\Emarsys\Model\Subscriber"/>
+
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
@@ -34,16 +35,19 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Newsletter\Model\Subscriber">
+        <plugin name="emarsys_subscribe" type="Emarsys\Emarsys\Plugin\Subscriber" sortOrder="100" disabled="false" />
+    </type>
     <type name="Magento\Checkout\Model\ShippingInformationManagement">
-        <plugin name="emarsys_save_in_quote" type="Emarsys\Emarsys\Plugin\Checkout\ShippingInformationManagement" sortOrder="100"/>
+        <plugin name="emarsys_save_in_quote" type="Emarsys\Emarsys\Plugin\Checkout\ShippingInformationManagement" sortOrder="100" disabled="false" />
     </type>
     <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
-        <plugin name="emarsys_checkout_subscription_layoutprocessor" type="Emarsys\Emarsys\Plugin\Checkout\Model\Checkout\LayoutProcessor" sortOrder="100"/>
+        <plugin name="emarsys_checkout_subscription_layoutprocessor" type="Emarsys\Emarsys\Plugin\Checkout\Model\Checkout\LayoutProcessor" sortOrder="100" disabled="false" />
     </type>
     <type name="Magento\Customer\CustomerData\Customer">
-        <plugin name="emarsys_subscriber" type="Emarsys\Emarsys\Plugin\CustomerData" sortOrder="100"/>
+        <plugin name="emarsys_subscriber" type="Emarsys\Emarsys\Plugin\CustomerData" sortOrder="100" disabled="false" />
     </type>
     <type name="Magento\Checkout\CustomerData\Cart">
-        <plugin name="emarsys_cart" type="Emarsys\Emarsys\Plugin\CustomerDataCart" sortOrder="100"/>
+        <plugin name="emarsys_cart" type="Emarsys\Emarsys\Plugin\CustomerDataCart" sortOrder="100" disabled="false" />
     </type>
 </config>
