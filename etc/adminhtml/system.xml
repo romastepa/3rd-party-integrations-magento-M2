@@ -29,6 +29,9 @@
                 </field>
                 <field id="emarsys_custom_url" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Custom API URL</label>
+                    <depends>
+                        <field id="emarsys_api_endpoint">custom</field>
+                    </depends>
                 </field>
                 <field id="emarsys_api_username" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Username</label>
