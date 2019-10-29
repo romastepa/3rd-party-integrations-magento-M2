@@ -47,7 +47,7 @@ class Index extends Action
      */
     public function execute()
     {
-        $data = $this->adminSession->getFormData(true);
+        $this->adminSession->getFormData(true);
         $page = $this->resultPageFactory->create();
         $page->getLayout()->getBlock("head");
         $this->_setActiveMenu('Emarsys_Emarsys::support');

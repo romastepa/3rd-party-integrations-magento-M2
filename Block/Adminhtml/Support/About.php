@@ -124,6 +124,8 @@ class About extends MagentoBackendBlockWidgetForm
                         case 0:
                             $notificationMessage .= "<div style='color:green; text-align: center; padding: 15px; border: 1px solid #ddd;background: #fff;font-size: 16px;margin:  8px 0;'>Congratulations, You are using the latest version of this Extension </div> ";
                             break;
+                        case 1:
+                            break;
                         case -1:
                             $title = str_replace('LATEST_VERSION', $latestAvailableVersion, self::NOTIFICATION_TITLE);
                             $description = str_replace('RELEASE_URL', $this->getReadMoreUrl(), self::NOTIFICATION_DESCRIPTION);
@@ -188,7 +190,7 @@ class About extends MagentoBackendBlockWidgetForm
      */
     public function getReadMoreUrl()
     {
-        return $this->scopeConfigInterface->getValue(Data::EMARSYS_RELEASE_URL, 'default', 0);
+        return ''; //$this->scopeConfigInterface->getValue(Data::EMARSYS_RELEASE_URL, 'default', 0);
     }
 }
 
