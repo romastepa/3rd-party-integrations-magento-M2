@@ -149,6 +149,5 @@ class SmartInsightApiTestConnection extends TestConnection
 
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogs($logsArray);
-        return true;
     }
 }
