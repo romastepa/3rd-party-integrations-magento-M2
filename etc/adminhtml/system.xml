@@ -75,8 +75,7 @@
                 <field id="username" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Username</label>
                 </field>
-                <field id="ftp_password" translate="label" type="password" sortOrder="20" showInDefault="0"
-                       showInWebsite="1" showInStore="0">
+                <field id="ftp_password" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Password</label>
                 </field>
                 <field id="ftp_bulk_export_dir" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -147,8 +146,7 @@
             <resource>Emarsys_Emarsys::settings</resource>
             <group id="transactionmail" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Transaction Email</label>
-                <field id="enable_customer" translate="label" type="select" sortOrder="20" showInDefault="0"
-                       showInWebsite="1" showInStore="0">
+                <field id="enable_customer" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable Emarsys Transaction Emails</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
@@ -250,8 +248,7 @@
             </group>
             <group id="catalog_api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Feed Export API Settings</label>
-                <field id="enable_catalog_api" translate="label" type="select" sortOrder="10" showInDefault="0"
-                       showInWebsite="1" showInStore="1">
+                <field id="enable_catalog_api" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable API Export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
