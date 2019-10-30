@@ -39,5 +39,6 @@
         <job name="emarsys_customer_bulk_export_api" instance="Emarsys\Emarsys\Cron\CustomerBulkExportApi" method="execute" />
         <job name="emarsys_subscriber_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportWebDav" method="execute" />
         <job name="emarsys_subscriber_bulk_export_api" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportApi" method="execute" />
+        <job name="emarsys_catalog_bulk_export" instance="Emarsys\Emarsys\Cron\ProductBulkExport" method="execute" />
     </group>
 </config>
