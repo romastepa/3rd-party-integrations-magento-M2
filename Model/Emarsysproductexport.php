@@ -171,7 +171,7 @@ class Emarsysproductexport extends AbstractModel
             );
 
             $collection->getSelect()->joinLeft(
-                ['stock_status_index' => $connection->getTableName('cataloginventory_stock_status')],
+                ['stock_status_index' => $collection->getTable('cataloginventory_stock_status')],
                 $joinCondition,
                 [
                     'is_salable' => 'stock_status',
