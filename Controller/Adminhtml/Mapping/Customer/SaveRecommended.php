@@ -7,15 +7,20 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Model\CustomerFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Model\Logs;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\{
+    Backend\App\Action\Context,
+    Framework\View\Result\PageFactory,
+    Framework\App\Config\ScopeConfigInterface,
+    Framework\Stdlib\DateTime\DateTime,
+    Store\Model\StoreManagerInterface
+};
+use Emarsys\Emarsys\{
+    Model\CustomerFactory,
+    Model\ResourceModel\Customer,
+    Helper\Data\Proxy as EmarsysHelper,
+    Model\Logs,
+    Helper\Logs as EmarsysHelperLogs
+};
 
 /**
  * Class SaveRecommended
@@ -54,8 +59,25 @@ class SaveRecommended extends \Magento\Backend\App\Action
     protected $_storeManager;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @var EmarsysHelperLogs
+     */
+    protected $logsHelper;
+
+    /**
+     * @var Logs
+     */
+    protected $emarsysLogs;
+
+    /**
      * SaveRecommended constructor.
+     *
      * @param Context $context
+     * @param EmarsysHelper $emarsysHelper
      * @param CustomerFactory $customerFactory
      * @param Customer $resourceModelCustomer
      * @param PageFactory $resultPageFactory
@@ -67,6 +89,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
      */
     public function __construct(
         Context $context,
+        EmarsysHelper $emarsysHelper,
         CustomerFactory $customerFactory,
         Customer $resourceModelCustomer,
         PageFactory $resultPageFactory,
@@ -77,6 +100,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
         StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
+        $this->emarsysHelper = $emarsysHelper;
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
         $this->customerFactory = $customerFactory;
@@ -84,18 +108,19 @@ class SaveRecommended extends \Magento\Backend\App\Action
         $this->date = $date;
         $this->emarsysLogs = $emarsysLogs;
         $this->scopeConfigInterface = $scopeConfigInterface;
-        $this->emarsysLogs = $emarsysLogs;
-        $this->_storeManager = $storeManager;
         $this->logsHelper = $logsHelper;
+        $this->_storeManager = $storeManager;
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
         $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
         try {
             $logsArray['job_code'] = 'Customer Mapping';

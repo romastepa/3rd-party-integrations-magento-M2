@@ -10,6 +10,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Emarsys\Emarsys\Model\FieldFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
 use Emarsys\Emarsys\Helper\Logs;
@@ -70,6 +71,11 @@ class SaveRecommended extends Action
     protected $logsHelper;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * SaveRecommended constructor.
      * @param Context $context
      * @param FieldFactory $fieldFactory
@@ -83,6 +89,7 @@ class SaveRecommended extends Action
      */
     public function __construct(
         Context $context,
+        EmarsysHelper $emarsysHelper,
         FieldFactory $fieldFactory,
         Field $resourceModelField,
         PageFactory $resultPageFactory,
@@ -93,6 +100,7 @@ class SaveRecommended extends Action
         StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
+        $this->emarsysHelper = $emarsysHelper;
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
         $this->date = $date;
@@ -106,11 +114,13 @@ class SaveRecommended extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
         $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
         $resultRedirect = $this->resultRedirectFactory->create();
         try {

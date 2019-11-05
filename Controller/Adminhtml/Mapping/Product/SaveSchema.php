@@ -60,11 +60,8 @@ class SaveSchema extends \Magento\Backend\App\Action
 
     public function execute()
     {
-        if ($this->getRequest()->getParam('store')) {
-            $storeId = $this->getRequest()->getParam('store');
-        } else {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->getRequest()->getParam('store', false);
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
         try {
             $productFields = [];

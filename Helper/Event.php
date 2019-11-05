@@ -15,7 +15,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Model\ResourceModel\Event as EmarsysResourceModelEvent,
     Model\EmarsyseventsFactory,
-    Helper\Data as EmarsysHelper,
+    Helper\Data\Proxy as EmarsysHelper,
     Model\Api\Api as EmarsysModelApiApi
 };
 

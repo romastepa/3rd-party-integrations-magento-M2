@@ -154,22 +154,20 @@ class Grid extends Extended
     }
 
     /**
-     * @return $this
+     * @return Extended
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareCollection()
     {
         $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $mappingId = $this->getRequest()->getParam('mapping_id');
 
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
-
-        $EventMappingCollection = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
+        $eventMappingCollection = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
             ->addFieldToFilter("store_id", $storeId)
             ->addFieldToFilter("event_mapping_id", $mappingId);
 
-        $this->setCollection($EventMappingCollection);
+        $this->setCollection($eventMappingCollection);
 
         return parent::_prepareCollection();
     }
@@ -183,10 +181,7 @@ class Grid extends Extended
         $this->session->setData('gridData', '');
         $mappingId = $this->getRequest()->getParam('mapping_id');
         $storeId = $this->getRequest()->getParam('store_id');
-
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
 
         $emarsysEventPlaceholderMappingColl = $this->emarsysEventPlaceholderMappingFactory->create()->getCollection()
             ->addFieldToFilter('event_mapping_id', $mappingId)
@@ -196,8 +191,8 @@ class Grid extends Extended
             $val = $this->emarsysHelper->insertFirstTimeMappingPlaceholders($mappingId, $storeId);
             if ($val == "") {
                 $this->_messageManager->addErrorMessage(__("Please Assign Email Template to event"));
-                $RedirectUrl = $this->_url->getUrl('emarsys_emarsys/mapping_event/index', ["store_id" => $storeId]);
-                $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
+                $redirectUrl = $this->_url->getUrl('emarsys_emarsys/mapping_event/index', ["store_id" => $storeId]);
+                $this->_responseFactory->create()->setRedirect($redirectUrl)->sendResponse();
             }
         }
     }

@@ -10,6 +10,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Field;
 use Emarsys\Emarsys\Model\ResourceModel\Field as EmarsysResourceModelField;
 use Emarsys\Emarsys\Helper\Logs;
@@ -49,8 +50,15 @@ class SaveSchema extends Action
     protected $_storeManager;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * SaveSchema constructor.
+     *
      * @param Context $context
+     * @param EmarsysHelper $emarsysHelper
      * @param Field $fieldHelper
      * @param EmarsysResourceModelField $fieldResourceModel
      * @param PageFactory $resultPageFactory
@@ -61,6 +69,7 @@ class SaveSchema extends Action
      */
     public function __construct(
         Context $context,
+        EmarsysHelper $emarsysHelper,
         Field $fieldHelper,
         EmarsysResourceModelField $fieldResourceModel,
         PageFactory $resultPageFactory,
@@ -70,6 +79,7 @@ class SaveSchema extends Action
         StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
+        $this->emarsysHelper = $emarsysHelper;
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
         $this->fieldHelper = $fieldHelper;
@@ -83,6 +93,8 @@ class SaveSchema extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
@@ -90,6 +102,7 @@ class SaveSchema extends Action
          * To Get the schema from Emarsys and add/update in magento mapping table
          */
         $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
         $logsArray['job_code'] = 'Customer Filed Mapping';
         $logsArray['status'] = 'started';

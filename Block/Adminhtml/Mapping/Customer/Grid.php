@@ -126,9 +126,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     {
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
+
         $collection = $this->customerMagentoAttsFactory->create()->getCollection()
             ->addFieldToFilter('store_id', ['eq' => $storeId]);
         $collection->setOrder('main_table.frontend_label', 'ASC');
@@ -175,9 +174,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_construct();
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
+
         $this->session->setData('store', $storeId);
         $mappingExists = $this->resourceModelCustomer->customerMappingExists($storeId);
         if ($mappingExists == FALSE) {

@@ -7,8 +7,10 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Installation;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Helper\Customer;
+use Emarsys\Emarsys\{
+    Helper\Data as EmarsysHelper,
+    Model\ResourceModel\CustomerFactory as CustomerResourceModel
+};
 use Magento\Backend\Block\Template\Context;
 
 /**
@@ -33,28 +35,27 @@ class Checklist extends \Magento\Backend\Block\Template
     protected $emarsysHelper;
 
     /**
-     * @var Customer
+     * @var CustomerResourceModel
      */
-    protected $emarsysHelperCustomer;
+    protected $customerResourceModel;
 
     /**
      * Checklist constructor.
      * @param Context $context
      * @param EmarsysHelper $emarsysHelper
-     * @param Customer $emarsysHelperCustomer
+     * @param CustomerResourceModel $customerResourceModel
      * @param array $data
      */
     public function __construct(
         Context $context,
         EmarsysHelper $emarsysHelper,
-        Customer $emarsysHelperCustomer,
+        CustomerResourceModel $customerResourceModel,
         array $data = []
-    )
-    {
+    ) {
         $this->storeManagerInterface = $context->getStoreManager();
         $this->requestInterface = $context->getRequest();
         $this->emarsysHelper = $emarsysHelper;
-        $this->emarsysHelperCustomer = $emarsysHelperCustomer;
+        $this->customerResourceModel = $customerResourceModel;
         parent::__construct($context, $data);
     }
 
@@ -63,11 +64,11 @@ class Checklist extends \Magento\Backend\Block\Template
         $storeId = $this->getStoreId();
         $emarsysCustomerFieldNames = [];
         if ($storeId) {
-            $emarsysCustomerFields = $this->emarsysHelperCustomer->getEmarsysCustomerSchema($storeId);
+            $emarsysCustomerFields = $this->emarsysHelper->getEmarsysCustomerSchema($storeId);
             if (is_array($emarsysCustomerFields) && isset($emarsysCustomerFields['data'])) {
                 $emarsysCustomerDataFields = $emarsysCustomerFields['data'];
-                foreach ($emarsysCustomerDataFields as $CustomerField) {
-                    $emarsysCustomerFieldNames[] = $CustomerField['name'];
+                foreach ($emarsysCustomerDataFields as $сustomerField) {
+                    $emarsysCustomerFieldNames[$сustomerField['id']] = $сustomerField['name'];
                 }
             }
         }
@@ -77,6 +78,8 @@ class Checklist extends \Magento\Backend\Block\Template
     public function getStore()
     {
         $storeId = $this->getStoreId();
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
+
         if ($storeId) {
             $store = $this->storeManagerInterface->getStore($storeId);
             return $store;
@@ -92,5 +95,15 @@ class Checklist extends \Magento\Backend\Block\Template
     public function getRequirementsInfo($storeId)
     {
         return $this->emarsysHelper->getRequirementsInfo($storeId);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->customerResourceModel->create()->getKeyId(EmarsysHelper::CUSTOMER_ID, $this->getStore()->getId());
+    }
+
+    public function getSubscriberId()
+    {
+        return $this->customerResourceModel->create()->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $this->getStore()->getId());
     }
 }

@@ -52,7 +52,7 @@ class Save extends Action
     /**
      * @var EmarsysHelper
      */
-    protected $emsrsysHelper;
+    protected $emarsysHelper;
 
     /**
      * @var Logs
@@ -73,7 +73,7 @@ class Save extends Action
      * Save constructor.
      * @param Context $context
      * @param ProductFactory $productFactory
-     * @param EmarsysHelper $emsrsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param StoreManagerInterface $storeManager
      * @param Logs $logsHelper
      * @param EmarsysModelLogs $emarsysLogs
@@ -84,7 +84,7 @@ class Save extends Action
     public function __construct(
         Context $context,
         ProductFactory $productFactory,
-        EmarsysHelper $emsrsysHelper,
+        EmarsysHelper $emarsysHelper,
         StoreManagerInterface $storeManager,
         Logs $logsHelper,
         EmarsysModelLogs $emarsysLogs,
@@ -99,7 +99,7 @@ class Save extends Action
         $this->productFactory = $productFactory;
         $this->emarsysLogs = $emarsysLogs;
         $this->resourceModelProduct = $resourceModelProduct;
-        $this->emsrsysHelper = $emsrsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
         $this->storeManager = $storeManager;
@@ -125,9 +125,8 @@ class Save extends Action
             if (isset($session['storeId'])) {
                 $gridSessionStoreId = $session['storeId'];
             }
-            if ($gridSessionStoreId == 0) {
-                $gridSessionStoreId = $this->emsrsysHelper->getFirstStoreId();
-            }
+            $gridSessionStoreId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($gridSessionStoreId);
+
             $websiteId = $this->storeManager->getStore($gridSessionStoreId)->getWebsiteId();
             $logsArray['job_code'] = 'Product Mapping';
             $logsArray['status'] = 'started';

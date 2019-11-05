@@ -105,17 +105,14 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
-        if ($this->getRequest()->getParam('store')) {
-            $storeId = $this->getRequest()->getParam('store');
-        } else {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
-
+        $storeId = $this->getRequest()->getParam('store', false);
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
 
         try {

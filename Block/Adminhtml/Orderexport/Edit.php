@@ -16,27 +16,26 @@ use Magento\Backend\Block\Widget\Form\Container;
 class Edit extends Container
 {
     /**
-     * Core registry
-     * @var \Magento\Framework\Registry
+     * @var \Emarsys\Emarsys\Helper\Data
      */
-    protected $_coreRegistry = null;
+    protected $emarsysHelper;
 
     /**
      * Edit constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
-     * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\App\Request\Http $request
+     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
      * @param array $data
      */
     public function __construct(
         \Magento\Backend\Block\Widget\Context $context,
-        \Magento\Framework\Registry $registry,
         \Magento\Framework\App\Request\Http $request,
+        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         array $data = []
     ) {
         $this->getRequest = $request;
-        $this->storeManager = $context->getStoreManager();
-        $this->_coreRegistry = $registry;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $data);
     }
 
@@ -44,6 +43,7 @@ class Edit extends Container
      * Subscriber edit block
      *
      * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _construct()
     {
@@ -51,6 +51,7 @@ class Edit extends Container
         $this->_blockGroup = 'Emarsys_Emarsys';
         $this->_controller = 'adminhtml_orderexport';
         $storeId = $this->getRequest->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         if ($storeId != '') {
             $url = $this->getUrl("emarsys_emarsys/orderexport/orderExport", ["storeId" => $storeId]);
         } else {

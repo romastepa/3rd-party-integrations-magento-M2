@@ -7,8 +7,8 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Productexport;
 
-use Magento\Backend\Block\Widget\Form\Container;
-use Emarsys\Emarsys\Controller\Adminhtml\Productexport;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Backend\Block\Widget\Context;
 
 /**
  * Class Form
@@ -19,14 +19,22 @@ class Form extends \Magento\Backend\Block\Widget\Form
     protected $_template = 'bulkexport/bulkexport.phtml';
 
     /**
-     * @param \Magento\Backend\Block\Widget\Context $context
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
+     * @param Context $context
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Widget\Context $context,
+        Context $context,
+        EmarsysHelper $emarsysHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
+        $this->emarsysHelper = $emarsysHelper;
         $this->setId('productExportForm');
     }
 
@@ -39,6 +47,6 @@ class Form extends \Magento\Backend\Block\Widget\Form
     public function getStoreId()
     {
         $storeId = $this->getRequest()->getParam('store');
-        return $storeId;
+        return $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);;
     }
 }

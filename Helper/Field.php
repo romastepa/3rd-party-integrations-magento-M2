@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Helper;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 use Magento\Store\Model\StoreManagerInterface as StoreManager;
 

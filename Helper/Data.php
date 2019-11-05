@@ -365,6 +365,11 @@ class Data extends AbstractHelper
     protected $_emarsysApiUrl = 'https://trunk-int.s.emarsys.com/api/v2/';
 
     /**
+     * @var array
+     */
+    protected $_websites = [];
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -1755,8 +1760,28 @@ class Data extends AbstractHelper
     public function getFirstStoreId()
     {
         $stores = $this->storeManager->getStores();
-        $store = current($stores);
-        $firstStoreId = $store->getId();
+
+        $firstStore = false;
+        foreach ($stores as $store) {
+             if ($store->getConfig(self::XPATH_EMARSYS_ENABLED)) {
+                 $firstStore = $store;
+                 break;
+             }
+        }
+
+        if ($firstStore) {
+            $store = $firstStore;
+        } else {
+            $store = current($stores);
+        }
+
+        $website = $store->getWebsite();
+        $defaultStore = @$website->getDefaultStore();
+        if ($defaultStore && $defaultStore->getId()) {
+            $firstStoreId = $defaultStore->getId();
+        } else {
+            $firstStoreId = $store->getId();
+        }
 
         return $firstStoreId;
     }
@@ -1764,9 +1789,25 @@ class Data extends AbstractHelper
     /**
      * @param $websiteId
      * @return int
+     * @throws LocalizedException
      */
     public function getFirstStoreIdOfWebsite($websiteId)
     {
+        $websites = $this->storeManager->getWebsites();
+
+        foreach ($websites as $wId => $website) {
+            if ($website->getConfig(self::XPATH_EMARSYS_ENABLED)) {
+                $apiUserName = $website->getConfig(self::XPATH_EMARSYS_API_USER);
+                if (!isset($this->_websites[$apiUserName])) {
+                    $this->_websites[$apiUserName] = $wId;
+                }
+
+                if ($wId == $websiteId) {
+                    $websiteId = $this->_websites[$apiUserName];
+                    break;
+                }
+            }
+        }
         /** @var WebsiteInterface $websiteId */
         $website = $this->storeManager->getWebsite($websiteId);
 
@@ -1780,6 +1821,22 @@ class Data extends AbstractHelper
         }
 
         return $firstStoreId;
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @throws LocalizedException
+     */
+    public function getFirstStoreIdOfWebsiteByStoreId($storeId)
+    {
+        if (!$storeId) {
+            return $this->getFirstStoreId();
+        }
+
+        $store = $this->storeManager->getStore($storeId);
+
+        return $this->getFirstStoreIdOfWebsite($store->getWebsiteId());
     }
 
     /**
@@ -2428,5 +2485,27 @@ class Data extends AbstractHelper
     {
         $this->websiteId = $websiteId;
         return $this;
+    }
+
+    /**
+     * @param $storeId
+     * @return bool|mixed
+     */
+    public function getEmarsysCustomerSchema($storeId)
+    {
+        try {
+            $store = $this->storeManager->getStore($storeId);
+            $this->api->setWebsiteId($store->getWebsiteId());
+            $response = $this->api->sendRequest('GET', 'field/translate/en');
+            return $response['body'];
+        } catch (\Exception $e) {
+            $this->addErrorLog(
+                'getEmarsysCustomerSchema',
+                htmlentities($e->getMessage()),
+                $storeId,
+                'getEmarsysCustomerSchema'
+            );
+        }
+        return false;
     }
 }

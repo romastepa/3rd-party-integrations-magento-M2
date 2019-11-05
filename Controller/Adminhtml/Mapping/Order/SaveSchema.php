@@ -14,7 +14,7 @@ use Emarsys\Emarsys\Helper\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 
 /**
  * Class SaveSchema
@@ -82,11 +82,11 @@ class SaveSchema extends Action
         try {
             $session = $this->session->getData();
             $resultRedirect = $this->resultRedirectFactory->create();
+            $storeId = false;
             if (isset($session['store'])) {
                 $storeId = $session['store'];
-            } else {
-                $storeId = $this->emarsysHelper->getFirstStoreId();
             }
+            $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $errorStatus = true;
 

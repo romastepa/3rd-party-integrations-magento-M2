@@ -38,6 +38,7 @@ class Edit extends Container
         $this->getRequest = $request;
         $this->storeManager = $context->getStoreManager();
         $this->_coreRegistry = $registry;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $data);
     }
 
@@ -52,6 +53,7 @@ class Edit extends Container
         $this->_blockGroup = 'Emarsys_Emarsys';
         $this->_controller = 'adminhtml_customerexport';
         $storeId = $this->getRequest->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         if ($storeId != '') {
             $url = $this->getUrl("emarsys_emarsys/customerexport/customerExport", ["storeId" => $storeId]);
         } else {

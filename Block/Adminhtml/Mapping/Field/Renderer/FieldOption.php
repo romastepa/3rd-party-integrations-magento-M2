@@ -89,11 +89,12 @@ class FieldOption extends AbstractRenderer
         $html = '<select name="emarsys_field_option" class="admin__control-select" style="width:350px;" onchange="changeValue(\'' . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>';
         $html .= '<option value=" ">Please Select</option>';
         $session = $this->session->getData();
+        $storeId = false;
         if (isset($session['store'])) {
             $storeId = $session['store'];
-        } else {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
         }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
+
         $emarsysContactFields = $this->resourceModelField->getEmarsysFieldOption($storeId);
         foreach ($emarsysContactFields as $field) {
             $chkSelected = $this->resourceModelField->checkSelectedOption($optionId, $field['option_id'], $field['emarsys_field_id'], $storeId);

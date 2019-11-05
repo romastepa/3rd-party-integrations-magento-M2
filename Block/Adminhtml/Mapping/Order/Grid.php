@@ -115,11 +115,13 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return $this
+     * @return \Magento\Backend\Block\Widget\Grid\Extended
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareCollection()
     {
-        $storeId = $this->getRequest()->getParam('store', 1);
+        $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $customCollection = $this->orderFactory->create()->getCollection()
             ->addFilter('store_id', $storeId)
             ->setOrder('magento_column_name', 'ASC');
@@ -157,13 +159,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Db_Statement_Exception
      */
     protected function _construct()
     {
         parent::_construct();
         $this->session->setData('gridData', '');
-        $storeId = $this->getRequest()->getParam('store', 1);
+        $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $this->session->setData('store', $storeId);
         $mappingExists = $this->resourceModelOrder->orderMappingExists($storeId);
         if (empty($mappingExists)) {

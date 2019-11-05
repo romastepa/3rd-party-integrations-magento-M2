@@ -30,25 +30,32 @@ class Form extends Generic
      */
     protected $request;
 
+    /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
 
     /**
      * Form constructor.
      * @param Context $context
      * @param Registry $registry
      * @param FormFactory $formFactory
-     * @param array $data
      * @param Http $request
+     * @param EmarsysHelper $emarsysHelper
+     * @param array $data
      */
     public function __construct(
         Context $context,
         Registry $registry,
         FormFactory $formFactory,
-        array $data = [],
-        Http $request
+        Http $request,
+        EmarsysHelper $emarsysHelper,
+        array $data = []
     ) {
         parent::__construct($context, $registry, $formFactory, $data);
         $this->storeManager = $context->getStoreManager();
         $this->request = $request;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
@@ -56,8 +63,8 @@ class Form extends Generic
      */
     protected function _prepareForm()
     {
-        $params = $this->request->getParams();
-        $storeId = $params['store'];
+        $storeId = $this->request->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $store = $this->storeManager->getStore($storeId);
 
         $form = $this->_formFactory->create();

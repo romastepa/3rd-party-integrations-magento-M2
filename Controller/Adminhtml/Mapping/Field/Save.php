@@ -96,16 +96,18 @@ class Save extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
         $session = $this->session->getData();
-        if (isset($session['storeId'])) {
-            $storeId = $session['storeId'];
-        } else {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
+        $storeId = false;
+        if (isset($session['store'])) {
+            $storeId = $session['store'];
         }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $resultRedirect = $this->resultRedirectFactory->create();
         try {

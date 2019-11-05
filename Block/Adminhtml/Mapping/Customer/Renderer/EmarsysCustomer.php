@@ -8,14 +8,10 @@
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer;
 
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Model\ResourceModel\Customer\Collection;
-use Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Sync;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
-use Magento\Backend\Helper\Data;
 use Magento\Backend\Model\Session;
 use Magento\Framework\DataObject;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class EmarsysCustomer
@@ -29,50 +25,29 @@ class EmarsysCustomer extends AbstractRenderer
     protected $session;
 
     /**
-     * @var Collection
-     */
-    protected $collectionFactory;
-
-    /**
-     * @var Data
-     */
-    protected $backendHelper;
-
-    /**
-     * @var Sync
-     */
-    protected $syncResourceModel;
-
-    /**
      * @var Customer
      */
     protected $resourceModelCustomer;
 
     /**
-     * @var StoreManagerInterface
+     * @var EmarsysHelper
      */
-    protected $_storeManager;
+    protected $emarsysHelper;
 
     /**
      * EmarsysCustomer constructor.
      * @param Session $session
-     * @param CollectionFactory $collectionFactory
-     * @param Data $backendHelper
      * @param Customer $resourceModelCustomer
-     * @param StoreManagerInterface $storeManager
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Session $session,
-        CollectionFactory $collectionFactory,
-        Data $backendHelper,
         Customer $resourceModelCustomer,
-        StoreManagerInterface $storeManager
+        EmarsysHelper $emarsysHelper
     ) {
         $this->session = $session;
-        $this->collectionFactory = $collectionFactory;
-        $this->backendHelper = $backendHelper;
         $this->resourceModelCustomer = $resourceModelCustomer;
-        $this->_storeManager = $storeManager;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
@@ -83,6 +58,7 @@ class EmarsysCustomer extends AbstractRenderer
     public function render(DataObject $row)
     {
         $storeId = $this->session->getStore();
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
 
         $emarsysContactFields = $this->resourceModelCustomer->getEmarsysContactFields($storeId);
         $chkSelected = $this->resourceModelCustomer->checkAttributeUsed($row->getId(), $storeId);

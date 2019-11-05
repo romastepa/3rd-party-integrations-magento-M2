@@ -86,12 +86,13 @@ class Grid extends Extended
 
     /**
      * @return Extended
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareCollection()
     {
         $eventMappingCollection = $this->emarsysMagentoEvents->create()->getCollection();
         $storeId = (int)$this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $eventMappingCollection->getSelect()->joinLeft(
             ['emarsys_event_mapping' => $this->resourceConnection->getTableName('emarsys_event_mapping')],
             'main_table.id = emarsys_event_mapping.magento_event_id',
@@ -105,7 +106,7 @@ class Grid extends Extended
     }
 
     /**
-     * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _construct()
     {
@@ -113,9 +114,8 @@ class Grid extends Extended
         $this->setId('mappingEventGrid');
         $this->setSaveParametersInSession(true);
         $storeId = $this->getRequest()->getParam('store');
-        if (!isset($storeId)) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
+
         $this->session->setData('store', $storeId);
         $this->session->setData('storeId', $storeId);
         $this->session->setMappingGridData([]);

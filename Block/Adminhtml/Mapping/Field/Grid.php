@@ -85,9 +85,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_construct();
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $this->session->setData('store', $storeId);
     }
 

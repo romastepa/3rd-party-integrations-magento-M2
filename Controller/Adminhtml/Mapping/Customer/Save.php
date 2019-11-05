@@ -63,7 +63,7 @@ class Save extends Action
     /**
      * @var EmarsysHelper
      */
-    protected $emsrsysHelper;
+    protected $emarsysHelper;
 
     /**
      * Save constructor.
@@ -71,7 +71,7 @@ class Save extends Action
      * @param Context $context
      * @param CustomerFactory $customerFactory
      * @param Customer $resourceModelCustomer
-     * @param EmarsysHelper $emsrsysHelper
+     * @param EmarsysHelper $emarsysHelper
      * @param EmarsysHelperLogs $logsHelper
      * @param Logs $emarsysLogs
      * @param DateTime $date
@@ -82,7 +82,7 @@ class Save extends Action
         Context $context,
         CustomerFactory $customerFactory,
         Customer $resourceModelCustomer,
-        EmarsysHelper $emsrsysHelper,
+        EmarsysHelper $emarsysHelper,
         EmarsysHelperLogs $logsHelper,
         Logs $emarsysLogs,
         DateTime $date,
@@ -92,7 +92,7 @@ class Save extends Action
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->emarsysLogs = $emarsysLogs;
-        $this->emsrsysHelper = $emsrsysHelper;
+        $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
         $this->resourceModelCustomer = $resourceModelCustomer;
         $this->customerFactory = $customerFactory;
@@ -107,11 +107,12 @@ class Save extends Action
     public function execute()
     {
         $session = $this->session->getData();
+        $storeId = false;
         if (isset($session['store'])) {
             $storeId = $session['store'];
-        } else {
-            $storeId = $this->emsrsysHelper->getFirstStoreId();
         }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
+
         try {
             $savedFields = [];
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();

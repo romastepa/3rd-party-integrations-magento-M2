@@ -85,6 +85,7 @@ class EmarsysEvent extends AbstractRenderer
     public function render(DataObject $row)
     {
         $storeId = $this->session->getData('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $url = $this->_urlInterface->getUrl('*/*/changeValue');
         $params = ['mapping_id' => $row->getId(), 'store' => $storeId];
         $placeHolderUrl = $this->backendHelper->getUrl("*/*/placeholders", $params);

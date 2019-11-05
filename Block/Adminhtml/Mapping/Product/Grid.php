@@ -14,11 +14,6 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Product;
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
-     * @var \Magento\Framework\Module\Manager
-     */
-    protected $moduleManager;
-
-    /**
      * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
      */
     protected $_collection;
@@ -34,11 +29,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $backendHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Product
-     */
-    protected $resourceModelProduct;
-
-    /**
      * @var \Magento\Framework\Data\Collection
      */
     protected $dataCollection;
@@ -49,14 +39,19 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $dataObjectFactory;
 
     /**
+     * @var \Emarsys\Emarsys\Helper\Data
+     */
+    protected $emarsysHelper;
+
+    /**
      * Grid constructor.
+     *
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Backend\Helper\Data $backendHelper
      * @param \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection $_collection
      * @param \Magento\Framework\Data\Collection $dataCollection
      * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct
-     * @param \Magento\Framework\Module\Manager $moduleManager
+     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -65,17 +60,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection $_collection,
         \Magento\Framework\Data\Collection $dataCollection,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Product $resourceModelProduct,
-        \Magento\Framework\Module\Manager $moduleManager,
+        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getBackendSession();
         $this->_collection = $_collection;
-        $this->moduleManager = $moduleManager;
         $this->backendHelper = $backendHelper;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
-        $this->resourceModelProduct = $resourceModelProduct;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -93,6 +86,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->setVarNameFilter('grid_record');
         $this->session->setData('gridData', '');
         $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $methods = $this->_collection->addVisibleFilter();
         $productMethods = [];
         foreach ($methods as $productCode => $productModel) {
@@ -122,8 +116,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return $this
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @return \Magento\Backend\Block\Widget\Grid\Extended
+     * @throws \Exception
      */
     protected function _prepareColumns()
     {

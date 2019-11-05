@@ -135,14 +135,12 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
 
     /**
      * @return int|mixed
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getStoreId()
     {
         $storeId = $this->getRequest()->getParam('store');
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
-        return $storeId;
+        return $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
     }
 
     /**

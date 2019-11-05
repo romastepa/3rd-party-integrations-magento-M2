@@ -7,51 +7,44 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Block\Widget\Grid\Extended;
+use Magento\Backend\Helper\Data;
+use Magento\Backend\Model\Session;
+use Magento\Framework\Data\Collection;
+use Magento\Framework\DataObjectFactory;
+
 /**
  * Class Cron
  * @package Emarsys\Emarsys\Block\Adminhtml
  */
-class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
+class Cron extends Extended
 {
-    /**
-     * @var \Magento\Framework\Module\Manager
-     */
-    protected $moduleManager;
-
     /**
      * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
      */
     protected $_collection;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
     /**
-     * @var \Magento\Framework\Data\Collection
+     * @var Collection
      */
     protected $dataCollection;
 
     /**
-     * @var \Magento\Framework\DataObjectFactory
+     * @var DataObjectFactory
      */
     protected $dataObjectFactory;
-
-    /**
-     * @var \Magento\Cron\Model\ConfigInterface
-     */
-    protected $cronConfig;
-
-    /**
-     * @var \Magento\Framework\Dataobject
-     */
-    protected $dataObject;
 
     /**
      * @var CronData
@@ -59,36 +52,35 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $cronData;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Cron constructor.
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Magento\Framework\Data\Collection $dataCollection
-     * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
+     * @param Context $context
+     * @param Data $backendHelper
+     * @param Collection $dataCollection
+     * @param DataObjectFactory $dataObjectFactory
      * @param CronData $cronData
-     * @param \Magento\Framework\Module\Manager $moduleManager
-     * @param \Magento\Cron\Model\ConfigInterface $cronConfig
-     * @param \Magento\Framework\Dataobject $dataObject
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Framework\Data\Collection $dataCollection,
-        \Magento\Framework\DataObjectFactory $dataObjectFactory,
-        \Emarsys\Emarsys\Block\Adminhtml\CronData $cronData,
-        \Magento\Framework\Module\Manager $moduleManager,
-        \Magento\Cron\Model\ConfigInterface $cronConfig,
-        \Magento\Framework\Dataobject $dataObject,
+        Context $context,
+        Data $backendHelper,
+        Collection $dataCollection,
+        DataObjectFactory $dataObjectFactory,
+        CronData $cronData,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getSession();
-        $this->moduleManager = $moduleManager;
         $this->backendHelper = $backendHelper;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
-        $this->cronConfig = $cronConfig;
-        $this->dataObject = $dataObject;
         $this->cronData  = $cronData;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -105,6 +97,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->setUseAjax(true);
         $this->setVarNameFilter('frontend_label');
         $storeId = $this->getRequest()->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $this->session->setData('storeId', $storeId);
     }
 

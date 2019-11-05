@@ -12,6 +12,7 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Helper\Data;
 use Magento\Framework\App\Request\Http;
 use Emarsys\Emarsys\Model\LogScheduleFactory;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Grid
@@ -35,12 +36,18 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $logScheduleFactory;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Grid constructor.
      * @param Context $context
      * @param Data $backendHelper
      * @param Timezone $timezone
      * @param Http $request
      * @param LogScheduleFactory $logScheduleFactory
+     * @param EmarsysHelper $emarsysHelper
      * @param array $data
      */
     public function __construct(
@@ -49,11 +56,13 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         Timezone $timezone,
         Http $request,
         LogScheduleFactory $logScheduleFactory,
+        EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->timezone = $timezone;
         $this->request = $request;
         $this->logScheduleFactory = $logScheduleFactory;
+        $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -78,6 +87,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $filterCode = $this->getRequest()->getParam('filtercode');
 
         $storeId = $this->request->getParam('store');
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $collection = $this->logScheduleFactory->create()
             ->getCollection()
             ->setOrder('created_at', 'desc');

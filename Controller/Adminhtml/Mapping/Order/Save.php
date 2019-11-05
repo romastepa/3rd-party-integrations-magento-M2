@@ -7,6 +7,7 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
 
+use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
@@ -37,8 +38,15 @@ class Save extends Action
     protected $orderResourceModel;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * Save constructor.
+     *
      * @param Context $context
+     * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
      * @param StoreManagerInterface $storeManager
      * @param DateTime $date
@@ -47,6 +55,7 @@ class Save extends Action
      */
     public function __construct(
         Context $context,
+        EmarsysHelper $emarsysHelper,
         PageFactory $resultPageFactory,
         StoreManagerInterface $storeManager,
         DateTime $date,
@@ -54,6 +63,7 @@ class Save extends Action
         Order $orderResourceModel
     ) {
         parent::__construct($context);
+        $this->emarsysHelper = $emarsysHelper;
         $this->resultPageFactory = $resultPageFactory;
         $this->logsHelper = $logsHelper;
         $this->date = $date;
@@ -66,15 +76,16 @@ class Save extends Action
      * Save action
      *
      * @return \Magento\Backend\Model\View\Result\Page
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
         $session = $this->session->getData();
+        $storeId = false;
         if (isset($session['store'])) {
             $storeId = $session['store'];
-        } else {
-            $storeId = 1;
         }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         try {
             $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
             $logsArray['job_code'] = 'Order Mapping';

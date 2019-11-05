@@ -21,8 +21,7 @@ use Emarsys\Emarsys\{
     Helper\Cron as EmarsysCronHelper,
     Helper\Country as EmarsysCountryHelper,
     Model\QueueFactory,
-    Model\ResourceModel\Customer as CustomerResourceModel,
-    Model\ResourceModel\CustomerFactory as CustomerResourceModelFactory,
+    Model\ResourceModel\CustomerFactory as CustomerResourceModel,
     Logger\Logger as EmarsysLogger
 };
 
@@ -53,11 +52,6 @@ class Contact
      * @var CustomerResourceModel
      */
     protected $customerResourceModel;
-
-    /**
-     * @var CustomerResourceModelFactory
-     */
-    protected $customerResourceModelFactory;
 
     /**
      * @var DateTime
@@ -141,7 +135,6 @@ class Contact
      * @param Customer $customer
      * @param CustomerFactory $customerFactory
      * @param CustomerResourceModel $customerResourceModel
-     * @param CustomerResourceModelFactory $customerResourceModelFactory
      * @param DateTime $date
      * @param Logs $logsHelper
      * @param EmarsysHelperData $emarsysHelper
@@ -159,7 +152,6 @@ class Contact
         Customer $customer,
         CustomerFactory $customerFactory,
         CustomerResourceModel $customerResourceModel,
-        CustomerResourceModelFactory $customerResourceModelFactory,
         DateTime $date,
         Logs $logsHelper,
         EmarsysHelperData $emarsysHelper,
@@ -176,7 +168,6 @@ class Contact
         $this->customer = $customer;
         $this->customerFactory = $customerFactory;
         $this->customerResourceModel = $customerResourceModel;
-        $this->customerResourceModelFactory = $customerResourceModelFactory;
         $this->date = $date;
         $this->logsHelper = $logsHelper;
         $this->emarsysHelper = $emarsysHelper;
@@ -544,7 +535,7 @@ class Contact
             } else {
                 $firstPageNumber = $currentPageNumber = isset($data['page']) ? $data['page'] : 1;
 
-                $customerCollection = $this->customerResourceModelFactory->create()->getCustomerCollection(
+                $customerCollection = $this->customerResourceModel->create()->getCustomerCollection(
                     $params,
                     $storeId,
                     $currentPageNumber
@@ -554,7 +545,7 @@ class Contact
                 //Prepare Customers Payload Array
                 while ($currentPageNumber <= $lastPageNumber) {
                     if ($currentPageNumber != $firstPageNumber) {
-                        $customerCollection = $this->customerResourceModelFactory->create()->getCustomerCollection(
+                        $customerCollection = $this->customerResourceModel->create()->getCustomerCollection(
                             $params,
                             $storeId,
                             $currentPageNumber
