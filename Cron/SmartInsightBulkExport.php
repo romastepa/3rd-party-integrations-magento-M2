@@ -9,6 +9,7 @@ namespace Emarsys\Emarsys\Cron;
 use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Model\Logs;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class SmartInsightBulkExport
@@ -36,15 +37,18 @@ class SmartInsightBulkExport
      *
      * @param EmarsysCronHelper $cronHelper
      * @param EmarsysOrderModel $order
+     * @param StoreManagerInterface $storeManager
      * @param Logs $emarsysLogs
      */
     public function __construct(
         EmarsysCronHelper $cronHelper,
         EmarsysOrderModel $order,
+        StoreManagerInterface $storeManager,
         Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
         $this->emarsysOrderModel =  $order;
+        $this->storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
     }
 
@@ -62,13 +66,26 @@ class SmartInsightBulkExport
                 $storeId = isset($data['storeId']) ? $data['storeId'] : 0;
                 $fromDate = isset($data['fromDate']) ? $data['fromDate'] : null;
                 $toDate = isset($data['toDate']) ? $data['toDate'] : null;
+                if (!$storeId) {
+                    throw new \Exception('store_id not specify');
+                }
 
-                $this->emarsysOrderModel->syncOrders(
-                    $storeId,
-                    \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL,
-                    $fromDate,
-                    $toDate
-                );
+                /** @var \Magento\Store\Model\Store $store */
+                $store = $this->storeManager->getStore($storeId);
+                if (!$store || !$store->getId()) {
+                    throw new \Exception('store_id not specify');
+                }
+
+                $stores = $store->getWebsite()->getStores();
+
+                foreach ($stores as $storeId => $store) {
+                    $this->emarsysOrderModel->syncOrders(
+                        $storeId,
+                        \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL,
+                        $fromDate,
+                        $toDate
+                    );
+                }
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(

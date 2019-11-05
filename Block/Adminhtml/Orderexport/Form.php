@@ -7,54 +7,28 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Orderexport;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Widget\Context;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Form
  *
  * @package Emarsys\Emarsys\Block\Adminhtml\Orderexport
  */
-class Form extends \Magento\Backend\Block\Widget\Form
+class Form extends \Emarsys\Emarsys\Block\Adminhtml\Export\Form
 {
-    protected $_template = 'bulkexport/bulkexport.phtml';
-
-    /**
-     * @var EmarsysHelper
-     */
-    protected $emarsysHelper;
-
     /**
      * Form constructor.
      * @param Context $context
-     * @param EmarsysHelper $emarsysHelper
      * @param array $data
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Context $context,
-        EmarsysHelper $emarsysHelper,
-        array $data = []
+        array $data = [],
+        EmarsysHelper $emarsysHelper
     ) {
-        parent::__construct($context, $data);
+        parent::__construct($context, $data, $emarsysHelper);
         $this->setId('orderExportForm');
-        $this->emarsysHelper = $emarsysHelper;
-    }
-
-    /**
-     * @return $this
-     */
-    protected function _beforeToHtml()
-    {
-        $this->isFromError = $this->getRequest()->getParam('error') === 'true';
-        return parent::_beforeToHtml();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getStoreId()
-    {
-        $storeId = $this->getRequest()->getParam('store');
-        return $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
     }
 }

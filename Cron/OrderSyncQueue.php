@@ -54,12 +54,7 @@ class OrderSyncQueue
         try {
             set_time_limit(0);
             $stores = $this->storeManager->getStores();
-            foreach ($stores as $store) {
-                $storeId = $store->getId();
-                if ($storeId == 0) {
-                    continue;
-                }
-
+            foreach ($stores as $storeId => $store) {
                 $this->emarsysOrderModel->syncOrders(
                     $storeId,
                     \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC
