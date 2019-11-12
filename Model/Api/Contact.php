@@ -129,6 +129,16 @@ class Contact
     protected $exportMode;
 
     /**
+     * @var int
+     */
+    protected $emailKey;
+
+    /**
+     * @var int
+     */
+    protected $customerIdKey;
+
+    /**
      * Contact constructor.
      *
      * @param Api $api
@@ -210,19 +220,22 @@ class Contact
         }
 
         $buildRequest = [];
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $customerResourceModel = $this->customerResourceModel->create();
+        $emailKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
         $buildRequest['key_id'] = $emailKey;
         if ($emailKey && $customer->getEmail()) {
             $buildRequest[$emailKey] = $customer->getEmail();
         }
 
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $customerIdKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
         if ($customerIdKey && $customer->getId()) {
             $buildRequest[$customerIdKey] = $customer->getId();
         }
 
         $errorMsg = 0;
-        $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
+        $getEmarsysMappedFields = $customerResourceModel->fetchMappedFields($storeId);
+
+        unset($customerResourceModel);
 
         if (empty($getEmarsysMappedFields)) {
             $errorMsg = 1;
@@ -366,7 +379,7 @@ class Contact
                 if (!$attribute['emarsys_contact_field']) {
                     continue;
                 }
-                $attributeCode = $this->customerResourceModel->getMagentoAttributeCode($attribute['magento_custom_attribute_id'], $storeId);
+                $attributeCode = $this->customerResourceModel->create()->getMagentoAttributeCode($attribute['magento_custom_attribute_id'], $storeId);
                 if (!empty($attributeCode) && $attributeCode['entity_type_id'] == 2) { // If the field type is Address
                     $isShippingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_shipping_') !== false) ? true : false;
                     $isBillingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_billing_') !== false) ? true : false;
@@ -414,7 +427,7 @@ class Contact
             $customerData[$customerIdKey] = $objCustomer->getId();
         }
 
-        $getEmarsysMappedFields = $this->customerResourceModel->fetchMappedFields($storeId);
+        $getEmarsysMappedFields = $this->customerResourceModel->create()->fetchMappedFields($storeId);
 
         foreach ($getEmarsysMappedFields as $mappedField) {
             if ($objCustomer->getData($mappedField['attribute_code']) && $mappedField['emarsys_contact_field'] != 0) {
@@ -477,6 +490,12 @@ class Contact
         $this->storeId = $storeId;
         $this->websiteId = $websiteId;
 
+        $customerResourceModel = $this->customerResourceModel->create();
+        $emailKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $customerIdKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $this->emailKey = $emailKey;
+        $this->customerIdKey = $customerIdKey;
+
         $params = [
             'website' => $websiteId,
             'storeId' => $storeId,
@@ -508,9 +527,6 @@ class Contact
         $logsArray['description'] = __('Customer Export Started for Store ID : %1', $storeId);
         $logsArray['message_type'] = 'Success';
         $this->logsHelper->manualLogs($logsArray);
-
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
 
         //check customer attributes are mapped
         $mappedAttributes = $this->getMappedCustomerAttribute($storeId);
@@ -606,7 +622,7 @@ class Contact
             return false;
         }
 
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $this->storeId);
+        $emailKey = $this->emailKey;
 
         $buildRequest = $this->prepareCustomerPayload($allCustomersPayload, $emailKey);
         if (count($buildRequest) > 0) {
@@ -807,7 +823,7 @@ class Contact
     protected function getMappedCustomerAttribute($storeId)
     {
         if (!isset($this->mappedCustomerAttribute[$storeId])) {
-            $this->mappedCustomerAttribute[$storeId] = $this->customerResourceModel->getMappedCustomerAttribute($storeId);
+            $this->mappedCustomerAttribute[$storeId] = $this->customerResourceModel->create()->getMappedCustomerAttribute($storeId);
         }
 
         return $this->mappedCustomerAttribute[$storeId];
