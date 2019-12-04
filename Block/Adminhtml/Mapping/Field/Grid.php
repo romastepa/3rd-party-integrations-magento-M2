@@ -79,11 +79,12 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _construct()
     {
         parent::_construct();
-        $this->session->setData('gridData', '');
+        $this->session->setData('gridData', []);
         $storeId = $this->getRequest()->getParam('store');
         $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $this->session->setData('store', $storeId);

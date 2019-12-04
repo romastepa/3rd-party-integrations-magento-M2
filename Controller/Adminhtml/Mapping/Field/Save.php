@@ -59,7 +59,7 @@ class Save extends Action
     protected $logsHelper;
 
     /**
-     * @var DateTime 
+     * @var DateTime
      */
     protected $date;
 
@@ -129,42 +129,23 @@ class Save extends Action
             }
             if (isset($gridSessionData) && $gridSessionData != '') {
                 foreach ($gridSessionData as $magentoOptionId => $emarsysFieldOption) {
-                    if ($emarsysFieldOption == '') {
+                    $modelColl = $model->getCollection()
+                        ->addFieldToFilter('magento_option_id', $magentoOptionId)
+                        ->addFieldToFilter('store_id', $storeId)
+                        ->getFirstItem();
+
+                    if (trim($emarsysFieldOption) == '') {
+                        $modelColl->delete();
                         continue;
                     }
 
-                    $emarsysField = explode('-', $emarsysFieldOption);
-                    $emarsysOptionId = $emarsysField[1];
-                    $emarsysFieldId = $emarsysField[0];
-                    $modelColl = $model->getCollection()
-                        ->addFieldToFilter('magento_option_id', $magentoOptionId)
-                        ->addFieldToFilter('store_id', $storeId);
-                    $modelCollData = $modelColl->getData();
+                    list($emarsysFieldId, $emarsysOptionId) = explode('-', $emarsysFieldOption);
 
-                    foreach ($modelCollData as $cols) {
-                        $colsValue = $cols['id'];
-                    }
-
-                    if (isset($colsValue)) {
-                        $model = $model->load($colsValue);
-                    }
-
-                    if (!empty($modelCollData)) {
-                        foreach ($modelColl as $model) {
-                            if (isset($emarsysOptionId)) {
-                                $model->setEmarsysOptionId($emarsysOptionId);
-                                $model->setEmarsysFieldId($emarsysFieldId);
-                            }
-                            $model->save();
-                        }
-                    } else {
-                        $model = $this->fieldFactory->create();
-                        $model->setEmarsysOptionId($emarsysOptionId);
-                        $model->setEmarsysFieldId($emarsysFieldId);
-                        $model->setMagentoOptionId($magentoOptionId);
-                        $model->setStoreId($storeId);
-                        $model->save();
-                    }
+                    $modelColl->setEmarsysOptionId(trim($emarsysOptionId));
+                    $modelColl->setEmarsysFieldId(trim($emarsysFieldId));
+                    $modelColl->setMagentoOptionId(trim($magentoOptionId));
+                    $modelColl->setStoreId($storeId);
+                    $modelColl->save();
                 }
             }
             $logId = $this->logsHelper->manualLogs($logsArray);
