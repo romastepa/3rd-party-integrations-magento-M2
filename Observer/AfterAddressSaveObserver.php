@@ -90,12 +90,20 @@ class AfterAddressSaveObserver implements ObserverInterface
     {
         try {
             /** @var $customerAddress Address */
-            $customerAddress = $observer->getCustomerAddress();
+            $customerAddress = $observer->getEvent()->getCustomerAddress();
+            if (!$customerAddress) {
+                return;
+            }
             $customer = $customerAddress->getCustomer();
             $customerObj = $this->customerFactory->create()->load($customer->getId());
 
             $customerId = $customerObj->getEntityId();
             $websiteId = $customerObj->getWebsiteId();
+
+            if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
+                return;
+            }
+
             $defaultBillingId = $customerObj->getDefaultBilling();
             $defaultShippingId = $customerObj->getDefaultShipping();
 
@@ -103,10 +111,6 @@ class AfterAddressSaveObserver implements ObserverInterface
                 if (!in_array($customerAddress->getId(), [$defaultBillingId, $defaultShippingId])) {
                     return;
                 }
-            }
-
-            if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
-                return;
             }
 
             $storeId = $customerObj->getStoreId();

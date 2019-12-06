@@ -2,17 +2,17 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
 
-namespace Emarsys\Emarsys\Model\ResourceModel\Customer;
+namespace Emarsys\Emarsys\Model\ResourceModel\Async;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
  * Class Collection
  *
- * @package Emarsys\Emarsys\Model\ResourceModel\Customer
+ * @package Emarsys\Emarsys\Model\ResourceModel\Async
  */
 class Collection extends AbstractCollection
 {
@@ -23,6 +23,6 @@ class Collection extends AbstractCollection
      */
     protected function _construct()
     {
-        $this->_init('Emarsys\Emarsys\Model\Customer', 'Emarsys\Emarsys\Model\ResourceModel\Customer');
+        $this->_init('Emarsys\Emarsys\Model\Async', 'Emarsys\Emarsys\Model\ResourceModel\Async');
     }
 }

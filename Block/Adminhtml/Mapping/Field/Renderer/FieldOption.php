@@ -86,7 +86,7 @@ class FieldOption extends AbstractRenderer
         $optionId = $row->getData('option_id');
         $url = $this->backendHelper->getUrl('*/*/saveRow');
         $columnAttr = 'emarsys_field_option';
-        $html = '<select name="emarsys_field_option" class="admin__control-select" style="width:350px;" onchange="changeValue(\'' . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>';
+        $html = '<select name="' . $columnAttr . '" class="admin__control-select" style="width:350px;" onchange="changeValue(\'' . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>';
         $html .= '<option value=" ">Please Select</option>';
         $session = $this->session->getData();
         $storeId = false;

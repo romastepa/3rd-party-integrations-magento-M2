@@ -78,6 +78,7 @@ class Save extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Exception
      */
     public function execute()
     {

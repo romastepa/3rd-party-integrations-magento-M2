@@ -9,6 +9,7 @@ namespace Emarsys\Emarsys\Model\Api;
 use Emarsys\Emarsys\{
     Model\ResourceModel\Customer as customerResourceModel,
     Model\QueueFactory,
+    Model\AsyncFactory,
     Helper\Data as EmarsysHelper,
     Helper\Logs,
     Helper\Cron as EmarsysCronHelper,
@@ -18,7 +19,6 @@ use Magento\{
     Framework\Stdlib\DateTime\DateTime,
     Framework\Message\ManagerInterface as MessageManagerInterface,
     Framework\App\ResourceConnection,
-    Framework\Registry as Registry,
     Store\Model\StoreManagerInterface,
     Newsletter\Model\SubscriberFactory,
     Newsletter\Helper\Data as NewsletterHelperData
@@ -68,9 +68,9 @@ class Subscriber
     protected $queueModel;
 
     /**
-     * @var Registry
+     * @var AsyncFactory
      */
-    protected $_registry;
+    protected $asyncModel;
 
     /**
      * @var EmarsysLogger
@@ -123,7 +123,7 @@ class Subscriber
      * @param MessageManagerInterface $messageManager
      * @param ResourceConnection $resourceConnection
      * @param QueueFactory $queueModel
-     * @param Registry $registry
+     * @param AsyncFactory $asyncModel
      * @param EmarsysLogger $emarsysLogger
      * @param SubscriberFactory $subscriberFactory
      * @param NewsletterHelperData $newsletterHelperData
@@ -138,7 +138,7 @@ class Subscriber
         MessageManagerInterface $messageManager,
         ResourceConnection $resourceConnection,
         QueueFactory $queueModel,
-        Registry $registry,
+        AsyncFactory $asyncModel,
         EmarsysLogger $emarsysLogger,
         SubscriberFactory $subscriberFactory,
         NewsletterHelperData $newsletterHelperData
@@ -152,7 +152,7 @@ class Subscriber
         $this->messageManager = $messageManager;
         $this->resourceConnection = $resourceConnection;
         $this->queueModel = $queueModel;
-        $this->_registry = $registry;
+        $this->asyncModel = $asyncModel;
         $this->emarsysLogger = $emarsysLogger;
         $this->subscriberFactory = $subscriberFactory;
         $this->newsletterHelperData = $newsletterHelperData;
@@ -180,8 +180,6 @@ class Subscriber
         $logsArray['store_id'] = $storeId;
         $logsArray['website_id'] = $websiteId;
         $logId = $this->logsHelper->manualLogs($logsArray);
-
-        $this->api->setWebsiteId($websiteId);
 
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
@@ -221,8 +219,27 @@ class Subscriber
             $logsArray['message_type'] = 'Success';
             $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
+            if ($this->emarsysHelper->isAsyncEnabled()) {
+
+                $this->asyncModel->create()
+                    ->setWebsiteId($websiteId)
+                    ->setEndpoint('contact/?create_if_not_exists=1')
+                    ->setEmail($objSubscriber->getSubscriberEmail())
+                    ->setCustomerId($objSubscriber->getCustomerId())
+                    ->setSubscriberId($objSubscriber->getId())
+                    ->setRequestBody(\Zend_Json::encode($buildRequest))
+                    ->save();
+
+                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['emarsys_info'] = 'Added to Async queue';
+                $logsArray['description'] = 'Added to Async queue';
+                $this->logsHelper->manualLogs($logsArray);
+                return true;
+            }
+
             $this->logsHelper->manualLogs($logsArray);
 
+            $this->api->setWebsiteId($websiteId);
             $optInResult = $this->api->createContactInEmarsys($buildRequest);
 
             $logsArray['id'] = $logId;

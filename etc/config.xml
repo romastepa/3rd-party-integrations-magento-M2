@@ -22,6 +22,11 @@
                 <usepassive_mode>1</usepassive_mode>
                 <apiurl>https://api.github.com/repos/emartech/3rd-party-integrations-magento-M2/releases/latest</apiurl>
             </ftp_settings>
+            <async>
+                <enable>0</enable>
+                <frequency>2</frequency>
+                <cron_expr>*/2 * * * *</cron_expr>
+            </async>
         </emarsys_settings>
         <contacts_synchronization>
             <emarsys_emarsys>

@@ -21,6 +21,7 @@ use Emarsys\Emarsys\{
     Helper\Cron as EmarsysCronHelper,
     Helper\Country as EmarsysCountryHelper,
     Model\QueueFactory,
+    Model\AsyncFactory,
     Model\ResourceModel\CustomerFactory as CustomerResourceModel,
     Logger\Logger as EmarsysLogger
 };
@@ -89,6 +90,11 @@ class Contact
     protected $queueModel;
 
     /**
+     * @var AsyncFactory
+     */
+    protected $asyncModel;
+
+    /**
      * @var MessageManagerInterface
      */
     protected $messageManager;
@@ -152,6 +158,7 @@ class Contact
      * @param EmarsysCountryHelper $emarsysCountryHelper
      * @param StoreManagerInterface $storeManager
      * @param QueueFactory $queueModel
+     * @param AsyncFactory $asyncModel
      * @param MessageManagerInterface $messageManager
      * @param EmarsysCronHelper $cronHelper
      * @param Subscriber $subscriberApi
@@ -169,6 +176,7 @@ class Contact
         EmarsysCountryHelper $emarsysCountryHelper,
         StoreManagerInterface $storeManager,
         QueueFactory $queueModel,
+        AsyncFactory $asyncModel,
         MessageManagerInterface $messageManager,
         EmarsysCronHelper $cronHelper,
         Subscriber $subscriberApi,
@@ -185,6 +193,7 @@ class Contact
         $this->emarsysCountryHelper = $emarsysCountryHelper;
         $this->storeManager = $storeManager;
         $this->queueModel = $queueModel;
+        $this->asyncModel = $asyncModel;
         $this->messageManager = $messageManager;
         $this->cronHelper = $cronHelper;
         $this->subscriberApi = $subscriberApi;
@@ -192,11 +201,11 @@ class Contact
     }
 
     /**
-     * @param \Magento\Customer\Model\Customer $customer
+     * @param Customer $customer
      * @param $websiteId
      * @param $storeId
      * @param int $cron
-     * @param null|\Magento\Customer\Model\Address $customerAddress
+     * @param null|Address $customerAddress
      * @return bool
      * @throws \Exception
      */
@@ -273,6 +282,23 @@ class Contact
             $logsArray['message_type'] = 'Success';
             $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
+            if ($this->emarsysHelper->isAsyncEnabled()) {
+
+                $this->asyncModel->create()
+                    ->setWebsiteId($websiteId)
+                    ->setEndpoint('contact/?create_if_not_exists=1')
+                    ->setEmail($customer->getEmail())
+                    ->setCustomerId($customer->getId())
+                    ->setSubscriberId(null)
+                    ->setRequestBody(\Zend_Json::encode($buildRequest))
+                    ->save();
+
+                $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
+                $logsArray['emarsys_info'] = 'Added to Async queue';
+                $logsArray['description'] = 'Added to Async queue';
+                $this->logsHelper->manualLogs($logsArray);
+                return true;
+            }
             $this->logsHelper->manualLogs($logsArray);
 
             $result = $this->api->createContactInEmarsys($buildRequest);
@@ -343,7 +369,7 @@ class Contact
      *
      * @param $customer
      * @param int $storeId
-     * @param null|\Magento\Customer\Model\Address $customerAddress
+     * @param null|Address $customerAddress
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Zend_Json_Exception

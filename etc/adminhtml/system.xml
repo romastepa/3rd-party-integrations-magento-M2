@@ -30,7 +30,7 @@
                 <field id="emarsys_custom_url" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Custom API URL</label>
                     <depends>
-                        <field id="emarsys_api_endpoint">custom</field>
+                        <field id="emarsys_settings/emarsys_setting/emarsys_api_endpoint">custom</field>
                     </depends>
                 </field>
                 <field id="emarsys_api_username" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -44,6 +44,23 @@
                 <field id="testapiconnection" translate="button_label" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="0">
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\TestConnectionButton</frontend_model>
+                </field>
+            </group>
+            <group id="async" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Asynchronous Export</label>
+                <comment>Export customers, subscribers and send emails asynchronous</comment>
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Run asynchronously</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="frequency" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Frequency</label>
+                    <comment>in minutes (each [x] minutes)</comment>
+                    <source_model>Emarsys\Emarsys\Model\Config\Source\AsyncFrequency</source_model>
+                    <backend_model>Emarsys\Emarsys\Model\Config\Backend\AsyncFrequency</backend_model>
+                    <depends>
+                        <field id="emarsys_settings/async/enable">1</field>
+                    </depends>
                 </field>
             </group>
             <group id="webdav_setting" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -210,7 +227,7 @@
                 <field id="smartinsightfrequency" translate="label comment" sortOrder="24" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Frequency</label>
                     <!-- source model which we created for drop down opt$exportBlock->getCsvFile()ions -->
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\smartinsightfrequency</source_model>
+                    <source_model>Emarsys\Emarsys\Model\Config\Source\Smartinsightfrequency</source_model>
                     <backend_model>Emarsys\Emarsys\Model\Config\SmartInsightCronConfig</backend_model>
                     <comment>For hours only minutes will be applicable.</comment>
                 </field>

@@ -22,6 +22,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
     const EMARSYS_LOG_DETAILS = 'emarsys_log_details';
     const EMARSYS_LOG_CRON_SCHEDULE = 'emarsys_log_cron_schedule';
 
+    const EMARSYS_ASYNC_EVENTS = 'emarsys_async_events';
+
     /**
      * {@inheritdoc}
      */
@@ -33,10 +35,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $this->removeDataFromCoreConfigData($setup);
         }
 
-        if (version_compare($context->getVersion(), "1.0.7", "<")) {
+        if (version_compare($context->getVersion(), '1.0.7', '<')) {
             $tableName = $setup->getTable('emarsys_product_export');
             $connection = $setup->getConnection();
-            if ($connection->isTableExists($tableName) == false) {
+            if (!$connection->isTableExists($tableName)) {
                 $table = $connection
                     ->newTable($tableName)
                     ->addColumn(
@@ -57,7 +59,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
-        if (version_compare($context->getVersion(), "1.0.13", "<")) {
+        if (version_compare($context->getVersion(), '1.0.13', '<')) {
             $connection = $setup->getConnection();
             $cronDetailsTable = $setup->getTable(self::EMARSYS_CRON_SUPPORT_TABLE);
             if ($connection->isTableExists($cronDetailsTable)) {
@@ -116,6 +118,73 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 );
             }
         }
+
+        if (version_compare($context->getVersion(), '1.0.16', '<')) {
+            $connection = $setup->getConnection();
+            $emarsysAsyncEventsTable = $setup->getTable(self::EMARSYS_ASYNC_EVENTS);
+
+            if (!$connection->isTableExists($emarsysAsyncEventsTable)) {
+                $table = $connection
+                    ->newTable($emarsysAsyncEventsTable)
+                    ->addColumn(
+                        'entity_id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                        'Entity Id'
+                    )->addColumn(
+                        'website_id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['default' => 0, 'nullable' => false],
+                        'Website Id'
+                    )->addColumn(
+                        'endpoint',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                        255,
+                        ['default' => null, 'nullable' => false],
+                        'Endpoint'
+                    )->addColumn(
+                        'email',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                        255,
+                        ['default' => null, 'nullable' => false],
+                        'Email'
+                    )->addColumn(
+                        'customer_id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['default' => null, 'nullable' => true],
+                        'Customer Id'
+                    )->addColumn(
+                        'subscriber_id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['default' => null, 'nullable' => true],
+                        'Subscriber Id'
+                    )->addColumn(
+                        'request_body',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
+                        '64k',
+                        [],
+                        'Request Body'
+                    )->addColumn(
+                        'updated_at',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+                        null,
+                        [],
+                        'Update Time'
+                    )->setComment('Emarsys Async Events');
+                $setup->getConnection()->createTable($table);
+
+                $connection->addIndex(
+                    $emarsysAsyncEventsTable,
+                    $setup->getIdxName($emarsysAsyncEventsTable, 'website_id'),
+                    ['website_id']
+                );
+            }
+        }
+
         $setup->endSetup();
     }
 

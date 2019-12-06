@@ -10,4 +10,7 @@
     <event name="customer_address_save_commit_after">
         <observer name="emarsys_customer_address_save_after" instance="Emarsys\Emarsys\Observer\AfterAddressSaveObserver" />
     </event>
+    <event name="sales_quote_address_save_before">
+        <observer name="emarsys_sales_quote_address_save_before" instance="Emarsys\Emarsys\Observer\AfterAddressSaveObserver" />
+    </event>
 </config>

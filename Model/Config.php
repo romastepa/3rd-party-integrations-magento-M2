@@ -47,9 +47,11 @@ class Config extends \Magento\Framework\DataObject
     }
 
     /**
+     * Function for getting Config value of current store
+     *
      * @param $path
      * @return mixed
-     * Function for getting Config value of current store
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrentStoreConfigValue($path)
     {
@@ -59,8 +61,10 @@ class Config extends \Magento\Framework\DataObject
 
     /**
      * Function for setting Config value of current store
-     * @param string $path,
-     * @param string $value,
+     *
+     * @param string $path ,
+     * @param string $value ,
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function setCurrentStoreConfigValue($path, $value)
     {

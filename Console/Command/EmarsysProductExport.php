@@ -7,9 +7,14 @@
 
 namespace Emarsys\Emarsys\Console\Command;
 
+use Emarsys\Emarsys\Helper\Data;
+use Exception;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Emarsys\Emarsys\Model\Product;
 
 /**
  * Command for deployment of Sample Data
@@ -17,18 +22,27 @@ use Symfony\Component\Console\Output\OutputInterface;
 class EmarsysProductExport extends Command
 {
     /**
-     * @var \Magento\Framework\App\State
+     * @var State
      */
     private $state;
 
     /**
+     * @var Product
+     */
+    private $product;
+
+    /**
      * EmarsysProductExport constructor.
-     * @param \Magento\Framework\App\State $state
+     *
+     * @param State $state
+     * @param Product $product
      */
     public function __construct(
-        \Magento\Framework\App\State $state
+        State $state,
+        Product $product
     ) {
         $this->state = $state;
+        $this->product = $product;
         parent::__construct();
     }
 
@@ -47,15 +61,13 @@ class EmarsysProductExport extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
+        $this->state->setAreaCode(Area::AREA_GLOBAL);
         $output->writeln('');
         $output->writeln('<info>Starting product bulk export.</info>');
 
         try {
-            \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Product::class)->consolidatedCatalogExport(
-                \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL
-            );
-        } catch (\Exception $e) {
+            $this->product->consolidatedCatalogExport(Data::ENTITY_EXPORT_MODE_MANUAL);
+        } catch (Exception $e) {
             $output->writeln($e->getMessage());
         }
 

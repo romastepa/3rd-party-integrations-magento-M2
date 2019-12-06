@@ -75,6 +75,8 @@ class Data extends AbstractHelper
 
     const XPATH_EMARSYS_API_PASS = 'emarsys_settings/emarsys_setting/emarsys_api_password';
 
+    const XPATH_EMARSYS_ASYNC_ENABLE = 'emarsys_settings/async/enable';
+
     //XML Path of Webdav Credentials
     const XPATH_WEBDAV_URL = 'emarsys_settings/webdav_setting/webdav_url';
 
@@ -505,6 +507,16 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @param null|int $storeId
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function isAsyncEnabled($storeId = null)
+    {
+        return (bool)$this->storeManager->getStore($storeId)->getConfig(self::XPATH_EMARSYS_ASYNC_ENABLE);
+    }
+
+    /**
      * Smart Insight API url
      *
      * @return mixed
@@ -832,13 +844,11 @@ class Data extends AbstractHelper
      */
     public function getRequirementsInfo($storeId = null)
     {
-        if ($storeId) {
-            $storeID = $storeId;
-        } else {
-            $storeID = $this->storeManager->getStore()->getId();
+        if (!$storeId) {
+            $storeId = $this->storeManager->getStore()->getId();
         }
-        $websiteId = $this->storeManager->getStore($storeID)->getWebsiteId();
-        $aggregatePortStatus = $this->openPortStatus($storeID);
+        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
+        $aggregatePortStatus = $this->openPortStatus($storeId);
         $smartInsightStatus = $this->getCheckSmartInsight($websiteId);
         $smartInsight = $smartInsightStatus ? 'Enable' : 'Disable';
         $emarsysStatus = $this->getEmarsysConnectionSetting($websiteId);
@@ -1085,12 +1095,13 @@ class Data extends AbstractHelper
     /**
      * @param $mappingId
      * @param $storeId
-     * @return string
+     * @return array
      * @throws \Exception
      */
     public function insertFirstTimeMappingPlaceholders($mappingId, $storeId)
     {
         $store = $this->storeManager->getStore($storeId);
+        $return = [];
         $magentoPlaceholderArray = [];
         $value = '';
         $emarsysEventMappingColl = $this->emarsysEventMapping->create()->getCollection()
@@ -1102,11 +1113,11 @@ class Data extends AbstractHelper
             $magentoEventColl = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('id', $emarsysEventMappingItem->getMagentoEventId());
             $magentoEventItem = $magentoEventColl->getFirstItem();
-            $value = $store->getconfig($magentoEventItem->getConfigPath());
+            $value = $store->getConfig($magentoEventItem->getConfigPath());
         }
 
         if (empty($value)) {
-            return '';
+            return false;
         }
         if (is_numeric($value)) {
             $emailTemplateModelColl = $this->templateFactory->create()->getCollection()
@@ -1171,10 +1182,11 @@ class Data extends AbstractHelper
                 $placeholderModel->setStoreId($storeId);
                 $magentoPlaceholderArray[] = $variable;
                 $placeholderModel->save();
+                $return[$placeholderModel->getEmarsysPlaceholderName()] = $variable;
             }
         }
 
-        return 'success';
+        return $return;
     }
 
     /**
@@ -1183,7 +1195,7 @@ class Data extends AbstractHelper
      * @param $mappingId
      * @param $storeId
      * @throws \Magento\Framework\Exception\MailException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function refreshPlaceholders($mappingId, $storeId)
     {
@@ -1289,7 +1301,7 @@ class Data extends AbstractHelper
      * @param string $start
      * @param string $end
      * @return bool|string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function substringBetween($haystack, $start = "{{", $end = "}}")
     {
@@ -1316,7 +1328,7 @@ class Data extends AbstractHelper
      * @param string $start
      * @param string $end
      * @return bool|string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function substringBetweenTransVar($haystack, $start = "=$", $end = "}}")
     {
@@ -1341,7 +1353,7 @@ class Data extends AbstractHelper
     /**
      * @param string $variable
      * @return string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getPlaceholderName($variable = '')
     {
@@ -1395,6 +1407,7 @@ class Data extends AbstractHelper
 
     /**
      * @return mixed
+     * @throws NoSuchEntityException
      */
     public function emarsysDefaultPlaceholders()
     {
@@ -1444,9 +1457,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $mapping_id
-     * @param $store_id
-     * @return string
+     * @param $storeId
+     * @return array
      */
     public function insertFirstTimeHeaderMappingPlaceholders($storeId)
     {
@@ -1472,9 +1484,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $mapping_id
-     * @param $store_id
-     * @return string
+     * @param $storeId
+     * @return array
      */
     public function insertFirstTimeFooterMappingPlaceholders($storeId)
     {
@@ -1512,13 +1523,9 @@ class Data extends AbstractHelper
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('config_path', 'design/email/header_template');
-            $emarsysEventMappingColl = $this->emarsysEventMapping->create()
-                ->getCollection()
-                ->addFieldToFilter('magento_event_id', $magentoEventsCollection->getFirstItem()->getId())
-                ->addFieldToFilter('store_id', $storeId);
             $emarsysEventPlaceholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
                 ->getCollection()
-                ->addFieldToFilter('event_mapping_id', $emarsysEventMappingColl->getFirstItem()->getId());
+                ->addFieldToFilter('event_mapping_id', $magentoEventsCollection->getFirstItem()->getId());
 
             foreach ($emarsysEventPlaceholderMappingColls as $emarsysEventPlaceholderMappingColl) {
                 $headerPlaceholderArray[$emarsysEventPlaceholderMappingColl->getEmarsysPlaceholderName()] = $emarsysEventPlaceholderMappingColl->getMagentoPlaceholderName();
@@ -1546,13 +1553,9 @@ class Data extends AbstractHelper
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('config_path', 'design/email/footer_template');
-            $emarsysEventMappingColl = $this->emarsysEventMapping->create()
-                ->getCollection()
-                ->addFieldToFilter('magento_event_id', $magentoEventsCollection->getFirstItem()->getId())
-                ->addFieldToFilter('store_id', $storeId);
             $emarsysEventPlaceholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
                 ->getCollection()
-                ->addFieldToFilter('event_mapping_id', $emarsysEventMappingColl->getFirstItem()->getId());
+                ->addFieldToFilter('event_mapping_id', $magentoEventsCollection->getFirstItem()->getId());
 
             foreach ($emarsysEventPlaceholderMappingColls as $emarsysEventPlaceholderMappingColl) {
                 $footerPlaceholderArray[$emarsysEventPlaceholderMappingColl->getEmarsysPlaceholderName()] = $emarsysEventPlaceholderMappingColl->getMagentoPlaceholderName();
@@ -1624,9 +1627,9 @@ class Data extends AbstractHelper
      * @param $templateId
      * @param $storeId
      * @return mixed
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
-    public function getMagentoEventId($templateId, $storeId)
+    public function getMagentoEventId($templateId, $storeId = null)
     {
         $store = $this->storeManager->getStore($storeId);
         $magentoEventsCollection = $this->magentoEventsCollection->create();
@@ -1643,7 +1646,7 @@ class Data extends AbstractHelper
      * @param $magentoEventId
      * @param null $storeId
      * @return mixed
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getEmarsysEventMappingId($magentoEventId, $storeId = null)
     {
@@ -1663,7 +1666,8 @@ class Data extends AbstractHelper
      * @param $magentoEventId
      * @param null $storeId
      * @return mixed
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function getEmarsysEventApiId($magentoEventId, $storeId = null)
     {
@@ -1671,30 +1675,42 @@ class Data extends AbstractHelper
             $storeId = $this->storeManager->getStore()->getId();
         }
 
-        $emarsysEventsMappingCollection = $this->emarsysEventMapping->create()
-            ->getCollection()
-            ->addFieldToFilter('store_id', $storeId)
-            ->addFieldToFilter('magento_event_id', $magentoEventId);
+        $emarsysEventId = $this->getEmarsysEventId($magentoEventId, $storeId);
+
+        if (!$emarsysEventId) {
+            $nStoreId = $this->getFirstStoreIdOfWebsiteByStoreId($storeId);
+            if ($nStoreId != $storeId) {
+                $emarsysEventId = $this->getEmarsysEventId($magentoEventId, $storeId);
+            }
+        }
 
         return $this->emarsysEventsModelFactory->create()
             ->getCollection()
-            ->addFieldToFilter('id', $emarsysEventsMappingCollection->getFirstItem()->getEmarsysEventId())
+            ->addFieldToFilter('id', $emarsysEventId)
             ->getFirstItem()
             ->getEventId();
     }
 
     /**
-     * @return \Magento\Email\Model\Template
+     * @param $magentoEventId
+     * @param null $storeId
+     * @return mixed
      */
-    protected function getTemplateInstance()
+    public function getEmarsysEventId($magentoEventId, $storeId)
     {
-        return $this->templateFactory->create();
+        return $this->emarsysEventMapping->create()
+            ->getCollection()
+            ->addFieldToFilter('store_id', $storeId)
+            ->addFieldToFilter('magento_event_id', $magentoEventId)
+            ->getFirstItem()
+            ->getEmarsysEventId();
     }
 
     /**
      * @param $emarsysEventMappingId
      * @param $storeId
      * @return array
+     * @throws NoSuchEntityException
      */
     public function getPlaceHolders($emarsysEventMappingId, $storeId)
     {
@@ -1844,7 +1860,7 @@ class Data extends AbstractHelper
      * @param $storeScope
      * @param null $storeId
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getMagentoEventIdAndPath($templateId, $storeScope, $storeId = null)
     {
@@ -2177,6 +2193,7 @@ class Data extends AbstractHelper
      * @param $contents
      * @param bool $isTimeBased
      * @return bool
+     * @throws \Exception
      */
     protected function _processSubscriptionUpdates($contents, $isTimeBased = false)
     {
@@ -2188,8 +2205,8 @@ class Data extends AbstractHelper
             }
 
             if ((!isset($changedOptinArray) || count($changedOptinArray) <= 1)
-                || (count($changedOptinArray) == 2 && (!isset($changedOptinArray[1][0]) || empty($changedOptinArray[1][0]))
-            )) {
+                || (count($changedOptinArray) == 2 && (!isset($changedOptinArray[1][0]) || empty($changedOptinArray[1][0])))
+            ) {
                 $logsArray['messages'] = 'No opt-in updates';
                 $this->logsHelper->manualLogs($logsArray);
                 return false;

@@ -7,10 +7,17 @@
 
 namespace Emarsys\Emarsys\Console\Command;
 
+use Emarsys\Emarsys\Helper\Data;
+use Exception;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
+use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Emarsys\Emarsys\Model\Order;
 
 /**
  * Command for deployment of Sample Data
@@ -18,26 +25,35 @@ use Symfony\Component\Console\Output\OutputInterface;
 class EmarsysOrderExport extends Command
 {
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $storeManager;
 
     /**
-     * @var \Magento\Framework\App\State
+     * @var State
      */
     private $state;
 
     /**
+     * @var Order
+     */
+    private $order;
+
+    /**
      * EmarsysOrderExport constructor.
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\App\State $state
+     *
+     * @param StoreManagerInterface $storeManager
+     * @param State $state
+     * @param Order $order
      */
     public function __construct(
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\App\State $state
+        StoreManagerInterface $storeManager,
+        State $state,
+        Order $order
     ) {
         $this->storeManager = $storeManager;
         $this->state = $state;
+        $this->order = $order;
         parent::__construct();
     }
 
@@ -79,25 +95,24 @@ class EmarsysOrderExport extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
+        $this->state->setAreaCode(Area::AREA_GLOBAL);
         $output->writeln('');
         $output->writeln('<info>Order customer bulk export.</info>');
 
-        /** @var \Magento\Store\Model\Store $store */
+        /** @var Store $store */
         foreach ($this->storeManager->getStores() as $storeId => $store) {
-            if ($store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED) && $store->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_ENABLED)) {
-
+            if ($store->getConfig(Data::XPATH_EMARSYS_ENABLED) && $store->getConfig(Data::XPATH_SMARTINSIGHT_ENABLED)) {
                 $fromDate = $input->getOption('from');
                 $toDate = $input->getOption('to');
                 $queue = $input->getOption('queue');
                 try {
-                    \Magento\Framework\App\ObjectManager::getInstance()->get(\Emarsys\Emarsys\Model\Order::class)->syncOrders(
+                    $this->order->syncOrders(
                         $storeId,
-                        ($queue ? \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC : \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL),
+                        ($queue ? Data::ENTITY_EXPORT_MODE_AUTOMATIC : Data::ENTITY_EXPORT_MODE_MANUAL),
                         $fromDate,
                         $toDate
                     );
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $output->writeln($e->getMessage());
                 }
             }

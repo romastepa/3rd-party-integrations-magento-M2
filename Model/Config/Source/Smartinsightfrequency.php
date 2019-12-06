@@ -7,10 +7,10 @@
 namespace Emarsys\Emarsys\Model\Config\Source;
 
 /**
- * Class Emarsystosyncin
+ * Class Smartinsightfrequency
  * @package Emarsys\Emarsys\Model\Config\Source
  */
-class Emarsystosyncin implements \Magento\Framework\Option\ArrayInterface
+class Smartinsightfrequency implements \Magento\Framework\Option\ArrayInterface
 {
     /**
      * @return array
@@ -18,8 +18,9 @@ class Emarsystosyncin implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray()
     {
         return [
-            ['value' => '00:20', 'label' => __('00:20')],
-            ['value' => '10:20', 'label' => __('10:20')]
+            ['value' => 'Hourly', 'label' => __('Hourly')],
+            ['value' => 'Daily', 'label' => __('Daily')]
+
         ];
     }
 }

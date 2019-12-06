@@ -109,7 +109,7 @@ class CronConfig extends \Magento\Framework\App\Config\Value
                 $this->getScopeId()
             )->save();
         } catch (\Exception $e) {
-            throw new \Exception(__('We can\'t save the cron expression.'));
+            throw new \Exception(__('Can\'t save the cron expression.'));
         }
 
         return parent::afterSave();
