@@ -762,7 +762,7 @@ class Product extends AbstractModel
      */
     protected function _getProductData($magentoAttributeNames, $productObject, $categoryNames, $store, $collection, $logsArray)
     {
-        $attributeData = [];
+        $attributeData = $parentProducts = [];
         foreach ($magentoAttributeNames as $attributeCode) {
             try {
                 $attributeOption = $productObject->getData($attributeCode);

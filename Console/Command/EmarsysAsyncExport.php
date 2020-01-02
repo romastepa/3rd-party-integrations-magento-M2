@@ -94,7 +94,7 @@ class EmarsysAsyncExport extends Command
                 if (isset($response['status']) && ($response['status'] = 200)) {
                     $item->delete();
                 }
-                $output->writeln('status => ' . $response['status'] . '| replyCode => ' . $response['body']['replyCode'] . '| replyText => ' . $response['body']['replyText']);
+                $output->writeln('status => ' . $response['status'] . ' |~| replyCode => ' . $response['body']['replyCode'] . ' |~| replyText => ' . $response['body']['replyText']);
             }
         } catch (Exception $e) {
             $output->writeln($e->getMessage());
