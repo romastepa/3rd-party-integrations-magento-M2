@@ -269,14 +269,6 @@ class Cron extends AbstractHelper
         $jobDetails = [];
 
         switch ($exportMode) {
-            case self::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV:
-                $jobDetails['job_code'] = 'customer';
-                $jobDetails['job_title'] = 'Customer Bulk Export';
-                break;
-            case self::CRON_JOB_CUSTOMER_BULK_EXPORT_API:
-                $jobDetails['job_code'] = 'customer';
-                $jobDetails['job_title'] = 'Customer Bulk Export';
-                break;
             case self::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV:
                 $jobDetails['job_code'] = 'subscriber';
                 $jobDetails['job_title'] = 'Subscriber Bulk Export';

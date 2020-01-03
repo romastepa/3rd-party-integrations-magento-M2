@@ -163,6 +163,7 @@ class Subscriber
      * @param $storeId
      * @return bool
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function syncSubscriber(
         $subscribeId,
@@ -170,6 +171,7 @@ class Subscriber
     ) {
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
+        $sId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
 
         $logsArray['job_code'] = 'subscriber';
         $logsArray['status'] = 'started';
@@ -184,24 +186,24 @@ class Subscriber
         $objSubscriber = $this->subscriberFactory->create()->load($subscribeId);
 
         $buildRequest = [];
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $sId);
         $buildRequest['key_id'] = $emailKey;
         if ($emailKey && $objSubscriber->getSubscriberEmail()) {
             $buildRequest[$emailKey] = $objSubscriber->getSubscriberEmail();
         }
 
-        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
+        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $sId);
         if ($subscriberIdKey && $objSubscriber->getId()) {
             $buildRequest[$subscriberIdKey] = $objSubscriber->getId();
         }
 
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $sId);
         if ($customerIdKey && $objSubscriber->getCustomerId()) {
             $buildRequest[$customerIdKey] = $objSubscriber->getCustomerId();
         }
 
         // Query to get opt-in Id in emarsys from magento table
-        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
+        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $sId);
 
         //return single / double opt-in
         $optInType = $store->getConfig(EmarsysHelper::XPATH_OPTIN_EVERYPAGE_STRATEGY);
@@ -296,6 +298,7 @@ class Subscriber
         $storeId = $params['storeId'];
         $store = $this->storeManager->getStore($storeId);
         $websiteId = $store->getWebsiteId();
+        $sId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
 
         if (!$this->emarsysHelper->isContactsSynchronizationEnable($websiteId)) {
             return;
@@ -330,10 +333,10 @@ class Subscriber
         $this->logsHelper->manualLogs($logsArray);
 
         //prepare subscribers data
-        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
-        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
-        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
-        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $storeId);
+        $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $sId);
+        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $sId);
+        $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $sId);
+        $optInEmarsysId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $sId);
 
         $currentPageNumber = 1;
 
@@ -360,7 +363,7 @@ class Subscriber
                     $currentPageNumber
                 );
             }
-            $success = $this->processBatch($subscriberData, $logsArray);
+            $success = $this->processBatch($subscriberData, $subscriberIdKey, $logsArray);
 
             $logsArray['emarsys_info'] = __('Processing data for store %1', $storeId);
             $logsArray['description'] = __('%1 of %2', $currentPageNumber, $lastPageNumber);
@@ -385,7 +388,7 @@ class Subscriber
         return !$success;
     }
 
-    public function processBatch($subscriberData, $logsArray)
+    public function processBatch($subscriberData, $subscriberIdKey, $logsArray)
     {
 
         if (empty($subscriberData)) {
@@ -401,7 +404,6 @@ class Subscriber
             return false;
         }
 
-        $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $this->storeId);
         $buildRequest = $this->prepareSubscribersPayload($subscriberData, $subscriberIdKey);
 
         if (count($buildRequest) > 0) {
@@ -470,8 +472,6 @@ class Subscriber
         $optInEmarsysId,
         $currentPageNumber = 0
     ) {
-        $websiteStoreIds = [];
-        $websiteStoreIds[] = $storeId;
         $subscriberData = [];
 
         if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {

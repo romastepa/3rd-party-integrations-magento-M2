@@ -226,7 +226,7 @@ class Product extends AbstractDb
     }
 
     /**
-     * @param type $storeId
+     * @param int $storeId
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -261,8 +261,8 @@ class Product extends AbstractDb
 
     /**
      *
-     * @param type $storeId
-     * @param type $fieldId
+     * @param int $storeId
+     * @param int $fieldId
      * @return array
      */
     public function getEmarsysFieldName($storeId, $fieldId)

@@ -40,10 +40,14 @@ class SaveRow extends Action
     {
         $requestParams = $this->getRequest()->getParams();
         $session = $this->session->getData();
+        $gridSession = [];
         if (isset($session['gridData'])) {
             $gridSession = $session['gridData'];
+            if (!is_array($gridSession)) {
+                $gridSession = [];
+            }
         }
-        $optionId = $requestParams['optionId'];
+        $optionId = (int)$requestParams['optionId'];
         $entityOptionId = $requestParams['emarsysOptionId'];
         $gridSession[$optionId] = $entityOptionId;
         $this->session->setData('gridData', $gridSession);

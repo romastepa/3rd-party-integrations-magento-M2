@@ -808,7 +808,7 @@ class Order extends AbstractModel
     public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection, $sameFile = false)
     {
         $store = $this->storeManager->getStore($storeId);
-        $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields($storeId);
+        $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId));
 
         $guestOrderExportStatus = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
         $taxIncluded = $this->emarsysHelper->isIncludeTax($storeId);
@@ -818,7 +818,7 @@ class Order extends AbstractModel
             $this->handle = fopen($filePath, 'w');
 
             //Get Header for sales csv
-            $header = $this->getSalesCsvHeader($storeId);
+            $header = $this->getSalesCsvHeader($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId));
 
             //put headers in sales csv
             fputcsv($this->handle, $header);

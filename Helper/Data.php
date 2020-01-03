@@ -1949,10 +1949,11 @@ class Data extends AbstractHelper
     public function realtimeTimeBasedOptinSync($subscriber, $logMessage = 'Created Subscriber in Emarsys')
     {
         try {
-            $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $subscriber->getStoreId());
+            $sId = $this->getFirstStoreIdOfWebsiteByStoreId($subscriber->getStoreId());
+            $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $sId);
 
             $payload = [
-                'keyId' => $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $subscriber->getStoreId()),
+                'keyId' => $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $sId),
                 'keyValues' => [$subscriber->getSubscriberEmail()],
                 'fieldId' => $fieldId,
             ];
@@ -2050,6 +2051,8 @@ class Data extends AbstractHelper
     public function backgroudTimeBasedOptinSync($subscriberIdsArray)
     {
         try {
+            $sId = $this->getFirstStoreIdOfWebsite($this->websiteId);
+
             $logsArray['job_code'] = 'Backgroud Time Based Optin Sync';
             $logsArray['status'] = 'started';
             $logsArray['messages'] = 'Backgroud Time Based Optin Sync';
@@ -2057,7 +2060,7 @@ class Data extends AbstractHelper
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['run_mode'] = 'Automatic';
             $logsArray['auto_log'] = 'Complete';
-            $logsArray['store_id'] = 0;
+            $logsArray['store_id'] = $sId;
             $logId = $this->logsHelper->manualLogs($logsArray);
 
             $subscribersCollection = $this->newsLetterCollectionFactory->create()
@@ -2071,12 +2074,8 @@ class Data extends AbstractHelper
                 ];
             }
 
-            /** @var Website $website */
-            $website = $this->storeManager->getWebsite($this->websiteId);
-            $storeId = current($website->getStoreIds());
-
-            $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $storeId);
-            $emailKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $storeId);
+            $fieldId = $this->customerResourceModel->getKeyId(self::OPT_IN, $sId);
+            $emailKey = $this->customerResourceModel->getKeyId(self::CUSTOMER_EMAIL, $sId);
 
             $payload = [
                 'keyId' => $emailKey,

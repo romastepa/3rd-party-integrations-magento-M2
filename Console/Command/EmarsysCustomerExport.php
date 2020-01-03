@@ -122,6 +122,7 @@ class EmarsysCustomerExport extends Command
                         Cron::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
                         $data
                     );
+                    $output->writeln('Processed <info>store: ' . $storeId . '</info>');
                 } catch (Exception $e) {
                     $output->writeln($e->getMessage());
                     $output->writeln($e->getTrace());

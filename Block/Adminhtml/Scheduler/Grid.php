@@ -94,7 +94,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         if ($storeId) {
             $collection->addFieldToFilter('store_id', $storeId);
         }
-
         if ($filterCode != '') {
             $collection->addFieldToFilter('job_code', $filterCode);
         }

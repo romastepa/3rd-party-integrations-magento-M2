@@ -181,12 +181,6 @@ class WebDav extends DataObject
                     $errorStatus = false;
                 }
                 break;
-            case EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV:
-                $customerExportStatus = $this->webDavContact->exportCustomerDataWebDav($data, $logId);
-                if ($customerExportStatus) {
-                    $errorStatus = false;
-                }
-                break;
             case EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV:
                 $subscriberExportStatus = $this->webDavSubscriber->exportSubscribersDataWebDav($data, $logId);
                 if ($subscriberExportStatus) {

@@ -77,9 +77,8 @@ class Field extends AbstractHelper
         foreach ($emarsysContactFields as $emarsysField) {
             if ($emarsysField['type'] == "singlechoice" || $emarsysField['type'] == "multichoice") {
                 $response = $this->api->sendRequest('GET', 'field/' . $emarsysField['emarsys_field_id'] . '/choice');
-                $jsonDecode = \Zend_Json::decode($response);
-                if (is_array($jsonDecode['data'])) {
-                    foreach ($jsonDecode['data'] as $optionField) {
+                if (isset($response['body']['data']) && is_array($response['body']['data'])) {
+                    foreach ($response['body']['data'] as $optionField) {
                         $emarsysFieldOptions[$emarsysField['emarsys_field_id']][] = $optionField;
                     }
                 }
