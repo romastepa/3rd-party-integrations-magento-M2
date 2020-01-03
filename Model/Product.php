@@ -289,7 +289,10 @@ class Product extends AbstractModel
                 foreach ($website as $storeId => $store) {
                     foreach ($store['mapped_attributes_names'] as $mapAttribute) {
                         $emarsysFieldId = $mapAttribute['emarsys_attr_code'];
-                        $emarsysFieldNames[$storeId][] = $this->productResourceModel->getEmarsysFieldName($storeId, $emarsysFieldId);
+                        $emarsysFieldNames[$storeId][] = $this->productResourceModel->getEmarsysFieldName(
+                            $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId),
+                            $emarsysFieldId
+                        );
                         $magentoAttributeNames[$storeId][] = $mapAttribute['magento_attr_code'];
                     }
                 }
@@ -333,8 +336,8 @@ class Product extends AbstractModel
                     $this->prepareHeader(
                         $store['store']->getCode(),
                         $header,
-                        ($storeId == $defaultStoreID) ? $storeId : 0,
-                        $currencyStoreCode
+                        $currencyStoreCode,
+                        ($storeId == $defaultStoreID) ? $storeId : 0
                     );
 
                     while ($currentPageNumber <= $lastPageNumber) {
@@ -445,11 +448,11 @@ class Product extends AbstractModel
      *
      * @param string $storeCode
      * @param array $header
-     * @param bool $isDefault
      * @param string $currencyCode
+     * @param bool|int $isDefault
      * @return mixed
      */
-    public function prepareHeader($storeCode, $header, $isDefault = false, $currencyCode)
+    public function prepareHeader($storeCode, $header, $currencyCode, $isDefault = false)
     {
         if (!array_key_exists($storeCode, $this->_processedStores)) {
             // $this->_processedStores[$storeCode] = array(oldKey => newKey);
@@ -497,6 +500,7 @@ class Product extends AbstractModel
      * @param string $mode
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
@@ -661,7 +665,7 @@ class Product extends AbstractModel
                     $this->logsHelper->logs($logsArray);
                 }
 
-                $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
+                $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId));
                 $mappingField = 0;
                 foreach ($mappedAttributes as $mapAttribute) {
                     $emarsysFieldId = $mapAttribute['emarsys_attr_code'];

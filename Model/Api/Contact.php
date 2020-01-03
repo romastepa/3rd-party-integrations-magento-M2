@@ -214,6 +214,7 @@ class Contact
         $this->api->setWebsiteId($websiteId);
 
         $store = $this->storeManager->getStore($storeId);
+        $sId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
 
         if (!($customer instanceof Customer)) {
             $customer = $this->customer->load($customer->getId());
@@ -221,19 +222,19 @@ class Contact
 
         $buildRequest = [];
         $customerResourceModel = $this->customerResourceModel->create();
-        $emailKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
+        $emailKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $sId);
         $buildRequest['key_id'] = $emailKey;
         if ($emailKey && $customer->getEmail()) {
             $buildRequest[$emailKey] = $customer->getEmail();
         }
 
-        $customerIdKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $customerIdKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $sId);
         if ($customerIdKey && $customer->getId()) {
             $buildRequest[$customerIdKey] = $customer->getId();
         }
 
         $errorMsg = 0;
-        $getEmarsysMappedFields = $customerResourceModel->fetchMappedFields($storeId);
+        $getEmarsysMappedFields = $customerResourceModel->fetchMappedFields($sId);
 
         unset($customerResourceModel);
 
@@ -486,13 +487,15 @@ class Contact
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
 
+        $sId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
+
         $this->exportMode = $exportMode;
         $this->storeId = $storeId;
         $this->websiteId = $websiteId;
 
         $customerResourceModel = $this->customerResourceModel->create();
-        $emailKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $storeId);
-        $customerIdKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $storeId);
+        $emailKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_EMAIL, $sId);
+        $customerIdKey = $customerResourceModel->getKeyId(EmarsysHelperData::CUSTOMER_ID, $sId);
         $this->emailKey = $emailKey;
         $this->customerIdKey = $customerIdKey;
 
@@ -529,7 +532,7 @@ class Contact
         $this->logsHelper->manualLogs($logsArray);
 
         //check customer attributes are mapped
-        $mappedAttributes = $this->getMappedCustomerAttribute($storeId);
+        $mappedAttributes = $this->getMappedCustomerAttribute($sId);
         if (count($mappedAttributes)) {
             $allCustomersPayload = [];
             if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE)  {
@@ -541,7 +544,7 @@ class Contact
                 foreach ($queueCollection as $item) {
                     $allCustomersPayload[] = $this->getCustomerPayload(
                         $this->customerFactory->create()->load($item->getEntityId()),
-                        $storeId,
+                        $sId,
                         $emailKey,
                         $customerIdKey
                     );
@@ -570,7 +573,7 @@ class Contact
                     foreach ($customerCollection as $customerData) {
                         $allCustomersPayload[] = $this->getCustomerPayload(
                             $customerData,
-                            $storeId,
+                            $sId,
                             $emailKey,
                             $customerIdKey
                         );
@@ -795,12 +798,6 @@ class Contact
                 $subscriberExportStatus = $this->subscriberApi->syncMultipleSubscriber($exportMode, $data, $logId);
 
                 if ($subscriberExportStatus && $customerExportStatus) {
-                    $errorStatus = false;
-                }
-                break;
-            case EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API:
-                $customerExportStatus = $this->preparePayloadAndSyncMultipleContacts($exportMode, $data, $logId);
-                if ($customerExportStatus) {
                     $errorStatus = false;
                 }
                 break;

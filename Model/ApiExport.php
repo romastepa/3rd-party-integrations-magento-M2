@@ -377,9 +377,9 @@ class ApiExport extends ZendClient
     {
         if ($entityType == \Magento\Catalog\Model\Product::ENTITY) {
             $emptyFileHeader = [];
-            $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($storeId);
+            $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId));
             foreach ($mappedAttributes as $key => $value) {
-                $emarsysFieldNames = $this->productResourceModel->getEmarsysFieldName($storeId, $value['emarsys_attr_code']);
+                $emarsysFieldNames = $this->productResourceModel->getEmarsysFieldName($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId), $value['emarsys_attr_code']);
                 array_push($emptyFileHeader, $emarsysFieldNames);
             }
 

@@ -87,7 +87,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $filterCode = $this->getRequest()->getParam('filtercode');
 
         $storeId = $this->request->getParam('store');
-        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
         $collection = $this->logScheduleFactory->create()
             ->getCollection()
             ->setOrder('created_at', 'desc');
@@ -95,7 +94,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             $collection->addFieldToFilter('store_id', $storeId);
 
         }
-
         if ($filterCode != '') {
             $collection->addFieldToFilter('job_code', $filterCode);
         }

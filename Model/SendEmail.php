@@ -240,8 +240,10 @@ class SendEmail extends AbstractModel
                 $externalId = $message->getRecipients()[0];
             }
 
+            $sId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
+
             $buildRequest = [];
-            $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+            $buildRequest['key_id'] = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $sId);
             $buildRequest[$buildRequest['key_id']] = $externalId;
 
             $customerId = $this->customerResourceModel->checkCustomerExistsInMagento(
@@ -250,7 +252,7 @@ class SendEmail extends AbstractModel
             );
 
             if (!empty($customerId)) {
-                $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $storeId);
+                $customerIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_ID, $sId);
                 $buildRequest[$customerIdKey] = $customerId;
             }
 
@@ -261,11 +263,11 @@ class SendEmail extends AbstractModel
             $subscribeId = $this->customerResourceModel->getSubscribeIdFromEmail($data);
 
             if (!empty($subscribeId)) {
-                $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $storeId);
+                $subscriberIdKey = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $sId);
                 $buildRequest[$subscriberIdKey] = $subscribeId;
             }
 
-            $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $storeId);
+            $emailKey = $this->customerResourceModel->getKeyId(EmarsysHelper::CUSTOMER_EMAIL, $sId);
             $buildRequest['key_id'] = $emailKey;
             $buildRequest[$emailKey] = $externalId;
 
