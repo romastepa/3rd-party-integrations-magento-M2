@@ -27,4 +27,7 @@
 
 # Release Notes
 
-## v1.0.15
+## v1.0.16
+- Magento 2.3.3 support
+- Async customer/subscriber/email exports
+- Turn on/off logs
