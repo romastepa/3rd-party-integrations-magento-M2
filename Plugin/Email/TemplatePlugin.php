@@ -622,8 +622,8 @@ class TemplatePlugin
 
         //log information that is about to send for contact sync
         $this->logsArray['emarsys_info'] = 'Send Contact to Emarsys';
-        $this->logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);;
-        $this->logsArray['action'] = 'contact/create_if_not_exists';
+        $this->logsArray['description'] = 'PUT ' . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($buildRequest);;
+        $this->logsArray['action'] = EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS;
         $this->logsHelper->manualLogs($this->logsArray);
 
         $this->api->setWebsiteId($this->websiteId);

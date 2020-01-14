@@ -281,13 +281,13 @@ class Contact
             $logsArray['emarsys_info'] = 'Send Customer to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
+            $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
             if ($this->emarsysHelper->isAsyncEnabled()) {
 
                 $this->asyncModel->create()
                     ->setWebsiteId($websiteId)
-                    ->setEndpoint('contact/?create_if_not_exists=1')
+                    ->setEndpoint(Api::CONTACT_CREATE_IF_NOT_EXISTS)
                     ->setEmail($customer->getEmail())
                     ->setCustomerId($customer->getId())
                     ->setSubscriberId(null)
@@ -319,7 +319,7 @@ class Contact
                         );
                 }
 
-                $res = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($result);
+                $res = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($result);
                 $logsArray['description'] = 'Created customer ' . $customer->getEmail() . ' in Emarsys succcessfully | ' . $res . ' | ' . $confirmUrl;
                 $this->emarsysHelper->syncSuccess($customer->getId(), $websiteId, $storeId, $cron);
             } else {
@@ -658,7 +658,7 @@ class Contact
             $logsArray['emarsys_info'] = 'Send customers to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
+            $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . json_encode($buildRequest, JSON_PRETTY_PRINT);
             $this->logsHelper->manualLogs($logsArray);
             $this->emarsysLogger->info($logsArray['description']);
 
@@ -668,7 +668,7 @@ class Contact
 
             $logsArray['emarsys_info'] = 'Create customers in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
-            $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
+            $res = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . json_encode($result, JSON_PRETTY_PRINT);
 
             if ($result['status'] == '200') {
                 $logsArray['message_type'] = 'Success';

@@ -7,15 +7,19 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Model\FieldFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Field;
-use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Framework\View\Result\PageFactory,
+    Framework\Stdlib\DateTime\DateTime,
+    Store\Model\StoreManagerInterface
+};
+use Emarsys\Emarsys\{
+    Model\FieldFactory,
+    Model\ResourceModel\Field,
+    Helper\Logs,
+    Helper\Data as EmarsysHelper
+};
 
 /**
  * Class Save

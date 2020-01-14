@@ -135,4 +135,35 @@ class Logs extends \Magento\Framework\Model\AbstractModel
             );
         }
     }
+
+    /**
+     * @param $messages
+     * @param $description
+     * @param $storeId
+     * @param $info
+     */
+    public function addSuccessLog($messages = '', $description = '', $storeId = 0, $info = '')
+    {
+        try {
+            $logsArray['job_code'] = 'Success';
+            $logsArray['status'] = 'success';
+            $logsArray['messages'] = $messages;
+            $logsArray['created_at'] = $this->dateTime->date('Y-m-d H:i:s', time());
+            $logsArray['executed_at'] = $this->dateTime->date('Y-m-d H:i:s', time());
+            $logsArray['run_mode'] = '';
+            $logsArray['auto_log'] = '';
+            $logsArray['store_id'] = $storeId;
+            $logsArray['emarsys_info'] = $info;
+            $logsArray['description'] = $description;
+            $logsArray['action'] = '';
+            $logsArray['message_type'] = 'success';
+            $logsArray['log_action'] = 'fail';
+            $logsArray['website_id'] = $this->storeManager->getStore($storeId)->getWebsiteId();
+            $this->emarsysLog->manualLogs($logsArray);
+        } catch (\Exception $e) {
+            $this->messageManagerInterface->addErrorMessage(
+                'Unable to Log: ' . $e->getMessage()
+            );
+        }
+    }
 }

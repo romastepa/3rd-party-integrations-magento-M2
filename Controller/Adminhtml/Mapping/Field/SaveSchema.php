@@ -7,16 +7,20 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
-use Emarsys\Emarsys\Helper\Field;
-use Emarsys\Emarsys\Model\ResourceModel\Field as EmarsysResourceModelField;
-use Emarsys\Emarsys\Helper\Logs;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Framework\View\Result\PageFactory,
+    Framework\Stdlib\DateTime\DateTime,
+    Store\Model\StoreManagerInterface
+};
+use Emarsys\Emarsys\{
+    Helper\Data\Proxy as EmarsysHelper,
+    Model\ResourceModel\Field as EmarsysResourceModelField,
+    Helper\Logs,
+    Model\Api\Api as EmarsysModelApiApi,
+    Model\ResourceModel\Customer as EmarsysResourceModelCustomer
+};
 
 /**
  * Class SaveSchema
@@ -35,11 +39,6 @@ class SaveSchema extends Action
     protected $session;
 
     /**
-     * @var Field
-     */
-    protected $fieldHelper;
-
-    /**
      * @var EmarsysResourceModelField
      */
     protected $fieldResourceModel;
@@ -47,7 +46,7 @@ class SaveSchema extends Action
     /**
      * @var StoreManagerInterface
      */
-    protected $_storeManager;
+    protected $storeManager;
 
     /**
      * @var EmarsysHelper
@@ -55,40 +54,60 @@ class SaveSchema extends Action
     protected $emarsysHelper;
 
     /**
+     * @var EmarsysModelApiApi
+     */
+    protected $api;
+
+    /**
+     * @var EmarsysResourceModelCustomer
+     */
+    protected $customerResourceModel;
+
+    /**
+     * @var Logs
+     */
+    protected $logsHelper;
+
+    /**
+     * @var DateTime
+     */
+    protected $date;
+
+    /**
      * SaveSchema constructor.
      *
      * @param Context $context
      * @param EmarsysHelper $emarsysHelper
-     * @param Field $fieldHelper
      * @param EmarsysResourceModelField $fieldResourceModel
      * @param PageFactory $resultPageFactory
      * @param Logs $logsHelper
      * @param DateTime $date
-     * @param EmarsysModelLogs $emarsysLogs
      * @param StoreManagerInterface $storeManager
+     * @param EmarsysModelApiApi $api
+     * @param EmarsysResourceModelCustomer $customer
      */
     public function __construct(
         Context $context,
         EmarsysHelper $emarsysHelper,
-        Field $fieldHelper,
         EmarsysResourceModelField $fieldResourceModel,
         PageFactory $resultPageFactory,
         Logs $logsHelper,
         DateTime $date,
-        EmarsysModelLogs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        EmarsysModelApiApi $api,
+        EmarsysResourceModelCustomer $customer
     ) {
+        ini_set('default_socket_timeout', 5000);
         parent::__construct($context);
         $this->emarsysHelper = $emarsysHelper;
-        $this->session = $context->getSession();
-        $this->resultPageFactory = $resultPageFactory;
-        $this->fieldHelper = $fieldHelper;
-        $this->emarsysLogs = $emarsysLogs;
         $this->fieldResourceModel = $fieldResourceModel;
-        $this->_storeManager = $storeManager;
-        $this->date = $date;
-        $this->emarsysLogs = $emarsysLogs;
+        $this->resultPageFactory = $resultPageFactory;
         $this->logsHelper = $logsHelper;
+        $this->date = $date;
+        $this->storeManager = $storeManager;
+        $this->api = $api;
+        $this->customerResourceModel = $customer;
+        $this->session = $context->getSession();
     }
 
     /**
@@ -103,7 +122,7 @@ class SaveSchema extends Action
          */
         $storeId = $this->getRequest()->getParam('store');
         $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
-        $websiteId = $this->_storeManager->getStore($storeId)->getWebsiteId();
+        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $logsArray['job_code'] = 'Customer Filed Mapping';
         $logsArray['status'] = 'started';
         $logsArray['messages'] = 'Running Update Schema';
@@ -114,7 +133,7 @@ class SaveSchema extends Action
         $logsArray['store_id'] = $storeId;
         $resultRedirect = $this->resultRedirectFactory->create();
         try {
-            $schemaData = $this->fieldHelper->getEmarsysOptionSchema($storeId);
+            $schemaData = $this->getEmarsysOptionSchema($storeId, $websiteId);
             if (count($schemaData) > 0) {
                 $this->fieldResourceModel->updateOptionSchema($schemaData, $storeId);
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -141,15 +160,15 @@ class SaveSchema extends Action
                 $logsArray['message_type'] = 'Success';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
-                $logsArray['log_action'] = 'True';
-                $logsArray['status'] = 'success';
+                $logsArray['log_action'] = 'fail';
+                $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Failed Update Schema';
                 $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
             }
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
-            $this->emarsysLogs->addErrorLog(
+            $this->emarsysHelper->addErrorLog(
                 'Customer Field Update Schema',
                 $e->getMessage(),
                 $storeId,
@@ -158,5 +177,30 @@ class SaveSchema extends Action
         }
 
         return $resultRedirect->setRefererOrBaseUrl();
+    }
+
+    /**
+     * @param $storeId
+     * @param $websiteId
+     * @return array
+     * @throws \Exception
+     */
+    public function getEmarsysOptionSchema($storeId, $websiteId)
+    {
+        $this->api->setWebsiteId($websiteId);
+        $emarsysContactFields = $this->customerResourceModel->getEmarsysContactFields($storeId);
+        $emarsysFieldOptions = [];
+        foreach ($emarsysContactFields as $emarsysField) {
+            if ($emarsysField['type'] == "singlechoice" || $emarsysField['type'] == "multichoice") {
+                $response = $this->api->sendRequest('GET', 'field/' . $emarsysField['emarsys_field_id'] . '/choice');
+                if (isset($response['body']['data']) && is_array($response['body']['data'])) {
+                    foreach ($response['body']['data'] as $optionField) {
+                        $emarsysFieldOptions[$emarsysField['emarsys_field_id']][] = $optionField;
+                    }
+                }
+            }
+        }
+
+        return $emarsysFieldOptions;
     }
 }

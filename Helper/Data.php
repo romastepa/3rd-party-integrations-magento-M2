@@ -302,11 +302,6 @@ class Data extends AbstractHelper
     protected $api;
 
     /**
-     * @var EmarsysApi
-     */
-    protected $modelApi;
-
-    /**
      * @var StoreCollectionFactory
      */
     protected $storeCollection;
@@ -389,7 +384,6 @@ class Data extends AbstractHelper
      * @param ProductCollectionFactory $magentoProductAttributeColl
      * @param EmarsysEventMappingFactory $emarsysEventMapping
      * @param EmarsyseventsCollectionFactory $emarsysEventCollectionFactory
-     * @param EmarsysApi $modelApi
      * @param Emarsysevents $emarsysEventsModel
      * @param ModelResourceModelEvent $eventsResourceModel
      * @param EmailTemplateFactory $templateFactory
@@ -418,7 +412,6 @@ class Data extends AbstractHelper
         ProductCollectionFactory $magentoProductAttributeColl,
         EmarsysEventMappingFactory $emarsysEventMapping,
         EmarsyseventsCollectionFactory $emarsysEventCollectionFactory,
-        EmarsysApi $modelApi,
         Emarsysevents $emarsysEventsModel,
         ModelResourceModelEvent $eventsResourceModel,
         EmailTemplateFactory $templateFactory,
@@ -455,7 +448,6 @@ class Data extends AbstractHelper
         $this->templateFactory = $templateFactory;
         $this->emarsysEventsModelFactory = $emarsysEventsModelFactory;
         $this->api = $api;
-        $this->modelApi = $modelApi;
         $this->storeCollection = $storeCollection;
         $this->moduleListInterface = $moduleListInterface;
         $this->newsLetterCollectionFactory = $newsLetterCollectionFactory;
@@ -553,20 +545,6 @@ class Data extends AbstractHelper
             self::XPATH_EMARSYS_CATALOG_EXPORT_API_URL_KEY,
             ScopeInterface::SCOPE_STORE
         );
-    }
-
-    /**
-     * @return EmarsysApi
-     */
-    public function getClient()
-    {
-        $this->modelApi->setParams([
-            'api_url' => $this->_emarsysApiUrl,
-            'api_username' => $this->_username,
-            'api_password' => $this->_secret,
-        ]);
-
-        return $this->modelApi;
     }
 
     /**
@@ -2469,6 +2447,17 @@ class Data extends AbstractHelper
     public function addNoticeLog($messages = '', $description = '', $storeId = 0, $info = '')
     {
         return $this->emarsysLogs->addNoticeLog($messages, $description, $storeId, $info);
+    }
+
+    /**
+     * @param $messages
+     * @param $description
+     * @param $storeId
+     * @param $info
+     */
+    public function addSuccessLog($messages = '', $description = '', $storeId = 0, $info = '')
+    {
+        return $this->emarsysLogs->addSuccessLog($messages, $description, $storeId, $info);
     }
 
     /**

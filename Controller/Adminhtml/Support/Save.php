@@ -7,13 +7,16 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Support;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Backend\Model\Auth\Session;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\{
+    Backend\App\Action,
+    Backend\App\Action\Context,
+    Backend\Model\Auth\Session,
+    Framework\App\Config\ScopeConfigInterface,
+    Framework\Translate\Inline\StateInterface,
+    Store\Model\StoreManagerInterface,
+    Framework\Mail\Template\TransportBuilder
+};
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Helper\Email as EmarsysHelperEmail;
 use Psr\Log\LoggerInterface as Logger;
 
 /**
@@ -63,9 +66,14 @@ class Save extends Action
     protected $emarsysHelper;
 
     /**
-     * @var EmarsysHelperEmail
+     * @var TransportBuilder
      */
-    protected $emailHelper;
+    protected $transportBuilder;
+
+    /**
+     * @var StateInterface
+     */
+    protected $inlineTranslation;
 
     /**
      * Save constructor.
@@ -73,7 +81,8 @@ class Save extends Action
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManager
      * @param EmarsysHelper $emarsysHelper
-     * @param EmarsysHelperEmail $emailHelper
+     * @param TransportBuilder $transportBuilder
+     * @param StateInterface $inlineTranslation
      * @param Context $context
      * @param Logger $logger
      */
@@ -82,7 +91,8 @@ class Save extends Action
         ScopeConfigInterface $scopeConfigInterface,
         StoreManagerInterface $storeManager,
         EmarsysHelper $emarsysHelper,
-        EmarsysHelperEmail $emailHelper,
+        TransportBuilder $transportBuilder,
+        StateInterface $inlineTranslation,
         Context $context,
         Logger $logger
     ) {
@@ -91,7 +101,8 @@ class Save extends Action
         $this->scopeConfigInterface = $scopeConfigInterface;
         $this->storeManager = $storeManager;
         $this->emarsysHelper = $emarsysHelper;
-        $this->emailHelper = $emailHelper;
+        $this->transportBuilder = $transportBuilder;
+        $this->inlineTranslation = $inlineTranslation;
         $this->logger = $logger;
         $this->session = $context->getSession();
     }
@@ -114,43 +125,53 @@ class Save extends Action
                 $priority = trim($data['priority']);
                 $message = trim($data['message']);
                 // it depends on the template variables
-                $emailTemplateVariables = [];
-                $emailTemplateVariables['type'] = $type;
-                $emailTemplateVariables['name'] = $name;
-                $emailTemplateVariables['email'] = $email;
-                $emailTemplateVariables['subject'] = $type . ' - ' . $subject;
-                $emailTemplateVariables['priority'] = $priority;
-                $emailTemplateVariables['message'] = $message;
-                $emailTemplateVariables['store_name'] = $this->storeManager->getStore()->getName();;
-                $emailTemplateVariables['domain'] = $this->storeManager->getStore()->getBaseUrl();
-                $emailTemplateVariables['phpvalue'] = $req['php_version']['current']['value'];
-                $emailTemplateVariables['memoryvalue'] = $req['memory_limit']['current']['value'];
-                $emailTemplateVariables['magentovalue'] = $req['magento_version']['current']['value'];
-                $emailTemplateVariables['curlvalue'] = $req['curl_enabled']['current']['value'];
-                $emailTemplateVariables['soapvalue'] = $req['soap_enabled']['current']['value'];
+                $templateVars = [];
+                $templateVars['type'] = $type;
+                $templateVars['name'] = $name;
+                $templateVars['email'] = $email;
+                $templateVars['subject'] = $type . ' - ' . $subject;
+                $templateVars['priority'] = $priority;
+                $templateVars['message'] = $message;
+                $templateVars['store_name'] = $this->storeManager->getStore()->getName();;
+                $templateVars['domain'] = $this->storeManager->getStore()->getBaseUrl();
+                $templateVars['phpvalue'] = $req['php_version']['current']['value'];
+                $templateVars['memoryvalue'] = $req['memory_limit']['current']['value'];
+                $templateVars['magentovalue'] = $req['magento_version']['current']['value'];
+                $templateVars['curlvalue'] = $req['curl_enabled']['current']['value'];
+                $templateVars['soapvalue'] = $req['soap_enabled']['current']['value'];
                 $inputFilter = new \Zend_Filter_Input(
                     [],
                     [],
                     $data
                 );
                 $user = $this->authSession->getUser();
-                $senderInfo = [
+                $from = [
                     'email' => $user->getEmail(),
                     'name' => $user->getUsername()
                 ];
-                $storeId = $this->storeManager->getStore()->getId();
+                $storeId = $this->emarsysHelper->getFirstStoreId();
                 $emailRecievers = explode(',', $typeArray[1]);
+
                 foreach ($emailRecievers as $emailReciever) {
-                    $recieverInfo = [
+                    $to = [
                         'email' => $emailReciever,
                         'name' => $name
                     ];
-                    $this->emailHelper->sendEmail(
-                        $storeId,
-                        $emailTemplateVariables,
-                        $senderInfo,
-                        $recieverInfo
-                    );
+                    $templateOptions = [
+                        'area' =>  \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+                        'store' => $storeId
+                    ];
+
+                    $this->inlineTranslation->suspend();
+                    $transport = $this->transportBuilder
+                        ->setTemplateIdentifier('help_email_template_id')
+                        ->setTemplateOptions($templateOptions)
+                        ->setTemplateVars($templateVars)
+                        ->setFrom($from)
+                        ->addTo($to)
+                        ->getTransport();
+                    $transport->sendMessage();
+                    $this->inlineTranslation->resume();
                 }
                 $data = $inputFilter->getUnescaped();
                 $id = $this->getRequest()->getParam('id');

@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\{
@@ -18,6 +19,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
  * Class Async
+ *
  * @package Emarsys\Emarsys\Cron
  */
 class Async
@@ -80,23 +82,23 @@ class Async
 
     public function execute()
     {
-        try {
-            set_time_limit(0);
-            $currentCronInfo = $this->cronHelper->getCurrentCronInformation(
-                \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CATALOG_BULK_EXPORT
-            );
+        set_time_limit(0);
+        $currentCronInfo = $this->cronHelper->getCurrentCronInformation(
+            \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CATALOG_BULK_EXPORT
+        );
 
-            if (!$currentCronInfo) {
-                return;
-            }
+        if (!$currentCronInfo) {
+            return;
+        }
 
-            $collection = $this->asyncCollection->create();
+        $collection = $this->asyncCollection->create();
 
-            /** @var \Emarsys\Emarsys\Model\Async $item */
-            foreach ($collection as $item) {
+        /** @var \Emarsys\Emarsys\Model\Async $item */
+        foreach ($collection as $item) {
+            try {
                 $this->api->setWebsiteId($item->getWebsiteId());
 
-                if ($item->getEndpoint() == 'contact/?create_if_not_exists=1') {
+                if ($item->getEndpoint() == EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS) {
                     $response = $this->api->createContactInEmarsys(\Zend_Json::decode($item->getRequestBody()));
                 } else {
                     list($buildRequest, $requestBody) = \Zend_Json::decode($item->getRequestBody());
@@ -108,17 +110,24 @@ class Async
                         $response = $this->api->sendRequest('POST', $item->getEndpoint(), $requestBody);
                     }
                 }
+                $this->emarsysHelper->addSuccessLog(
+                    $item->getEmail(),
+                    \Zend_Json::encode($response),
+                    $this->emarsysHelper->getFirstStoreIdOfWebsite($item->getWebsiteId()),
+                    'Async::execute()'
+                );
                 if (isset($response['status']) && ($response['status'] = 200)) {
                     $item->delete();
                 }
+            } catch (\Exception $e) {
+                $this->emarsysHelper->addErrorLog(
+                    'Async',
+                    $e->getMessage() . ' ~ ' . $item->getRequestBody(),
+                    0,
+                    'Async::execute()'
+                );
             }
-        } catch (\Exception $e) {
-            $this->logsHelper->addErrorLog(
-                'ProductBulkExport',
-                $e->getMessage(),
-                0,
-                'ProductBulkExport::execute()'
-            );
         }
+
     }
 }

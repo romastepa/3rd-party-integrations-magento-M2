@@ -19,17 +19,16 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
  */
 class Api extends \Magento\Framework\DataObject
 {
+
+    const CONTACT_CREATE_IF_NOT_EXISTS = 'contact/?create_if_not_exists=1';
+    const CONTACT_GETDATA = 'contact/getdata';
+
     protected $apiUrl;
 
     /**
      * @var StoreManager
      */
     protected $storeManager;
-
-    /**
-     * @var EmarsysHelper
-     */
-    protected $emarsysHelper;
 
     /**
      * Api constructor.
@@ -66,6 +65,7 @@ class Api extends \Magento\Framework\DataObject
      * Return Emarsys Api user name based on config data
      *
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getApiUsername()
     {
@@ -78,6 +78,7 @@ class Api extends \Magento\Framework\DataObject
      * Return Emarsys Api password based on config data
      *
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getApiPassword()
     {
@@ -90,6 +91,7 @@ class Api extends \Magento\Framework\DataObject
      * set Emarsys API URL
      *
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function setApiUrl()
     {
@@ -115,6 +117,7 @@ class Api extends \Magento\Framework\DataObject
      * Return Emarsys API URL
      *
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getApiUrl()
     {
@@ -218,7 +221,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function createContactInEmarsys($arrCustomerData)
     {
-        return $this->sendRequest('PUT', 'contact/?create_if_not_exists=1', $arrCustomerData);
+        return $this->sendRequest('PUT', self::CONTACT_CREATE_IF_NOT_EXISTS, $arrCustomerData);
     }
 
     /**
@@ -240,6 +243,6 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getContactData($arrCustomerData)
     {
-        return $this->sendRequest('POST', 'contact/getdata', $arrCustomerData);
+        return $this->sendRequest('POST', self::CONTACT_GETDATA, $arrCustomerData);
     }
 }

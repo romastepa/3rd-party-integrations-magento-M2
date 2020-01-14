@@ -33,6 +33,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Helper\Logs as EmarsysHelperLogs,
     Helper\Data as EmarsysHelper,
+    Model\ApiExport,
     Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
     Model\ResourceModel\Product as ProductResourceModel,
     Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel,

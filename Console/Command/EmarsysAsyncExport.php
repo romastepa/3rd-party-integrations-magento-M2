@@ -38,6 +38,7 @@ class EmarsysAsyncExport extends Command
 
     /**
      * EmarsysAsyncExport constructor.
+     *
      * @param State $state
      * @param CollectionFactory $asyncCollection
      * @param EmarsysModelApiApi $api
@@ -72,14 +73,15 @@ class EmarsysAsyncExport extends Command
         $output->writeln('');
         $output->writeln('<info>Starting Async export.</info>');
 
-        try {
-            $collection = $this->asyncCollection->create();
 
-            /** @var \Emarsys\Emarsys\Model\Async $item */
-            foreach ($collection as $item) {
+        $collection = $this->asyncCollection->create();
+
+        /** @var \Emarsys\Emarsys\Model\Async $item */
+        foreach ($collection as $item) {
+            try {
                 $this->api->setWebsiteId($item->getWebsiteId());
 
-                if ($item->getEndpoint() == 'contact/?create_if_not_exists=1') {
+                if ($item->getEndpoint() == EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS) {
                     $response = $this->api->createContactInEmarsys(\Zend_Json::decode($item->getRequestBody()));
                 } else {
                     list($buildRequest, $requestBody) = \Zend_Json::decode($item->getRequestBody());
@@ -94,10 +96,10 @@ class EmarsysAsyncExport extends Command
                 if (isset($response['status']) && ($response['status'] = 200)) {
                     $item->delete();
                 }
-                $output->writeln('status => ' . $response['status'] . ' |~| replyCode => ' . $response['body']['replyCode'] . ' |~| replyText => ' . $response['body']['replyText']);
+                $output->writeln('status => ' . $response['status'] . ' |~| Email => ' . $item->getEmail() . ' |~| replyCode => ' . $response['body']['replyCode'] . ' |~| replyText => ' . $response['body']['replyText']);
+            } catch (Exception $e) {
+                $output->writeln('status =>  <info>EXCEPTION</info> |~| Email => ' . $item->getEmail() . ' |~| error_message => ' . $e->getMessage());
             }
-        } catch (Exception $e) {
-            $output->writeln($e->getMessage());
         }
 
 

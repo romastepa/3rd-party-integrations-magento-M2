@@ -152,10 +152,8 @@ class Event extends AbstractHelper
     {
         $emarsysLocalIds = [];
         try {
-            $defaultStore = $this->storeManager->getWebsite($websiteId)->getDefaultStore();
-            if ($defaultStore) {
-                $defaultStore = $defaultStore->getId();
-            } else {
+            $defaultStore = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
+            if (!$defaultStore) {
                 throw new \Exception(__('There is no default store selected for website id %1', $websiteId));
             }
             $emarsysContactFields = $this->resourceModelEvent->getEmarsysEvents($defaultStore);

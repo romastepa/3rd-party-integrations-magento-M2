@@ -96,6 +96,7 @@
         </web_extend>
         <logs>
             <log_setting>
+                <enable>1</enable>
                 <log_days>15</log_days>
                 <log_cleaning>0</log_cleaning>
                 <log_report>0</log_report>

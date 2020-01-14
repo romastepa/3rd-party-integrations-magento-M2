@@ -219,13 +219,13 @@ class Subscriber
             $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($buildRequest);
+            $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
             if ($this->emarsysHelper->isAsyncEnabled()) {
 
                 $this->asyncModel->create()
                     ->setWebsiteId($websiteId)
-                    ->setEndpoint('contact/?create_if_not_exists=1')
+                    ->setEndpoint(Api::CONTACT_CREATE_IF_NOT_EXISTS)
                     ->setEmail($objSubscriber->getSubscriberEmail())
                     ->setCustomerId($objSubscriber->getCustomerId())
                     ->setSubscriberId($objSubscriber->getId())
@@ -247,7 +247,7 @@ class Subscriber
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Created Subscriber in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
-            $res = ' [PUT] ' . " contact/?create_if_not_exists=1 " . \Zend_Json::encode($optInResult)
+            $res = ' [PUT] ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($optInResult)
                 . ' [confirmation url] ' . $this->newsletterHelperData->getConfirmationUrl($objSubscriber)
                 . ' [unsubscribe url] ' . $this->newsletterHelperData->getUnsubscribeUrl($objSubscriber)
             ;
@@ -410,7 +410,7 @@ class Subscriber
             $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($buildRequest, JSON_PRETTY_PRINT);
+            $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . json_encode($buildRequest, JSON_PRETTY_PRINT);
             $this->logsHelper->manualLogs($logsArray);
             $this->emarsysLogger->info($logsArray['description']);
 
@@ -420,7 +420,7 @@ class Subscriber
 
             $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
-            $res = 'PUT ' . " contact/?create_if_not_exists=1 " . json_encode($result, JSON_PRETTY_PRINT);
+            $res = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . json_encode($result, JSON_PRETTY_PRINT);
 
             if ($result['status'] == '200') {
                 //successful response from emarsys

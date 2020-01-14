@@ -113,6 +113,9 @@ class Logs extends AbstractHelper
      */
     public function manualLogs($logsArray = [], $exportCron = 0)
     {
+        if (!$this->scopeConfigInterface->getValue('logs/log_setting/enable')) {
+            return;
+        }
         if (!$this->cronSchedule || $exportCron) {
             $this->cronSchedule = $this->logScheduleFactory->create();
         }
@@ -182,6 +185,9 @@ class Logs extends AbstractHelper
      */
     public function logs($logsArray = [])
     {
+        if (!$this->scopeConfigInterface->getValue('logs/log_setting/enable')) {
+            return;
+        }
         $currentDate = $this->date->date('Y-m-d H:i:s', time());
         $schedulerId = @$logsArray['id'];
 

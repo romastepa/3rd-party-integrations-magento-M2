@@ -16,6 +16,8 @@ use Magento\Framework\Setup\SchemaSetupInterface;
  */
 class UpgradeSchema implements UpgradeSchemaInterface
 {
+    const EMARSYS_PRODUCT_EXPORT = 'emarsys_product_export';
+
     const EMARSYS_CRON_SUPPORT_TABLE = 'emarsys_cron_details';
     const MAGENTO_CRON_SCHEDULE = 'cron_schedule';
 
@@ -36,7 +38,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         }
 
         if (version_compare($context->getVersion(), '1.0.7', '<')) {
-            $tableName = $setup->getTable('emarsys_product_export');
+            $tableName = $setup->getTable(self::EMARSYS_PRODUCT_EXPORT);
             $connection = $setup->getConnection();
             if (!$connection->isTableExists($tableName)) {
                 $table = $connection
@@ -50,7 +52,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     )->addColumn(
                         'params',
                         \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-                        '64k',
+                        '128k',
                         [],
                         'Product Params'
                     )
@@ -165,7 +167,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     )->addColumn(
                         'request_body',
                         \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-                        '64k',
+                        '128k',
                         [],
                         'Request Body'
                     )->addColumn(
@@ -182,7 +184,28 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     $setup->getIdxName($emarsysAsyncEventsTable, 'website_id'),
                     ['website_id']
                 );
+            } else {
+                $connection->changeColumn(
+                    $setup->getTable(self::EMARSYS_ASYNC_EVENTS),
+                    'request_body',
+                    'request_body',
+                    [
+                        'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
+                        'length'   => '128k',
+                        'comment' => 'Request Body',
+                    ]
+                );
             }
+            $connection->changeColumn(
+                $setup->getTable(self::EMARSYS_PRODUCT_EXPORT),
+                'params',
+                'params',
+                [
+                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
+                    'length'   => '128k',
+                    'comment' => 'Product Params',
+                ]
+            );
         }
 
         $setup->endSetup();
