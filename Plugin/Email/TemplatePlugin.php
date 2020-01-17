@@ -122,6 +122,7 @@ class TemplatePlugin
         Template $subject,
         callable $proceed
     ) {
+        $this->state->set(EmailSendState::STATE_NO);
         if (!$this->emarsysHelper->isEmarsysEnabled()) {
             return $proceed();
         }

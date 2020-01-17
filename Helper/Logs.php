@@ -24,6 +24,7 @@ use Emarsys\Emarsys\{
 
 /**
  * Class Logs
+ *
  * @package Emarsys\Emarsys\Helper
  */
 class Logs extends AbstractHelper
@@ -75,6 +76,7 @@ class Logs extends AbstractHelper
 
     /**
      * Logs constructor.
+     *
      * @param Context $context
      * @param StoreManagerInterface $storeManager
      * @param LogScheduleFactory $logScheduleFactory
@@ -93,7 +95,8 @@ class Logs extends AbstractHelper
         StateInterface $inlineTranslation,
         TransportBuilder $transportBuilder,
         Registry $registry
-    ) {
+    )
+    {
         $this->logScheduleFactory = $logScheduleFactory;
         $this->date = $date;
         $this->registry = $registry;
@@ -120,9 +123,12 @@ class Logs extends AbstractHelper
             $this->cronSchedule = $this->logScheduleFactory->create();
         }
 
-        if (isset($logsArray['job_code']) && empty($this->cronSchedule->getJobCode())
-            || $this->cronSchedule->getJobCode() == 'Exception'
-            || $this->cronSchedule->getJobCode() == 'Notice'
+        if (isset($logsArray['job_code'])
+            && (
+                empty($this->cronSchedule->getJobCode())
+                || $this->cronSchedule->getJobCode() == 'Exception'
+                || $this->cronSchedule->getJobCode() == 'Notice'
+            )
         ) {
             $this->cronSchedule->setJobCode($logsArray['job_code']);
         }
@@ -180,6 +186,7 @@ class Logs extends AbstractHelper
 
     /**
      * For saving Logs
+     *
      * @param array $logsArray
      * @throws \Exception
      */
@@ -195,7 +202,7 @@ class Logs extends AbstractHelper
         $logsModel->setLogExecId($schedulerId)
             ->setCreatedAt($currentDate)
             ->setEmarsysInfo(isset($logsArray['emarsys_info']) ? $logsArray['emarsys_info'] : '')
-            ->setDescription(isset($logsArray['description']) ? str_replace(',"',' ,"', $logsArray['description']) : '')
+            ->setDescription(isset($logsArray['description']) ? str_replace(',"', ' ,"', $logsArray['description']) : '')
             ->setAction(isset($logsArray['action']) ? $logsArray['action'] : 'synced to emarsys')
             ->setMessageType(isset($logsArray['message_type']) ? $logsArray['message_type'] : '')
             ->setStoreId(isset($logsArray['store_id']) ? $logsArray['store_id'] : 0)
@@ -250,11 +257,11 @@ class Logs extends AbstractHelper
             $templateVars = [
                 'store' => $this->storeManager->getStore(),
                 'sync_name' => $title,
-                'message' => $errorMsg
+                'message' => $errorMsg,
             ];
             $from = [
                 'email' => "support@emarsys.com",
-                'name' => "Support"
+                'name' => "Support",
             ];
             $this->inlineTranslation->suspend();
 
