@@ -53,21 +53,7 @@ class TransportPlugin
         TransportInterface $subject,
         callable $proceed
     ) {
-        if (!$this->emarsysHelper->isEmarsysEnabled()) {
-            return $proceed();
-        }
-
-        try {
-            if (!$this->state->get()) {
-                return $proceed();
-            }
-        } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog(
-                'Email workaround',
-                $e->getMessage(),
-                0,
-                'TransportPlugin::aroundSendMessage'
-            );
+        if (!$this->emarsysHelper->isEmarsysEnabled() || !$this->state->get()) {
             return $proceed();
         }
 

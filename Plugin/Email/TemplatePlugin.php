@@ -142,7 +142,7 @@ class TemplatePlugin
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
                 'Email workaround',
-                $e->getMessage(),
+                $e->getMessage() . ' ' . $e->getTraceAsString(),
                 0,
                 'TemplatePlugin::aroundProcessTemplate'
             );
@@ -231,6 +231,18 @@ class TemplatePlugin
         $applyDesignConfig = $reflection->getMethod('applyDesignConfig');
         $applyDesignConfig->setAccessible(true);
         $isDesignApplied = $applyDesignConfig->invoke($subject);
+
+        if (is_numeric($this->templateId)) {
+            $subject->load($this->templateId);
+        } else {
+            $subject->loadDefault($this->templateId);
+        }
+
+        if (!$subject->getId()) {
+            throw new \Magento\Framework\Exception\MailException(
+                __('Invalid transactional email code: %1', $this->templateId)
+            );
+        }
 
         $processedVariables = [];
         $processor = $subject->getTemplateFilter()
@@ -385,96 +397,87 @@ class TemplatePlugin
      */
     public function getOrderData($item, $store)
     {
-        try {
-            $optionGlue = " - ";
-            $optionSeparator = " : ";
-            $unitTaxAmount = $item->getTaxAmount() / $item->getQtyOrdered();
-            $order = [
-                'unitary_price_exc_tax' => $this->_formatPrice($item->getPriceInclTax() - $unitTaxAmount),
-                'unitary_price_inc_tax' => $this->_formatPrice($item->getPriceInclTax()),
-                'unitary_tax_amount' => $this->_formatPrice($unitTaxAmount),
-                'line_total_price_exc_tax' => $this->_formatPrice($item->getRowTotalInclTax() - $item->getTaxAmount()),
-                'line_total_price_inc_tax' => $this->_formatPrice($item->getRowTotalInclTax()),
-                'line_total_tax_amount' => $this->_formatPrice($item->getTaxAmount()),
-            ];
-            $order['product_id'] = $item->getData('product_id');
-            $order['product_type'] = $item->getData('product_type');
-            $order['base_original_price'] = $this->_formatPrice($item->getData('base_original_price'));
-            $order['sku'] = $item->getData('sku');
-            $order['product_name'] = $item->getData('name');
-            $order['product_weight'] = $item->getData('weight');
-            $order['qty_ordered'] = $this->_formatQty($item->getData('qty_ordered'));
-            $order['original_price'] = $this->_formatPrice($item->getData('original_price'));
-            $order['price'] = $this->_formatPrice($item->getData('price'));
-            $order['base_price'] = $this->_formatPrice($item->getData('base_price'));
-            $order['tax_percent'] = $this->_formatPrice($item->getData('tax_percent'));
-            $order['tax_amount'] = $this->_formatPrice($item->getData('tax_amount'));
-            $order['discount_amount'] = $this->_formatPrice($item->getData('discount_amount'));
-            $order['price_line_total'] = $this->_formatPrice($order['qty_ordered'] * $order['price']);
+        $optionGlue = " - ";
+        $optionSeparator = " : ";
+        $unitTaxAmount = $item->getTaxAmount() / $item->getQtyOrdered();
+        $order = [
+            'unitary_price_exc_tax' => $this->_formatPrice($item->getPriceInclTax() - $unitTaxAmount),
+            'unitary_price_inc_tax' => $this->_formatPrice($item->getPriceInclTax()),
+            'unitary_tax_amount' => $this->_formatPrice($unitTaxAmount),
+            'line_total_price_exc_tax' => $this->_formatPrice($item->getRowTotalInclTax() - $item->getTaxAmount()),
+            'line_total_price_inc_tax' => $this->_formatPrice($item->getRowTotalInclTax()),
+            'line_total_tax_amount' => $this->_formatPrice($item->getTaxAmount()),
+        ];
+        $order['product_id'] = $item->getData('product_id');
+        $order['product_type'] = $item->getData('product_type');
+        $order['base_original_price'] = $this->_formatPrice($item->getData('base_original_price'));
+        $order['sku'] = $item->getData('sku');
+        $order['product_name'] = $item->getData('name');
+        $order['product_weight'] = $item->getData('weight');
+        $order['qty_ordered'] = $this->_formatQty($item->getData('qty_ordered'));
+        $order['original_price'] = $this->_formatPrice($item->getData('original_price'));
+        $order['price'] = $this->_formatPrice($item->getData('price'));
+        $order['base_price'] = $this->_formatPrice($item->getData('base_price'));
+        $order['tax_percent'] = $this->_formatPrice($item->getData('tax_percent'));
+        $order['tax_amount'] = $this->_formatPrice($item->getData('tax_amount'));
+        $order['discount_amount'] = $this->_formatPrice($item->getData('discount_amount'));
+        $order['price_line_total'] = $this->_formatPrice($order['qty_ordered'] * $order['price']);
 
-            $_product = $item->getProduct();
-            if (is_object($_product)) {
-                $_product->setStoreId($item->getStoreId());
+        $_product = $item->getProduct();
+        if (is_object($_product)) {
+            $_product->setStoreId($item->getStoreId());
 
-                $base_url = $store->getBaseUrl();
-                $base_url = trim($base_url, '/');
+            $base_url = $store->getBaseUrl();
+            $base_url = trim($base_url, '/');
 
-                /** @var \Magento\Catalog\Helper\Image $helper */
-                try {
-                    $url = $this->imageHelper
-                        ->init($_product, 'product_base_image')
-                        ->setImageFile($_product->getImage())
-                        ->getUrl();
-                } catch (\Exception $e) {
-                    $url = '';
-                }
+            /** @var \Magento\Catalog\Helper\Image $helper */
+            try {
+                $url = $this->imageHelper
+                    ->init($_product, 'product_base_image')
+                    ->setImageFile($_product->getImage())
+                    ->getUrl();
+            } catch (\Exception $e) {
+                $url = '';
+            }
 
-                $order['_external_image_url'] = $url;
+            $order['_external_image_url'] = $url;
 
-                $order['_url'] = $base_url . "/" . $_product->getUrlPath();
-                $order['_url_name'] = $order['product_name'];
-                $order['product_description'] = $_product->getData('description');
-                $order['short_description'] = $_product->getData('short_description');
+            $order['_url'] = $base_url . "/" . $_product->getUrlPath();
+            $order['_url_name'] = $order['product_name'];
+            $order['product_description'] = $_product->getData('description');
+            $order['short_description'] = $_product->getData('short_description');
 
-                $attributes = $_product->getAttributes();
-                $prodData = $_product->getData();
-                foreach ($attributes as $attribute) {
-                    if ($attribute->getFrontendInput() != "gallery" && $attribute->getFrontendInput() != 'price') {
-                        if (isset($prodData[$attribute->getAttributeCode()])) {
-                            if (!is_array($prodData[$attribute->getAttributeCode()])
-                                && ($attributeText = $_product->getAttributeText($attribute->getAttributeCode()))
-                            ) {
-                                $text = is_object($attributeText) ? $attributeText->getText() : $attributeText;
-                            } else {
-                                $text = $prodData[$attribute->getAttributeCode()];
-                            }
-                            $order['attribute_' . $attribute->getAttributeCode()] = $text;
+            $attributes = $_product->getAttributes();
+            $prodData = $_product->getData();
+            foreach ($attributes as $attribute) {
+                if ($attribute->getFrontendInput() != "gallery" && $attribute->getFrontendInput() != 'price') {
+                    if (isset($prodData[$attribute->getAttributeCode()])) {
+                        if (!is_array($prodData[$attribute->getAttributeCode()])
+                            && ($attributeText = $_product->getAttributeText($attribute->getAttributeCode()))
+                        ) {
+                            $text = is_object($attributeText) ? $attributeText->getText() : $attributeText;
+                        } else {
+                            $text = $prodData[$attribute->getAttributeCode()];
                         }
+                        $order['attribute_' . $attribute->getAttributeCode()] = $text;
                     }
                 }
             }
-            $order['full_options'] = [];
-            $prodOptions = $item->getProductOptions();
-
-            if (isset($prodOptions['attributes_info'])) {
-                foreach ($prodOptions['attributes_info'] as $option) {
-                    $order['full_options'][] = $option['label'] . $optionSeparator . $option['value'];
-                }
-                $order['full_options'] = implode($optionGlue, $order['full_options']);
-            }
-
-            $order = array_filter($order);
-            $order['additional_data'] = ($item->getData('additional_data') ? $item->getData('additional_data') : "");
-
-            return $order;
-        } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog(
-                'TemplatePlugin::getOrderData()',
-                $e->getMessage(),
-                $this->storeId,
-                'TemplatePlugin::getOrderData()'
-            );
         }
+        $order['full_options'] = [];
+        $prodOptions = $item->getProductOptions();
+
+        if (isset($prodOptions['attributes_info'])) {
+            foreach ($prodOptions['attributes_info'] as $option) {
+                $order['full_options'][] = $option['label'] . $optionSeparator . $option['value'];
+            }
+            $order['full_options'] = implode($optionGlue, $order['full_options']);
+        }
+
+        $order = array_filter($order);
+        $order['additional_data'] = ($item->getData('additional_data') ? $item->getData('additional_data') : "");
+
+        return $order;
     }
 
     /**
@@ -531,34 +534,26 @@ class TemplatePlugin
     /**
      * @param \Magento\Rma\Model\Item $item
      * @return array
+     * @throws \Zend_Json_Exception
      */
     public function getRmaData($item)
     {
         $returnItem = [];
-        try {
-            /** @var \Magento\Rma\Model\Item\Attribute $attribute */
-            foreach ($item->getAttributes() as $attribute) {
-                if (!is_null($item->getData($attribute->getAttributeCode()))) {
-                    if ($attributeText = $attribute->getFrontend()->getValue($item)) {
-                        $returnItem[$attribute->getAttributeCode()] = is_object($attributeText) ? $attributeText->getText() : $attributeText;
-                    } else {
-                        $returnItem[$attribute->getAttributeCode()] = $item->getData($attribute->getAttributeCode());
-                    }
+        /** @var \Magento\Rma\Model\Item\Attribute $attribute */
+        foreach ($item->getAttributes() as $attribute) {
+            if (!is_null($item->getData($attribute->getAttributeCode()))) {
+                if ($attributeText = $attribute->getFrontend()->getValue($item)) {
+                    $returnItem[$attribute->getAttributeCode()] = is_object($attributeText) ? $attributeText->getText() : $attributeText;
+                } else {
+                    $returnItem[$attribute->getAttributeCode()] = $item->getData($attribute->getAttributeCode());
                 }
             }
-            if ($item->getProductOptions() && !empty($item->getProductOptions())) {
-                $productOptions = \Zend_Json::decode($item->getProductOptions());
-                if ($productOptions) {
-                    $returnItem['product_options'] = $productOptions;
-                }
+        }
+        if ($item->getProductOptions() && !empty($item->getProductOptions())) {
+            $productOptions = \Zend_Json::decode($item->getProductOptions());
+            if ($productOptions) {
+                $returnItem['product_options'] = $productOptions;
             }
-        } catch (\Exception $e) {
-            $this->emarsysHelper->addErrorLog(
-                'TemplatePlugin::getRmaData()',
-                $e->getMessage(),
-                $this->storeId,
-                'TemplatePlugin::getRmaData()'
-            );
         }
 
         return $returnItem;
