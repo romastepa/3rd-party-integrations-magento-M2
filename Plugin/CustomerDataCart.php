@@ -38,12 +38,14 @@ class CustomerDataCart
      */
     public function afterGetSectionData(Cart $subject, $result)
     {
-        if (!empty($result['items'])) {
+        if (isset($result['items']) && !empty($result['items'])) {
             foreach ($result['items'] as &$item) {
+                $productId = $this->product->getIdBySku($item['product_sku']);
+                $item['product_real_id'] = $productId ? $productId : $item['product_id'];
+
                 /** @var \Magento\Quote\Model\Quote\Item $itemModel */
                 $itemModel = $this->item->load($item['item_id']);
-                $item['product_real_id'] = $this->product->getIdBySku($item['product_sku']);
-                $item['base_product_price_value'] = round($itemModel->getBaseCalculationPrice(), 2);
+                $item['base_product_price_value'] = round($itemModel->getBasePrice(), 2);
             }
         }
 

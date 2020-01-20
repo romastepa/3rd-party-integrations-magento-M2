@@ -140,7 +140,7 @@
                         dataEmarsys.cart.items.map(product => {
                             return {
                                 item: (uniqueIdentifier == 'product_id') ? product.product_real_id : product.product_sku,
-                                price: dataEmarsys.useBaseCurrency ? product.base_product_price_value : product.product_price_value,
+                                price: parseFloat(parseFloat(dataEmarsys.useBaseCurrency ? product.base_product_price_value : product.product_price_value).toFixed(2)),
                                 quantity: parseInt(product.qty)
                             };
                         })
