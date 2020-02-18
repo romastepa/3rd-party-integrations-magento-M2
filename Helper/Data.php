@@ -42,14 +42,13 @@ use Emarsys\Emarsys\{
     Model\PlaceholdersFactory,
     Model\EmarsyseventmappingFactory as EmarsysEventMappingFactory,
     Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory,
-    Model\Api as EmarsysApi,
     Model\Emarsysevents,
     Model\ResourceModel\Event as ModelResourceModelEvent,
     Model\EmarsyseventsFactory,
     Model\Api\Api as EmarsysApiApi,
     Model\Logs as EmarsysModelLogs,
     Helper\Logs as EmarsysHelperLogs,
-    Controller\Adminhtml\Email\Template
+    Controller\Adminhtml\Email\Template\Proxy as ControllerTemplate
 };
 use Zend_Json;
 
@@ -252,7 +251,7 @@ class Data extends AbstractHelper
     protected $emarsysEventPlaceholderMappingFactory;
 
     /**
-     * @var Template
+     * @var ControllerTemplate
      */
     protected $emailTemplate;
 
@@ -380,7 +379,7 @@ class Data extends AbstractHelper
      * @param EmarsysQueueFactory $queueModelColl
      * @param CollectionFactory $magentoEventsCollection
      * @param PlaceholdersFactory $emarsysEventPlaceholderMappingFactory
-     * @param Template $emailTemplate
+     * @param ControllerTemplate $emailTemplate
      * @param ProductCollectionFactory $magentoProductAttributeColl
      * @param EmarsysEventMappingFactory $emarsysEventMapping
      * @param EmarsyseventsCollectionFactory $emarsysEventCollectionFactory
@@ -408,7 +407,7 @@ class Data extends AbstractHelper
         EmarsysQueueFactory $queueModelColl,
         CollectionFactory $magentoEventsCollection,
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
-        Template $emailTemplate,
+        ControllerTemplate $emailTemplate,
         ProductCollectionFactory $magentoProductAttributeColl,
         EmarsysEventMappingFactory $emarsysEventMapping,
         EmarsyseventsCollectionFactory $emarsysEventCollectionFactory,

@@ -46,8 +46,7 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
         Context $context,
         Registry $coreRegistry,
         BackendTemplateFactory $backendTemplate
-    )
-    {
+    ) {
         $this->_coreRegistry = $coreRegistry;
         $this->backendTemplate = $backendTemplate;
         parent::__construct($context, $coreRegistry);
