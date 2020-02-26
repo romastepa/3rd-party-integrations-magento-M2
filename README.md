@@ -16,7 +16,7 @@
 
 
 ### Composer Setup
-- ```composer require emarsys/emarsys:">=1.0.17"```
+- ```composer require emarsys/emarsys```
 - ```php bin/magento module:enable Emarsys_Emarsys```
 - ```php bin/magento setup:upgrade```
 - ```php bin/magento setup:di:compile```
