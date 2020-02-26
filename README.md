@@ -10,9 +10,9 @@
 ### Magento Setup
 - Make sure you have the correct file and folder permissions set on your magento installation so that the magnento store can install the app.
 - Refer to the Magento 2 documentation for full instructions on how to install an app, the commands should be similar to the following:
-```php bin/magento setup:upgrade - This tells magento to install the app.```
-```php bin/magento setup:static-content:deploy - This tells magento to deploy static files.```
-```php bin/magento cache:flush - This flushes the cache so the app appears in the admin area correctly.```
+- ```php bin/magento setup:upgrade``` - This tells magento to install the app.
+- ```php bin/magento setup:static-content:deploy``` - This tells magento to deploy static files.
+- ```php bin/magento cache:flush``` - This flushes the cache so the app appears in the admin area correctly.
 
 
 ### Composer Setup
