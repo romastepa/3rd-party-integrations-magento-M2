@@ -1,5 +1,5 @@
 
-# **Manual Install / Upgrade**
+### Manual Install / Upgrade
 - Locate the /app/code directory which should be under the magento root installation.
 - If the code folder is not there, create it.
 - Remove the "Emarsys" directory from "MAGENTO_ROOT/app/code" directory if exists
