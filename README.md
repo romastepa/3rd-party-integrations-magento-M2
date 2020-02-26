@@ -10,18 +10,18 @@
 ### Magento Setup
 - Make sure you have the correct file and folder permissions set on your magento installation so that the magnento store can install the app.
 - Refer to the Magento 2 documentation for full instructions on how to install an app, the commands should be similar to the following:
-- ```php bin/magento setup:upgrade``` - This tells magento to install the app.
-- ```php bin/magento setup:static-content:deploy``` - This tells magento to deploy static files.
-- ```php bin/magento cache:flush``` - This flushes the cache so the app appears in the admin area correctly.
+- ```bin/magento setup:upgrade``` - This tells magento to install the app.
+- ```bin/magento setup:static-content:deploy``` - This tells magento to deploy static files.
+- ```bin/magento cache:flush``` - This flushes the cache so the app appears in the admin area correctly.
 
 
 ### Composer Setup
 - ```composer require emarsys/emarsys```
-- ```php bin/magento module:enable Emarsys_Emarsys```
-- ```php bin/magento setup:upgrade```
-- ```php bin/magento setup:di:compile```
-- ```php bin/magento setup:static-content:deploy```
-- ```php bin/magento cache:flush```
+- ```bin/magento module:enable Emarsys_Emarsys```
+- ```bin/magento setup:upgrade```
+- ```bin/magento setup:di:compile```
+- ```bin/magento setup:static-content:deploy```
+- ```bin/magento cache:flush```
 
 
 # Release Notes
