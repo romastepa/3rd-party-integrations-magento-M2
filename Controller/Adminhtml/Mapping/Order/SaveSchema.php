@@ -14,7 +14,7 @@ use Emarsys\Emarsys\Helper\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class SaveSchema

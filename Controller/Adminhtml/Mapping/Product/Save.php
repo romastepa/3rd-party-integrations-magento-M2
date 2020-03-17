@@ -11,7 +11,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\ProductFactory;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;

@@ -48,7 +48,7 @@ use Emarsys\Emarsys\{
     Model\Api\Api as EmarsysApiApi,
     Model\Logs as EmarsysModelLogs,
     Helper\Logs as EmarsysHelperLogs,
-    Controller\Adminhtml\Email\Template\Proxy as ControllerTemplate
+    Controller\Adminhtml\Email\Template as ControllerTemplate
 };
 use Zend_Json;
 
@@ -784,7 +784,7 @@ class Data extends AbstractHelper
     public function getPhpSettings()
     {
         return [
-            'max_execution_time' => @ini_get('max_execution_time'),
+            'max_execution_time' => ini_get('max_execution_time'),
             'phpinfo' => $this->getPhpInfoArray(),
         ];
     }
@@ -794,7 +794,7 @@ class Data extends AbstractHelper
      */
     public function getPhpVersion()
     {
-        $phpVersion = @phpversion();
+        $phpVersion = phpversion();
         $array = explode("-", $phpVersion);
         return $array[0];
     }
@@ -883,7 +883,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.15',
+                    'value' => '1.0.19',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),
@@ -975,20 +975,13 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeID
+     * @param $storeId
      * @return string
      * @throws NoSuchEntityException
      */
-    public function openPortStatus($storeID)
+    public function openPortStatus($storeId)
     {
-        $websiteId = $this->storeManager->getStore($storeID)->getWebsiteId();
-        $scope = ScopeInterface::SCOPE_WEBSITES;
-
-        if ($scope && $websiteId) {
-            $host = $this->scopeConfigInterface->getValue(self::XPATH_EMARSYS_FTP_HOSTNAME, $scope, $websiteId);
-        } else {
-            $host = $this->scopeConfigInterface->getValue(self::XPATH_EMARSYS_FTP_HOSTNAME);
-        }
+        $host = $this->storeManager->getStore($storeId)->getConfig(self::XPATH_EMARSYS_FTP_HOSTNAME);
 
         $ports = [21, rand(32000, 32500), rand(32000, 32500)];
         $portStatus = [];
@@ -996,7 +989,7 @@ class Data extends AbstractHelper
             $errno = null;
             $errstr = null;
 
-            $connection = @fsockopen($host, $port, $errno, $errstr);
+            $connection = fsockopen($host, $port, $errno, $errstr);
 
             if (is_resource($connection)) {
                 $portStatus[] = 'open';
@@ -1804,8 +1797,8 @@ class Data extends AbstractHelper
         /** @var WebsiteInterface $websiteId */
         $website = $this->storeManager->getWebsite($websiteId);
 
-        $defaultStore = @$website->getDefaultStore();
-        if ($defaultStore && $defaultStore->getId()) {
+        $defaultStore = $website->getDefaultStore();
+        if (($defaultStore ?? null) && $defaultStore->getId()) {
             $firstStoreId = $defaultStore->getId();
         } else {
             $stores = $website->getStores();
@@ -2234,46 +2227,6 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check FTP Connection
-     *
-     * @param $hostname
-     * @param $username
-     * @param $password
-     * @param $port
-     * @param $ftpSsl
-     * @param $passiveMode
-     * @return bool
-     */
-    public function checkFtpConnection($hostname, $username, $password, $port, $ftpSsl, $passiveMode)
-    {
-        $result = false;
-        if (!$username || !$password || !$hostname || !$port) {
-            return $result;
-        }
-
-        if ($ftpSsl == 1) {
-            $ftpConnId = @ftp_ssl_connect($hostname, $port);
-        } else {
-            $ftpConnId = @ftp_connect($hostname, $port);
-        }
-        if ($ftpConnId != '') {
-            $ftpLogin = @ftp_login($ftpConnId, $username, $password);
-            if ($ftpLogin == 1) {
-                $passsiveState = true;
-                if ($passiveMode == 1) {
-                    $passsiveState = @ftp_pasv($ftpConnId, true);
-                }
-                if ($passsiveState) {
-                    $result = true;
-                    @ftp_close($ftpConnId);
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * @param null|string|bool|int|StoreInterface $store
      * @return bool|true
      * @throws LocalizedException
@@ -2378,16 +2331,16 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $scope
      * @param $websiteId
      * @return array|bool
+     * @throws LocalizedException
      */
-    public function collectWebDavCredentials($scope, $websiteId)
+    public function collectWebDavCredentials($websiteId)
     {
         //webDav credentials from admin configurations
-        $webDavUrl = $this->customerResourceModel->getDataFromCoreConfig(self::XPATH_WEBDAV_URL, $scope, $websiteId);
-        $webDavUser = $this->customerResourceModel->getDataFromCoreConfig(self::XPATH_WEBDAV_USER, $scope, $websiteId);
-        $webDavPass = $this->customerResourceModel->getDataFromCoreConfig(self::XPATH_WEBDAV_PASSWORD, $scope, $websiteId);
+        $webDavUrl = $this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_WEBDAV_URL);
+        $webDavUser = $this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_WEBDAV_USER);
+        $webDavPass = $this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_WEBDAV_PASSWORD);
 
         if ($webDavUrl != '' && $webDavUser != '' && $webDavPass != '') {
             return [

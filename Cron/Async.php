@@ -8,8 +8,8 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\{
-    Helper\Data\Proxy as EmarsysHelper,
-    Helper\Logs\Proxy as EmarsysLogsHelper,
+    Helper\Data as EmarsysHelper,
+    Helper\Logs as EmarsysLogsHelper,
     Model\ResourceModel\Async\CollectionFactory,
     Model\Api\Api as EmarsysModelApiApi,
     Helper\Cron as EmarsysCronHelper

@@ -170,7 +170,7 @@ class Api extends \Magento\Framework\DataObject
          * an ISO 8601 date string like '2010-12-31T15:30:59+00:00' or '2010-12-31T15:30:59Z'
          * passwordDigest looks sg like 'MDBhOTMwZGE0OTMxMjJlODAyNmE1ZWJhNTdmOTkxOWU4YzNjNWZkMw=='
          */
-        $nonce = md5(time());
+        $nonce = hash('sha256', time());
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -180,7 +180,7 @@ class Api extends \Magento\Framework\DataObject
             'Nonce="' . $nonce . '", ' .
             'Created="' . $timestamp . '"',
             'Content-type: application/json;charset="utf-8"',
-            'Extension-Version: 1.0.15',
+            'Extension-Version: 1.0.19',
         ]);
 
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);

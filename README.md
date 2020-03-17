@@ -17,7 +17,7 @@
 
 ### Composer Setup
 1. ```composer config repositories.emartech-3rd-party-integrations-magento-m2 git git@github.com:romastepa/3rd-party-integrations-magento-M2```
-2. ```composer require emarsys/emarsys:">=1.0.17"```
+2. ```composer require emarsys/emarsys:">=1.0.19"```
 3. ```php bin/magento module:enable Emarsys_Emarsys```
 4. ```php bin/magento setup:upgrade```
 5. ```php bin/magento setup:di:compile```
@@ -27,7 +27,6 @@
 
 # Release Notes
 
-## v1.0.17
-- Magento 2.3.3 support
-- Async customer/subscriber/email exports
-- Turn on/off logs
+## v1.0.19
+- Magento 2.3.4 support
+- Bugfix

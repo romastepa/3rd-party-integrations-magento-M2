@@ -484,21 +484,6 @@ class Customer extends AbstractDb
     }
 
     /**
-     * @param $data
-     * @return string
-     */
-    public function getSubscribeIdFromEmail($data)
-    {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('newsletter_subscriber'), 'subscriber_id')
-            ->where('subscriber_email = ?', @$data['email'])
-            ->where('store_id = ?', @$data['store_id']);
-
-        return $this->getConnection()->fetchOne($select);
-    }
-
-    /**
      * @param int $status
      * @param array $subscriberIds
      *
@@ -514,23 +499,6 @@ class Customer extends AbstractDb
             ],
             $this->getConnection()->quoteInto('subscriber_id in (?)', $subscriberIds)
         );
-    }
-
-    /**
-     *
-     * @param string $email
-     * @param int $websiteId
-     * @return string
-     */
-    public function checkCustomerExistsInMagento($email, $websiteId)
-    {
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('customer_entity'), 'entity_id')
-            ->where('email = ?', $email)
-            ->where('website_id = ?', $websiteId);
-
-        return $this->getConnection()->fetchOne($select);
     }
 
     /**
@@ -639,10 +607,14 @@ class Customer extends AbstractDb
      */
     public function getEmarsysFieldNameContact($attdata, $storeId)
     {
+        if ($attdata['emarsys_contact_field'] ?? null) {
+            return array();
+        }
+
         $select = $this->getConnection()
             ->select()
             ->from($this->getTable('emarsys_contact_field'))
-            ->where('emarsys_field_id = ?', @$attdata['emarsys_contact_field'])
+            ->where('emarsys_field_id = ?', $attdata['emarsys_contact_field'])
             ->where('store_id = ?', $storeId);
 
         return $this->getConnection()->fetchRow($select);

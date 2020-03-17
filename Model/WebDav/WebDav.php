@@ -105,7 +105,6 @@ class WebDav extends DataObject
             'toDate' => $toDate
         ];
 
-        $scope = ScopeInterface::SCOPE_WEBSITES;
         $errorStatus = true;
         $jobDetails = $this->cronHelper->getJobDetail($exportMode);
 
@@ -127,7 +126,7 @@ class WebDav extends DataObject
         if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
 
             //webDav credentials from admin configurations
-            $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($scope, $websiteId);
+            $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($websiteId);
             if ($webDavCredentials && !empty($webDavCredentials)) {
 
                 //export Data to WebDav

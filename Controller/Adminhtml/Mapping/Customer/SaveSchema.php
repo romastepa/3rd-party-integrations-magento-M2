@@ -16,7 +16,7 @@ use Magento\{
     Eav\Model\Entity\Attribute
 };
 use Emarsys\Emarsys\{
-    Helper\Data\Proxy as EmarsysHelper,
+    Helper\Data as EmarsysHelper,
     Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
     Model\Logs,
     Helper\Logs as EmarsysHelperLogs

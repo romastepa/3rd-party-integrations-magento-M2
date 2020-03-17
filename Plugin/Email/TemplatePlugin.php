@@ -8,8 +8,8 @@
 namespace Emarsys\Emarsys\Plugin\Email;
 
 use Emarsys\Emarsys\{
-    Helper\Data\Proxy as EmarsysHelper,
-    Helper\Logs\Proxy as EmarsysLogsHelper,
+    Helper\Data as EmarsysHelper,
+    Helper\Logs as EmarsysLogsHelper,
     Registry\EmailSendState,
     Model\Api\Api as EmarsysModelApiApi,
     Model\ResourceModel\Customer as CustomerResourceModel,
@@ -18,7 +18,8 @@ use Emarsys\Emarsys\{
 use Magento\{
     Email\Model\Template,
     Catalog\Helper\Image,
-    Framework\Stdlib\DateTime\DateTime
+    Framework\Stdlib\DateTime\DateTime,
+    Store\Model\StoreManagerInterface
 };
 
 /**
@@ -67,6 +68,11 @@ class TemplatePlugin
     protected $asyncModel;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * Temp variables
      */
     protected $storeId = false;
@@ -90,6 +96,7 @@ class TemplatePlugin
      * @param EmarsysModelApiApi $api
      * @param CustomerResourceModel $customerResourceModel
      * @param AsyncFactory $asyncModel
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         EmarsysHelper $emarsysHelper,
@@ -99,7 +106,8 @@ class TemplatePlugin
         EmailSendState $state,
         EmarsysModelApiApi $api,
         CustomerResourceModel $customerResourceModel,
-        AsyncFactory $asyncModel
+        AsyncFactory $asyncModel,
+        StoreManagerInterface $storeManager
     ) {
         $this->emarsysHelper = $emarsysHelper;
         $this->logsHelper = $logsHelper;
@@ -109,6 +117,7 @@ class TemplatePlugin
         $this->api = $api;
         $this->customerResourceModel = $customerResourceModel;
         $this->asyncModel = $asyncModel;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -174,11 +183,12 @@ class TemplatePlugin
         $storeReflection = $reflection->getProperty('storeManager');
         $storeReflection->setAccessible(true);
 
-        /** @var \Magento\Store\Model\StoreManager $store
-        $store = $storeReflection->getValue($subject);
-        $store = $store->getStore();
-         **/
-        $store = $vars['store'];
+        /** @var \Magento\Store\Model\StoreManager $store **/
+        if (isset($vars['store'])) {
+            $store = $vars['store'];
+        } else {
+            $store = $this->storeManager->getStore();
+        }
         $this->storeId = $store->getId();
         $this->websiteId = $store->getWebsiteId();
         if (!(bool)$store->getConfig('transaction_mail/transactionmail/enable_customer')) {

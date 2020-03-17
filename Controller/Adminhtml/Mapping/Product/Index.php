@@ -9,7 +9,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Index

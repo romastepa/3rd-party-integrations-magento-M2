@@ -97,7 +97,6 @@ class Subscriber extends DataObject
         $storeCode = $store->getCode();
         $data['storeId'] = $storeId;
         $data['website'] = $websiteId;
-        $scope = ScopeInterface::SCOPE_WEBSITES;
         $errorCount = true;
 
         $logsArray['job_code'] = 'initialdbload';
@@ -136,7 +135,7 @@ class Subscriber extends DataObject
 
         if ($customerValues) {
             //webDav credentials from admin configurations
-            $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($scope, $websiteId);
+            $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($websiteId);
             if ($webDavCredentials && !empty($webDavCredentials)) {
                 $webDavUrl = $webDavCredentials['baseUri'];
                 $webDavUser = $webDavCredentials['userName'];

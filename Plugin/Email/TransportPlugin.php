@@ -8,7 +8,7 @@
 namespace Emarsys\Emarsys\Plugin\Email;
 
 use Magento\Framework\Mail\TransportInterface;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Registry\EmailSendState;
 
 /**

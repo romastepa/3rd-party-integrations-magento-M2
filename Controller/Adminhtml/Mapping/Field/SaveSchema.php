@@ -15,7 +15,7 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 use Emarsys\Emarsys\{
-    Helper\Data\Proxy as EmarsysHelper,
+    Helper\Data as EmarsysHelper,
     Model\ResourceModel\Field as EmarsysResourceModelField,
     Helper\Logs,
     Model\Api\Api as EmarsysModelApiApi,

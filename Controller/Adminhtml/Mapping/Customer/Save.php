@@ -12,7 +12,7 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\CustomerFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;

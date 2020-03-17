@@ -17,7 +17,7 @@ use Magento\{
 use Emarsys\Emarsys\{
     Model\CustomerFactory,
     Model\ResourceModel\Customer,
-    Helper\Data\Proxy as EmarsysHelper,
+    Helper\Data as EmarsysHelper,
     Model\Logs,
     Helper\Logs as EmarsysHelperLogs
 };

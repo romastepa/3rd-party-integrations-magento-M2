@@ -13,7 +13,7 @@ use Magento\{
     Customer\Model\Session,
     Customer\Api\CustomerRepositoryInterface
 };
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Subscriber

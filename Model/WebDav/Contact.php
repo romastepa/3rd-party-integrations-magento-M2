@@ -115,7 +115,6 @@ class Contact extends \Magento\Framework\DataObject
      */
     public function exportCustomerDataWebDav($data, $logId = null)
     {
-        $scope = ScopeInterface::SCOPE_WEBSITES;
         $websiteId = $data['website'];
 
         if (isset($data['store'])) {
@@ -150,7 +149,7 @@ class Contact extends \Magento\Framework\DataObject
         $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
         if ($customerCollection->getSize()) {
             //webDav credentials from admin configurations
-            $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($scope, $websiteId);
+            $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($websiteId);
             if ($webDavCredentials && !empty($webDavCredentials)) {
                 $webDavUrl = $webDavCredentials['baseUri'];
                 $webDavUser = $webDavCredentials['userName'];

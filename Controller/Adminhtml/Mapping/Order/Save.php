@@ -7,7 +7,7 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
 
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;

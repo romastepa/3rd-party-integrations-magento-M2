@@ -10,7 +10,7 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Emarsys\Emarsys\Helper\Data\Proxy as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\FieldFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
 use Emarsys\Emarsys\Helper\Logs;
