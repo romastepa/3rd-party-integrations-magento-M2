@@ -17,7 +17,6 @@ use Magento\{
 
 /**
  * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\FtpTestConnection
  */
 class Index extends Action
 {

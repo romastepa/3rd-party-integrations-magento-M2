@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Export;
@@ -12,8 +12,6 @@ use Magento\Backend\Block\Widget\Context;
 
 /**
  * Class Form
- *
- * @package Emarsys\Emarsys\Block\Adminhtml\Orderexport
  */
 class Form extends \Magento\Backend\Block\Widget\Form
 {
@@ -26,14 +24,14 @@ class Form extends \Magento\Backend\Block\Widget\Form
 
     /**
      * Form constructor.
+     * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param array $data
-     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
+        EmarsysHelper $emarsysHelper,
         Context $context,
-        array $data = [],
-        EmarsysHelper $emarsysHelper
+        array $data = []
     ) {
         parent::__construct($context, $data);
         $this->setId('orderExportForm');

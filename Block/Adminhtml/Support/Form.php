@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Support;
 
@@ -12,7 +12,6 @@ use Magento\Backend\Block\Widget\Form as WidgetForm;
 
 /**
  * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\Support
  */
 class Form extends WidgetForm
 {

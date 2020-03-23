@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml;
@@ -17,7 +17,6 @@ use Magento\Framework\DataObjectFactory;
 
 /**
  * Class Cron
- * @package Emarsys\Emarsys\Block\Adminhtml
  */
 class Cron extends Extended
 {
@@ -113,7 +112,8 @@ class Cron extends Extended
         foreach ($rows as $row) {
             foreach ($row as $key => $datahere) {
                 $datahere['rowid'] = $count;
-                /*condition to filter only emarsys starts here, to get all the crons in this mageto remove the below if condition*/
+                /* condition to filter only emarsys starts here,
+                to get all the crons in this mageto remove the below if condition */
                 if (isset($datahere['name'])) {
                     $emarsysexp = explode("_", $datahere['name']);
                 }
@@ -123,7 +123,8 @@ class Cron extends Extended
 
                 /* filter code ends here */
 
-                $rowObj = $this->dataObjectFactory->create();// use this create method to prevent getting only the last data in the grid.
+                // use this create method to prevent getting only the last data in the grid.
+                $rowObj = $this->dataObjectFactory->create();
                 $rowObj->setData($datahere)->toJson();
                 $collection->addItem($rowObj);
                 $collection->loadData();
@@ -164,7 +165,7 @@ class Cron extends Extended
             "header" =>__("Action"),
             "align"  => "left",
             "index"  => "rowid",
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer\Messagetype',
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer\Messagetype::class,
             'width'  => '150'
         ]);
         return parent::_prepareColumns();

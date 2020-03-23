@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -18,7 +18,6 @@ use Emarsys\Emarsys\Helper\Logs as EmarsysLogs;
 
 /**
  * Class Logs
- * @package Emarsys\Emarsys\Model
  */
 class Logs extends \Magento\Framework\Model\AbstractModel
 {

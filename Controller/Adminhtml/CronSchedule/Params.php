@@ -12,7 +12,6 @@ use Emarsys\Emarsys\Model\EmarsysCronDetailsFactory;
 
 /**
  * Class Params
- * @package Emarsys\Emarsys\Controller\Adminhtml\CronSchedule
  */
 class Params extends Action
 {

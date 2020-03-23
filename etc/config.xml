@@ -3,7 +3,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -20,7 +20,7 @@
                 <ftp_bulk_export_dir>/</ftp_bulk_export_dir>
                 <useftp_overssl>1</useftp_overssl>
                 <usepassive_mode>1</usepassive_mode>
-                <apiurl>https://api.github.com/repos/emartech/3rd-party-integrations-magento-M2/releases/latest</apiurl>
+                <apiurl>https://api.github.com/repos/romastepa/3rd-party-integrations-magento-M2/releases/latest</apiurl>
             </ftp_settings>
             <async>
                 <enable>0</enable>

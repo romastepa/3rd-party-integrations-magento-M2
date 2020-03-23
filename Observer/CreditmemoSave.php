@@ -13,7 +13,6 @@ use Magento\Framework\Event\ObserverInterface;
 
 /**
  * Class CreditmemoSave
- * @package Emarsys\Emarsys\Observer
  */
 class CreditmemoSave implements ObserverInterface
 {

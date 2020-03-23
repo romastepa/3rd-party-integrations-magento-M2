@@ -23,7 +23,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class RealTimeCustomer
- * @package Emarsys\Emarsys\Observer
  */
 class RealTimeCustomer implements ObserverInterface
 {

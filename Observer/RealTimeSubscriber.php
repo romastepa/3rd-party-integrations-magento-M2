@@ -22,7 +22,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class RealTimeSubscriber
- * @package Emarsys\Emarsys\Observer
  */
 class RealTimeSubscriber implements ObserverInterface
 {

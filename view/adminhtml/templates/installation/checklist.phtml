@@ -2,8 +2,10 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
+/** @var Emarsys\Emarsys\Block\Adminhtml\Installation\Checklist $block */
 ?>
 <?php if ($store = $block->getStore()): ?>
     <?php
@@ -126,7 +128,8 @@
                         $filedsToCreate = [];
                         if ($emarsysCustomerFieldNames) {
                             foreach ($mandatoryFileds as $customerField => $customerInMagentoFieldId) {
-                                if ($customerInEmarsysFieldId = array_search($customerField, $emarsysCustomerFieldNames)) {
+                                $customerInEmarsysFieldId = array_search($customerField, $emarsysCustomerFieldNames);
+                                if ($customerInEmarsysFieldId) {
                                     ?>
                                     <tr>
                                         <td class="label">

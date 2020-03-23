@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer;
@@ -11,7 +11,6 @@ use Magento\Framework\DataObject;
 
 /**
  * Class Option
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer
  */
 class Option extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
 {

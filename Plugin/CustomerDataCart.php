@@ -13,7 +13,6 @@ use Magento\Catalog\Model\Product;
 
 /**
  * Class CustomerData
- * @package Emarsys\Emarsys\Plugin
  */
 class CustomerDataCart
 {

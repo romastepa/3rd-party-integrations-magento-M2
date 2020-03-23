@@ -2,13 +2,12 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Block\System\Config\Form;
 
 /**
  * Class CronDetailsCleanerButton
- * @package Emarsys\Emarsys\Block\System\Config\Form
  */
 class CronDetailsCleanerButton extends Button
 {

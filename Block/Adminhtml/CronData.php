@@ -2,13 +2,13 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
 /**
  * Class CronData
- * @package Emarsys\Emarsys\Block\Adminhtml
  */
 class CronData extends \Magento\Framework\View\Element\Template
 {
@@ -30,14 +30,12 @@ class CronData extends \Magento\Framework\View\Element\Template
     ) {
         parent::__construct($context, $data);
         $this->_config = $config;
-        $jobGroupsRoot = $this->_config->getJobs();
-        $data = $this->_request->getParam('group');
     }
 
     /**
      * @return array
      */
-    function getCronData()
+    public function getCronData()
     {
         return $this->_config->getJobs();
     }

@@ -54,8 +54,6 @@ use Zend_Json;
 
 /**
  * Class Data
- *
- * @package Emarsys\Emarsys\Helper
  */
 class Data extends AbstractHelper
 {
@@ -989,14 +987,18 @@ class Data extends AbstractHelper
             $errno = null;
             $errstr = null;
 
-            $connection = fsockopen($host, $port, $errno, $errstr);
-
-            if (is_resource($connection)) {
-                $portStatus[] = 'open';
-                fclose($connection);
-            } else {
+            try {
+                $connection = fsockopen($host, $port, $errno, $errstr);
+                if (is_resource($connection)) {
+                    $portStatus[] = 'open';
+                    fclose($connection);
+                } else {
+                    $portStatus[] = 'closed';
+                }
+            } catch (\Exception $e) {
                 $portStatus[] = 'closed';
             }
+
         }
         if (in_array('closed', $portStatus)) {
             $aggregatePortStatus = 'No';
@@ -1127,7 +1129,6 @@ class Data extends AbstractHelper
             if (strstr($variable, '{{css')) {
                 $variable = $this->substringBetweenTransVar($variable);
             }
-
 
             if (!empty($variable)) {
                 $name = $variable;
@@ -1620,7 +1621,7 @@ class Data extends AbstractHelper
      */
     public function getEmarsysEventMappingId($magentoEventId, $storeId = null)
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = $this->storeManager->getStore()->getId();
         }
 
@@ -1641,7 +1642,7 @@ class Data extends AbstractHelper
      */
     public function getEmarsysEventApiId($magentoEventId, $storeId = null)
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = $this->storeManager->getStore()->getId();
         }
 
@@ -1735,7 +1736,7 @@ class Data extends AbstractHelper
     {
         $data = [
             'name' => 'Technical Support',
-            'email' => 'support@emarsys.com'
+            'email' => 'support@emarsys.com',
         ];
         return $data;
     }
@@ -1749,10 +1750,10 @@ class Data extends AbstractHelper
 
         $firstStore = false;
         foreach ($stores as $store) {
-             if ($store->getConfig(self::XPATH_EMARSYS_ENABLED)) {
-                 $firstStore = $store;
-                 break;
-             }
+            if ($store->getConfig(self::XPATH_EMARSYS_ENABLED)) {
+                $firstStore = $store;
+                break;
+            }
         }
 
         if ($firstStore) {
@@ -1761,8 +1762,9 @@ class Data extends AbstractHelper
             $store = current($stores);
         }
 
+        /** @var \Magento\Store\Model\Website $website */
         $website = $store->getWebsite();
-        $defaultStore = @$website->getDefaultStore();
+        $defaultStore = $website->getDefaultStore() ?? false;
         if ($defaultStore && $defaultStore->getId()) {
             $firstStoreId = $defaultStore->getId();
         } else {
@@ -2376,7 +2378,7 @@ class Data extends AbstractHelper
      */
     public function getContactCsvGenerationPath($outputFile)
     {
-        return BP . '/var/' . $outputFile;;
+        return BP . '/var/' . $outputFile;
     }
 
     /**

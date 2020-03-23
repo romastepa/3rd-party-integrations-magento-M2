@@ -5,8 +5,6 @@ use Magento\Framework\Data\Form\Element\Factory as Factory;
 
 /**
  * Class CustomRenderer
- *
- * @package Emarsys\Emarsys\Block\Adminhtml\Customformfield\Edit\Renderer
  */
 class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElement
 {
@@ -62,7 +60,8 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
         </div>";
         $html .=
             " <ul><li>
-        <div class= 'catg-sub-'><input type='checkbox' disabled='disabled' name='dummy-checkbox'/>Root Category</div>" . $catTree;
+        <div class= 'catg-sub-'><input type='checkbox' disabled='disabled' name='dummy-checkbox'/>Root Category</div>"
+            . $catTree;
 
         $html .= "</div></div>";
         return $html;

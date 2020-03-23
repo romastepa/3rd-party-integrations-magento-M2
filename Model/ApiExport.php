@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -23,7 +23,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class ApiExport
- * @package Emarsys\Emarsys\Model
  */
 class ApiExport extends ZendClient
 {

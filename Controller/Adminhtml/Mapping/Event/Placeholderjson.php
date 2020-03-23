@@ -18,7 +18,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Placeholderjson
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
  */
 class Placeholderjson extends Action
 {

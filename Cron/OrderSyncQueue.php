@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Cron;
 
@@ -14,7 +14,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class OrderSyncQueue
- * @package Emarsys\Emarsys\Cron
  */
 class OrderSyncQueue
 {

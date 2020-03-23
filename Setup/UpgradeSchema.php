@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Setup;
 
@@ -12,7 +12,6 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 
 /**
  * Class UpgradeSchema
- * @package Emarsys\Emarsys\Setup
  */
 class UpgradeSchema implements UpgradeSchemaInterface
 {

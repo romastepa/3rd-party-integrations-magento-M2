@@ -8,7 +8,6 @@ namespace Emarsys\Emarsys\Model\ResourceModel;
 
 /**
  * Class Product
- * @package Emarsys\Emarsys\Model\ResourceModel
  */
 class Emrattribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {

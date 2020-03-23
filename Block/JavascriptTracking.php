@@ -24,7 +24,6 @@ use Emarsys\Emarsys\Helper\Data;
 
 /**
  * Class JavascriptTracking
- * @package Emarsys\Emarsys\Block
  */
 class JavascriptTracking extends Template
 {

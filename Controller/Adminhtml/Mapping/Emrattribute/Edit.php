@@ -16,7 +16,6 @@ use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Edit
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute
  */
 class Edit extends Action
 {

@@ -20,7 +20,6 @@ use Magento\{
 
 /**
  * Class RealTimeAdminSubscriber
- * @package Emarsys\Emarsys\Observer
  */
 class RealTimeAdminSubscriber implements ObserverInterface
 {

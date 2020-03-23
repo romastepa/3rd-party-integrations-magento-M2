@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Customerexport\Edit\Tab;
@@ -16,7 +16,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\Customerexport\Edit\Tab
  */
 class Form extends Generic
 {
@@ -40,17 +39,17 @@ class Form extends Generic
      * @param Context $context
      * @param Registry $registry
      * @param FormFactory $formFactory
-     * @param array $data
      * @param Http $request
      * @param EmarsysHelper $emarsysHelper
+     * @param array $data
      */
     public function __construct(
         Context $context,
         Registry $registry,
         FormFactory $formFactory,
-        array $data = [],
         Http $request,
-        EmarsysHelper $emarsysHelper
+        EmarsysHelper $emarsysHelper,
+        array $data = []
     ) {
         parent::__construct($context, $registry, $formFactory, $data);
         $this->storeManager = $context->getStoreManager();

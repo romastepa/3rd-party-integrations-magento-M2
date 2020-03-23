@@ -15,7 +15,6 @@ use Magento\{
 
 /**
  * Class ShippingInformationManagement
- * @package Emarsys\Emarsys\Model\Checkout
  */
 class ShippingInformationManagement
 {

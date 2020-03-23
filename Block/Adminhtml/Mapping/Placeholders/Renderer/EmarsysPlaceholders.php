@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Renderer;
@@ -12,7 +12,6 @@ use Magento\Framework\DataObject;
 
 /**
  * Class EmarsysPlaceholders
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Renderer
  */
 class EmarsysPlaceholders extends AbstractRenderer
 {
@@ -24,8 +23,10 @@ class EmarsysPlaceholders extends AbstractRenderer
     {
         static $i = 0;
         ?>
-        <input name="emarsys_placeholder_name" id="<?php printf($row->getId()); ?>" value="<?php printf($row->getEmarsysPlaceholderName()); ?>" width="100%"/>
-        <div class="placeholder-error validation-advice" id="<?php printf ("divErrPlaceholder_" . $i); ?>"
+        <input name="emarsys_placeholder_name" id="<?php printf($row->getId()); ?>"
+               value="<?php printf($row->getEmarsysPlaceholderName()); ?>" width="100%"
+        />
+        <div class="placeholder-error validation-advice" id="<?php printf("divErrPlaceholder_" . $i); ?>"
              style="display:none; color:red">Placeholders can only have
             Alphanumerics
             and Underscores.

@@ -12,7 +12,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Checklist
- * @package Emarsys\Emarsys\Controller\Adminhtml\Installation
  */
 class Checklist extends Action
 {

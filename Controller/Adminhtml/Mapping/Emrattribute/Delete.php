@@ -16,7 +16,6 @@ use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Delete
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute
  */
 class Delete extends Action
 {

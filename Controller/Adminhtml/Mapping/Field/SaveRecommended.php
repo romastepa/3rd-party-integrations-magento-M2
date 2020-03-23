@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
@@ -21,7 +21,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class SaveRecommended
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
  */
 class SaveRecommended extends Action
 {

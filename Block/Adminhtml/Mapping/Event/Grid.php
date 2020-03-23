@@ -19,7 +19,6 @@ use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 
 /**
  * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Event
  */
 class Grid extends Extended
 {

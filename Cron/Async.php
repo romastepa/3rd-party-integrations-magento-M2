@@ -19,8 +19,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
  * Class Async
- *
- * @package Emarsys\Emarsys\Cron
  */
 class Async
 {

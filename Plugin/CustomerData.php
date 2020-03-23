@@ -12,7 +12,6 @@ use Magento\Customer\Model\Session;
 
 /**
  * Class CustomerData
- * @package Emarsys\Emarsys\Plugin
  */
 class CustomerData extends Customer
 {

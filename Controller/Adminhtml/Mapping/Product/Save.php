@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
@@ -20,7 +20,6 @@ use Emarsys\Emarsys\Model\ResourceModel\Product;
 
 /**
  * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
  */
 class Save extends Action
 {

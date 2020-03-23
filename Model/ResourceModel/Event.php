@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
@@ -16,7 +16,6 @@ use Magento\{
 
 /**
  * Class Event
- * @package Emarsys\Emarsys\Model\ResourceModel
  */
 class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {

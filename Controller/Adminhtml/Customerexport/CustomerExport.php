@@ -25,7 +25,6 @@ use Magento\{
 
 /**
  * Class CustomerExport
- * @package Emarsys\Emarsys\Controller\Adminhtml\Customerexport
  */
 class CustomerExport extends Action
 {

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Productexport\Edit\Tab;
@@ -16,7 +16,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\Productexport\Edit\Tab
  */
 class Form extends Generic
 {

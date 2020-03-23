@@ -21,7 +21,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class SaveSchema
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
  */
 class SaveSchema extends Action
 {

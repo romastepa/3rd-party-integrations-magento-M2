@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -17,6 +17,7 @@ use Magento\{
     Framework\Model\ResourceModel\AbstractResource,
     Framework\Data\Collection\AbstractDb,
     Framework\Model\AbstractModel,
+    Framework\Serialize\Serializer\Serialize as Serializer,
     Catalog\Model\Product as ProductModel,
     Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
     Directory\Model\CurrencyFactory,
@@ -25,7 +26,6 @@ use Magento\{
 
 /**
  * Class Emarsysproductexport
- * @package Emarsys\Emarsys\Model
  */
 class Emarsysproductexport extends AbstractModel
 {
@@ -74,6 +74,11 @@ class Emarsysproductexport extends AbstractModel
     protected $emarsysHelper;
 
     /**
+     * @var Serializer
+     */
+    protected $serializer;
+
+    /**
      * Emarsysproductexport constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -82,6 +87,7 @@ class Emarsysproductexport extends AbstractModel
      * @param CurrencyFactory $currencyFactory
      * @param File $file
      * @param EmarsysHelper $emarsysHelper
+     * @param Serializer $serializer
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -95,6 +101,7 @@ class Emarsysproductexport extends AbstractModel
         CurrencyFactory $currencyFactory,
         File $file,
         EmarsysHelper $emarsysHelper,
+        Serializer $serializer,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -108,6 +115,7 @@ class Emarsysproductexport extends AbstractModel
         $this->currencyFactory = $currencyFactory;
         $this->file = $file;
         $this->emarsysHelper = $emarsysHelper;
+        $this->serializer = $serializer;
 
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
@@ -130,8 +138,13 @@ class Emarsysproductexport extends AbstractModel
      * @param array $excludedCategories
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    public function getCatalogExportProductCollection($storeId, $currentPageNumber, $attributes, $includeBundle = null, $excludedCategories = [])
-    {
+    public function getCatalogExportProductCollection(
+        $storeId,
+        $currentPageNumber,
+        $attributes,
+        $includeBundle = null,
+        $excludedCategories = []
+    ) {
         try {
             /** @var \Magento\Store\Model\Store $store */
             $store = $this->storeManager->getStore($storeId);
@@ -149,7 +162,10 @@ class Emarsysproductexport extends AbstractModel
             }
 
             if (!$includeBundle) {
-                $collection->addAttributeToFilter('type_id', ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]);
+                $collection->addAttributeToFilter(
+                    'type_id',
+                    ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]
+                );
             }
 
             if (!empty($excludedCategories)) {
@@ -276,7 +292,7 @@ class Emarsysproductexport extends AbstractModel
                 $productId = $product->getId();
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
                 foreach ($productData as $param) {
-                    $item = unserialize($param);
+                    $item = $this->serializer->unserialize($param);
                     $map = $this->_processedStores[$item['store']];
 
                     if (!isset($data[$productId])) {
@@ -293,10 +309,19 @@ class Emarsysproductexport extends AbstractModel
                                 ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
                                     || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
                                 )) {
-                                $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();
+                                $currencyCodeTo = $this->storeManager
+                                    ->getStore($item['store_id'])
+                                    ->getBaseCurrency()
+                                    ->getCode();
                                 if ($item['currency_code'] != $currencyCodeTo) {
-                                    $rate = $this->currencyFactory->create()->load($item['currency_code'])->getAnyRate($currencyCodeTo);
-                                    $value = number_format($value * $rate, 2, '.', '');
+                                    $rate = $this->currencyFactory->create()->load($item['currency_code'])
+                                        ->getAnyRate($currencyCodeTo);
+                                    $value = number_format(
+                                        $value * $rate,
+                                        2,
+                                        '.',
+                                        ''
+                                    );
                                 }
                             }
                             $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);

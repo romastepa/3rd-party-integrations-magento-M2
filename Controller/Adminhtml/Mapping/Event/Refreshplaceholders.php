@@ -13,7 +13,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Refreshplaceholders
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
  */
 class Refreshplaceholders extends Action
 {

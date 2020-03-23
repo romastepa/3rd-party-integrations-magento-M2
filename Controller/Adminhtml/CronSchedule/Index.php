@@ -10,7 +10,6 @@ use Magento\Backend\App\Action;
 
 /**
  * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\CronSchedule
  */
 class Index extends Action
 {

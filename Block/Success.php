@@ -19,7 +19,6 @@ use Magento\{
 
 /**
  * Class Success
- * @package Emarsys\Emarsys\Block
  */
 class Success extends Template
 {

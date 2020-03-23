@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Plugin;
@@ -18,7 +18,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 /**
  * Class Subscriber
  *
- * @package Emarsys\Emarsys\Plugin
  */
 class Subscriber
 {

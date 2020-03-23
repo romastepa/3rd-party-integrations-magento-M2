@@ -2,13 +2,12 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Logs;
 
 /**
  * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Logs
  */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
@@ -176,17 +175,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "align" => "left",
             "index" => "message_type",
             'width' => '150',
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Logs\Renderer\Messagetype',
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Logs\Renderer\Messagetype::class,
         ]);
         return parent::_prepareColumns();
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $item
-     * @return string|void
-     */
-    public function getRowUrl($item)
-    {
-        parent::getRowUrl($item);
     }
 }

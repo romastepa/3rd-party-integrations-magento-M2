@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Installation;
@@ -15,7 +15,6 @@ use Magento\Backend\Block\Template\Context;
 
 /**
  * Class Checklist
- * @package Emarsys\Emarsys\Block\Adminhtml\Installation
  */
 class Checklist extends \Magento\Backend\Block\Template
 {
@@ -99,11 +98,13 @@ class Checklist extends \Magento\Backend\Block\Template
 
     public function getCustomerId()
     {
-        return $this->customerResourceModel->create()->getKeyId(EmarsysHelper::CUSTOMER_ID, $this->getStore()->getId());
+        return $this->customerResourceModel->create()
+            ->getKeyId(EmarsysHelper::CUSTOMER_ID, $this->getStore()->getId());
     }
 
     public function getSubscriberId()
     {
-        return $this->customerResourceModel->create()->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $this->getStore()->getId());
+        return $this->customerResourceModel->create()
+            ->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $this->getStore()->getId());
     }
 }

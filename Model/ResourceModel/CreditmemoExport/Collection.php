@@ -20,7 +20,10 @@ class Collection extends \Magento\Sales\Model\ResourceModel\Order\Creditmemo\Col
     {
         parent::_construct();
         $this->entitySnapshot = null;
-        $this->_init(\Emarsys\Emarsys\Model\CreditmemoExport::class, \Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport::class);
+        $this->_init(
+            \Emarsys\Emarsys\Model\CreditmemoExport::class,
+            \Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport::class
+        );
     }
 
     /**

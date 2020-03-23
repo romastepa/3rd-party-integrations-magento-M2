@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer;
@@ -13,7 +13,6 @@ use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
 /**
  * Class StatusColor
- * @package Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer
  */
 class StatusColor extends AbstractRenderer
 {

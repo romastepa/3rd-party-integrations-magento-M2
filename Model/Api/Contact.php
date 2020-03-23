@@ -29,8 +29,6 @@ use Emarsys\Emarsys\{
 /**
  * Class Contact
  * API class for Emarsys API wrappers
- *
- * @package Emarsys\Emarsys\Model\Api
  */
 class Contact
 {

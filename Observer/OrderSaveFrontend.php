@@ -16,7 +16,6 @@ use Emarsys\Emarsys\Model\Logs;
 
 /**
  * Class OrderSaveFrontend
- * @package Emarsys\Emarsys\Observer
  */
 class OrderSaveFrontend implements ObserverInterface
 {

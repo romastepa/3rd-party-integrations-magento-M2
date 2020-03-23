@@ -18,7 +18,6 @@ use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
 /**
  * Class EmarsysEvent
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer
  */
 class EmarsysEvent extends AbstractRenderer
 {

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\Config\Source;
 
@@ -12,7 +12,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class MaxRecordsPerExport
- * @package Emarsys\Emarsys\Model\Config\Source
  */
 class MaxRecordsPerExport implements ArrayInterface
 {

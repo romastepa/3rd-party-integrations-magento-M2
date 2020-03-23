@@ -13,7 +13,6 @@ use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\Productexport
  */
 class Index extends Action
 {

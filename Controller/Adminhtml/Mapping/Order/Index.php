@@ -14,7 +14,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
  */
 class Index extends Action
 {

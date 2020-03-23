@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Scheduler;
@@ -16,7 +16,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Scheduler
  */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {

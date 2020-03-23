@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
@@ -18,7 +18,6 @@ use Emarsys\Emarsys\Model\ResourceModel\Order;
 
 /**
  * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
  */
 class Save extends Action
 {

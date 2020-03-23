@@ -14,7 +14,6 @@ use Magento\Backend\Block\Widget\Grid\Extended;
 
 /**
  * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Cronschedule
  */
 class Grid extends Extended
 {
@@ -133,7 +132,7 @@ class Grid extends Extended
                 'index' => 'status',
                 'type' => 'options',
                 'width' => '200',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\StatusColor',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\StatusColor::class,
                 'options' => [
                     Schedule::STATUS_PENDING => Schedule::STATUS_PENDING,
                     Schedule::STATUS_RUNNING => Schedule::STATUS_RUNNING,
@@ -150,7 +149,7 @@ class Grid extends Extended
                 'header' => __('Params'),
                 'align' => 'center',
                 'width' => '50',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\Params',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\Params::class,
                 'filter' => false
             ]
         );
@@ -161,7 +160,7 @@ class Grid extends Extended
                 'header' => __('Message'),
                 "align" => "center",
                 'width' => '50',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\Message',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cronschedule\Renderer\Message::class,
                 'filter' => false
             ]
         );

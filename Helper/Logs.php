@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -24,8 +24,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class Logs
- *
- * @package Emarsys\Emarsys\Helper
  */
 class Logs extends AbstractHelper
 {
@@ -95,8 +93,7 @@ class Logs extends AbstractHelper
         StateInterface $inlineTranslation,
         TransportBuilder $transportBuilder,
         Registry $registry
-    )
-    {
+    ) {
         $this->logScheduleFactory = $logScheduleFactory;
         $this->date = $date;
         $this->registry = $registry;
@@ -196,7 +193,7 @@ class Logs extends AbstractHelper
             return;
         }
         $currentDate = $this->date->date('Y-m-d H:i:s', time());
-        $schedulerId = @$logsArray['id'];
+        $schedulerId = $logsArray['id'] ?? null;
 
         $logsModel = $this->logsFactory->create();
         $logsModel->setLogExecId($schedulerId)
@@ -222,10 +219,10 @@ class Logs extends AbstractHelper
         if ($sendLogReport == '' && $websiteId == 0) {
             $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report');
         }
-        if ($sendLogReport && @$logsArray['message_type'] == 'Error') {
+        if ($sendLogReport && ($logsArray['message_type'] ?? false) == 'Error') {
             if ($sendLogReport) {
-                $title = ucfirst(@$logsArray['job_code']) . " : Store - " . @$logsArray['store_id'];
-                $description = @$logsArray['description'];
+                $title = ucfirst(($logsArray['job_code'] ?? '')) . " : Store - " . ($logsArray['store_id'] ?? '');
+                $description = $logsArray['description'] ?? '';
                 $this->errorLogEmail($title, $description);
             }
         }

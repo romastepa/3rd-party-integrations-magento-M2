@@ -12,7 +12,6 @@ use Magento\Backend\App\Action\Context;
 
 /**
  * Class EmarsysLogger
- * @package Emarsys\Emarsys\Controller\Adminhtml\Log
  */
 class EmarsysLogger extends Action
 {

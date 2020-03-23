@@ -20,7 +20,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class Cron
- * @package Emarsys\Emarsys\Helper
  */
 class Cron extends AbstractHelper
 {

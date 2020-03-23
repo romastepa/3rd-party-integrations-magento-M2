@@ -17,11 +17,6 @@ use Zend_Json;
 
 /**
  * Class Async
- *
- * @package Emarsys\Emarsys\Model
- *
- * getWebsiteId
- *
  */
 class Async extends AbstractModel
 {

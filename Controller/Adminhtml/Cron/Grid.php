@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Cron;
@@ -13,7 +13,6 @@ use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Class Grid
- * @package Emarsys\Emarsys\Controller\Adminhtml\Cron
  */
 class Grid extends Action
 {

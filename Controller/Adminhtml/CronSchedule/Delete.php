@@ -12,7 +12,6 @@ use Magento\Cron\Model\ScheduleFactory;
 
 /**
  * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\CronSchedule
  */
 class Delete extends Action
 {

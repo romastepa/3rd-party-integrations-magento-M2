@@ -18,7 +18,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class SaveSchema
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
  */
 class SaveSchema extends Action
 {

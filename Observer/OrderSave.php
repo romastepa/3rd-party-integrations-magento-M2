@@ -13,7 +13,6 @@ use Magento\Framework\Event\ObserverInterface;
 
 /**
  * Class OrderSave
- * @package Emarsys\Emarsys\Observer
  */
 class OrderSave implements ObserverInterface
 {

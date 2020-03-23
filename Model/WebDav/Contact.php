@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\WebDav;
 
@@ -22,7 +22,6 @@ use Emarsys\Emarsys\{
 
 /**
  * Class Contact
- * @package Emarsys\Emarsys\Model\WebDav
  */
 class Contact extends \Magento\Framework\DataObject
 {
