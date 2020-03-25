@@ -38,20 +38,21 @@ class Form extends WidgetForm
      * This method is called before rendering HTML
      *
      * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _beforeToHtml()
     {
         $this->isFromError = $this->getRequest()->getParam('error') === 'true';
 
         $systemRequirementsBlock = $this->getLayout()->createBlock(
-            'Emarsys\Emarsys\Block\Adminhtml\Support\Requirements',
+            \Emarsys\Emarsys\Block\Adminhtml\Support\Requirements::class,
             '',
             ['is_support_mode' => true]
         );
         $this->setChild('system_requirements', $systemRequirementsBlock);
 
         $emarsysVersionDetailsBlock = $this->getLayout()->createBlock(
-            'Emarsys\Emarsys\Block\Adminhtml\Support\About',
+            \Emarsys\Emarsys\Block\Adminhtml\Support\About::class,
             '',
             ['is_support_mode' => true]
         );

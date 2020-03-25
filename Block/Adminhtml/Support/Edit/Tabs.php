@@ -49,13 +49,16 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
     /**
      * @return Mage_Core_Block_Abstract
      * @throws Exception
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _beforeToHtml()
     {
         $this->addTab(
             'form_section',
             [
-                'content' => $this->getLayout()->createBlock('Emarsys\Emarsys\Adminhtml\Support\Edit\Tab\Form')->toHtml(),
+                'content' => $this->getLayout()
+                    ->createBlock(\Emarsys\Emarsys\Block\Adminhtml\Support\Edit\Tab\Form::class)
+                    ->toHtml(),
                 'active' => true
             ]
         );
@@ -65,6 +68,7 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
 
     /**
      * @return Mage_Core_Block_Abstract|void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareLayout()
     {

@@ -47,15 +47,17 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
     }
 
     /**
-     * @return Mage_Core_Block_Abstract
-     * @throws Exception
+     * @return \Magento\Backend\Block\Widget|\Magento\Framework\View\Element\AbstractBlock
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _beforeToHtml()
     {
         $this->addTab(
             'form_section',
             [
-                'content' => $this->getLayout()->createBlock('Emarsys\Emarsys\Adminhtml\Subscriberexport\Edit\Tab\Form')->toHtml(),
+                'content' => $this->getLayout()
+                    ->createBlock(\Emarsys\Emarsys\Block\Adminhtml\Subscriberexport\Edit\Tab\Form::class)
+                    ->toHtml(),
                 'active' => true
             ]
         );
@@ -64,6 +66,7 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
 
     /**
      * @return Mage_Core_Block_Abstract|void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareLayout()
     {

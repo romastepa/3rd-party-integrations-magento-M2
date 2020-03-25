@@ -36,7 +36,10 @@ class Event extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Grid', 'emarsys.event.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Grid::class,
+                'emarsys.event.grid'
+            )
         );
         return parent::_prepareLayout();
     }

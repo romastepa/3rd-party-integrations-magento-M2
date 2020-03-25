@@ -53,7 +53,7 @@ class Logs extends \Magento\Backend\Block\Template
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock(Emarsys\Emarsys\Block\Adminhtml\Logs\Grid::class, 'loggrid')
+            $this->getLayout()->createBlock(\Emarsys\Emarsys\Block\Adminhtml\Logs\Grid::class, 'loggrid')
         );
         $this->_template = 'logs/grid.phtml';
 

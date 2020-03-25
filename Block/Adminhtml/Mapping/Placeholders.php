@@ -36,7 +36,10 @@ class Placeholders extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Grid', 'emarsys.placeholders.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Grid::class,
+                'emarsys.placeholders.grid'
+            )
         );
         return parent::_prepareLayout();
     }

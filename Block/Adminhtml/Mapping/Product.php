@@ -36,7 +36,10 @@ class Product extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Grid', 'emarsys.product.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Grid::class,
+                'emarsys.product.grid'
+            )
         );
         return parent::_prepareLayout();
     }

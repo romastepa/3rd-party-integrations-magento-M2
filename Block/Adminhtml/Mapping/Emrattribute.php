@@ -39,7 +39,10 @@ class Emrattribute extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Grid', 'emarsys.order.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Grid::class,
+                'emarsys.order.grid'
+            )
         );
         return parent::_prepareLayout();
     }

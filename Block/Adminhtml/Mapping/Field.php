@@ -36,7 +36,10 @@ class Field extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Grid', 'emarsys.field.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Grid::class,
+                'emarsys.field.grid'
+            )
         );
         return parent::_prepareLayout();
     }

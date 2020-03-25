@@ -55,7 +55,9 @@ class Tabs extends \Magento\Backend\Block\Widget\Tabs
         $this->addTab(
             'form_section',
             [
-                'content' => $this->getLayout()->createBlock('Emarsys\Emarsys\Adminhtml\Orderexport\Edit\Tab\Form')->toHtml(),
+                'content' => $this->getLayout()
+                    ->createBlock(\Emarsys\Emarsys\Block\Adminhtml\Orderexport\Edit\Tab\Form::class)
+                    ->toHtml(),
                 'active' => true
             ]
         );

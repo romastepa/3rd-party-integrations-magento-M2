@@ -1,4 +1,4 @@
-#Emarsys Magento 2 Integration
+# Emarsys Magento 2 Integration
 
 ## Magento Setup
 

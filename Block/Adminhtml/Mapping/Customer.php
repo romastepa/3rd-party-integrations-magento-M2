@@ -40,7 +40,10 @@ class Customer extends Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Grid', 'emarsys.customer.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Grid::class,
+                'emarsys.customer.grid'
+            )
         );
         return parent::_prepareLayout();
     }

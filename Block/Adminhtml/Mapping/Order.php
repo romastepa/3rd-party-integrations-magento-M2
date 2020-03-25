@@ -36,7 +36,10 @@ class Order extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Order\Grid', 'emarsys.order.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Order\Grid::class,
+                'emarsys.order.grid'
+            )
         );
         return parent::_prepareLayout();
     }

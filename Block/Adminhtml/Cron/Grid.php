@@ -23,7 +23,7 @@ class Grid extends \Magento\Backend\Block\Template
         $this->setChild(
             'grid',
             $this->getLayout()->createBlock(
-                'Emarsys\Emarsys\Block\Adminhtml\Cron',
+                \Emarsys\Emarsys\Block\Adminhtml\Cron::class,
                 'emarsys.categorylogs.grid'
             )
         );
