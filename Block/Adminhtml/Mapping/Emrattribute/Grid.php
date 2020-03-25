@@ -134,7 +134,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             'emarsys_emrattribute_field',
             [
                 'header' => __('Emarsys Attribute'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Renderer\EmarsysEmrattributeField',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Renderer\EmarsysEmrattributeField::class,
                 'filter' => false
             ]
         );

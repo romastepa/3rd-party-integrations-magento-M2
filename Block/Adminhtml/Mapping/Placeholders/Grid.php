@@ -213,7 +213,7 @@ class Grid extends Extended
             [
                 'header' => __('Emarsys Placeholder'),
                 'index' => 'emarsys_placeholder_name',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Renderer\EmarsysPlaceholders',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Renderer\EmarsysPlaceholders::class,
                 'filter' => false
             ]
         );

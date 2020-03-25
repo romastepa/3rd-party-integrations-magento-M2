@@ -146,14 +146,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'index' => 'value',
                 'header_css_class' => 'col-id',
                 'column_css_class' => 'col-id',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\Option',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\Option::class,
             ]
         );
         $this->addColumn(
             'emarsys_contact_header',
             [
                 'header' => __('Emarsys Fields'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\FieldOption',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\FieldOption::class,
                 'filter' => false
             ]
         );

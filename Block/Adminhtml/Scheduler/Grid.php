@@ -193,7 +193,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "status",
             'width' => '150',
             'type' => 'options',
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\StatusColor',
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\StatusColor::class,
             'options' => [
                 'success' => 'success',
                 'error' => 'error',
@@ -208,7 +208,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "header" => __("Details"),
             "align" => "left",
             "index" => "id",
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\ViewButton',
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\ViewButton::class,
             'width' => '150'
         ]);
 

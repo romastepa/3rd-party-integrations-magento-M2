@@ -150,14 +150,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'index' => 'frontend_label',
                 'header_css_class' => 'col-id',
                 'column_css_class' => 'col-id',
-                'renderer' => Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\MagentoAttribute::class,
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\MagentoAttribute::class,
             ]
         );
         $this->addColumn(
             'emarsys_contact_header',
             [
                 'header' => __('Emarsys Customer Attribute'),
-                'renderer' => Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\EmarsysCustomer::class,
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\EmarsysCustomer::class,
                 'filter' => false
             ]
         );

@@ -154,13 +154,13 @@ class Grid extends Extended
         if (isset($recommended) && $recommended != "") {
             $this->addColumn('emarsys_event_id', [
                 'header' => __('Emarsys Event'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\Emarsyseventmapping',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\Emarsyseventmapping::class,
                 'filter' => false
             ]);
         } else {
             $this->addColumn('emarsys_event_id', [
                 'header' => __('Emarsys Event'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\EmarsysEvent',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\EmarsysEvent::class,
                 'filter' => false
             ]);
         }

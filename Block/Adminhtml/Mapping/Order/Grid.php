@@ -149,7 +149,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             'emarsys_order_field',
             [
                 'header' => __('Emarsys Order Attribute'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Order\Renderer\EmarsysOrderField',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Order\Renderer\EmarsysOrderField::class,
                 'filter' => false
             ]
         );

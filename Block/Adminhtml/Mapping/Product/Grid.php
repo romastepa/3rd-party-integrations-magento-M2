@@ -134,7 +134,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             'emarsys_attr_code',
             [
                 'header' => __('Emarsys Attribute'),
-                'renderer' => '\Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer\EmarsysProduct',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer\EmarsysProduct::class,
                 'filter' => false
             ]
         );
