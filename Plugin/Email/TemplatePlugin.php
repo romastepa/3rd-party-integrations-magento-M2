@@ -578,7 +578,6 @@ class TemplatePlugin
         return $returnItem;
     }
 
-
     /**
      * @param \Magento\Newsletter\Model\Subscriber $item
      * @return array
@@ -639,7 +638,7 @@ class TemplatePlugin
         $this->logsArray['emarsys_info'] = 'Send Contact to Emarsys';
         $this->logsArray['description'] = 'PUT '
             . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS
-            . ' ' . \Zend_Json::encode($buildRequest);;
+            . ' ' . \Zend_Json::encode($buildRequest);
         $this->logsArray['action'] = EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS;
         $this->logsHelper->manualLogs($this->logsArray);
 
@@ -690,7 +689,8 @@ class TemplatePlugin
             . ' Request: ' . \Zend_Json::encode($buildRequest)
             . '\n Response: ' . \Zend_Json::encode($response);
         $this->logsArray['messages'] = __(
-            'Error while sending Transactional Email (%1), Email Sent From Magento', $this->templateId
+            'Error while sending Transactional Email (%1), Email Sent From Magento',
+            $this->templateId
         );
 
         return false;
