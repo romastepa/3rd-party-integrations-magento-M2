@@ -21,18 +21,6 @@ class Customer extends Container
     protected $_template = 'mapping/customer/view.phtml';
 
     /**
-     * Customer constructor.
-     * @param Context $context
-     * @param array $data
-     */
-    public function __construct(
-        Context $context,
-        $data = []
-    ) {
-        parent::__construct($context, $data);
-    }
-
-    /**
      * @return $this
      * @throws LocalizedException
      */

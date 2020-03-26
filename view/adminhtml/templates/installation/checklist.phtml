@@ -52,7 +52,7 @@
                             </td>
                         </tr>
                         <?php foreach ($data as $key => $requirement) { ?>
-                            <?php if (in_array($requirement['title'], $excludeInFirstSection)) continue; ?>
+                            <?php if (in_array($requirement['title'], $excludeInFirstSection)) { continue;} ?>
                             <tr>
                                 <td class="label">
                                     <label><?php echo $requirement['title']; ?></label>
@@ -88,7 +88,7 @@
                             </td>
                         </tr>
                         <?php foreach ($data as $key => $requirement): ?>
-                            <?php if (!in_array($requirement['title'], $excludeInFirstSection)) continue; ?>
+                            <?php if (!in_array($requirement['title'], $excludeInFirstSection)) { continue;} ?>
                             <tr>
                                 <td class="label">
                                     <label><?php echo $requirement['title']; ?></label>

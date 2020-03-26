@@ -4,41 +4,38 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
-use Magento\{
-    Eav\Model\Config as EavConfig,
-    Framework\App\Area,
-    Framework\Model\AbstractModel,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Registry,
-    Framework\Message\ManagerInterface as MessageManagerInterface,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\App\Filesystem\DirectoryList,
-    Framework\File\Csv,
-    Framework\Serialize\Serializer\Serialize as Serializer,
-    Catalog\Helper\Image,
-    Catalog\Model\Product\Attribute\Source\Status,
-    Catalog\Model\Product\Visibility,
-    Catalog\Model\CategoryFactory,
-    Catalog\Model\Product as ProductModel,
-    Store\Model\App\Emulation,
-    Store\Model\StoreManagerInterface,
-    ConfigurableProduct\Model\Product\Type\Configurable as TypeConfigurable,
-    Bundle\Model\Product\Type as TypeBundle,
-    GroupedProduct\Model\Product\Type\Grouped as TypeGrouped
-};
-use Emarsys\Emarsys\{
-    Helper\Logs as EmarsysHelperLogs,
-    Helper\Data as EmarsysHelper,
-    Model\ApiExport,
-    Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
-    Model\ResourceModel\Product as ProductResourceModel,
-    Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel,
-    Model\Emarsysproductexport as ProductExportModel
-};
+use Magento\Eav\Model\Config as EavConfig;
+use Magento\Framework\App\Area;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\File\Csv;
+use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
+use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\Product as ProductModel;
+use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as TypeConfigurable;
+use Magento\Bundle\Model\Product\Type as TypeBundle;
+use Magento\GroupedProduct\Model\Product\Type\Grouped as TypeGrouped;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ApiExport;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel;
+use Emarsys\Emarsys\Model\Emarsysproductexport as ProductExportModel;
 
 /**
  * Class Product
@@ -231,8 +228,8 @@ class Product extends AbstractModel
         $this->productExportResourceModel = $productExportResourceModel;
         $this->categoryFactory = $categoryFactory;
         $this->storeManager = $storeManager;
-        $this->eavConfig =  $eavConfig;
-        $this->emarsysHelper =  $emarsysHelper;
+        $this->eavConfig = $eavConfig;
+        $this->emarsysHelper = $emarsysHelper;
         $this->csvWriter = $csvWriter;
         $this->serializer = $serializer;
         $this->directoryList = $directoryList;
@@ -251,7 +248,7 @@ class Product extends AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Product');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Product::class);
     }
 
     /**
@@ -389,7 +386,8 @@ class Product extends AbstractModel
                                     ),
                                     'header' => $header,
                                     'currency_code' => $currencyStoreCode,
-                            ])];
+                                ]),
+                            ];
                         }
 
                         if (!empty($products)) {
@@ -566,7 +564,7 @@ class Product extends AbstractModel
                 $this->_errorCount = true;
                 $msg = isset($apiExportResult['resultBody']) ? $apiExportResult['resultBody'] : '';
                 $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
-                $logsArray['description'] = __('Failed to upload %1 on Emarsys. %2' , $url, $msg);
+                $logsArray['description'] = __('Failed to upload %1 on Emarsys. %2', $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
@@ -597,7 +595,7 @@ class Product extends AbstractModel
                 $errorMessage = error_get_last();
                 $msg = isset($errorMessage['message']) ? $errorMessage['message'] : '';
                 $logsArray['emarsys_info'] = __('Failed to upload file on FTP server');
-                $logsArray['description'] = __('Failed to upload %1 on FTP server %2' , $url, $msg);
+                $logsArray['description'] = __('Failed to upload %1 on FTP server %2', $url, $msg);
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
@@ -818,17 +816,14 @@ class Product extends AbstractModel
                     case 'quantity_and_stock_status':
                         $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
                             ? ($productObject->getStatus() == Status::STATUS_ENABLED)
-                            : true
-                        ;
+                            : true;
                         $inStock = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK) == 1)
                             ? $productObject->isAvailable()
-                            : true
-                        ;
+                            : true;
                         $visibility =
                             ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY) == 1)
                                 ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
-                                : true
-                        ;
+                                : true;
 
                         if ($status && $inStock && $visibility) {
                             $attributeData[] = 'TRUE';

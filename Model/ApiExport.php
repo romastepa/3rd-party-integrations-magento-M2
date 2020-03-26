@@ -7,19 +7,15 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Framework\{
-    HTTP\ZendClient,
-    Controller\Result\RawFactory,
-    File\Csv
-};
+use Magento\Framework\HTTP\ZendClient;
+use Magento\Framework\Controller\Result\RawFactory;
+use Magento\Framework\File\Csv;
 
 use Magento\Store\Model\StoreManagerInterface;
 
-use Emarsys\Emarsys\{
-    Helper\Data,
-    Model\ResourceModel\Order as OrderResourceModel,
-    Model\ResourceModel\Product as ProductResourceModel
-};
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\ResourceModel\Order as OrderResourceModel;
+use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
 
 /**
  * Class ApiExport
@@ -72,6 +68,7 @@ class ApiExport extends ZendClient
 
     /**
      * ApiExport constructor.
+     *
      * @param Data $emarsysHelper
      * @param RawFactory $resultRawFactory
      * @param Csv $csvWriter
@@ -170,8 +167,8 @@ class ApiExport extends ZendClient
                 'Api Export',
                 'Api Export Failed. API URL or CSV File Not Found.',
                 $storeId,
-                'ApiExport::apiExport()')
-            ;
+                'ApiExport::apiExport()'
+            );
         }
 
         return $result;
@@ -238,6 +235,7 @@ class ApiExport extends ZendClient
 
     /**
      * Get API URL
+     *
      * @param string $entityType
      * @return string
      */
@@ -268,7 +266,7 @@ class ApiExport extends ZendClient
             'link',
             'image',
             'category',
-            'price'
+            'price',
         ];
     }
 
@@ -282,14 +280,14 @@ class ApiExport extends ZendClient
     public function sampleDataCatalogExport($headers)
     {
         $sampleResult = [];
-        $sampleData =  [
+        $sampleData = [
             'item' => 'test_product_item_1',
             'available' => 'true',
             'title' => 'test_product_title_1',
             'link' => $this->storeManagerInterface->getStore()->getBaseUrl(),
             'image' => $this->storeManagerInterface->getStore()->getBaseUrl(),
             'category' => 'test_category_1',
-            'price' => '00.00'
+            'price' => '00.00',
         ];
 
         foreach ($headers as $item) {
@@ -321,7 +319,7 @@ class ApiExport extends ZendClient
             'email' => 'sample@data.com',
             'item' => 'test_product_item_1',
             'price' => '0.00',
-            'quantity' => '0'
+            'quantity' => '0',
         ];
 
         foreach ($headers as $item) {
@@ -378,7 +376,8 @@ class ApiExport extends ZendClient
             $emptyFileHeader = [];
             $mappedAttributes = $this->productResourceModel->getMappedProductAttribute($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId));
             foreach ($mappedAttributes as $key => $value) {
-                $emarsysFieldNames = $this->productResourceModel->getEmarsysFieldName($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId), $value['emarsys_attr_code']);
+                $emarsysFieldNames = $this->productResourceModel->getEmarsysFieldName($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId),
+                    $value['emarsys_attr_code']);
                 array_push($emptyFileHeader, $emarsysFieldNames);
             }
 
@@ -398,7 +397,7 @@ class ApiExport extends ZendClient
 
         $data = [
             $emptyFileHeader,
-            $sampleData
+            $sampleData,
         ];
 
         $fileName = $entityType . '_test_api_export.csv';

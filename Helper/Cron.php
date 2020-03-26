@@ -6,17 +6,13 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\{
-    Framework\App\Helper\AbstractHelper,
-    Framework\App\Helper\Context,
-    Cron\Model\Schedule,
-    Cron\Model\ScheduleFactory,
-    Framework\Stdlib\DateTime\DateTime as MagentoDateTime
-};
-use Emarsys\Emarsys\{
-    Model\EmarsysCronDetailsFactory,
-    Model\Logs as Emarsyslogs
-};
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Cron\Model\ScheduleFactory;
+use Magento\Framework\Stdlib\DateTime\DateTime as MagentoDateTime;
+use Emarsys\Emarsys\Model\EmarsysCronDetailsFactory;
+use Emarsys\Emarsys\Model\Logs as Emarsyslogs;
 
 /**
  * Class Cron

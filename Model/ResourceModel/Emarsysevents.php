@@ -26,7 +26,7 @@ class Emarsysevents extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     protected $entityType;
 
     /**
-     * 
+     *
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute

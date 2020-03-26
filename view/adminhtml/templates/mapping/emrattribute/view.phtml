@@ -17,12 +17,12 @@ $deleteUrl = $block->getUrl('emarsys_emarsys/mapping_emrattribute/delete', ['sto
 $editUrl = $block->getUrl('emarsys_emarsys/mapping_emrattribute/edit', ['store' => $storeId]);
 ?>
 <?php $result = $block->emarattarData(); ?>
-<?php if (count($result) > 0) : ?>
+<?php if (count($result) > 0): ?>
     <div class="emr_tbl header_label">
         <strong>Code</strong>
         <strong>Label</strong>
     </div>
-    <?php foreach ($result as $row) : ?>
+    <?php foreach ($result as $row): ?>
         <?php
         $fieldType = $row['field_type'];
         $disabled='';
@@ -72,7 +72,7 @@ $editUrl = $block->getUrl('emarsys_emarsys/mapping_emrattribute/edit', ['store' 
             <?php endif;?>
         </div>
     <?php endforeach; ?>
-<?php else : ?>
+<?php else: ?>
     <?php echo 'no results'; ?>
 <?php endif; ?>
 <br>

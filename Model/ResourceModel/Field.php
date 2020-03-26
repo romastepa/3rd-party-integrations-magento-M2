@@ -8,11 +8,9 @@
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Emarsys\Emarsys\Model\ContactFieldOption as ModelContactFieldOption;
-use Magento\{
-    Store\Api\StoreRepositoryInterface,
-    Framework\Model\ResourceModel\Db\Context,
-    Framework\Model\ResourceModel\Db\AbstractDb
-};
+use Magento\Store\Api\StoreRepositoryInterface;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * Class Field
@@ -213,5 +211,3 @@ class Field extends AbstractDb
         ];
     }
 }
-
-

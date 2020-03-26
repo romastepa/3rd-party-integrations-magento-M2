@@ -7,20 +7,16 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\CustomerMagentoAttsFactory,
-    Model\ResourceModel\Customer
-};
-use Magento\{
-    Backend\Block\Template\Context,
-    Backend\Helper\Data as BackendHelper,
-    Eav\Model\Entity\Attribute,
-    Eav\Model\Entity\Type,
-    Framework\Data\Collection,
-    Framework\DataObjectFactory,
-    Framework\Module\Manager
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\CustomerMagentoAttsFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Helper\Data as BackendHelper;
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Framework\Data\Collection;
+use Magento\Framework\DataObjectFactory;
+use Magento\Framework\Module\Manager;
 
 /**
  * Class Grid
@@ -187,14 +183,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 ->getData();
             $this->resourceModelCustomer->insertCustomerMageAtts($customerAttData, $storeId);
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        return parent::getMainButtonsHtml();
     }
 
     /**

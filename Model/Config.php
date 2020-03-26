@@ -22,6 +22,7 @@ class Config extends \Magento\Framework\DataObject
 
     /**
      * Config constructor.
+     *
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Framework\App\Config\ValueInterface $backendModel
@@ -72,7 +73,7 @@ class Config extends \Magento\Framework\DataObject
         $storeId = $store->getId();
         $data = [
             'path' => $path,
-            'scope' =>  'stores',
+            'scope' => 'stores',
             'scope_id' => $storeId,
             'scope_code' => $storeCode,
             'value' => $value,

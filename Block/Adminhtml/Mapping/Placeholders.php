@@ -17,18 +17,6 @@ class Placeholders extends \Magento\Backend\Block\Widget\Container
     protected $_template = 'mapping/event/view.phtml';
 
     /**
-     * Placeholders constructor.
-     * @param \Magento\Backend\Block\Widget\Context $context
-     * @param array $data
-     */
-    public function __construct(
-        \Magento\Backend\Block\Widget\Context $context,
-        $data = []
-    ) {
-        parent::__construct($context, $data);
-    }
-
-    /**
      * @return $this
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -54,6 +42,7 @@ class Placeholders extends \Magento\Backend\Block\Widget\Container
 
     /**
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getLoadImageUrl()
     {

@@ -127,9 +127,9 @@ class Save extends Action
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $this->logsHelper->manualLogs($logsArray);
             }
-            $this->messageManager->addErrorMessage(
-                __('There was a problem while saving the order mapping. Please refer emarsys logs for more information.')
-            );
+            $this->messageManager->addErrorMessage(__(
+                'There was a problem while saving the order mapping. Please refer emarsys logs for more information.'
+            ));
         }
         $resultRedirect = $this->resultRedirectFactory->create();
 

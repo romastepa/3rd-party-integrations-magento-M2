@@ -39,10 +39,14 @@ class EmarsysOrderField extends AbstractRenderer
     {
         $heading = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
         array_unshift($heading, 'website_id');
-        if (in_array($row->getData('emarsys_order_field'), $heading) || (in_array($row->getData('magento_column_name'), $heading))) {
+        if (in_array($row->getData('emarsys_order_field'), $heading)
+            || (in_array($row->getData('magento_column_name'), $heading))
+        ) {
             $html = "<label >" . $row->getData('emarsys_order_field') . "  </label>";
         } else {
-            $html = "<input class = 'admin__control-text emarsysatts' type='text' name = '" . $row->getData('magento_column_name') . "' value = '" . $row->getData('emarsys_order_field') . "'  />";
+            $html = "<input class = 'admin__control-text emarsysatts' type='text' name = '"
+                . $row->getData('magento_column_name') . "' value = '"
+                . $row->getData('emarsys_order_field') . "'  />";
         }
 
         return $html;

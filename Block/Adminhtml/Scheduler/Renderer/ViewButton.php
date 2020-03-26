@@ -51,6 +51,9 @@ class ViewButton extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abst
                 'store' => $row['store_id'],
             ]
         );
-        printf("<a href='%s'><div style='color:#EB5202 ;text-decoration: underline;text-decoration-color:#EB5202;'>View</div></a>", $url);
+        $ahref = "<a href='%s'>"
+            . "<div style='color:#EB5202 ;text-decoration: underline;text-decoration-color:#EB5202;'>View</div>"
+            . "</a>";
+        printf($ahref, $url);
     }
 }

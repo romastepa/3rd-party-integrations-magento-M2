@@ -15,5 +15,4 @@ class Emrattribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $this->_init('emarsys_emarsys_product_attributes', 'id');
     }
-
 }

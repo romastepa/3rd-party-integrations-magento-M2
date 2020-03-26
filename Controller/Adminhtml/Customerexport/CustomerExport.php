@@ -4,32 +4,32 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\ResourceModel\Customer,
-    Model\EmarsysCronDetails,
-    Helper\Cron as EmarsysCronHelper,
-    Model\Logs
-};
-use Magento\{
-    Backend\App\Action,
-    Framework\Stdlib\DateTime\DateTime,
-    Backend\App\Action\Context,
-    Store\Model\StoreManagerInterface,
-    Framework\Stdlib\DateTime\Timezone,
-    Framework\Stdlib\DateTime\TimezoneInterface,
-    Framework\App\Request\Http
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Model\EmarsysCronDetails;
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Model\Logs;
+use Exception;
+use Magento\Backend\App\Action;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Backend\App\Action\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Stdlib\DateTime\Timezone;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Framework\App\Request\Http;
 
 /**
  * Class CustomerExport
  */
 class CustomerExport extends Action
 {
-    const MAX_CUSTOMER_RECORDS = 100000;
-
     /**
      * @var StoreManagerInterface
      */
@@ -82,6 +82,7 @@ class CustomerExport extends Action
 
     /**
      * CustomerExport constructor.
+     *
      * @param Context $context
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
@@ -121,8 +122,8 @@ class CustomerExport extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return ResponseInterface|Redirect|ResultInterface
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -158,10 +159,16 @@ class CustomerExport extends Action
             }
 
             //export customers through API
-            $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
+            $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(
+                EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
+                $storeId
+            );
             if ($isCronjobScheduled) {
                 //cron job already scheduled
-                $this->messageManager->addErrorMessage(__('A cron is already scheduled to export customers for the store %1 ', $store->getName()));
+                $this->messageManager->addErrorMessage(__(
+                    'A cron is already scheduled to export customers for the store %1 ',
+                    $store->getName()
+                ));
                 return $resultRedirect->setPath($returnUrl);
             }
 
@@ -179,7 +186,7 @@ class CustomerExport extends Action
                 EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
                 $store->getName()
             ));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
                 'CustomerExport',
@@ -188,7 +195,10 @@ class CustomerExport extends Action
                 'CustomerExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__('There was a problem while customer export. %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(__(
+                'There was a problem while customer export. %1',
+                $e->getMessage()
+            ));
         }
 
         return $resultRedirect->setPath($returnUrl);

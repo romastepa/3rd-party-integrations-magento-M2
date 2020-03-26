@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Magento\Framework\App\ResourceConnection;
@@ -75,12 +76,19 @@ class CleanLog
             $logCleaning = $store->getConfig('logs/log_setting/log_cleaning');
             if ($logCleaning) {
                 $logCleaningDays = $store->getConfig('logs/log_setting/log_days');
-                $cleanUpDate = $this->date->date('Y-m-d', strtotime("-" . $logCleaningDays . " days"));
+                $cleanUpDate = $this->date->date(
+                    'Y-m-d',
+                    strtotime("-" . $logCleaningDays . " days")
+                );
                 $cleanUpDate = $this->emarsysHelper->getDateTimeInLocalTimezone($cleanUpDate);
 
                 /* Delete record from log_details tables */
-                $sqlConnection = $this->_resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
-                $sqlConnection->delete($this->resourceConfig->getTable('emarsys_log_details'), 'DATE(created_at) <= "' . $cleanUpDate . '"');
+                $sqlConnection = $this->_resource
+                    ->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
+                $sqlConnection->delete(
+                    $this->resourceConfig->getTable('emarsys_log_details'),
+                    'DATE(created_at) <= "' . $cleanUpDate . '"'
+                );
             }
         }
     }

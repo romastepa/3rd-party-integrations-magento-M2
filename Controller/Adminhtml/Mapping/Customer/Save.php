@@ -49,7 +49,7 @@ class Save extends Action
     protected $storeManager;
 
     /**
-     * @var EmarsysHelperLogs 
+     * @var EmarsysHelperLogs
      */
     protected $logsHelper;
 

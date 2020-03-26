@@ -18,6 +18,6 @@ class Event extends \Magento\Framework\Model\AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Event');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Event::class);
     }
 }

@@ -4,20 +4,17 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\WebDav;
 
-use Magento\{
-    Framework\DataObject,
-    Framework\Stdlib\DateTime\DateTime,
-    Backend\App\Action\Context,
-    Store\Model\StoreManagerInterface,
-    Store\Model\ScopeInterface
-};
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Customer,
-    Helper\Data as EmarsysHelper,
-    Helper\Logs
-};
+use Magento\Framework\DataObject;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Backend\App\Action\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Model\ScopeInterface;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs;
 
 /**
  * Class Subscriber
@@ -187,12 +184,17 @@ class Subscriber extends DataObject
                     if ($exportStatus['status']) {
                         //Subscriber file uploaded to server successfully
                         $errorCount = false;
-                        $logsArray['emarsys_info'] = __('Subscriber file uploaded to server successfully for store %1', $store->getName());
-                        $logsArray['description'] = 'Emarsys response: ' . $exportStatus['response_body'] . ' File Path: ' . $webDavUrl . $outputFile;
+                        $logsArray['emarsys_info'] = __(
+                            'Subscriber file uploaded to server successfully for store %1', $store->getName()
+                        );
+                        $logsArray['description'] = 'Emarsys response: ' . $exportStatus['response_body']
+                            . ' File Path: ' . $webDavUrl . $outputFile;
                         $logsArray['message_type'] = 'Success';
                     } else {
                         //Failed to upload file on server
-                        $logsArray['emarsys_info'] = __('Failed to upload file on server for store %1', $store->getName());
+                        $logsArray['emarsys_info'] = __(
+                            'Failed to upload file on server for store %1', $store->getName()
+                        );
                         $logsArray['description'] = $exportStatus['response_body'];
                         $logsArray['message_type'] = 'Error';
                     }
@@ -200,7 +202,8 @@ class Subscriber extends DataObject
                 } else {
                     //Failed to Login with WebDav Server
                     $logsArray['emarsys_info'] = 'Failed to Login with WebDav Server.';
-                    $logsArray['description'] = 'Failed to Login with WebDav Server. Please check your settings and try again. ' . $checkWebDavConnection['response_body'];
+                    $logsArray['description'] = 'Failed to Login with WebDav Server.'
+                        . 'Please check your settings and try again. ' . $checkWebDavConnection['response_body'];
                     $logsArray['message_type'] = 'Error';
                     $this->logsHelper->manualLogs($logsArray);
                 }

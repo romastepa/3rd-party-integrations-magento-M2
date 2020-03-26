@@ -15,13 +15,13 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     /**
      * Initialization here
      *
-     * @return void
+     * @return voids
      */
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\EmarsysCronDetails',
-            'Emarsys\Emarsys\Model\ResourceModel\EmarsysCronDetails'
+            \Emarsys\Emarsys\Model\EmarsysCronDetails::class,
+            \Emarsys\Emarsys\Model\ResourceModel\EmarsysCronDetails::class
         );
     }
 }

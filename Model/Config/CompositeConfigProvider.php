@@ -1,4 +1,5 @@
 <?php
+
 namespace Emarsys\Emarsys\Model\Config;
 
 use Magento\Checkout\Model\ConfigProviderInterface;

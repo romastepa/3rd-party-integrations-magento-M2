@@ -4,14 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\{
-    Helper\Cron as EmarsysCronHelper,
-    Model\Api\Contact,
-    Model\Logs as EmarsysModelLogs,
-    Model\Api\Subscriber
-};
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Model\Api\Contact;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Emarsys\Emarsys\Model\Api\Subscriber;
 
 /**
  * Class SubscriberBulkExportApi
@@ -40,6 +39,7 @@ class SubscriberBulkExportApi
 
     /**
      * SubscriberBulkExportApi constructor.
+     *
      * @param EmarsysCronHelper $cronHelper
      * @param Contact $contactModel
      * @param EmarsysModelLogs $emarsysLogs

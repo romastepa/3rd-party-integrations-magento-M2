@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Setup;
 
 use Magento\Framework\Setup\UpgradeDataInterface;
@@ -26,7 +27,8 @@ class UpgradeData implements UpgradeDataInterface
             $tableName = $setup->getTable('emarsys_customer_field_mapping');
             $connection = $setup->getConnection();
             if ($connection->isTableExists($tableName)) {
-                $connection->delete($tableName,
+                $connection->delete(
+                    $tableName,
                     ['emarsys_contact_field in (?)' => [0, 27, 28, 29, 30, 33, 34, 36, 47, 48]]
                 );
             }

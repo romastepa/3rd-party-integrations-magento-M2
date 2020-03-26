@@ -22,8 +22,8 @@ class Collection extends AbstractCollection
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\Order',
-            'Emarsys\Emarsys\Model\ResourceModel\Order'
+            \Emarsys\Emarsys\Model\Order::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Order::class
         );
     }
 }

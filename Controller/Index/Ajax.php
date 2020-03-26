@@ -38,4 +38,3 @@ class Ajax extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setBody($this->javascriptTracking->getTrackingData());
     }
 }
-

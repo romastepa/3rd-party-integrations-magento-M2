@@ -212,8 +212,11 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
     public function getCustomerRecommendedUrl()
     {
         $customerMappingCheck = $this->resourceModelCustomer->checkCustomerMapping($this->getStoreId());
-        $recommdedBtnUrl = "'" . $this->getUrl("*/*/saveRecommended", ["store" => $this->getStoreId()]) . "','" . $customerMappingCheck . "'";
-        return $recommdedBtnUrl;
+        return "'"
+            . $this->getUrl("*/*/saveRecommended", ["store" => $this->getStoreId()])
+            . "','"
+            . $customerMappingCheck
+            . "'";
     }
 
     /**
@@ -223,8 +226,11 @@ class MappingButtons extends \Magento\Backend\Block\Widget\Container
     {
         $storeId = $this->getStoreId();
         $productMappingCheck = $this->resourceModelProduct->checkProductMapping($storeId);
-        $recommdedBtn = "'" . $this->getUrl("*/*/saveRecommended", ["store" => $storeId]) . "','" . $productMappingCheck . "'";
-        return $recommdedBtn;
+        return "'"
+            . $this->getUrl("*/*/saveRecommended", ["store" => $storeId])
+            . "','"
+            . $productMappingCheck
+            . "'";
     }
 
     /**

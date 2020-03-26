@@ -8,7 +8,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel\OrderExport;
 
-
 class Collection extends \Magento\Sales\Model\ResourceModel\Order\Collection
 {
 
@@ -21,7 +20,10 @@ class Collection extends \Magento\Sales\Model\ResourceModel\Order\Collection
     {
         parent::_construct();
         $this->entitySnapshot = null;
-        $this->_init(\Emarsys\Emarsys\Model\OrderExport::class, \Emarsys\Emarsys\Model\ResourceModel\OrderExport::class);
+        $this->_init(
+            \Emarsys\Emarsys\Model\OrderExport::class,
+            \Emarsys\Emarsys\Model\ResourceModel\OrderExport::class
+        );
     }
 
     /**

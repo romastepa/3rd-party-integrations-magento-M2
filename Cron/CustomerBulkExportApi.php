@@ -7,11 +7,9 @@
 
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\{
-    Helper\Cron as EmarsysCronHelper,
-    Model\Api\Contact,
-    Model\Logs as EmarsysModelLogs
-};
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Model\Api\Contact;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 
 /**
  * Class CustomerBulkExportApi

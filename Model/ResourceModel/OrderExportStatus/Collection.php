@@ -15,8 +15,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\OrderExportStatus',
-            'Emarsys\Emarsys\Model\ResourceModel\OrderExportStatus'
+            \Emarsys\Emarsys\Model\OrderExportStatus::class,
+            \Emarsys\Emarsys\Model\ResourceModel\OrderExportStatus::class
         );
     }
 }

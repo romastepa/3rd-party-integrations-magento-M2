@@ -20,8 +20,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\CustomerMagentoAtts',
-            'Emarsys\Emarsys\Model\ResourceModel\CustomerMagentoAtts'
+            \Emarsys\Emarsys\Model\CustomerMagentoAtts::class,
+            \Emarsys\Emarsys\Model\ResourceModel\CustomerMagentoAtts::class
         );
     }
 }

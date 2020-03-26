@@ -44,4 +44,3 @@ class Requirements extends BlockForm
         return parent::_beforeToHtml();
     }
 }
-

@@ -61,4 +61,3 @@ class Form extends WidgetForm
         return parent::_beforeToHtml();
     }
 }
-

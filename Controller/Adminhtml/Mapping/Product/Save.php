@@ -70,6 +70,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Context $context
      * @param ProductFactory $productFactory
      * @param EmarsysHelper $emarsysHelper
@@ -90,8 +91,7 @@ class Save extends Action
         DateTime $date,
         Product $resourceModelProduct,
         PageFactory $resultPageFactory
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -159,7 +159,10 @@ class Save extends Action
                 if (!empty($modelCollData)) {
                     foreach ($modelColl as $model) {
                         //Delete exsisting record
-                        $this->resourceModelProduct->deleteExistingEmarsysAttr($value['emarsys_attr_code'], $gridSessionStoreId);
+                        $this->resourceModelProduct->deleteExistingEmarsysAttr(
+                            $value['emarsys_attr_code'],
+                            $gridSessionStoreId
+                        );
                         if (isset($value['emarsys_attr_code'])) {
                             $model->setEmarsysAttrCode($value['emarsys_attr_code']);
                         }
@@ -169,7 +172,10 @@ class Save extends Action
                     }
                 } else {
                     //Delete exsisting record
-                    $this->resourceModelProduct->deleteExistingEmarsysAttr($value['emarsys_attr_code'], $gridSessionStoreId);
+                    $this->resourceModelProduct->deleteExistingEmarsysAttr(
+                        $value['emarsys_attr_code'],
+                        $gridSessionStoreId
+                    );
                     $model = $this->productFactory->create();
                     $model = $model->setData($value);
                     $model->setStoreId($gridSessionStoreId);

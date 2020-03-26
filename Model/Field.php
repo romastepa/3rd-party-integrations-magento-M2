@@ -18,6 +18,6 @@ class Field extends \Magento\Framework\Model\AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Field');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Field::class);
     }
 }

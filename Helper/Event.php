@@ -6,18 +6,14 @@
  */
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\{
-    Framework\App\Helper\AbstractHelper,
-    Framework\App\Helper\Context,
-    Store\Model\StoreManagerInterface  as StoreManager,
-    AdminNotification\Model\InboxFactory
-};
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Event as EmarsysResourceModelEvent,
-    Model\EmarsyseventsFactory,
-    Helper\Data as EmarsysHelper,
-    Model\Api\Api as EmarsysModelApiApi
-};
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Store\Model\StoreManagerInterface  as StoreManager;
+use Magento\AdminNotification\Model\InboxFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event as EmarsysResourceModelEvent;
+use Emarsys\Emarsys\Model\EmarsyseventsFactory;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 
 /**
  * Class Event
@@ -139,7 +135,6 @@ class Event extends AbstractHelper
             );
         }
         return false;
-
     }
 
     /**

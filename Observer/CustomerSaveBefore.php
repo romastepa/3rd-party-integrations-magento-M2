@@ -7,12 +7,10 @@
 namespace Emarsys\Emarsys\Observer;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Magento\{
-    Framework\Event\Observer,
-    Framework\Event\ObserverInterface,
-    Store\Model\StoreManagerInterface,
-    Customer\Model\CustomerFactory
-};
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Customer\Model\CustomerFactory;
 
 /**
  * Class CustomerSaveBefore

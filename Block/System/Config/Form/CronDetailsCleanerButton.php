@@ -32,7 +32,9 @@ class CronDetailsCleanerButton extends Button
     {
         $originalData = $element->getOriginalData();
         $ajaxUrl = $this->_urlBuilder->getUrl("emarsys_emarsys/cronschedule/clear");
-        $buttonLabel = !empty($originalData['button_label']) ? $originalData['button_label'] : $this->_testConnectionButtonLabel;
+        $buttonLabel = !empty($originalData['button_label'])
+            ? $originalData['button_label']
+            : $this->_testConnectionButtonLabel;
         $this->addData(
             [
                 'button_label' => __($buttonLabel),

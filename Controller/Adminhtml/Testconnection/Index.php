@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Testconnection;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -41,6 +42,7 @@ class Index extends Action
 
     /**
      * Index constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param EmarsysModelApiApi $api
      * @param Context $context
@@ -102,7 +104,7 @@ class Index extends Action
             }
 
             $this->api->setWebsiteId($website);
-            $response =  $this->api->sendRequest('GET', 'settings');
+            $response = $this->api->sendRequest('GET', 'settings');
 
             if (isset($response['status']) && $response['status'] == 200
                 && isset($response['body']['replyCode']) && $response['body']['replyCode'] == 0
@@ -110,7 +112,12 @@ class Index extends Action
             ) {
                 try {
                     //save information in respected configuration.
-                    $this->config->saveConfig('emarsys_settings/emarsys_setting/enable', 1, $scopeType, $scopeId);
+                    $this->config->saveConfig(
+                        'emarsys_settings/emarsys_setting/enable',
+                        1,
+                        $scopeType,
+                        $scopeId
+                    );
 
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
@@ -121,7 +128,12 @@ class Index extends Action
                     $this->logsHelper->manualLogs($logsArray);
 
                     //save api_endpoint information in respected configuration.
-                    $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint', $endpoint, $scopeType, $scopeId);
+                    $this->config->saveConfig(
+                        'emarsys_settings/emarsys_setting/emarsys_api_endpoint',
+                        $endpoint,
+                        $scopeType,
+                        $scopeId
+                    );
 
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
@@ -133,7 +145,12 @@ class Index extends Action
 
                     if ($endpoint == 'custom') {
                         //save custom_url information in respected configuration.
-                        $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_custom_url', $url, $scopeType, $scopeId);
+                        $this->config->saveConfig(
+                            'emarsys_settings/emarsys_setting/emarsys_custom_url',
+                            $url,
+                            $scopeType,
+                            $scopeId
+                        );
 
                         $logsArray['id'] = $logId;
                         $logsArray['emarsys_info'] = 'Test connection';
@@ -145,7 +162,12 @@ class Index extends Action
                     }
 
                     //save api username information in respected configuration.
-                    $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_username', $username, $scopeType, $scopeId);
+                    $this->config->saveConfig(
+                        'emarsys_settings/emarsys_setting/emarsys_api_username',
+                        $username,
+                        $scopeType,
+                        $scopeId
+                    );
 
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
@@ -156,7 +178,12 @@ class Index extends Action
                     $this->logsHelper->manualLogs($logsArray);
 
                     //save api password information in respected configuration.
-                    $this->config->saveConfig('emarsys_settings/emarsys_setting/emarsys_api_password', $password, $scopeType, $scopeId);
+                    $this->config->saveConfig(
+                        'emarsys_settings/emarsys_setting/emarsys_api_password',
+                        $password,
+                        $scopeType,
+                        $scopeId
+                    );
 
                     $logsArray['id'] = $logId;
                     $logsArray['emarsys_info'] = 'Test connection';
@@ -185,12 +212,15 @@ class Index extends Action
                 }
             } else {
                 //test api connecton failed.
-                $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
+                $this->messageManager->addErrorMessage(__(
+                    'Connection failed. Please check your credentials and try again.'
+                ));
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. | ' . \Zend_Json::encode($response);
+                $logsArray['messages'] = 'Connection failed. Please check your credentials and try again. | '
+                    . \Zend_Json::encode($response);
                 $this->logsHelper->manualLogs($logsArray);
             }
         } else {

@@ -26,6 +26,7 @@ class Product extends AbstractDb
 
     /**
      * Truncate Mapping Table
+     *
      * @param null $storeId
      * @return int
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -78,7 +79,11 @@ class Product extends AbstractDb
 
             $this->getConnection()->delete(
                 $this->getMainTable(),
-                ['store_id = ?' => $storeId, 'emarsys_attr_code = ?' => $attributeCode, 'magento_attr_code != ?' => $key]
+                [
+                    'store_id = ?' => $storeId,
+                    'emarsys_attr_code = ?' => $attributeCode,
+                    'magento_attr_code != ?' => $key,
+                ]
             );
         }
 
@@ -143,7 +148,7 @@ class Product extends AbstractDb
                 'code' => $productField[0],
                 'label' => $productField[1],
                 'field_type' => $productField[2],
-                'store_id' => $storeId
+                'store_id' => $storeId,
             ];
             $select = $this->getConnection()
                 ->select()
@@ -160,7 +165,6 @@ class Product extends AbstractDb
         }
         return $productFields;
     }
-
 
     public function getProductAttributeLabelId($storeId)
     {
@@ -209,6 +213,7 @@ class Product extends AbstractDb
 
     /**
      * Get this value from Emarsys Attributes Table based Code & Store ID
+     *
      * @param $code
      * @param $storeId
      * @return mixed

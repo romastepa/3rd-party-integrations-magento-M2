@@ -7,22 +7,18 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
-use Magento\{
-    Backend\App\Action,
-    Backend\App\Action\Context,
-    Framework\View\Result\PageFactory,
-    Framework\App\Config\ScopeConfigInterface,
-    Store\Model\StoreManagerInterface,
-    Framework\Stdlib\DateTime\DateTime
-};
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Event,
-    Helper\Data,
-    Model\ResourceModel\Emarsysevents\CollectionFactory,
-    Helper\Logs,
-    Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory,
-    Model\Api\Api
-};
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory;
+use Emarsys\Emarsys\Model\Api\Api;
 
 class SaveRecommended extends Action
 {

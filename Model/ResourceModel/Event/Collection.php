@@ -20,8 +20,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\Event',
-            'Emarsys\Emarsys\Model\ResourceModel\Event'
+            \Emarsys\Emarsys\Model\Event::classs,
+            \Emarsys\Emarsys\Model\ResourceModel\Event::class
         );
     }
 }

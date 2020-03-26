@@ -7,16 +7,12 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Emarsys\{
-    Emarsys\Helper\Data,
-    Emarsys\Model\Api\Subscriber
-};
-use Magento\{
-    Framework\App\Request\Http,
-    Framework\Event\Observer,
-    Store\Model\StoreManagerInterface,
-    Framework\Event\ObserverInterface
-};
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\Api\Subscriber;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Event\Observer;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Event\ObserverInterface;
 
 /**
  * Class RealTimeAdminSubscriber

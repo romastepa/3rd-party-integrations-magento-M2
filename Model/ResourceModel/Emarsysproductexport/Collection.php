@@ -20,8 +20,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\Emarsysproductexport',
-            'Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport'
+            \Emarsys\Emarsys\Model\Emarsysproductexport::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport::class
         );
     }
 }

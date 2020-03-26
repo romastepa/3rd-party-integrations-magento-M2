@@ -18,6 +18,6 @@ class OrderExportStatus extends \Magento\Framework\Model\AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\OrderExportStatus');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\OrderExportStatus::class);
     }
 }

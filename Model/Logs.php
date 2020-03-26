@@ -36,6 +36,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Logs constructor.
+     *
      * @param Context $context
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
@@ -70,7 +71,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
     protected function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Logs');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Logs::class);
     }
 
     /**

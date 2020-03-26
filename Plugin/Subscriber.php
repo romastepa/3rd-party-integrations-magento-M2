@@ -7,12 +7,10 @@
 
 namespace Emarsys\Emarsys\Plugin;
 
-use Magento\{
-    Newsletter\Model\Subscriber as Sub,
-    Store\Model\StoreManagerInterface,
-    Customer\Model\Session,
-    Customer\Api\CustomerRepositoryInterface
-};
+use Magento\Newsletter\Model\Subscriber as Sub;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Customer\Model\Session;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
@@ -105,7 +103,10 @@ class Subscriber
         $isSubscribeOwnEmail = $this->customerSession->isLoggedIn()
             && $this->customerSession->getCustomerDataObject()->getEmail() == $email;
 
-        if (!$subscriber->getId() || $subscriber->getStatus() == Sub::STATUS_UNSUBSCRIBED || $subscriber->getStatus() == Sub::STATUS_NOT_ACTIVE) {
+        if (!$subscriber->getId()
+            || $subscriber->getStatus() == Sub::STATUS_UNSUBSCRIBED
+            || $subscriber->getStatus() == Sub::STATUS_NOT_ACTIVE
+        ) {
             if ($isConfirmNeed) {
                 $subscriber->setStatus(Sub::STATUS_NOT_ACTIVE);
             } else {

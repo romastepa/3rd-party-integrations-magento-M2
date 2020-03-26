@@ -6,25 +6,21 @@
  */
 namespace Emarsys\Emarsys\Model\Api;
 
-use Magento\{
-    Customer\Model\Address,
-    Customer\Model\Customer,
-    Customer\Model\CustomerFactory,
-    Customer\Model\ResourceModel\Customer\Collection as CustomerCollection,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\Message\ManagerInterface as MessageManagerInterface,
-    Store\Model\StoreManagerInterface
-};
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelperData,
-    Helper\Logs,
-    Helper\Cron as EmarsysCronHelper,
-    Helper\Country as EmarsysCountryHelper,
-    Model\QueueFactory,
-    Model\AsyncFactory,
-    Model\ResourceModel\CustomerFactory as CustomerResourceModel,
-    Logger\Logger as EmarsysLogger
-};
+use Magento\Customer\Model\Address;
+use Magento\Customer\Model\Customer;
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Customer\Model\ResourceModel\Customer\Collection as CustomerCollection;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelperData;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Helper\Country as EmarsysCountryHelper;
+use Emarsys\Emarsys\Model\QueueFactory;
+use Emarsys\Emarsys\Model\AsyncFactory;
+use Emarsys\Emarsys\Model\ResourceModel\CustomerFactory as CustomerResourceModel;
+use Emarsys\Emarsys\Logger\Logger as EmarsysLogger;
 
 /**
  * Class Contact
@@ -559,7 +555,7 @@ class Contact
         $mappedAttributes = $this->getMappedCustomerAttribute($sId);
         if (count($mappedAttributes)) {
             $allCustomersPayload = [];
-            if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE)  {
+            if ($exportMode == EmarsysCronHelper::CRON_JOB_CUSTOMER_SYNC_QUEUE) {
                 $queueCollection = $this->queueModel->create()->getCollection();
                 $queueCollection->addFieldToSelect('entity_id');
                 $queueCollection->addFieldToFilter('entity_type_id', 1);
@@ -638,7 +634,7 @@ class Contact
 
     public function processBatch($allCustomersPayload, $logsArray)
     {
-         if (empty($allCustomersPayload)) {
+        if (empty($allCustomersPayload)) {
             //no Customers data found
             $logsArray['emarsys_info'] = 'No Customers Found.';
             $logsArray['action'] = 'Magento to Emarsys';

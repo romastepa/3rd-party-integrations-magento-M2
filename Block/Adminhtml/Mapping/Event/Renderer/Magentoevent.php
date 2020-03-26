@@ -22,7 +22,6 @@ class Magentoevent extends AbstractRenderer
      */
     protected $collectionFactory;
 
-
     /**
      * Magentoevent constructor.
      *

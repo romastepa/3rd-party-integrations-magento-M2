@@ -15,8 +15,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\CreditmemoExportStatus',
-            'Emarsys\Emarsys\Model\ResourceModel\CreditmemoExportStatus'
+            \Emarsys\Emarsys\Model\CreditmemoExportStatus::class,
+            \Emarsys\Emarsys\Model\ResourceModel\CreditmemoExportStatus::class
         );
     }
 }

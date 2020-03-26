@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Webdav;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -41,6 +42,7 @@ class Index extends Action
 
     /**
      * Index constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param Context $context
      * @param DateTime $date
@@ -109,7 +111,12 @@ class Index extends Action
                     $scopeId = 0;
                 }
                 //save webdav_url information in respected configuration.
-                $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_url', $webDavUrl, $scopeType, $scopeId);
+                $this->config->saveConfig(
+                    'emarsys_settings/webdav_setting/webdav_url',
+                    $webDavUrl,
+                    $scopeType,
+                    $scopeId
+                );
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'WebDav test connection';
                 $logsArray['description'] = "Inserted URL";
@@ -119,7 +126,12 @@ class Index extends Action
                 $this->logsHelper->manualLogs($logsArray);
 
                 //save webdav_user information in respected configuration.
-                $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_user', $webDavUser, $scopeType, $scopeId);
+                $this->config->saveConfig(
+                    'emarsys_settings/webdav_setting/webdav_user',
+                    $webDavUser,
+                    $scopeType,
+                    $scopeId
+                );
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'WebDav test connection';
                 $logsArray['description'] = "Inserted username";
@@ -129,7 +141,12 @@ class Index extends Action
                 $this->logsHelper->manualLogs($logsArray);
 
                 //save webdav_password information in respected configuration.
-                $this->config->saveConfig('emarsys_settings/webdav_setting/webdav_password', $webDavPass, $scopeType, $scopeId);
+                $this->config->saveConfig(
+                    'emarsys_settings/webdav_setting/webdav_password',
+                    $webDavPass,
+                    $scopeType,
+                    $scopeId
+                );
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'WebDav test connection';
                 $logsArray['description'] = "Inserted password";
@@ -147,17 +164,22 @@ class Index extends Action
                 $this->logsHelper->manualLogs($logsArray);
             } else {
                 //test connection is failed.
-                $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
+                $this->messageManager->addErrorMessage(__(
+                    'Connection failed. Please check your credentials and try again.'
+                ));
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'WebDav connection failed. Please check your credentials and try again. ' . $checkWebDavConnection['response_body'];
+                $logsArray['messages'] = 'WebDav connection failed. Please check your credentials and try again. '
+                    . $checkWebDavConnection['response_body'];
                 $this->logsHelper->manualLogs($logsArray);
             }
         } else {
             //valid credentials not found.
-            $this->messageManager->addErrorMessage('Connection failed. Please check your credentials and try again.');
+            $this->messageManager->addErrorMessage(__(
+                'Connection failed. Please check your credentials and try again.'
+            ));
             $logsArray['id'] = $logId;
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());

@@ -128,8 +128,9 @@ class Grid extends Extended
 
         $mappingGridArray = [];
         foreach ($collection as $col) {
-            $mappingGridArray[$col->getData('magento_event_id')]['magento_event_id'] = $col->getData('magento_event_id');
-            $mappingGridArray[$col->getData('magento_event_id')]['emarsys_event_id'] = $col->getData('emarsys_event_id');
+            $magentoEventId = $col->getData('magento_event_id');
+            $mappingGridArray[$magentoEventId]['magento_event_id'] = $magentoEventId;
+            $mappingGridArray[$magentoEventId]['emarsys_event_id'] = $col->getData('emarsys_event_id');
         }
 
         $this->setDefaultSort('id');
@@ -166,14 +167,6 @@ class Grid extends Extended
         }
 
         return parent::_prepareColumns();
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        return parent::getMainButtonsHtml();
     }
 
     /**

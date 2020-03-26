@@ -3,6 +3,7 @@
  *
  * Copyright © 2015 Yagendracommerce. All rights reserved.
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Installation;
 
 use Magento\Backend\App\Action;
@@ -27,6 +28,7 @@ class Checklist extends Action
 
     /**
      * Checklist constructor.
+     *
      * @param Context $context
      * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
@@ -51,7 +53,10 @@ class Checklist extends Action
         $store = $this->getRequest()->getParam('store');
         if (!$store) {
             $storeId = $this->emarsysHelper->getFirstStoreId();
-            return $this->resultRedirectFactory->create()->setUrl($this->getUrl('*/*/checklist', ['store' => $storeId]));
+            return $this->resultRedirectFactory->create()->setUrl($this->getUrl(
+                '*/*/checklist',
+                ['store' => $storeId]
+            ));
         }
         /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
         $resultPage = $this->resultPageFactory->create();

@@ -48,7 +48,7 @@ class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\Abs
             '`params` = CONCAT(`params` , \'' . \Emarsys\Emarsys\Model\Emarsysproductexport::EMARSYS_DELIMITER . '\' , VALUES(`params`))'
         );
 
-        return $this->getConnection()->query($sql , $bind);
+        return $this->getConnection()->query($sql, $bind);
     }
 
     /**

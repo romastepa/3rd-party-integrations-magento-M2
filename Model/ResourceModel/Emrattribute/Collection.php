@@ -20,8 +20,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Emarsys\Emarsys\Model\Emrattribute',
-            'Emarsys\Emarsys\Model\ResourceModel\Emrattribute'
+            \Emarsys\Emarsys\Model\Emrattribute::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Emrattribute::class
         );
     }
 }

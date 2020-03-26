@@ -6,11 +6,9 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\{
-    Model\Api\Api as EmarsysApiApi,
-    Helper\Event,
-    Model\Logs
-};
+use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
+use Emarsys\Emarsys\Helper\Event;
+use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**

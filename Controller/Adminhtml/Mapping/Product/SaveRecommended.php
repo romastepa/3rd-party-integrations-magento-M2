@@ -7,20 +7,16 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
-use Magento\{
-    Backend\App\Action,
-    Backend\App\Action\Context,
-    Store\Model\StoreManagerInterface,
-    Framework\Stdlib\DateTime\DateTime
-};
-use Emarsys\Emarsys\{
-    Model\ProductFactory,
-    Model\ResourceModel\Product\CollectionFactory,
-    Helper\Data,
-    Model\Logs,
-    Helper\Logs as EmarsysHelperLogs,
-    Model\ResourceModel\Product
-};
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ProductFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory;
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\ResourceModel\Product;
 
 /**
  * Class SaveRecommended
@@ -89,8 +85,7 @@ class SaveRecommended extends Action
         EmarsysHelperLogs $logsHelper,
         DateTime $date,
         Product $resourceModelProduct
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->productFactory = $productFactory;
         $this->productAttributeCollection = $productAttributeCollection;
@@ -100,7 +95,6 @@ class SaveRecommended extends Action
         $this->logsHelper = $logsHelper;
         $this->date = $date;
         $this->resourceModelProduct = $resourceModelProduct;
-
     }
 
     /**

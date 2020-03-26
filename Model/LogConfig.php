@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
 /**
@@ -38,6 +39,7 @@ class LogConfig extends \Magento\Framework\DataObject
 
     /**
      * LogConfig constructor.
+     *
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Framework\App\Config\ValueInterface $backendModel
@@ -63,6 +65,7 @@ class LogConfig extends \Magento\Framework\DataObject
 
     /**
      * Function for getting Config value of current store
+     *
      * @param $path
      * @return mixed
      */
@@ -74,6 +77,7 @@ class LogConfig extends \Magento\Framework\DataObject
 
     /**
      * Function for setting Config value of current store
+     *
      * @param string $path ,
      * @param string $value ,
      */

@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
 use Magento\Backend\App\Action;
@@ -47,6 +48,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Context $context
      * @param EventFactory $eventFactory
      * @param DateTime $date
@@ -134,7 +136,9 @@ class Save extends Action
             $logsArray['description'] = $e->getMessage();
             $logsArray['action'] = 'Event Mapping not successful.';
             $logsArray['message_type'] = 'Error';
-            $this->messageManager->addErrorMessage("Event Mapping Failed. Please refer emarsys logs for more information.");
+            $this->messageManager->addErrorMessage(__(
+                "Event Mapping Failed. Please refer emarsys logs for more information."
+            ));
         }
 
         if ($errorStatus) {

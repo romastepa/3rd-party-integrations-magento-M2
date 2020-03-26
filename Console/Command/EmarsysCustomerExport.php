@@ -49,6 +49,7 @@ class EmarsysCustomerExport extends Command
 
     /**
      * EmarsysCustomerExport constructor.
+     *
      * @param StoreManagerInterface $storeManager
      * @param Customer $customerResourceModel
      * @param State $state
@@ -94,7 +95,12 @@ class EmarsysCustomerExport extends Command
         ];
 
         $this->setName('emarsys:export:customer')
-            ->setDescription('Customer bulk export (--from=\'Y-m-d\' (2016-01-31) --to=\'Y-m-d\' (2017-12-31)) --page=\'1\'')
+            ->setDescription(
+                'Customer bulk export'
+                . ' (--from=\'Y-m-d\' (2016-01-31)'
+                . ' --to=\'Y-m-d\' (2017-12-31)'
+                . ' --page=\'1\')'
+            )
             ->setDefinition($options);
         parent::configure();
     }
@@ -110,11 +116,19 @@ class EmarsysCustomerExport extends Command
 
         /** @var Store $store */
         foreach ($this->storeManager->getStores() as $storeId => $store) {
-            if ($store->getConfig(Data::XPATH_EMARSYS_ENABLED) && $store->getConfig(Data::XPATH_EMARSYS_ENABLED)) {
+            if ($store->getConfig(Data::XPATH_EMARSYS_ENABLED)
+                && $store->getConfig(Data::XPATH_EMARSYS_ENABLED)
+            ) {
                 $data = [];
-                $data['page'] = ($input->getOption('page') && !empty($input->getOption('page'))) ? $input->getOption('page') : 1;
-                $data['fromDate'] = ($input->getOption('from') && !empty($input->getOption('from'))) ? $input->getOption('from') . ' 00:00:01' : '';
-                $data['toDate'] = ($input->getOption('to') && !empty($input->getOption('to'))) ? $input->getOption('to') . ' 23:59:59' : '';
+                $data['page'] = ($input->getOption('page') && !empty($input->getOption('page')))
+                    ? $input->getOption('page')
+                    : 1;
+                $data['fromDate'] = ($input->getOption('from') && !empty($input->getOption('from')))
+                    ? $input->getOption('from') . ' 00:00:01'
+                    : '';
+                $data['toDate'] = ($input->getOption('to') && !empty($input->getOption('to')))
+                    ? $input->getOption('to') . ' 23:59:59'
+                    : '';
                 $data['website'] = $store->getWebsiteId();
                 $data['storeId'] = $storeId;
                 try {

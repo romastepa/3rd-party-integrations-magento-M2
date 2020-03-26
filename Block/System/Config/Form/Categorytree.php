@@ -77,8 +77,10 @@ class Categorytree extends Field
         $html .= "</div>";
         $html .= "</div>";
         $html .= "</div>";
-        $html .= "<input type='hidden' id='feed_export_categories' value='$categoriesExcluded' name='groups[feed_export][fields][categories][value]' />";
-        $html .= "<ul><li><div class= 'catg-sub-'><input type='checkbox' disabled ='disabled' name='dummy-checkbox' />Root Category</div>" . $catTree  . "</ul></li>";
+        $html .= "<input type='hidden' id='feed_export_categories' value='"
+            . $categoriesExcluded . "' name='groups[feed_export][fields][categories][value]' />";
+        $html .= "<ul><li><div class= 'catg-sub-'><input type='checkbox' disabled ='disabled' name='dummy-checkbox' />"
+            . "Root Category</div>" . $catTree  . "</ul></li>";
         $html .= "</div></div><script>
                 function Unchecked(value) {
                     document.getElementById('catCheckBox_'+value).click();
@@ -96,7 +98,10 @@ class Categorytree extends Field
                     document.getElementById('emarsys_predict_feed_export_excludedcategories').value= checkboxesChecked;
                     document.getElementById('feed_export_categories').value= checkboxesChecked;
                     if (document.getElementById('catCheckBox_'+value).checked == true) {
-                        document.getElementById('selectedCategories').innerHTML += '<span id=\''+value+'\' onclick=\'Unchecked('+value+')\' class=\"admin__action-multiselect-crumb\">'+catName+'<button class=\"action-close\" type=\"button\"><span class=\"action-close-text\"></span></button></span>';
+                        document.getElementById('selectedCategories').innerHTML += '<span id=\''+value+'\''
+                            +' onclick=\'Unchecked('+value+')\' class=\"admin__action-multiselect-crumb\">'
+                            +catName+'<button class=\"action-close\" type=\"button\">'
+                            +'<span class=\"action-close-text\"></span></button></span>';
                     } else {
                         document.getElementById(value).remove();
                     }
@@ -147,9 +152,10 @@ class Categorytree extends Field
                 $category->getId() . "\">" . $category->getName() . "</div>";
 
             if ($checked != '') {
-                $selectedCats .= '<span id="' . $category->getId() . '" onclick="Unchecked(' . $category->getId() .
-                    ')" class="admin__action-multiselect-crumb">' . $category->getName() .
-                    '<button class="action-close" type="button"><span class="action-close-text"></span></button></span>';
+                $selectedCats .= '<span id="' . $category->getId() . '" onclick="Unchecked(' . $category->getId() . ')"'
+                    . 'class="admin__action-multiselect-crumb">' . $category->getName()
+                    . '<button class="action-close" type="button">'
+                    . '<span class="action-close-text"></span></button></span>';
             }
             if (count(array_filter(explode(",", $subcats))) > 0) {
                 list($catTree, $selectedSubCats) = $this->getTreeCategories($category->getId(), $level);

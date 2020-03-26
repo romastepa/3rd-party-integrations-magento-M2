@@ -7,20 +7,16 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 
-use Magento\{
-    Backend\App\Action,
-    Backend\App\Action\Context,
-    Framework\View\Result\PageFactory,
-    Framework\Stdlib\DateTime\DateTime,
-    Store\Model\StoreManagerInterface
-};
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\ResourceModel\Field as EmarsysResourceModelField,
-    Helper\Logs,
-    Model\Api\Api as EmarsysModelApiApi,
-    Model\ResourceModel\Customer as EmarsysResourceModelCustomer
-};
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ResourceModel\Field as EmarsysResourceModelField;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
 
 /**
  * Class SaveSchema

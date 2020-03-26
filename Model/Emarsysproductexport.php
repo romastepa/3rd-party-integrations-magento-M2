@@ -8,29 +8,26 @@
 namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-
-use Magento\{
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\Filesystem\Driver\File,
-    Framework\Registry,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Model\AbstractModel,
-    Framework\Serialize\Serializer\Serialize as Serializer,
-    Catalog\Model\Product as ProductModel,
-    Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
-    Directory\Model\CurrencyFactory,
-    Store\Model\StoreManagerInterface
-};
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Filesystem\Driver\File;
+use Magento\Framework\Registry;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
+use Magento\Catalog\Model\Product as ProductModel;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Emarsysproductexport
  */
 class Emarsysproductexport extends AbstractModel
 {
-    CONST EMARSYS_DELIMITER = '{EMARSYS}';
-    CONST BATCH_SIZE = 500;
+    const EMARSYS_DELIMITER = '{EMARSYS}';
+    const BATCH_SIZE = 500;
 
     protected $_preparedData = [];
     protected $_mapHeader = ['item'];
@@ -126,11 +123,12 @@ class Emarsysproductexport extends AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport::class);
     }
 
     /**
      * Get Catalog Product Export Collection
+     *
      * @param int|object $storeId
      * @param int $currentPageNumber
      * @param array $attributes
@@ -191,7 +189,7 @@ class Emarsysproductexport extends AbstractModel
                 $joinCondition,
                 [
                     'is_salable' => 'stock_status',
-                    'qty'
+                    'qty',
                 ]
             );
 
@@ -303,30 +301,7 @@ class Emarsysproductexport extends AbstractModel
                         $data[$productId] = $processed + $data[$productId];
                     }
 
-                    foreach ($item['data'] as $key => $value) {
-                        if (isset($map[$key])) {
-                            if (isset($this->_mapHeader[$map[$key]]) &&
-                                ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
-                                    || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
-                                )) {
-                                $currencyCodeTo = $this->storeManager
-                                    ->getStore($item['store_id'])
-                                    ->getBaseCurrency()
-                                    ->getCode();
-                                if ($item['currency_code'] != $currencyCodeTo) {
-                                    $rate = $this->currencyFactory->create()->load($item['currency_code'])
-                                        ->getAnyRate($currencyCodeTo);
-                                    $value = number_format(
-                                        $value * $rate,
-                                        2,
-                                        '.',
-                                        ''
-                                    );
-                                }
-                            }
-                            $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
-                        }
-                    }
+                    $this->prepareDataForCsv($item, $productId, $data);
                 }
                 ksort($data[$productId]);
 
@@ -341,4 +316,40 @@ class Emarsysproductexport extends AbstractModel
         }
         return true;
     }
+
+    /**
+     * @param $item
+     * @param $productId
+     * @param $data
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function prepareDataForCsv($item, $productId, &$data)
+    {
+        $map = $this->_processedStores[$item['store']];
+        foreach ($item['data'] as $key => $value) {
+            if (isset($map[$key])) {
+                if (isset($this->_mapHeader[$map[$key]])
+                    && ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
+                        || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
+                    )) {
+                    $currencyCodeTo = $this->storeManager
+                        ->getStore($item['store_id'])
+                        ->getBaseCurrency()
+                        ->getCode();
+                    if ($item['currency_code'] != $currencyCodeTo) {
+                        $rate = $this->currencyFactory->create()->load($item['currency_code'])
+                            ->getAnyRate($currencyCodeTo);
+                        $value = number_format(
+                            $value * $rate,
+                            2,
+                            '.',
+                            ''
+                        );
+                    }
+                }
+                $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
+            }
+        }
+    }
+
 }

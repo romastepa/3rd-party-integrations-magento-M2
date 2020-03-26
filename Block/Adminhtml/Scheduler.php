@@ -17,18 +17,6 @@ class Scheduler extends Template
     protected $_template = 'cron/grid.phtml';
 
     /**
-     * Scheduler constructor.
-     * @param Context $context
-     * @param array $data
-     */
-    public function __construct(
-        Context $context,
-        $data = []
-    ) {
-        parent::__construct($context, $data);
-    }
-
-    /**
      * @return $this
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -36,7 +24,10 @@ class Scheduler extends Template
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Scheduler\Grid', 'emarsys.logs.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Grid::class,
+                'emarsys.logs.grid'
+            )
         );
         return parent::_prepareLayout();
     }

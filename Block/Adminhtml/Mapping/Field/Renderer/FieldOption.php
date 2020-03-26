@@ -79,13 +79,17 @@ class FieldOption extends AbstractRenderer
     /**
      * @param DataObject $row
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function render(DataObject $row)
     {
         $optionId = $row->getData('option_id');
         $url = $this->backendHelper->getUrl('*/*/saveRow');
         $columnAttr = 'emarsys_field_option';
-        $html = '<select name="' . $columnAttr . '" class="admin__control-select" style="width:350px;" onchange="changeValue(\'' . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>';
+        $html = '<select name="'
+            . $columnAttr
+            . '" class="admin__control-select" style="width:350px;" onchange="changeValue(\''
+            . $url . '\', \'' . $optionId . '\', \'' . $columnAttr . '\', this.value)";>';
         $html .= '<option value=" ">Please Select</option>';
         $session = $this->session->getData();
         $storeId = false;
@@ -96,12 +100,15 @@ class FieldOption extends AbstractRenderer
 
         $emarsysContactFields = $this->resourceModelField->getEmarsysFieldOption($storeId);
         foreach ($emarsysContactFields as $field) {
-            $chkSelected = $this->resourceModelField->checkSelectedOption($optionId, $field['option_id'], $field['emarsys_field_id'], $storeId);
+            $chkSelected = $this->resourceModelField
+                ->checkSelectedOption($optionId, $field['option_id'], $field['emarsys_field_id'], $storeId);
             $selected = '';
             if ($chkSelected == 1) {
                 $selected = 'selected=selected';
             }
-            $html .= '<option value="' . $field['emarsys_field_id'] . '-' . $field['option_id'] . '" ' . $selected . '>' . $field['type'] . '-' . $field['name'] . ':' . $field['option_name'] . '</option>';
+            $html .= '<option value="' . $field['emarsys_field_id'] . '-' . $field['option_id'] . '" ' . $selected . '>'
+                . $field['type'] . '-' . $field['name'] . ':' . $field['option_name']
+                . '</option>';
         }
         $html .= '</select>';
 

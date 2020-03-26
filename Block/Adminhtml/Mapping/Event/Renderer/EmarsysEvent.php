@@ -80,6 +80,7 @@ class EmarsysEvent extends AbstractRenderer
     /**
      * @param DataObject $row
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function render(DataObject $row)
     {
@@ -100,7 +101,7 @@ class EmarsysEvent extends AbstractRenderer
         $buttonClass = '';
 
         if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getId())) {
-            $readOnly .= ' disabled = disabled';
+            $readOnly = ' disabled = disabled';
             $buttonClass = ' disabled';
         }
 
@@ -110,15 +111,22 @@ class EmarsysEvent extends AbstractRenderer
 			<option value="0">Please Select</option>';
 
         foreach ($emarsysEvents as $emarsysEvent) {
-            $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId()) ? ' selected = selected' : '';
-            $html .= '<option value="' . $emarsysEvent->getId() . '"' . $selected . '>' . $emarsysEvent->getEmarsysEvent() . '</option>';
+            $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId())
+                ? ' selected = selected'
+                : '';
+            $html .= '<option value="' . $emarsysEvent->getId() . '"' . $selected . '>'
+                . $emarsysEvent->getEmarsysEvent()
+                . '</option>';
         }
 
         $html .= '</select>';
         $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button ' .
             $buttonClass . '" name="json" id="json"  onclick="openMyPopup(\'' . $placeholderJsonRequestUrl .
             '\');" >JSON Request</button>';
-        $html .= '&nbsp;&nbsp;<a class="scalable task form-button" name="placeholders" id="placeholders"  href="' . $placeHolderUrl . '">Placeholders</button>';
+        if (empty($buttonClass)) {
+            $html .= '&nbsp;&nbsp;<a class="scalable task form-button" name="placeholders" id="placeholders"  href="'
+                . $placeHolderUrl . '">Placeholders</button>';
+        }
 
         return $html;
     }

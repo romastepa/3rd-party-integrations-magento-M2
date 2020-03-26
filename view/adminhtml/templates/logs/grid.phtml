@@ -11,9 +11,9 @@
     $dateObject = $block->getDateObject();
     $scheduleAt = new DateTime($logDet['created_at']);
     $finishedAt = 'now';
-    if ($logDet['finished_at'] != '0000-00-00 00:00:00') {
-        $finishedAt = $logDet['finished_at'];
-    }
+if ($logDet['finished_at'] != '0000-00-00 00:00:00') {
+    $finishedAt = $logDet['finished_at'];
+}
     $finishedAt = new DateTime($finishedAt);
     $diff = $finishedAt->diff($scheduleAt);
     $synDuration = $diff->days . ' days , ' . $diff->h . " : " . $diff->i . " : " . $diff->s;

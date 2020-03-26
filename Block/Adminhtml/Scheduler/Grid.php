@@ -216,15 +216,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $item
-     * @return string|void
-     */
-    public function getRowUrl($item)
-    {
-        parent::getRowUrl($item);
-    }
-
-    /**
      * @param $value
      * @return string
      */

@@ -7,11 +7,9 @@
 
 namespace Emarsys\Emarsys\Plugin\Checkout;
 
-use Magento\{
-    Checkout\Model\Session,
-    Checkout\Model\ShippingInformationManagement as SIM,
-    Checkout\Api\Data\ShippingInformationInterface
-};
+use Magento\Checkout\Model\Session;
+use Magento\Checkout\Model\ShippingInformationManagement as SIM;
+use Magento\Checkout\Api\Data\ShippingInformationInterface;
 
 /**
  * Class ShippingInformationManagement

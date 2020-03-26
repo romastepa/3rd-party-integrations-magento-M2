@@ -58,7 +58,8 @@ class InstallData implements InstallDataInterface
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         /** @var CustomerSetup $customerSetup */
-        $connection = $this->ResourceConnection->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
+        $connection = $this->ResourceConnection
+            ->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
         $table = $this->ResourceConnection->getTableName('emarsys_magento_events');
         if ($this->productMetadata->getEdition() == 'Enterprise') {
             $connection->query("INSERT INTO $table (`magento_event`,`config_path`) VALUES

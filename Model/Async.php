@@ -53,7 +53,7 @@ class Async extends AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Async');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Async::class);
     }
 
     /**
@@ -193,5 +193,4 @@ class Async extends AbstractModel
     {
         return $this->setData('request_body', $requestBody);
     }
-
 }

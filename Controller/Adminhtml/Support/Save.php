@@ -7,15 +7,13 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Support;
 
-use Magento\{
-    Backend\App\Action,
-    Backend\App\Action\Context,
-    Backend\Model\Auth\Session,
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\Translate\Inline\StateInterface,
-    Store\Model\StoreManagerInterface,
-    Framework\Mail\Template\TransportBuilder
-};
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Auth\Session;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -131,7 +129,8 @@ class Save extends Action
                 $templateVars['subject'] = $type . ' - ' . $subject;
                 $templateVars['priority'] = $priority;
                 $templateVars['message'] = $message;
-                $templateVars['store_name'] = $this->storeManager->getStore()->getName();;
+                $templateVars['store_name'] = $this->storeManager->getStore()->getName();
+                ;
                 $templateVars['domain'] = $this->storeManager->getStore()->getBaseUrl();
                 $templateVars['phpvalue'] = $req['php_version']['current']['value'];
                 $templateVars['memoryvalue'] = $req['memory_limit']['current']['value'];

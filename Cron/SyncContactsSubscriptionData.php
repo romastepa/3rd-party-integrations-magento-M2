@@ -7,22 +7,18 @@
 
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Helper\Logs,
-    Model\ResourceModel\Customer as EmarsysCustomerResourceModel,
-    Model\Logs as EmarsysModelLogs,
-    Model\Api\Api as EmarsysApiApi
-};
-use Magento\{
-    Framework\App\Cache\TypeListInterface,
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\App\Request\Http,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\Registry,
-    Store\Model\StoreManagerInterface,
-    Config\Model\ResourceModel\Config
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysCustomerResourceModel;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Registry;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Config\Model\ResourceModel\Config;
 
 /**
  * Class SyncContactsSubscriptionData
@@ -254,9 +250,12 @@ class SyncContactsSubscriptionData
         $this->registry->register('custom_entry_point', 'index.php');
 
         if ($isTimeBased) {
+            $notificationSecretKey = $this->scopeConfig->getValue(
+                'contacts_synchronization/emarsys_emarsys/notification_secret_key'
+            );
             $url = $this->storeManager->getStore($storeId)->getBaseUrl()
                 . 'emarsys/index/sync?_store=' . $storeId
-                . '&secret=' . $this->scopeConfig->getValue('contacts_synchronization/emarsys_emarsys/notification_secret_key')
+                . '&secret=' . $notificationSecretKey
                 . '&website_ids=' . implode(',', $websiteId)
                 . '&timebased=1';
         }
@@ -276,7 +275,12 @@ class SyncContactsSubscriptionData
      */
     public function setValue($key, $value, $websiteId)
     {
-        $this->resourceConfig->saveConfig('emarsys_suite2/storage/' . $key, $value, 'websites', $websiteId);
+        $this->resourceConfig->saveConfig(
+            'emarsys_suite2/storage/' . $key,
+            $value,
+            'websites',
+            $websiteId
+        );
         $this->_cacheTypeList->cleanType('config');
     }
 }

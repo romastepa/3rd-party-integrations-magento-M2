@@ -59,7 +59,9 @@ class Sync extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-            $notificationSecretKey = $this->scopeConfig->getValue('contacts_synchronization/emarsys_emarsys/notification_secret_key');
+            $notificationSecretKey = $this->scopeConfig->getValue(
+                'contacts_synchronization/emarsys_emarsys/notification_secret_key'
+            );
             if ($this->request->getParam('secret') == $notificationSecretKey) {
                 $websiteIds = explode(',', $this->getRequest()->getParam('website_ids'));
                 foreach ($websiteIds as $websiteId) {

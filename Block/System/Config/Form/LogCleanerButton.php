@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\System\Config\Form;
 
 /**
@@ -25,6 +26,7 @@ class LogCleanerButton extends Button
 
     /**
      * Get the button and scripts contents
+     *
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return string
      */
@@ -36,7 +38,9 @@ class LogCleanerButton extends Button
         }
         $originalData = $element->getOriginalData();
         $ajaxUrl = $this->_urlBuilder->getUrl("emarsys_emarsys/log/clearlogs", ["website" => $websiteId]);
-        $buttonLabel = !empty($originalData['button_label']) ? $originalData['button_label'] : $this->_testConnectionButtonLabel;
+        $buttonLabel = !empty($originalData['button_label'])
+            ? $originalData['button_label']
+            : $this->_testConnectionButtonLabel;
         $this->addData(
             [
                 'button_label' => __($buttonLabel),

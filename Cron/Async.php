@@ -7,13 +7,11 @@
 
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Helper\Logs as EmarsysLogsHelper,
-    Model\ResourceModel\Async\CollectionFactory,
-    Model\Api\Api as EmarsysModelApiApi,
-    Helper\Cron as EmarsysCronHelper
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
+use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 
 use Magento\Framework\Stdlib\DateTime\DateTime;
 
@@ -102,7 +100,8 @@ class Async
                     list($buildRequest, $requestBody) = \Zend_Json::decode($item->getRequestBody());
                     $response = $this->api->createContactInEmarsys($buildRequest);
                     if (isset($response['status']) && ($response['status'] == 200)
-                        || ($response['status'] == 400 && isset($response['body']['replyCode']) && $response['body']['replyCode'] == 2009)
+                        || ($response['status'] == 400 && isset($response['body']['replyCode'])
+                            && $response['body']['replyCode'] == 2009)
                     ) {
                         //contact synced to emarsys successfully
                         $response = $this->api->sendRequest('POST', $item->getEndpoint(), $requestBody);
@@ -126,6 +125,5 @@ class Async
                 );
             }
         }
-
     }
 }

@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
 use Magento\Backend\App\Action;
@@ -35,6 +36,7 @@ class Saveplaceholdermapping extends Action
 
     /**
      * Saveplaceholdermapping constructor.
+     *
      * @param Context $context
      * @param EventFactory $eventFactory
      * @param Event $eventResourceModel
@@ -48,7 +50,7 @@ class Saveplaceholdermapping extends Action
         PlaceholdersFactory $emarsysEventPlaceholderMappingFactory,
         PageFactory $resultPageFactory
     ) {
-    
+
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->eventResourceModel = $eventResourceModel;
@@ -59,6 +61,7 @@ class Saveplaceholdermapping extends Action
 
     /**
      * SavePlaceHolderMapping Action
+     *
      * @return $this
      */
     public function execute()
@@ -71,7 +74,8 @@ class Saveplaceholdermapping extends Action
 
             foreach ($placeholderDataDecode as $placeholderItem) {
                 foreach ($placeholderItem as $key => $value) {
-                    $emarsysEventPlaceholderMapping = $this->emarsysEventPlaceholderMappingFactory->create()->load($key);
+                    $emarsysEventPlaceholderMapping = $this->emarsysEventPlaceholderMappingFactory->create()
+                        ->load($key);
                     $emarsysEventPlaceholderMapping->setEmarsysPlaceholderName($value);
                     $emarsysEventPlaceholderMapping->save();
                 }

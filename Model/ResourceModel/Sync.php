@@ -8,12 +8,10 @@
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Emarsys\Emarsys\Model\Logs;
-use Magento\Framework\{
-    App\Config\ScopeConfigInterface,
-    Model\ResourceModel\Db\AbstractDb,
-    Model\ResourceModel\Db\Context,
-    Stdlib\DateTime\DateTime
-};
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
  * Class Sync
@@ -94,7 +92,7 @@ class Sync extends AbstractDb
     }
 
     /**
-     * 
+     *
      * @param type $entity
      * @param type $storeId
      * @return array
@@ -130,7 +128,7 @@ class Sync extends AbstractDb
     }
 
     /**
-     * 
+     *
      * @param type $path
      * @param type $scope
      * @param type $scopeId

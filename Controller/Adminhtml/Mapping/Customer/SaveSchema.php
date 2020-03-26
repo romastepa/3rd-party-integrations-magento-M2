@@ -7,20 +7,16 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 
-use Magento\{
-    Backend\App\Action,
-    Backend\App\Action\Context,
-    Framework\View\Result\PageFactory,
-    Framework\Stdlib\DateTime\DateTime,
-    Store\Model\StoreManagerInterface,
-    Eav\Model\Entity\Attribute
-};
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
-    Model\Logs,
-    Helper\Logs as EmarsysHelperLogs
-};
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Eav\Model\Entity\Attribute;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 
 /**
  * Class SaveSchema

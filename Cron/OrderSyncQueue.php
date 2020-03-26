@@ -6,10 +6,8 @@
  */
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\{
-    Emarsys\Model\Order as EmarsysModelOrder,
-    Emarsys\Model\Logs
-};
+use Emarsys\Emarsys\Model\Order as EmarsysModelOrder;
+use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**

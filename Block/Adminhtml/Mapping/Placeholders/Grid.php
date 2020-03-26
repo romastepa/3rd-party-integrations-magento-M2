@@ -6,24 +6,20 @@
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders;
 
-use Magento\{
-    Backend\Block\Widget\Grid\Extended,
-    Backend\Block\Template\Context,
-    Backend\Helper\Data,
-    Eav\Model\Entity\Type,
-    Eav\Model\Entity\Attribute,
-    Framework\Data\Collection,
-    Framework\DataObjectFactory,
-    Framework\Module\Manager as ModuleManager,
-    Framework\Message\ManagerInterface as MessageManagerInterface,
-    Framework\App\ResponseFactory
-};
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Event,
-    Model\EmarsyseventmappingFactory,
-    Model\PlaceholdersFactory,
-    Helper\Data as EmarsysHelper
-};
+use Magento\Backend\Block\Widget\Grid\Extended;
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Helper\Data;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Framework\Data\Collection;
+use Magento\Framework\DataObjectFactory;
+use Magento\Framework\Module\Manager as ModuleManager;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\App\ResponseFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
+use Emarsys\Emarsys\Model\PlaceholdersFactory;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 /**
  * Class Grid

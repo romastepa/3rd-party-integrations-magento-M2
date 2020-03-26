@@ -182,14 +182,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        return parent::getMainButtonsHtml();
-    }
-
-    /**
      * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $row
      * @return string
      */

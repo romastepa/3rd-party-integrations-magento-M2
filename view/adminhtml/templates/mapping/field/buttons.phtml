@@ -20,7 +20,7 @@ $recommdedBtn = "'" . $block->getUrl("*/*/saveRecommended", ["store" => $storeId
                 onChange="top.location.href=this.options[this.selectedIndex].value;"
                 value="GO">
             <?php foreach ($mappingOptions as $option): ?>
-                <option <?php if ($option['selected'] == true) : ?> selected="selected" <?php endif; ?> value="<?php echo $option['value'] ?>">
+                <option <?php if ($option['selected'] == true): ?> selected="selected" <?php endif; ?> value="<?php echo $option['value'] ?>">
                       <?php echo __($option['label']) ?>
                 </option>
             <?php endforeach; ?>

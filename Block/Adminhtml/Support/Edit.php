@@ -34,4 +34,3 @@ class Edit extends Container
         return __('Support Information');
     }
 }
-

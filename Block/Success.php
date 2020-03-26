@@ -7,15 +7,13 @@
 namespace Emarsys\Emarsys\Block;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Magento\{
-    Checkout\Model\Session,
-    Customer\Model\Session as CustomerSession,
-    Framework\View\Element\Template,
-    Framework\View\Element\Template\Context,
-    Sales\Model\Order,
-    Sales\Model\OrderFactory,
-    Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory
-};
+use Magento\Checkout\Model\Session;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
 
 /**
  * Class Success
@@ -23,7 +21,7 @@ use Magento\{
 class Success extends Template
 {
     /**
-     * @var Session 
+     * @var Session
      */
     protected $checkoutSession;
 

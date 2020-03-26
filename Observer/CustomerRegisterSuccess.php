@@ -7,12 +7,10 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Magento\{
-    Framework\Event\Observer,
-    Framework\Event\ObserverInterface,
-    Customer\Model\Session,
-    Framework\Exception\NoSuchEntityException
-};
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Customer\Model\Session;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class CustomerRegisterSuccess

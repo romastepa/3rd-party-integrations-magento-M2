@@ -7,10 +7,8 @@
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Installation;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\ResourceModel\CustomerFactory as CustomerResourceModel
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\ResourceModel\CustomerFactory as CustomerResourceModel;
 use Magento\Backend\Block\Template\Context;
 
 /**

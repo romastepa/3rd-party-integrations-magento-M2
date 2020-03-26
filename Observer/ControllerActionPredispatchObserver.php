@@ -6,11 +6,9 @@
  */
 namespace Emarsys\Emarsys\Observer;
 
-use Magento\{
-    Framework\Event\Observer,
-    Framework\Event\ObserverInterface,
-    Customer\Model\Session
-};
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Customer\Model\Session;
 
 /**
  * Class ControllerActionPredispatchObserver

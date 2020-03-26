@@ -87,7 +87,9 @@ class EmarsysAsyncExport extends Command
                     list($buildRequest, $requestBody) = \Zend_Json::decode($item->getRequestBody());
                     $response = $this->api->createContactInEmarsys($buildRequest);
                     if (isset($response['status']) && ($response['status'] == 200)
-                        || ($response['status'] == 400 && isset($response['body']['replyCode']) && $response['body']['replyCode'] == 2009)
+                        || ($response['status'] == 400 && isset($response['body']['replyCode'])
+                            && $response['body']['replyCode'] == 2009
+                        )
                     ) {
                         //contact synced to emarsys successfully
                         $response = $this->api->sendRequest('POST', $item->getEndpoint(), $requestBody);
@@ -96,9 +98,18 @@ class EmarsysAsyncExport extends Command
                 if (isset($response['status']) && ($response['status'] = 200)) {
                     $item->delete();
                 }
-                $output->writeln('status => ' . $response['status'] . ' |~| Email => ' . $item->getEmail() . ' |~| replyCode => ' . $response['body']['replyCode'] . ' |~| replyText => ' . $response['body']['replyText']);
+                $output->writeln(
+                    'status => ' . $response['status']
+                    . ' |~| Email => ' . $item->getEmail()
+                    . ' |~| replyCode => ' . $response['body']['replyCode']
+                    . ' |~| replyText => ' . $response['body']['replyText']
+                );
             } catch (Exception $e) {
-                $output->writeln('status =>  <info>EXCEPTION</info> |~| Email => ' . $item->getEmail() . ' |~| error_message => ' . $e->getMessage());
+                $output->writeln(
+                    'status =>  <info>EXCEPTION</info>'
+                    . ' |~| Email => ' . $item->getEmail()
+                    . ' |~| error_message => ' . $e->getMessage()
+                );
             }
         }
 

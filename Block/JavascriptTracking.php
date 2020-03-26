@@ -6,20 +6,18 @@
  */
 namespace Emarsys\Emarsys\Block;
 
-use Magento\{
-    Catalog\Model\Category,
-    Catalog\Model\Product,
-    Framework\Exception\LocalizedException,
-    Framework\Exception\NoSuchEntityException,
-    Framework\View\Element\Template,
-    Framework\View\Element\Template\Context,
-    Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory,
-    Catalog\Model\CategoryFactory,
-    Framework\App\Request\Http,
-    Framework\Registry,
-    Directory\Model\CurrencyFactory,
-    Store\Model\StoreManagerInterface
-};
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\Product;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Registry;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data;
 
 /**

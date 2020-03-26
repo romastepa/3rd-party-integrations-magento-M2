@@ -8,13 +8,11 @@
 namespace Emarsys\Emarsys\Plugin\Checkout\Model\Checkout;
 
 use Emarsys\Emarsys\Helper\Data;
-use Magento\{
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\Exception\NoSuchEntityException,
-    Store\Model\StoreManagerInterface,
-    Customer\Model\Session,
-    Newsletter\Model\Subscriber
-};
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Customer\Model\Session;
+use Magento\Newsletter\Model\Subscriber;
 
 /**
  * Class LayoutProcessor
@@ -90,8 +88,7 @@ class LayoutProcessor
 
         if (!$this->session->isLoggedIn() || !$subscribed) {
             if (isset($jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
-                ['shippingAddress']['children']['shipping-address-fieldset']['children']['emarsys_subscriber']
-            )) {
+                ['shippingAddress']['children']['shipping-address-fieldset']['children']['emarsys_subscriber'])) {
                 $jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
                 ['shippingAddress']['children']['shipping-address-fieldset']['children']['emarsys_subscriber'] = [
                     'component' => 'Emarsys_Emarsys/js/view/newsletter_sub_checkout',
