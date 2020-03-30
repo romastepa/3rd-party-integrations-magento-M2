@@ -15,8 +15,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            Emarsys\Emarsys\Model\OrderQueue::class,
-            Emarsys\Emarsys\Model\ResourceModel\OrderQueue::class
+            \Emarsys\Emarsys\Model\OrderQueue::class,
+            \Emarsys\Emarsys\Model\ResourceModel\OrderQueue::class
         );
     }
 }
