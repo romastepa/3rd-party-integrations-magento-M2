@@ -22,7 +22,7 @@ class Collection extends AbstractCollection
     protected function _construct()
     {
         $this->_init(
-            \Emarsys\Emarsys\Model\ContactFieldOption::classs,
+            \Emarsys\Emarsys\Model\ContactFieldOption::class,
             \Emarsys\Emarsys\Model\ResourceModel\ContactFieldOption::class
         );
     }
