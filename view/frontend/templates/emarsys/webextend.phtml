@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 /** @var \Emarsys\Emarsys\Block\JavascriptTracking $block */
@@ -30,8 +30,8 @@
         window.Emarsys = window.Emarsys || {};
         window.Emarsys.Magento2 = window.Emarsys.Magento2 || {};
 
-        var dataEmarsys = <?php echo $block->getTrackingData(); ?>;
-        var uniqueIdentifier = '<?php echo $block->getUniqueIdentifier(); ?>';
+        let dataEmarsys = <?php echo $block->getTrackingData(); ?>;
+        let uniqueIdentifier = '<?php echo $block->getUniqueIdentifier(); ?>';
 
         require([
             'jquery',
@@ -41,7 +41,7 @@
 
             let firstOnData = true;
             let timeout;
-            var processed = 0;
+            let processed = 0;
 
             const onData = function () {
                 if (timeout) {
@@ -49,12 +49,12 @@
                     timeout = undefined;
                 }
 
-                if (dataEmarsys.customer && dataEmarsys.customer.email) {
-                    ScarabQueue.push(['setEmail', dataEmarsys.customer.email]);
+                if ((dataEmarsys.customer !== undefined) && (dataEmarsys.customer.webExtendCustomerEmail !== undefined)
+                ) {
+                    ScarabQueue.push(['setEmail', dataEmarsys.customer.webExtendCustomerEmail]);
                 }
-
                 if (firstOnData) {
-                    var processed = 0;
+                    processed = 0;
                     if (dataEmarsys.product) {
                         ScarabQueue.push(['view', (uniqueIdentifier == 'product_id') ? dataEmarsys.product.id : dataEmarsys.product.sku]);
                     }
@@ -210,10 +210,11 @@
 
             if (firstOnData) {
                 setTimeout(() => {
-                    if (!dataEmarsys.customer && !dataEmarsys.cart) {
+                    if (dataEmarsys.customer === undefined && dataEmarsys.cart === undefined) {
+                        customerData.reload(['customer']);
                         onData();
                     }
-                }, 5000);
+                }, 3000);
             }
         });
     </script>
