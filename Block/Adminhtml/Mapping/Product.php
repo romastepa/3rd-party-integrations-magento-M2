@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping;
 
-/**
- * Class Product
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping
- */
 class Product extends \Magento\Backend\Block\Widget\Container
 {
     /**
@@ -19,6 +16,7 @@ class Product extends \Magento\Backend\Block\Widget\Container
 
     /**
      * Product constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
      * @param array $data
      */
@@ -37,7 +35,10 @@ class Product extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Grid', 'emarsys.product.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Grid::class,
+                'emarsys.product.grid'
+            )
         );
         return parent::_prepareLayout();
     }

@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\System\Config\Form;
 
-/**
- * Class Logger
- * @package Emarsys\Emarsys\Block\System\Config\Form
- */
 class Logger extends Button
 {
     /**
@@ -38,7 +35,9 @@ class Logger extends Button
         }
         $originalData = $element->getOriginalData();
         $ajaxUrl = $this->_urlBuilder->getUrl("emarsys_emarsys/log/emarsysLogger", ["website" => $websiteId]);
-        $buttonLabel = !empty($originalData['button_label']) ? $originalData['button_label'] : $this->_testConnectionButtonLabel;
+        $buttonLabel = !empty($originalData['button_label'])
+            ? $originalData['button_label']
+            : $this->_testConnectionButtonLabel;
         $this->addData(
             [
                 'button_label' => __($buttonLabel),

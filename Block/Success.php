@@ -2,8 +2,9 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -17,14 +18,10 @@ use Magento\{
     Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory
 };
 
-/**
- * Class Success
- * @package Emarsys\Emarsys\Block
- */
 class Success extends Template
 {
     /**
-     * @var Session 
+     * @var Session
      */
     protected $checkoutSession;
 
@@ -108,25 +105,21 @@ class Success extends Template
                 if ($taxIncluded) {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotalInclTax() - $bundleBaseDiscount)
-                        : ($item->getRowTotalInclTax() - $bundleDiscount)
-                    ;
+                        : ($item->getRowTotalInclTax() - $bundleDiscount);
                 } else {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotal() - $bundleBaseDiscount)
-                        : $item->getRowTotal() - $bundleDiscount
-                    ;
+                        : $item->getRowTotal() - $bundleDiscount;
                 }
             } else {
                 if ($taxIncluded) {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount())
-                        : ($item->getRowTotalInclTax() - $item->getDiscountAmount())
-                    ;
+                        : ($item->getRowTotalInclTax() - $item->getDiscountAmount());
                 } else {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotal() - $item->getBaseDiscountAmount())
-                        : ($item->getRowTotal() - $item->getDiscountAmount())
-                    ;
+                        : ($item->getRowTotal() - $item->getDiscountAmount());
                 }
             }
 
@@ -139,7 +132,7 @@ class Success extends Template
             $items[] = [
                 'item' => addslashes($sku),
                 'price' => $price,
-                'quantity' => (int)$qty
+                'quantity' => (int)$qty,
             ];
         }
 

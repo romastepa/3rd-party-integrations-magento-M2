@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Support\Edit;
 
-/**
- * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\System\Account\Edit
- */
 class Form extends \Magento\Backend\Block\Widget\Form\Generic
 {
 
@@ -66,19 +63,22 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
 
         $fieldset = $form->addFieldset("support_form", ["legend" => "Support Information"]);
         $fieldset->addField("type", "select", [
-            'label'     => 'Support Type',
-            'name'      => 'type',
-            'required'  => true,
-            'values'    => [
+            'label' => 'Support Type',
+            'name' => 'type',
+            'required' => true,
+            'values' => [
                 ['value' => '', 'label' => 'Please Select'],
                 ['value' => 'Sales Support||connect@emarsys.com', 'label' => 'Sales Support'],
                 ['value' => 'Customization Service||support@emarsys.com', 'label' => 'Customization Service'],
-                ['value' => 'Feedback and Complaint||connect@emarsys.com,support@emarsys.com', 'label' => 'Feedback and Complaint'],
+                [
+                    'value' => 'Feedback and Complaint||connect@emarsys.com,support@emarsys.com',
+                    'label' => 'Feedback and Complaint',
+                ],
                 ['value' => 'Technical Support||support@emarsys.com', 'label' => 'Technical Support'],
                 ['value' => 'Urgent Issue||support@emarsys.com', 'label' => 'Urgent Issue'],
                 ['value' => 'Installation Service||support@emarsys.com', 'label' => 'Installation Service'],
                 ['value' => 'Request Upgrade||support@emarsys.com', 'label' => 'Request Upgrade'],
-                ['value' => 'Other||connect@emarsys.com,support@emarsys.com', 'label' => 'Other']
+                ['value' => 'Other||connect@emarsys.com,support@emarsys.com', 'label' => 'Other'],
             ],
         ]);
 
@@ -98,25 +98,25 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         ]);
 
         $fieldset->addField("priority", "select", [
-            'label'     => 'Priority',
-            'name'      => 'priority',
-            'values'    => [
+            'label' => 'Priority',
+            'name' => 'priority',
+            'values' => [
                 [
-                    'value'     => 'Normal',
-                    'label'     => 'Normal',
+                    'value' => 'Normal',
+                    'label' => 'Normal',
                 ],
                 [
-                    'value'     => 'Medium',
-                    'label'     => 'Medium',
+                    'value' => 'Medium',
+                    'label' => 'Medium',
                 ],
 
                 [
-                    'value'     => 'High',
-                    'label'     => 'High',
+                    'value' => 'High',
+                    'label' => 'High',
                 ],
                 [
-                    'value'     => 'Urgent',
-                    'label'     => 'Urgent',
+                    'value' => 'Urgent',
+                    'label' => 'Urgent',
                 ],
 
             ],
@@ -126,15 +126,15 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
             'name' => 'message',
             'label' => 'Message',
             'title' => 'Message',
-            'required' => true
+            'required' => true,
         ]);
 
         $fieldset->addField("email", "text", [
             "label" => "Email",
-            "name"  => "email",
-            "id"    => "email",
+            "name" => "email",
+            "id" => "email",
             "index" => "email",
-            "class" => "hiddensupportemail"
+            "class" => "hiddensupportemail",
         ]);
 
         $data = $user->getData();

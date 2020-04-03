@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
@@ -16,10 +16,6 @@ use Magento\Backend\Model\Session;
 use Magento\Framework\DataObject;
 use Magento\Framework\UrlInterface;
 
-/**
- * Class Emarsyseventmapping
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer
- */
 class Emarsyseventmapping extends AbstractRenderer
 {
     /**
@@ -93,7 +89,8 @@ class Emarsyseventmapping extends AbstractRenderer
         $emarsysEventName = trim(str_replace(" ", "_", strtolower($magentoEventName)));
         $gridSessionData = $this->session->getMappingGridData();
 
-        $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id', ['eq' => $this->session->getStoreId()]);
+        $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id',
+            ['eq' => $this->session->getStoreId()]);
         $dbEvents = $emarsysEvents->getAllIds();
 
         $readOnly = '';
@@ -101,8 +98,13 @@ class Emarsyseventmapping extends AbstractRenderer
             $readOnly .= 'disabled = disabled ';
         }
 
-        $html = '<select ' . $readOnly . 'name="directions" style="width:200px;" onchange="changeEmarsysValue(\'' . $this->urlInterface->getUrl('*/*/changeValue') . '\', this.value, \'' . $id . '\', \'' . $id . '\')";>'
-			. '<option value="0">Please Select</option>';
+        $html = '<select ' . $readOnly . 'name="directions" style="width:200px;"'
+            . ' onchange="changeEmarsysValue('
+            . '\'' . $this->urlInterface->getUrl('*/*/changeValue') . '\','
+            . ' this.value,'
+            . ' \'' . $id . '\','
+            . ' \'' . $id . '\');">'
+            . '<option value="0">Please Select</option>';
 
         $gridSessionData[$id]['magento_event_id'] = $id;
         foreach ($emarsysEvents as $emarsysEvent) {
@@ -110,13 +112,16 @@ class Emarsyseventmapping extends AbstractRenderer
 
             if (($row->getEmarsysEventId() == $emarsysEvent->getId())
                 || (($emarsysEventName == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() == null))
-                || (($emarsysEventName == $emarsysEvent->getEmarsysEvent()) && ($row->getEmarsysEventId() != null) && !in_array($row->getEmarsysEventId(), $dbEvents))
+                || (($emarsysEventName == $emarsysEvent->getEmarsysEvent())
+                    && ($row->getEmarsysEventId() != null) && !in_array($row->getEmarsysEventId(), $dbEvents))
             ) {
                 $sel .= 'selected = selected';
                 $gridSessionData[$id]['emarsys_event_id'] = $emarsysEvent->getId();
                 $gridSessionData[$id]['recommended'] = 1;
             }
-            $html .= '<option ' . $sel . ' value="' . $emarsysEvent->getId() . '">' . $emarsysEvent->getEmarsysEvent() . '</option>';
+            $html .= '<option ' . $sel . ' value="' . $emarsysEvent->getId() . '">'
+                . $emarsysEvent->getEmarsysEvent()
+                . '</option>';
         }
         $html .= '</select>';
 

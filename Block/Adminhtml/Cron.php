@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml;
@@ -15,10 +15,6 @@ use Magento\Backend\Model\Session;
 use Magento\Framework\Data\Collection;
 use Magento\Framework\DataObjectFactory;
 
-/**
- * Class Cron
- * @package Emarsys\Emarsys\Block\Adminhtml
- */
 class Cron extends Extended
 {
     /**
@@ -58,6 +54,7 @@ class Cron extends Extended
 
     /**
      * Cron constructor.
+     *
      * @param Context $context
      * @param Data $backendHelper
      * @param Collection $dataCollection
@@ -79,7 +76,7 @@ class Cron extends Extended
         $this->backendHelper = $backendHelper;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
-        $this->cronData  = $cronData;
+        $this->cronData = $cronData;
         $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
@@ -113,17 +110,18 @@ class Cron extends Extended
         foreach ($rows as $row) {
             foreach ($row as $key => $datahere) {
                 $datahere['rowid'] = $count;
-                /*condition to filter only emarsys starts here, to get all the crons in this mageto remove the below if condition*/
+                /* condition to filter only emarsys starts here,
+                to get all the crons in this mageto remove the below if condition */
                 if (isset($datahere['name'])) {
                     $emarsysexp = explode("_", $datahere['name']);
                 }
-                if ($emarsysexp[0]!='emarsys') {
+                if ($emarsysexp[0] != 'emarsys') {
                     continue;
                 }
 
                 /* filter code ends here */
-
-                $rowObj = $this->dataObjectFactory->create();// use this create method to prevent getting only the last data in the grid.
+                // use this create method to prevent getting only the last data in the grid.
+                $rowObj = $this->dataObjectFactory->create();
                 $rowObj->setData($datahere)->toJson();
                 $collection->addItem($rowObj);
                 $collection->loadData();
@@ -148,24 +146,24 @@ class Cron extends Extended
             "header" => __("Method"),
             "align" => "center",
             "index" => "method",
-            'width' => '150'
+            'width' => '150',
 
         ]);
 
         $this->addColumn("schedule", [
-            "header" =>__("Schedule"),
-            "align"  => "left",
-            "index"  => "schedule",
-            'width'  => '150'
+            "header" => __("Schedule"),
+            "align" => "left",
+            "index" => "schedule",
+            'width' => '150',
 
         ]);
 
         $this->addColumn("rowid", [
-            "header" =>__("Action"),
-            "align"  => "left",
-            "index"  => "rowid",
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer\Messagetype',
-            'width'  => '150'
+            "header" => __("Action"),
+            "align" => "left",
+            "index" => "rowid",
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer\Messagetype::class,
+            'width' => '150',
         ]);
         return parent::_prepareColumns();
     }

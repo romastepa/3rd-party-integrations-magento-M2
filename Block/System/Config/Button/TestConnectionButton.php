@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\System\Config\Button;
 
-/**
- * Class TestConnectionButton
- * @package Emarsys\Emarsys\Block\System\Config\Button
- */
 class TestConnectionButton extends AbstractButton
 {
     /**
@@ -19,6 +16,7 @@ class TestConnectionButton extends AbstractButton
 
     /**
      * Set template to itself
+     *
      * @return $this
      */
     protected function _prepareLayout()

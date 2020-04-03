@@ -2,8 +2,9 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block;
 
 use Magento\{
@@ -22,10 +23,6 @@ use Magento\{
 };
 use Emarsys\Emarsys\Helper\Data;
 
-/**
- * Class JavascriptTracking
- * @package Emarsys\Emarsys\Block
- */
 class JavascriptTracking extends Template
 {
     /**
@@ -56,13 +53,13 @@ class JavascriptTracking extends Template
     /**
      * JavascriptTracking constructor.
      *
-     * @param Context                   $context
-     * @param CategoryFactory           $categoryFactory
-     * @param Http                      $request
-     * @param Registry                  $registry
-     * @param CurrencyFactory           $currencyFactory
+     * @param Context $context
+     * @param CategoryFactory $categoryFactory
+     * @param Http $request
+     * @param Registry $registry
+     * @param CurrencyFactory $currencyFactory
      * @param CategoryCollectionFactory $categoryCollectionFactory
-     * @param array                     $data
+     * @param array $data
      */
     public function __construct(
         Context $context,
@@ -199,7 +196,7 @@ class JavascriptTracking extends Template
         if ($product instanceof Product) {
             return [
                 'sku' => $product->getSku(),
-                'id'  => $product->getId(),
+                'id' => $product->getId(),
             ];
         }
 
@@ -234,7 +231,7 @@ class JavascriptTracking extends Template
 
             return [
                 'names' => $categoryList,
-                'ids'   => $categoryIds,
+                'ids' => $categoryIds,
             ];
         }
         return false;

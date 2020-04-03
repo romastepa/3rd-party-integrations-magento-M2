@@ -1,18 +1,14 @@
 <?php
-
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer;
 
 use Magento\Framework\DataObject;
 
-/**
- * Class EmarsysProduct
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer
- */
 class EmarsysProduct extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
 {
     /**
@@ -37,6 +33,7 @@ class EmarsysProduct extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
 
     /**
      * EmarsysProduct constructor.
+     *
      * @param \Magento\Backend\Model\Session $session
      * @param \Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory $collectionFactory
      * @param \Emarsys\Emarsys\Model\ResourceModel\Sync $syncResourceModel
@@ -63,10 +60,10 @@ class EmarsysProduct extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
         global $colValue;
         $colValue = '';
         $attributeCode = $row->getData('attribute_code');
-        $entityTypeId = $row->getEntityTypeId();
         $url = $this->backendHelper->getUrl('*/*/saveRow');
         $coulmnAttr = 'emarsys_attr_code';
-        $collection = $this->collectionFactory->create()->addFieldToFilter('magento_attr_code', $row->getAttributeCode());
+        $collection = $this->collectionFactory->create()
+            ->addFieldToFilter('magento_attr_code', $row->getAttributeCode());
         $session = $this->session->getData();
 
         $gridSessionStoreId = 1;
@@ -83,17 +80,21 @@ class EmarsysProduct extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
             $colValue = $col['emarsys_attr_code'];
         }
 
-        $emarsysProductAttributes = $this->syncResourceModel->getAttributes('product', $gridSessionStoreId);
-        $emarsysCustomProductAttributes = $this->syncResourceModel->getAttributes('customproductattributes', $gridSessionStoreId);
+        $emarsysProductAttributes = $this->syncResourceModel
+            ->getAttributes('product', $gridSessionStoreId);
+        $emarsysCustomProductAttributes = $this->syncResourceModel
+            ->getAttributes('customproductattributes', $gridSessionStoreId);
 
-        $html = '<select name="directions" class="admin__control-select"  style="width:200px;" onchange="changeValue(\'' . $url . '\', \'' . $attributeCode . '\', \'' . $coulmnAttr . '\', this.value);">
-           <option value="0">Please Select</option>';
+        $html = '<select name="directions" class="admin__control-select"  style="width:200px;"'
+            . ' onchange="changeValue('
+            . '\'' . $url . '\', \'' . $attributeCode . '\', \'' . $coulmnAttr . '\', this.value);">'
+            . '<option value="0">Please Select</option>';
         foreach ($emarsysProductAttributes as $prodValue) {
             $sel = '';
             if ($colValue == $prodValue['id']) {
-                $sel = 'selected == selected';
+                $sel = ' selected == selected';
             }
-            $html .= '<option ' . $sel . ' value="' . $prodValue['id'] . '">' . $prodValue['label'] . '</option>';
+            $html .= '<option' . $sel . ' value="' . $prodValue['id'] . '">' . $prodValue['label'] . '</option>';
         }
         if ((count($emarsysProductAttributes) > 0) && (count($emarsysCustomProductAttributes) > 0)) {
             $html .= "<option disabled>----Custom Attributes----</option>'";
@@ -103,7 +104,9 @@ class EmarsysProduct extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\
                 if ($colValue == $customId) {
                     $sel = 'selected == selected';
                 }
-                $html .= '<option ' . $sel . ' value="' . $customId . '">' . $customAttribute['description'] . '</option>';
+                $html .= '<option' . $sel . ' value="' . $customId . '">'
+                    . $customAttribute['description']
+                    . '</option>';
             }
         }
         $html .= '</select>';

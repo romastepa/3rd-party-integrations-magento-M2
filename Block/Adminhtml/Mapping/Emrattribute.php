@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping;
 
-/**
- * Class Emrattribute
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping
- */
 class Emrattribute extends \Magento\Backend\Block\Widget\Container
 {
     /**
@@ -19,6 +16,7 @@ class Emrattribute extends \Magento\Backend\Block\Widget\Container
 
     /**
      * Emrattribute constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
      * @param \Emarsys\Emarsys\Model\ResourceModel\Emrattribute\CollectionFactory $CollectionFactory
      * @param array $data
@@ -40,7 +38,10 @@ class Emrattribute extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Grid', 'emarsys.order.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Grid::class,
+                'emarsys.order.grid'
+            )
         );
         return parent::_prepareLayout();
     }
@@ -59,8 +60,6 @@ class Emrattribute extends \Magento\Backend\Block\Widget\Container
     public function emarattarData()
     {
         $store_id = $this->getRequest()->getParam('store');
-        $result = $this->CollectionFactory->create()->addFieldToFilter('store_id', ['eq' => $store_id])->getData();
-
-        return $result;
+        return $this->CollectionFactory->create()->addFieldToFilter('store_id', ['eq' => $store_id])->getData();
     }
 }

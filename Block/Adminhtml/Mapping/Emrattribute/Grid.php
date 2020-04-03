@@ -2,15 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute;
 
-/**
- * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute
- */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
@@ -70,6 +66,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * Grid constructor.
+     *
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Backend\Helper\Data $backendHelper
      * @param \Magento\Eav\Model\Entity\Type $entityType
@@ -111,7 +108,9 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $customCollection = $this->orderFactory->create()->getCollection()->setOrder('magento_column_name', 'ASC');
+        $customCollection = $this->orderFactory->create()
+            ->getCollection()
+            ->setOrder('magento_column_name', 'ASC');
         $this->setCollection($customCollection);
     }
 
@@ -121,7 +120,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             'magento_column_name',
             [
                 'header' => __('Magento Column Name'),
-                'index' => 'magento_column_name'
+                'index' => 'magento_column_name',
             ]
         );
         $this->addColumn('entity_type_id', [
@@ -135,28 +134,12 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             'emarsys_emrattribute_field',
             [
                 'header' => __('Emarsys Attribute'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Renderer\EmarsysEmrattributeField',
-                'filter' => false
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Renderer\EmarsysEmrattributeField::class,
+                'filter' => false,
             ]
         );
 
         return parent::_prepareColumns();
-    }
-
-    /**
-     * @return void
-     */
-    protected function _construct()
-    {
-        parent::_construct();
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        return $html = parent::getMainButtonsHtml();
     }
 
     /**

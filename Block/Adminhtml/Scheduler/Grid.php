@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Scheduler;
@@ -14,10 +14,6 @@ use Magento\Framework\App\Request\Http;
 use Emarsys\Emarsys\Model\LogScheduleFactory;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Scheduler
- */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
@@ -42,6 +38,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * Grid constructor.
+     *
      * @param Context $context
      * @param Data $backendHelper
      * @param Timezone $timezone
@@ -132,8 +129,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'Backgroud Time Based Optin Sync' => 'Background Time Based Optin Sync',
                 'Sync contact Export' => 'Sync contact Export',
                 'testconnection' => 'Test Connection',
-                'Exception' => 'Exception'
-            ]
+                'Exception' => 'Exception',
+            ],
         ]);
 
         $this->addColumn("created_at", [
@@ -142,7 +139,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "created_at",
             'width' => '150',
             'type' => 'timestamp',
-            'frame_callback' => [$this, 'decorateTimeFrameCallBack']
+            'frame_callback' => [$this, 'decorateTimeFrameCallBack'],
         ]);
 
         $this->addColumn("executed_at", [
@@ -151,7 +148,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "executed_at",
             'width' => '150',
             'type' => 'timestamp',
-            'frame_callback' => [$this, 'decorateTimeFrameCallBack']
+            'frame_callback' => [$this, 'decorateTimeFrameCallBack'],
         ]);
 
         $this->addColumn("finished_at", [
@@ -160,7 +157,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "finished_at",
             'width' => '150',
             'type' => 'timestamp',
-            'frame_callback' => [$this, 'decorateTimeFrameCallBack']
+            'frame_callback' => [$this, 'decorateTimeFrameCallBack'],
         ]);
 
         $this->addColumn("run_mode", [
@@ -169,7 +166,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "run_mode",
             'width' => '150',
             'type' => 'options',
-            'options' => ['Automatic' => 'Automatic', 'Manual' => 'Manual']
+            'options' => ['Automatic' => 'Automatic', 'Manual' => 'Manual'],
         ]);
 
         $this->addColumn("auto_log", [
@@ -178,14 +175,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "auto_log",
             'width' => '150',
             'type' => 'options',
-            'options' => ['Complete' => 'Complete', 'Individual' => 'Individual']
+            'options' => ['Complete' => 'Complete', 'Individual' => 'Individual'],
         ]);
 
         $this->addColumn("messages", [
             "header" => __("Messages"),
             "align" => "left",
             "index" => "messages",
-            'width' => '150'
+            'width' => '150',
         ]);
 
         $this->addColumn("status", [
@@ -194,23 +191,23 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             "index" => "status",
             'width' => '150',
             'type' => 'options',
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\StatusColor',
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\StatusColor::class,
             'options' => [
                 'success' => 'success',
                 'error' => 'error',
                 'missed' => 'missed',
                 'running' => 'running',
                 'notice' => 'notice',
-                'started' => 'Started'
-            ]
+                'started' => 'Started',
+            ],
         ]);
 
         $this->addColumn("id", [
             "header" => __("Details"),
             "align" => "left",
             "index" => "id",
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\ViewButton',
-            'width' => '150'
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer\ViewButton::class,
+            'width' => '150',
         ]);
 
         return parent::_prepareColumns();

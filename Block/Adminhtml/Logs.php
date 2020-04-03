@@ -2,16 +2,13 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
 use Magento\Framework\Stdlib\DateTime\Timezone;
 
-/**
- * Class Logs
- * @package Emarsys\Log\Block\Adminhtml
- */
 class Logs extends \Magento\Backend\Block\Template
 {
     /**
@@ -54,7 +51,10 @@ class Logs extends \Magento\Backend\Block\Template
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Logs\Grid', 'loggrid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Logs\Grid::class,
+                'loggrid'
+            )
         );
         $this->_template = 'logs/grid.phtml';
 
@@ -63,6 +63,7 @@ class Logs extends \Magento\Backend\Block\Template
 
     /**
      * Render grid
+     *
      * @return string
      */
     public function getGridHtml()
@@ -81,8 +82,7 @@ class Logs extends \Magento\Backend\Block\Template
 
     public function getStoreId()
     {
-        $storeId = $this->getRequest()->getParam('store');
-        return $storeId;
+        return $this->getRequest()->getParam('store');
     }
 
     /**

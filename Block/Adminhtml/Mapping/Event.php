@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping;
 
-/**
- * Class Event
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping
- */
 class Event extends \Magento\Backend\Block\Widget\Container
 {
     /**
@@ -19,6 +16,7 @@ class Event extends \Magento\Backend\Block\Widget\Container
 
     /**
      * Event constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
      * @param array $data
      */
@@ -37,7 +35,10 @@ class Event extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Grid', 'emarsys.event.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Grid::class,
+                'emarsys.event.grid'
+            )
         );
         return parent::_prepareLayout();
     }
@@ -52,6 +53,7 @@ class Event extends \Magento\Backend\Block\Widget\Container
 
     /**
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getLoadImageUrl()
     {

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
@@ -22,11 +22,6 @@ use Magento\{
     Framework\Module\Manager
 };
 
-/**
- * Class Grid
- *
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer
- */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
@@ -121,6 +116,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareCollection()
     {
@@ -151,15 +147,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'index' => 'frontend_label',
                 'header_css_class' => 'col-id',
                 'column_css_class' => 'col-id',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\MagentoAttribute',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\MagentoAttribute::class,
             ]
         );
         $this->addColumn(
             'emarsys_contact_header',
             [
                 'header' => __('Emarsys Customer Attribute'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\EmarsysCustomer',
-                'filter' => false
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\EmarsysCustomer::class,
+                'filter' => false,
             ]
         );
 
@@ -168,6 +164,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _construct()
     {
@@ -178,7 +175,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
         $this->session->setData('store', $storeId);
         $mappingExists = $this->resourceModelCustomer->customerMappingExists($storeId);
-        if ($mappingExists == FALSE) {
+        if ($mappingExists == false) {
             $customerAttData = $this->attribute->getCollection()
                 ->addFieldToSelect('frontend_label')
                 ->addFieldToSelect('attribute_code')
@@ -187,14 +184,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 ->getData();
             $this->resourceModelCustomer->insertCustomerMageAtts($customerAttData, $storeId);
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        return parent::getMainButtonsHtml();
     }
 
     /**

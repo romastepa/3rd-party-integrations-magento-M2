@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event;
@@ -17,10 +17,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\App\ResourceConnection;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 
-/**
- * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Event
- */
 class Grid extends Extended
 {
     /**
@@ -127,15 +123,15 @@ class Grid extends Extended
         $collection = $this->emarsysEventsFactory->create()->getCollection()
             ->addFieldToFilter('store_id', $storeId);
 
-        $mappingGridArray = [];
+        $mapGridArray = [];
         foreach ($collection as $col) {
-            $mappingGridArray[$col->getData('magento_event_id')]['magento_event_id'] = $col->getData('magento_event_id');
-            $mappingGridArray[$col->getData('magento_event_id')]['emarsys_event_id'] = $col->getData('emarsys_event_id');
+            $mapGridArray[$col->getData('magento_event_id')]['magento_event_id'] = $col->getData('magento_event_id');
+            $mapGridArray[$col->getData('magento_event_id')]['emarsys_event_id'] = $col->getData('emarsys_event_id');
         }
 
         $this->setDefaultSort('id');
         $this->setDefaultDir('ASC');
-        $this->session->setMappingGridData($mappingGridArray);
+        $this->session->setMappingGridData($mapGridArray);
         $this->session->setStoreId($storeId);
     }
 
@@ -155,14 +151,14 @@ class Grid extends Extended
         if (isset($recommended) && $recommended != "") {
             $this->addColumn('emarsys_event_id', [
                 'header' => __('Emarsys Event'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\Emarsyseventmapping',
-                'filter' => false
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\Emarsyseventmapping::class,
+                'filter' => false,
             ]);
         } else {
             $this->addColumn('emarsys_event_id', [
                 'header' => __('Emarsys Event'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\EmarsysEvent',
-                'filter' => false
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\EmarsysEvent::class,
+                'filter' => false,
             ]);
         }
 

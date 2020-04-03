@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Subscriberexport\Edit\Tab;
@@ -14,10 +14,6 @@ use Magento\Framework\App\Request\Http;
 use Magento\Backend\Block\Widget\Form\Generic;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\Subscriberexport\Edit\Tab
- */
 class Form extends Generic
 {
     /**
@@ -37,6 +33,7 @@ class Form extends Generic
 
     /**
      * Form constructor.
+     *
      * @param Context $context
      * @param Registry $registry
      * @param FormFactory $formFactory

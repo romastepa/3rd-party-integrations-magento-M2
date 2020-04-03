@@ -2,15 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Support\Edit\Tab;
 
-/**
- * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\Support\Edit\Tab
- */
 class Form extends \Magento\Backend\Block\Widget\Form\Generic
 {
     /**
@@ -20,6 +16,7 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
 
     /**
      * Form constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
      * @param \Magento\Backend\Model\Auth\Session $session
      * @param \Magento\Framework\Data\FormFactory $formFactory
@@ -55,12 +52,12 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         $fieldset = $form->addFieldset("support_form", ["legend" => "Support Information"]);
 
         $fieldset->addField("type", "select", [
-            'label'     => 'Support Type',
-            'name'      => 'type',
-            'required'  => true,
-            'onchange'  => 'support(\'' . $url. '\', this.value)',
-            'values'    => [
-                ['value' => '' , 'label' => 'Please Select'],
+            'label' => 'Support Type',
+            'name' => 'type',
+            'required' => true,
+            'onchange' => 'support(\'' . $url . '\', this.value)',
+            'values' => [
+                ['value' => '', 'label' => 'Please Select'],
                 ['value' => 'Sales Support', 'label' => 'Sales Support'],
                 ['value' => 'Customization Service', 'label' => 'Customization Service'],
                 ['value' => 'Feedback and Complaint', 'label' => 'Feedback and Complaint'],
@@ -68,13 +65,13 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
                 ['value' => 'Urgent Issue', 'label' => 'Urgent Issue'],
                 ['value' => 'Installation Service', 'label' => 'Installation Service'],
                 ['value' => 'Request Upgrade', 'label' => 'Request Upgrade'],
-                ['value' => 'Other', 'label' => 'Other']
+                ['value' => 'Other', 'label' => 'Other'],
             ],
         ]);
 
         $fieldset->addField("show_email", "label", [
             "label" => "Email",
-            "id"    => "email",
+            "id" => "email",
             "class" => "showemail",
             'after_element_html' => '<span id="show-email"></span>',
         ]);
@@ -94,42 +91,42 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
         ]);
 
         $fieldset->addField("priority", "select", [
-            'label'     => 'Priority',
-            'name'      => 'priority',
-            'values'    => [
+            'label' => 'Priority',
+            'name' => 'priority',
+            'values' => [
                 [
-                    'value'     => 'Normal',
-                    'label'     => 'Normal',
+                    'value' => 'Normal',
+                    'label' => 'Normal',
                 ],
                 [
-                    'value'     => 'Normal',
-                    'label'     => 'Medium',
+                    'value' => 'Normal',
+                    'label' => 'Medium',
                 ],
 
                 [
-                    'value'     => 'High',
-                    'label'     => 'High',
+                    'value' => 'High',
+                    'label' => 'High',
                 ],
                 [
-                    'value'     => 'Urgent',
-                    'label'     => 'Urgent',
+                    'value' => 'Urgent',
+                    'label' => 'Urgent',
                 ],
             ],
         ]);
 
         $fieldset->addField('message', 'textarea', [
-                'name' => 'message',
-                'label' => 'Message',
-                'title' => 'Message',
-            'required' => true
+            'name' => 'message',
+            'label' => 'Message',
+            'title' => 'Message',
+            'required' => true,
         ]);
 
         $fieldset->addField("email", "text", [
             "label" => "Email",
-            "name"  => "email",
-            "id"    => "email",
+            "name" => "email",
+            "id" => "email",
             "index" => "email",
-            "class" => "hiddensupportemail"
+            "class" => "hiddensupportemail",
         ]);
 
         if ($this->session->getSupportData()) {

@@ -2,18 +2,15 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Support;
 
 use Emarsys\Emarsys\Controller\Adminhtml\Support;
 use Magento\Backend\Block\Widget\Context;
 use Magento\Backend\Block\Widget\Form as WidgetForm;
 
-/**
- * Class Form
- * @package Emarsys\Emarsys\Block\Adminhtml\Support
- */
 class Form extends WidgetForm
 {
     /**
@@ -23,6 +20,7 @@ class Form extends WidgetForm
 
     /**
      * Form constructor.
+     *
      * @param Context $context
      * @param array $data
      */
@@ -39,20 +37,21 @@ class Form extends WidgetForm
      * This method is called before rendering HTML
      *
      * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _beforeToHtml()
     {
         $this->isFromError = $this->getRequest()->getParam('error') === 'true';
 
         $systemRequirementsBlock = $this->getLayout()->createBlock(
-            'Emarsys\Emarsys\Block\Adminhtml\Support\Requirements',
+            \Emarsys\Emarsys\Block\Adminhtml\Support\Requirements::class,
             '',
             ['is_support_mode' => true]
         );
         $this->setChild('system_requirements', $systemRequirementsBlock);
 
         $emarsysVersionDetailsBlock = $this->getLayout()->createBlock(
-            'Emarsys\Emarsys\Block\Adminhtml\Support\About',
+            \Emarsys\Emarsys\Block\Adminhtml\Support\About::class,
             '',
             ['is_support_mode' => true]
         );

@@ -2,15 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Product;
 
-/**
- * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Product
- */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
@@ -74,6 +70,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _construct()
     {
@@ -110,7 +107,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $collection = $this->_collection->addVisibleFilter()->setOrder('main_table.frontend_label', 'ASC');
+        $collection = $this->_collection->addVisibleFilter()
+            ->setOrder('main_table.frontend_label', 'ASC');
         $this->setCollection($collection);
         return parent::_prepareCollection();
     }
@@ -128,27 +126,19 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'type' => 'varchar',
                 'index' => 'frontend_label',
                 'header_css_class' => 'col-id',
-                'column_css_class' => 'col-id'
+                'column_css_class' => 'col-id',
             ]
         );
         $this->addColumn(
             'emarsys_attr_code',
             [
                 'header' => __('Emarsys Attribute'),
-                'renderer' => '\Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer\EmarsysProduct',
-                'filter' => false
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer\EmarsysProduct::class,
+                'filter' => false,
             ]
         );
 
         return parent::_prepareColumns();
-    }
-
-    /**
-     * @return string
-     */
-    public function getMainButtonsHtml()
-    {
-        return parent::getMainButtonsHtml();
     }
 
     /**

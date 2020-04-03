@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Export;
@@ -10,11 +10,6 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Export;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Widget\Context;
 
-/**
- * Class Form
- *
- * @package Emarsys\Emarsys\Block\Adminhtml\Orderexport
- */
 class Form extends \Magento\Backend\Block\Widget\Form
 {
     protected $_template = 'bulkexport/bulkexport.phtml';
@@ -26,6 +21,7 @@ class Form extends \Magento\Backend\Block\Widget\Form
 
     /**
      * Form constructor.
+     *
      * @param Context $context
      * @param array $data
      * @param EmarsysHelper $emarsysHelper

@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field;
@@ -13,10 +13,6 @@ use Magento\Backend\Helper\Data;
 use Magento\Eav\Model\Entity\Type;
 use Magento\Eav\Model\Entity\Attribute\Option;
 
-/**
- * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Field
- */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     /**
@@ -147,15 +143,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'index' => 'value',
                 'header_css_class' => 'col-id',
                 'column_css_class' => 'col-id',
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\Option',
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\Option::class,
             ]
         );
         $this->addColumn(
             'emarsys_contact_header',
             [
                 'header' => __('Emarsys Fields'),
-                'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\FieldOption',
-                'filter' => false
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer\FieldOption::class,
+                'filter' => false,
             ]
         );
 

@@ -2,17 +2,13 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer;
 
 use Magento\Framework\DataObject;
 
-/**
- * Class MagentoAttribute
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer
- */
 class MagentoAttribute extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
 {
     /**
@@ -47,6 +43,7 @@ class MagentoAttribute extends \Magento\Backend\Block\Widget\Grid\Column\Rendere
 
     /**
      * MagentoAttribute constructor.
+     *
      * @param \Magento\Backend\Model\Session $session
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory
      * @param \Magento\Backend\Helper\Data $backendHelper

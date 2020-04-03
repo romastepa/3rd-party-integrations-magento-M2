@@ -2,13 +2,14 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Logs;
 
 /**
  * Class Detail
+ *
  * @package Emarsys\Emarsys\Block\Adminhtml\Logs
  */
 class Detail extends \Magento\Backend\Block\Template
@@ -19,6 +20,7 @@ class Detail extends \Magento\Backend\Block\Template
 
     /**
      * Detail constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
      * @param \Emarsys\Emarsys\Model\LogsFactory $logsFactory
      * @param array $data
@@ -30,15 +32,6 @@ class Detail extends \Magento\Backend\Block\Template
     ) {
         $this->logsFactory = $logsFactory;
         parent::__construct($context, $data);
-    }
-
-    /**
-     * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    protected function _prepareLayout()
-    {
-        return parent::_prepareLayout();
     }
 
     function getLog()

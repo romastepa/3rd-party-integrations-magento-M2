@@ -2,17 +2,13 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2018 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer;
 
 use Magento\Framework\DataObject;
 
-/**
- * Class Option
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer
- */
 class Option extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
 {
     /**
@@ -47,6 +43,7 @@ class Option extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abstract
 
     /**
      * Option constructor.
+     *
      * @param \Magento\Backend\Model\Session $session
      * @param \Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory $collectionFactory
      * @param \Magento\Backend\Helper\Data $backendHelper
@@ -73,6 +70,8 @@ class Option extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abstract
      */
     public function render(DataObject $row)
     {
-        return $row->getData('frontend_input') . ':' . $row->getData('frontend_label') . ':' . $row->getData('value');
+        return $row->getData('frontend_input')
+            . ':' . $row->getData('frontend_label')
+            . ':' . $row->getData('value');
     }
 }

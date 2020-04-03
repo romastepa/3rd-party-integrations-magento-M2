@@ -2,7 +2,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
@@ -16,10 +16,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsysEventsCollectionFactory;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
-/**
- * Class EmarsysEvent
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer
- */
 class EmarsysEvent extends AbstractRenderer
 {
     /**
@@ -55,6 +51,7 @@ class EmarsysEvent extends AbstractRenderer
 
     /**
      * EmarsysEvent constructor.
+     *
      * @param Session $session
      * @param BackendHelper $backendHelper
      * @param StoreManagerInterface $storeManager
@@ -81,6 +78,7 @@ class EmarsysEvent extends AbstractRenderer
     /**
      * @param DataObject $row
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function render(DataObject $row)
     {
@@ -93,7 +91,7 @@ class EmarsysEvent extends AbstractRenderer
             "*/*/placeholderjson",
             [
                 'mapping_id' => $row->getId(),
-                'store_id' => $storeId
+                'store_id' => $storeId,
             ]
         );
         $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id', ['eq' => $storeId]);
@@ -105,21 +103,27 @@ class EmarsysEvent extends AbstractRenderer
             $buttonClass = ' disabled';
         }
 
-        $html = '<select class="admin__control-select mapping-select" ' . $readOnly .
-            ' name="directions"  style="width:200px;" onchange="changeEmarsysValue(\'' . $url .
-            '\',this.value, \'' . $row->getId() . '\', \'' . $row->getId() . '\')";>
-			<option value="0">Please Select</option>';
+        $html = '<select class="admin__control-select mapping-select" ' . $readOnly
+            . ' name="directions"  style="width:200px;"'
+            . ' onchange="changeEmarsysValue('
+            . '\'' . $url . '\', this.value, \'' . $row->getId() . '\', \'' . $row->getId() . '\');">'
+            . '<option value="0">Please Select</option>';
 
         foreach ($emarsysEvents as $emarsysEvent) {
-            $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId()) ? ' selected = selected' : '';
-            $html .= '<option value="' . $emarsysEvent->getId() . '"' . $selected . '>' . $emarsysEvent->getEmarsysEvent() . '</option>';
+            $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId())
+                ? ' selected = selected'
+                : '';
+            $html .= '<option value="' . $emarsysEvent->getId() . '"' . $selected . '>'
+                . $emarsysEvent->getEmarsysEvent()
+                . '</option>';
         }
 
         $html .= '</select>';
-        $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button ' .
-            $buttonClass . '" name="json" id="json"  onclick="openMyPopup(\'' . $placeholderJsonRequestUrl .
-            '\');" >JSON Request</button>';
-        $html .= '&nbsp;&nbsp;<a class="scalable task form-button" name="placeholders" id="placeholders"  href="' . $placeHolderUrl . '">Placeholders</button>';
+        $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button '
+            . $buttonClass . '" name="json" id="json"'
+            . ' onclick = "openMyPopup(\'' . $placeholderJsonRequestUrl . '\');" >JSON Request</button >';
+        $html .= ' &nbsp;&nbsp;<a class="scalable task form-button" name="placeholders"'
+            . ' id ="placeholders"  href="' . $placeHolderUrl . '">Placeholders</a>';
 
         return $html;
     }

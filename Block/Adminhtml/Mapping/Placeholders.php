@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping;
 
-/**
- * Class Placeholders
- * @package Emarsys\Emarsys\Block\Adminhtml\Mapping
- */
 class Placeholders extends \Magento\Backend\Block\Widget\Container
 {
     /**
@@ -19,6 +16,7 @@ class Placeholders extends \Magento\Backend\Block\Widget\Container
 
     /**
      * Placeholders constructor.
+     *
      * @param \Magento\Backend\Block\Widget\Context $context
      * @param array $data
      */
@@ -37,7 +35,10 @@ class Placeholders extends \Magento\Backend\Block\Widget\Container
     {
         $this->setChild(
             'grid',
-            $this->getLayout()->createBlock('Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Grid', 'emarsys.placeholders.grid')
+            $this->getLayout()->createBlock(
+                \Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Grid::class,
+                'emarsys.placeholders.grid'
+            )
         );
         return parent::_prepareLayout();
     }
@@ -52,6 +53,7 @@ class Placeholders extends \Magento\Backend\Block\Widget\Container
 
     /**
      * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getLoadImageUrl()
     {

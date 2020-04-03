@@ -2,14 +2,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
-/**
- * Class CronData
- * @package Emarsys\Emarsys\Block\Adminhtml
- */
 class CronData extends \Magento\Framework\View\Element\Template
 {
     /**
@@ -19,6 +16,7 @@ class CronData extends \Magento\Framework\View\Element\Template
 
     /**
      * CronData constructor.
+     *
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Cron\Model\ConfigInterface $config
      * @param array $data
