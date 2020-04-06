@@ -883,7 +883,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.20',
+                    'value' => '1.0.21',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),

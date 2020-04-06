@@ -26,5 +26,5 @@
 
 # Release Notes
 
-## v1.0.20
-- WebExtend Subscription Email fix
+## v1.0.21
+- Event Mapping fix

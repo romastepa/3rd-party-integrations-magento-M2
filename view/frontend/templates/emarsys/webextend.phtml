@@ -49,8 +49,7 @@
                     timeout = undefined;
                 }
 
-                if ((dataEmarsys.customer !== undefined) && (dataEmarsys.customer.webExtendCustomerEmail !== undefined)
-                ) {
+                if ((dataEmarsys.customer !== undefined) && (dataEmarsys.customer.webExtendCustomerEmail !== undefined)) {
                     ScarabQueue.push(['setEmail', dataEmarsys.customer.webExtendCustomerEmail]);
                 }
                 if (firstOnData) {
