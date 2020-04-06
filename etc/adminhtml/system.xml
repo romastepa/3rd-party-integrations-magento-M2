@@ -481,6 +481,9 @@
                     <button_label>Clear Logs</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\LogCleanerButton</frontend_model>
                 </field>
+                <depends>
+                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                </depends>
             </group>
         </section>
     </system>

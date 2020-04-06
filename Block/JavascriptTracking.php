@@ -7,20 +7,18 @@
 
 namespace Emarsys\Emarsys\Block;
 
-use Magento\{
-    Catalog\Model\Category,
-    Catalog\Model\Product,
-    Framework\Exception\LocalizedException,
-    Framework\Exception\NoSuchEntityException,
-    Framework\View\Element\Template,
-    Framework\View\Element\Template\Context,
-    Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory,
-    Catalog\Model\CategoryFactory,
-    Framework\App\Request\Http,
-    Framework\Registry,
-    Directory\Model\CurrencyFactory,
-    Store\Model\StoreManagerInterface
-};
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Registry;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data;
 
 class JavascriptTracking extends Template
@@ -81,6 +79,7 @@ class JavascriptTracking extends Template
 
     /**
      * @return array
+     * @throws LocalizedException
      * @throws NoSuchEntityException
      */
     public function getPageHandleStatus()
@@ -132,11 +131,13 @@ class JavascriptTracking extends Template
      * Get Status of Web Extended Javascript integration from DB
      *
      * @return bool
+     * @throws LocalizedException
      * @throws NoSuchEntityException
      */
     public function getJsEnableStatusForAllPages()
     {
-        return (bool)$this->storeManager->getStore()->getConfig(Data::XPATH_WEBEXTEND_JS_TRACKING_ENABLED);
+        return (bool)$this->storeManager->getWebsite()->getConfig(Data::XPATH_EMARSYS_ENABLED)
+            && (bool)$this->storeManager->getStore()->getConfig(Data::XPATH_WEBEXTEND_JS_TRACKING_ENABLED);
     }
 
     /**

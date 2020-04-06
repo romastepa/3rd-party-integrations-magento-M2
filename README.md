@@ -26,6 +26,5 @@
 
 # Release Notes
 
-## v1.0.19
-- Magento 2.3.4 support
-- Bugfix
+## v1.0.21
+- Event Mapping fix
