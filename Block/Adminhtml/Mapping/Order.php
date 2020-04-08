@@ -43,7 +43,6 @@ class Order extends \Magento\Backend\Block\Widget\Container
         return parent::_prepareLayout();
     }
 
-
     /**
      * @return string
      */

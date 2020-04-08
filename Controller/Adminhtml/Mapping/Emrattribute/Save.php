@@ -14,10 +14,6 @@ use Emarsys\Emarsys\Model\ResourceModel\Emrattribute\CollectionFactory;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 
-/**
- * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute
- */
 class Save extends Action
 {
     /**
@@ -32,6 +28,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Context $context
      * @param EmrattributeFactory $emrattributeFactory
      * @param CollectionFactory $emrattributeCollectionFactory
@@ -70,17 +67,21 @@ class Save extends Action
                     ->getLabel();
 
                 if ($duplicateCode || $duplicateLabel) {
-                    $this->messageManager->addErrorMessage('Attribute with Code ' . $duplicateCode . ' and Label ' . $duplicateLabel . ' has not been Created due to duplication');
+                    $this->messageManager->addErrorMessage(__(
+                        'Attribute with Code %1 and Label %2 has not been Created due to duplication',
+                        $duplicateCode,
+                        $duplicateLabel
+                    ));
                     continue;
                 }
                 $attribute_type = $requestParams['attribute_type'][$loop];
                 $attribute_type = ucfirst($attribute_type);
                 $model = $this->emrattributeFactory->create();
-                $model->setCode($field_name);
-                $model->setLabel($field_label);
-                $model->setFieldType($attribute_type);
-                $model->setStoreId($storeId);
-                $model->save();
+                $model->setCode($field_name)
+                    ->setLabel($field_label)
+                    ->setFieldType($attribute_type)
+                    ->setStoreId($storeId)
+                    ->save();
             }
         }
         $resultRedirect = $this->resultRedirectFactory->create();

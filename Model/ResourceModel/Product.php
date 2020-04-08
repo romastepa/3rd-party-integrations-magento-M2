@@ -162,7 +162,6 @@ class Product extends AbstractDb
         return $productFields;
     }
 
-
     public function getProductAttributeLabelId($storeId)
     {
         $emarsysCodes = ['Item', 'Title', 'Link', 'Image', 'Category', 'Price'];

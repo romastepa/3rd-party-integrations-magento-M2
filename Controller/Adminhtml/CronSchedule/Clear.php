@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\CronSchedule;
 
 use Magento\Backend\App\Action;
@@ -11,10 +12,6 @@ use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\EmarsysCronDetails;
 
-/**
- * Class Clear
- * @package Emarsys\Emarsys\Controller\Adminhtml\CronSchedule
- */
 class Clear extends Action
 {
     /**
@@ -34,6 +31,7 @@ class Clear extends Action
 
     /**
      * Clear constructor.
+     *
      * @param Action\Context $context
      * @param Logs $emarsysLogs
      * @param StoreManagerInterface $storeManager
@@ -52,8 +50,8 @@ class Clear extends Action
     }
 
     /**
-     * @return void|$this
-     * @throws \RuntimeException
+     * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {
@@ -65,9 +63,13 @@ class Clear extends Action
             $clearCronDetails = $this->emarsysCronDetails->clearEmarsysCronDetails();
 
             if ($clearCronDetails) {
-                $this->messageManager->addSuccessMessage(__('Cron Details tables have been cleared successfully.'));
+                $this->messageManager->addSuccessMessage(
+                    __('Cron Details tables have been cleared successfully.')
+                );
             } else {
-                $this->messageManager->addErrorMessage('Something went wrong while clearing cron details table.');
+                $this->messageManager->addErrorMessage(
+                    __('Something went wrong while clearing cron details table.')
+                );
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
@@ -76,7 +78,9 @@ class Clear extends Action
                 $this->storeManager->getStore()->getId(),
                 'Clear::execute()'
             );
-            $this->messageManager->addErrorMessage('Something went wrong while clearing cron details table.');
+            $this->messageManager->addErrorMessage(
+                __('Something went wrong while clearing cron details table.')
+            );
         }
 
         return $resultRedirect;

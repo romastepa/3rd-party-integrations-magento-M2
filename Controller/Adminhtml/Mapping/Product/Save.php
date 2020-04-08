@@ -18,10 +18,6 @@ use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Product;
 
-/**
- * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
- */
 class Save extends Action
 {
     /**
@@ -71,6 +67,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Context $context
      * @param ProductFactory $productFactory
      * @param EmarsysHelper $emarsysHelper
@@ -91,8 +88,7 @@ class Save extends Action
         DateTime $date,
         Product $resourceModelProduct,
         PageFactory $resultPageFactory
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->session = $context->getSession();
         $this->resultPageFactory = $resultPageFactory;
@@ -160,7 +156,10 @@ class Save extends Action
                 if (!empty($modelCollData)) {
                     foreach ($modelColl as $model) {
                         //Delete exsisting record
-                        $this->resourceModelProduct->deleteExistingEmarsysAttr($value['emarsys_attr_code'], $gridSessionStoreId);
+                        $this->resourceModelProduct->deleteExistingEmarsysAttr(
+                            $value['emarsys_attr_code'],
+                            $gridSessionStoreId
+                        );
                         if (isset($value['emarsys_attr_code'])) {
                             $model->setEmarsysAttrCode($value['emarsys_attr_code']);
                         }
@@ -170,7 +169,10 @@ class Save extends Action
                     }
                 } else {
                     //Delete exsisting record
-                    $this->resourceModelProduct->deleteExistingEmarsysAttr($value['emarsys_attr_code'], $gridSessionStoreId);
+                    $this->resourceModelProduct->deleteExistingEmarsysAttr(
+                        $value['emarsys_attr_code'],
+                        $gridSessionStoreId
+                    );
                     $model = $this->productFactory->create();
                     $model = $model->setData($value);
                     $model->setStoreId($gridSessionStoreId);
@@ -193,7 +195,7 @@ class Save extends Action
              * Truncating the Mapping Table first
              */
             $this->resourceModelProduct->deleteUnmappedRows($gridSessionStoreId);
-            $this->messageManager->addSuccessMessage("Product attributes Mapped successfully");
+            $this->messageManager->addSuccessMessage(__('Product attributes Mapped successfully'));
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Saving Product Mapping',
@@ -201,7 +203,7 @@ class Save extends Action
                 $gridSessionStoreId,
                 'Save(Product)'
             );
-            $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Product attribute'));
         }
         return $resultRedirect->setRefererOrBaseUrl();
     }

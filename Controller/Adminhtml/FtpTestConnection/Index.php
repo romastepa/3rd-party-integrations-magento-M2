@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\FtpTestConnection;
 
 use Magento\{
@@ -15,10 +16,6 @@ use Magento\{
     Store\Model\ScopeInterface
 };
 
-/**
- * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\FtpTestConnection
- */
 class Index extends Action
 {
     /**
@@ -38,6 +35,7 @@ class Index extends Action
 
     /**
      * Index constructor.
+     *
      * @param Context $context
      * @param Http $request
      * @param Config $config
@@ -90,13 +88,48 @@ class Index extends Action
         if ($result) {
             $scope = ScopeInterface::SCOPE_WEBSITES;
             $websiteId = $data['website'];
-            $this->config->saveConfig('emarsys_settings/ftp_settings/hostname', $data['hostname'], $scope, $websiteId);
-            $this->config->saveConfig('emarsys_settings/ftp_settings/port', $data['port'], $scope, $websiteId);
-            $this->config->saveConfig('emarsys_settings/ftp_settings/username', $data['username'], $scope, $websiteId);
-            $this->config->saveConfig('emarsys_settings/ftp_settings/ftp_password', $data['password'], $scope, $websiteId);
-            $this->config->saveConfig('emarsys_settings/ftp_settings/ftp_bulk_export_dir', $data['bulkexpdir'], $scope, $websiteId);
-            $this->config->saveConfig('emarsys_settings/ftp_settings/useftp_overssl', $data['ftpssl'], $scope, $websiteId);
-            $this->config->saveConfig('emarsys_settings/ftp_settings/usepassive_mode', $data['passivemode'], $scope, $websiteId);
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/hostname',
+                $data['hostname'],
+                $scope,
+                $websiteId
+            );
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/port',
+                $data['port'],
+                $scope,
+                $websiteId
+            );
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/username',
+                $data['username'],
+                $scope,
+                $websiteId
+            );
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/ftp_password',
+                $data['password'],
+                $scope,
+                $websiteId
+            );
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/ftp_bulk_export_dir',
+                $data['bulkexpdir'],
+                $scope,
+                $websiteId
+            );
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/useftp_overssl',
+                $data['ftpssl'],
+                $scope,
+                $websiteId
+            );
+            $this->config->saveConfig(
+                'emarsys_settings/ftp_settings/usepassive_mode',
+                $data['passivemode'],
+                $scope,
+                $websiteId
+            );
             $this->messageManager->addSuccessMessage('Test connection successful !!!');
         }
 

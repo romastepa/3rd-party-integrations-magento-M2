@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\CronSchedule;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Model\EmarsysCronDetailsFactory;
 
-/**
- * Class Params
- * @package Emarsys\Emarsys\Controller\Adminhtml\CronSchedule
- */
 class Params extends Action
 {
     /**
@@ -23,6 +20,7 @@ class Params extends Action
 
     /**
      * Params constructor.
+     *
      * @param Context $context
      * @param EmarsysCronDetailsFactory $cronDetailsFactory
      */
@@ -46,15 +44,15 @@ class Params extends Action
             if ($cronDetails) {
                 $params = \Zend_Json::decode($cronDetails->getParams());
                 if ($params) {
-                    printf("<pre>" . (\Zend_Json::encode($params)) . "</pre>");
+                    printf('<pre>' . (\Zend_Json::encode($params)) . '</pre>');
                 } else {
-                    printf("No Data Available");
+                    printf('No Data Available');
                 }
             } else {
-                printf("No Data Available");
+                printf('No Data Available');
             }
         } else {
-            printf("No Data Available");
+            printf('No Data Available');
         }
     }
 }

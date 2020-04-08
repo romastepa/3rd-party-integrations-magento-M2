@@ -22,10 +22,6 @@ use Emarsys\Emarsys\{
     Helper\Logs as EmarsysHelperLogs
 };
 
-/**
- * Class SaveSchema
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
- */
 class SaveSchema extends Action
 {
     /**

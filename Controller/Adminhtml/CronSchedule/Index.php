@@ -4,14 +4,11 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\CronSchedule;
 
 use Magento\Backend\App\Action;
 
-/**
- * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\CronSchedule
- */
 class Index extends Action
 {
     /**

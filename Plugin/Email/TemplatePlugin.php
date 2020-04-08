@@ -569,7 +569,6 @@ class TemplatePlugin
         return $returnItem;
     }
 
-
     /**
      * @param \Magento\Newsletter\Model\Subscriber $item
      * @return array

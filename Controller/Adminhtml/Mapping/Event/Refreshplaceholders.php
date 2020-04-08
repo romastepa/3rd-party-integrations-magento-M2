@@ -11,10 +11,6 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Refreshplaceholders
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
- */
 class Refreshplaceholders extends Action
 {
     /**
@@ -24,6 +20,7 @@ class Refreshplaceholders extends Action
 
     /**
      * Refreshplaceholders constructor.
+     *
      * @param Context $context
      * @param EmarsysHelper $emarsysHelper
      */
@@ -38,7 +35,9 @@ class Refreshplaceholders extends Action
     /**
      * Index action
      *
-     * @return \Magento\Backend\Model\View\Result\Page
+     * @return \Magento\Framework\Controller\Result\Redirect
+     * @throws \Magento\Framework\Exception\MailException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
     {

@@ -22,10 +22,6 @@ use Emarsys\Emarsys\{
     Model\ResourceModel\Customer as EmarsysResourceModelCustomer
 };
 
-/**
- * Class SaveSchema
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
- */
 class SaveSchema extends Action
 {
     /**
@@ -111,7 +107,7 @@ class SaveSchema extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\Result\Redirect
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -149,7 +145,7 @@ class SaveSchema extends Action
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Update Schema Completed Successfully';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addSuccessMessage('Customer-Field schema added/updated successfully');
+                $this->messageManager->addSuccessMessage(__('Customer-Field schema added/updated successfully'));
             } else {
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logId = $this->logsHelper->manualLogs($logsArray);
@@ -164,10 +160,10 @@ class SaveSchema extends Action
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Failed Update Schema';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
+                $this->messageManager->addErrorMessage(__('Failed to update Customer-Field Schema'));
             }
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
+            $this->messageManager->addErrorMessage(__('Failed to update Customer-Field Schema'));
             $this->emarsysHelper->addErrorLog(
                 'Customer Field Update Schema',
                 $e->getMessage(),

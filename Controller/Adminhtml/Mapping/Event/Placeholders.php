@@ -16,6 +16,7 @@ use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory a
 
 /**
  * Class Placeholders
+ *
  * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
  */
 class Placeholders extends Action

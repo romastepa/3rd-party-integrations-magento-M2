@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-/**
- * Class SaveSchema
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
- */
 class SaveSchema extends \Magento\Backend\App\Action
 {
     /**
@@ -90,7 +87,7 @@ class SaveSchema extends \Magento\Backend\App\Action
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Update Product Mapping Saved Successfully';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage("Product schema added/updated successfully");
+            $this->messageManager->addSuccessMessage(__('Product schema added/updated successfully'));
         } catch (\Exception $e) {
             if ($logId) {
                 $logsArray['id'] = $logId;
@@ -104,9 +101,9 @@ class SaveSchema extends \Magento\Backend\App\Action
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $this->logsHelper->manualLogs($logsArray);
             }
-            $this->messageManager->addErrorMessage(
-                __('There was a problem while Updating Product Mapping. Please refer emarsys logs for more information.')
-            );
+            $this->messageManager->addErrorMessage(__(
+                'There was a problem while Updating Product Mapping. Please refer emarsys logs for more information.'
+            ));
         }
 
         $resultRedirect = $this->resultRedirectFactory->create();

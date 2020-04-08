@@ -22,10 +22,6 @@ use Emarsys\Emarsys\{
     Helper\Logs as EmarsysHelperLogs
 };
 
-/**
- * Class SaveRecommended
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
- */
 class SaveRecommended extends \Magento\Backend\App\Action
 {
     /**
@@ -113,7 +109,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\Result\Redirect
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -144,11 +140,11 @@ class SaveRecommended extends \Magento\Backend\App\Action
             if (!empty($customerCustomMappedAttrs)) {
                 foreach ($customerCustomMappedAttrs as $key => $value) {
                     $model = $this->customerFactory->create();
-                    $model->setEmarsysContactField($value['emarsys_contact_field']);
-                    $model->setMagentoAttributeId($value['magento_attribute_id']);
-                    $model->setMagentoCustomAttributeId($value['magento_custom_attribute_id']);
-                    $model->setStoreId($storeId);
-                    $model->save();
+                    $model->setEmarsysContactField($value['emarsys_contact_field'])
+                        ->setMagentoAttributeId($value['magento_attribute_id'])
+                        ->setMagentoCustomAttributeId($value['magento_custom_attribute_id'])
+                        ->setStoreId($storeId)
+                        ->save();
                 }
             }
 
@@ -160,18 +156,18 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 'last_name' => 'lastname',
                 'email' => 'email',
                 'gender' => 'gender',
-                'birth_date' => 'dob'
+                'birth_date' => 'dob',
             ];
             if (isset($recommendedData['magento'])) {
                 foreach ($recommendedData['magento'] as $key => $code) {
                     if (isset($recommendedData['emarsys'][$key]) && !empty($recommendedData['emarsys'][$key])) {
-                        $model = $this->customerFactory->create();
                         $custMageId = $this->resourceModelCustomer->getCustAttIdByCode($emarsysCodes[$key], $storeId);
-                        $model->setEmarsysContactField($recommendedData['emarsys'][$key]);
-                        $model->setMagentoAttributeId($code);
-                        $model->setMagentoCustomAttributeId($custMageId);
-                        $model->setStoreId($storeId);
-                        $model->save();
+                        $model = $this->customerFactory->create();
+                        $model->setEmarsysContactField($recommendedData['emarsys'][$key])
+                            ->setMagentoAttributeId($code)
+                            ->setMagentoCustomAttributeId($custMageId)
+                            ->setStoreId($storeId)
+                            ->save();
                     }
                 }
                 $logsArray['id'] = $logId;

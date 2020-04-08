@@ -39,7 +39,6 @@ class Subscriber
      */
     protected $customerSession;
 
-
     /**
      * Customer
      *

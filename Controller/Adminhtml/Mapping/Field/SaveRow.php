@@ -10,10 +10,6 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 
-/**
- * Class SaveRow
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
- */
 class SaveRow extends Action
 {
     /**
@@ -23,6 +19,7 @@ class SaveRow extends Action
 
     /**
      * SaveRow constructor.
+     *
      * @param Context $context
      */
     public function __construct(
@@ -34,6 +31,7 @@ class SaveRow extends Action
 
     /**
      * Index action
+     *
      * @return \Magento\Backend\Model\View\Result\Page
      */
     public function execute()

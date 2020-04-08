@@ -33,7 +33,6 @@ class EmarsysEvent extends AbstractRenderer
      */
     protected $backendHelper;
 
-
     /**
      * @var StoreManagerInterface
      */

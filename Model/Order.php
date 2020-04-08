@@ -1076,7 +1076,6 @@ class Order extends AbstractModel
                     ->setTimezone(new \DateTimeZone($toTimezone))
                     ->format('Y-m-d H:i:s');
 
-
                 $orderCollection->addFieldToFilter(
                     'created_at',
                     [

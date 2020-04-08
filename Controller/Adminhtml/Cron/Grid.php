@@ -11,10 +11,6 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-/**
- * Class Grid
- * @package Emarsys\Emarsys\Controller\Adminhtml\Cron
- */
 class Grid extends Action
 {
     /**
@@ -24,6 +20,7 @@ class Grid extends Action
 
     /**
      * Grid constructor.
+     *
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */

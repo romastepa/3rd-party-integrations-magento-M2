@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Logs;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-/**
- * Class Detail
- * @package Emarsys\Emarsys\Controller\Adminhtml\Logs
- */
 class Detail extends Action
 {
     /**
@@ -23,6 +20,7 @@ class Detail extends Action
 
     /**
      * Detail constructor.
+     *
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */

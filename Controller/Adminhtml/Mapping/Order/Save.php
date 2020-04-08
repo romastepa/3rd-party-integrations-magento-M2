@@ -16,10 +16,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
 
-/**
- * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
- */
 class Save extends Action
 {
     /**

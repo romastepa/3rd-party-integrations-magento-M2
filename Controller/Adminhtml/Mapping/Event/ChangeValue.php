@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
 use Magento\Backend\App\Action;
@@ -13,10 +14,6 @@ use Emarsys\Emarsys\Model\EventFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Emarsys\Emarsys\Model\EmarsyseventmappingFactory;
 
-/**
- * Class ChangeValue
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
- */
 class ChangeValue extends Action
 {
     /**
@@ -36,6 +33,7 @@ class ChangeValue extends Action
 
     /**
      * ChangeValue constructor.
+     *
      * @param Context $context
      * @param EventFactory $eventFactory
      * @param Event $eventResourceModel

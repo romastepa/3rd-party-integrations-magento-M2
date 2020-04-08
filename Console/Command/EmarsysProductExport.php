@@ -71,7 +71,6 @@ class EmarsysProductExport extends Command
             $output->writeln($e->getMessage());
         }
 
-
         $error = error_get_last();
         if (!empty($error['message'])) {
             $output->writeln($error);

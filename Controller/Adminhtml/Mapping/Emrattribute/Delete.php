@@ -14,10 +14,6 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
 
-/**
- * Class Delete
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute
- */
 class Delete extends Action
 {
     /**
@@ -32,6 +28,7 @@ class Delete extends Action
 
     /**
      * Delete constructor.
+     *
      * @param Context $context
      * @param Emrattribute $emrattribute
      * @param JsonFactory $resultJsonFactory

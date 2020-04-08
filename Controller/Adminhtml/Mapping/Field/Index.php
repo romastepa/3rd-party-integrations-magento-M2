@@ -12,10 +12,6 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
- */
 class Index extends Action
 {
     /**
@@ -30,6 +26,7 @@ class Index extends Action
 
     /**
      * Index constructor.
+     *
      * @param Context $context
      * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory

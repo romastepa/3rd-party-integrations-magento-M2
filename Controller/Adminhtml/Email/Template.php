@@ -11,10 +11,6 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
 use Magento\Email\Model\BackendTemplateFactory;
 
-/**
- * Class Template
- * @package Emarsys\Emarsys\Controller\Adminhtml\Email
- */
 class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
 {
     /**
@@ -38,6 +34,7 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
 
     /**
      * Template constructor.
+     *
      * @param Context $context
      * @param Registry $coreRegistry
      * @param BackendTemplateFactory $backendTemplate

@@ -21,10 +21,6 @@ use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper
 };
 
-/**
- * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
- */
 class Save extends Action
 {
     /**
@@ -69,6 +65,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Context $context
      * @param FieldFactory $fieldFactory
      * @param Field $resourceModelField
@@ -100,7 +97,7 @@ class Save extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\Result\Redirect
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -164,7 +161,7 @@ class Save extends Action
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Customer Filed Mapping Successful';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage('Customer-Field attributes mapped successfully');
+            $this->messageManager->addSuccessMessage(__('Customer-Field attributes mapped successfully'));
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
                 'Customer Filed Mapping',
@@ -172,7 +169,7 @@ class Save extends Action
                 $storeId,
                 'Save (Customer Filed)'
             );
-            $this->messageManager->addErrorMessage('Error occurred while mapping Customer-Field');
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Customer-Field'));
         }
 
         return $resultRedirect->setRefererOrBaseUrl();

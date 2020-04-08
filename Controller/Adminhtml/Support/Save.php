@@ -19,10 +19,6 @@ use Magento\{
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Psr\Log\LoggerInterface as Logger;
 
-/**
- * Class Save
- * @package Emarsys\Emarsys\Controller\Adminhtml\Support
- */
 class Save extends Action
 {
     /**
@@ -77,6 +73,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Session $authSession
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManager
@@ -147,7 +144,7 @@ class Save extends Action
                 $user = $this->authSession->getUser();
                 $from = [
                     'email' => $user->getEmail(),
-                    'name' => $user->getUsername()
+                    'name' => $user->getUsername(),
                 ];
                 $storeId = $this->emarsysHelper->getFirstStoreId();
                 $emailRecievers = explode(',', $typeArray[1]);
@@ -155,11 +152,11 @@ class Save extends Action
                 foreach ($emailRecievers as $emailReciever) {
                     $to = [
                         'email' => $emailReciever,
-                        'name' => $name
+                        'name' => $name,
                     ];
                     $templateOptions = [
-                        'area' =>  \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-                        'store' => $storeId
+                        'area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+                        'store' => $storeId,
                     ];
 
                     $this->inlineTranslation->suspend();

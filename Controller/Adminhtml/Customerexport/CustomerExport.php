@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
 use Emarsys\Emarsys\{
@@ -23,10 +24,6 @@ use Magento\{
     Framework\App\Request\Http
 };
 
-/**
- * Class CustomerExport
- * @package Emarsys\Emarsys\Controller\Adminhtml\Customerexport
- */
 class CustomerExport extends Action
 {
     const MAX_CUSTOMER_RECORDS = 100000;
@@ -83,6 +80,7 @@ class CustomerExport extends Action
 
     /**
      * CustomerExport constructor.
+     *
      * @param Context $context
      * @param DateTime $date
      * @param StoreManagerInterface $storeManager
@@ -159,10 +157,15 @@ class CustomerExport extends Action
             }
 
             //export customers through API
-            $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API, $storeId);
+            $isCronjobScheduled = $this->cronHelper->checkCronjobScheduled(
+                EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
+                $storeId
+            );
             if ($isCronjobScheduled) {
                 //cron job already scheduled
-                $this->messageManager->addErrorMessage(__('A cron is already scheduled to export customers for the store %1 ', $store->getName()));
+                $this->messageManager->addErrorMessage(
+                    __('A cron is already scheduled to export customers for the store %1', $store->getName())
+                );
                 return $resultRedirect->setPath($returnUrl);
             }
 
@@ -189,7 +192,9 @@ class CustomerExport extends Action
                 'CustomerExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__('There was a problem while customer export. %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(
+                __('There was a problem while customer export. %1', $e->getMessage())
+            );
         }
 
         return $resultRedirect->setPath($returnUrl);

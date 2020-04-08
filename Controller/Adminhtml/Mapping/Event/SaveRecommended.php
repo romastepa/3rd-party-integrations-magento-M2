@@ -170,8 +170,8 @@ class SaveRecommended extends Action
                 }
                 $errorStatus = false;
                 $urlHasRecommendation = true;
-                $this->messageManager->addSuccessMessage("Recommended Emarsys Events Created Successfully!");
-                $this->messageManager->addSuccessMessage('Important: Hit "Save" to complete the mapping!');
+                $this->messageManager->addSuccessMessage(__('Recommended Emarsys Events Created Successfully!'));
+                $this->messageManager->addSuccessMessage(__('Important: Hit "Save" to complete the mapping!'));
             }
         } catch (\Exception $e) {
             $logsArray['id'] = $logId;
@@ -182,7 +182,7 @@ class SaveRecommended extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['website_id'] = $websiteId;
             $this->logsHelper->logHelper($logsArray);
-            $this->messageManager->addErrorMessage('Error occurred while Recommended Mapping' . $e->getMessage());
+            $this->messageManager->addErrorMessage(__('Error occurred while Recommended Mapping %1', $e->getMessage()));
         }
 
         if ($errorStatus) {

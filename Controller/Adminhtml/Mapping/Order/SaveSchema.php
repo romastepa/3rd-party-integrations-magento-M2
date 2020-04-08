@@ -16,10 +16,6 @@ use Emarsys\Emarsys\Model\ResourceModel\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class SaveSchema
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order
- */
 class SaveSchema extends Action
 {
     /**
@@ -44,6 +40,7 @@ class SaveSchema extends Action
 
     /**
      * SaveSchema constructor.
+     *
      * @param Context $context
      * @param PageFactory $resultPageFactory
      * @param Logs $logsHelper
@@ -130,10 +127,10 @@ class SaveSchema extends Action
                 $logsArray['message_type'] = 'Error';
                 $this->logsHelper->manualLogs($logsArray);
             }
-            $this->messageManager->addErrorMessage(
-                __('There was a problem while updating order schema. Please refer emarsys logs for more information.
-                 %1', $e->getMessage())
-            );
+            $this->messageManager->addErrorMessage(__(
+                'There was a problem while updating order schema. Please refer emarsys logs for more information. %1',
+                $e->getMessage()
+            ));
         }
 
         if ($errorStatus) {

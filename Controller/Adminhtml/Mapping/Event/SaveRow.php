@@ -10,10 +10,6 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 
-/**
- * Class SaveRow
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
- */
 class SaveRow extends Action
 {
     /**
@@ -23,6 +19,7 @@ class SaveRow extends Action
 
     /**
      * SaveRow constructor.
+     *
      * @param Context $context
      */
     public function __construct(

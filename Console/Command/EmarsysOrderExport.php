@@ -101,7 +101,9 @@ class EmarsysOrderExport extends Command
 
         /** @var Store $store */
         foreach ($this->storeManager->getStores() as $storeId => $store) {
-            if ($store->getConfig(Data::XPATH_EMARSYS_ENABLED) && $store->getConfig(Data::XPATH_SMARTINSIGHT_ENABLED)) {
+            if ($store->getConfig(Data::XPATH_EMARSYS_ENABLED)
+                && $store->getConfig(Data::XPATH_SMARTINSIGHT_ENABLED)
+            ) {
                 $fromDate = $input->getOption('from');
                 $toDate = $input->getOption('to');
                 $queue = $input->getOption('queue');

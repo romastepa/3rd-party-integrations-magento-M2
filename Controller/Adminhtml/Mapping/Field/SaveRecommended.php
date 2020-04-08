@@ -19,10 +19,6 @@ use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class SaveRecommended
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field
- */
 class SaveRecommended extends Action
 {
     /**
@@ -77,6 +73,7 @@ class SaveRecommended extends Action
 
     /**
      * SaveRecommended constructor.
+     *
      * @param Context $context
      * @param FieldFactory $fieldFactory
      * @param Field $resourceModelField
@@ -113,7 +110,7 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\Result\Redirect
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -159,7 +156,9 @@ class SaveRecommended extends Action
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Saved Recommended Mapping Successful';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addSuccessMessage("Recommended Customer-Field attributes mapped successfully");
+                $this->messageManager->addSuccessMessage(__(
+                    'Recommended Customer-Field attributes mapped successfully'
+                ));
             } else {
                 $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
@@ -173,7 +172,7 @@ class SaveRecommended extends Action
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Saved Recommended Mapping Completed';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addErrorMessage("No Recommendations are added");
+                $this->messageManager->addErrorMessage(__('No Recommendations are added'));
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
@@ -182,7 +181,7 @@ class SaveRecommended extends Action
                 $storeId,
                 'SaveRecommended (Customer Filed)'
             );
-            $this->messageManager->addErrorMessage("Error occurred while mapping Customer-Field");
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Customer-Field'));
         }
 
         return $resultRedirect->setRefererOrBaseUrl();

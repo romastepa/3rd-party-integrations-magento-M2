@@ -1128,7 +1128,6 @@ class Data extends AbstractHelper
                 $variable = $this->substringBetweenTransVar($variable);
             }
 
-
             if (!empty($variable)) {
                 $name = $variable;
                 if (strstr($name, '{{trans')) {

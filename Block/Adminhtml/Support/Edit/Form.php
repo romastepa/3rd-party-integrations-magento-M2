@@ -89,7 +89,6 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
             "name" => "firstname",
         ]);
 
-
         $fieldset->addField("subject", "text", [
             "label" => "Subject",
             "class" => "required-entry",

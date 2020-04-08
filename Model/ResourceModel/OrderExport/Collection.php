@@ -11,7 +11,6 @@ namespace Emarsys\Emarsys\Model\ResourceModel\OrderExport;
 
 class Collection extends \Magento\Sales\Model\ResourceModel\Order\Collection
 {
-
     /**
      * Model initialization
      *

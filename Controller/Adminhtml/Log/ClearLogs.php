@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Log;
 
 use Magento\Backend\App\Action\Context;
@@ -11,10 +12,6 @@ use Emarsys\Emarsys\Model\Logs;
 use Emarsys\Emarsys\Model\ResourceModel\LogSchedule;
 use Magento\Backend\App\Action;
 
-/**
- * Class ClearLogs
- * @package Emarsys\Emarsys\Controller\Adminhtml\Log
- */
 class ClearLogs extends Action
 {
     /**
@@ -29,6 +26,7 @@ class ClearLogs extends Action
 
     /**
      * ClearLogs constructor.
+     *
      * @param Context $context
      * @param Logs $logs
      * @param LogSchedule $logSchedule
@@ -65,7 +63,7 @@ class ClearLogs extends Action
                 0,
                 'ClearLogs'
             );
-            $this->messageManager->addErrorMessage('Something went wrong while deleting logs.');
+            $this->messageManager->addErrorMessage(__('Something went wrong while deleting logs.'));
         }
 
         return $resultRedirect;

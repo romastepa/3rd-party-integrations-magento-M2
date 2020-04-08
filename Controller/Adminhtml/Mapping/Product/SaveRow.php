@@ -4,15 +4,12 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 
-/**
- * Class SaveRow
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
- */
 class SaveRow extends Action
 {
     /**
@@ -22,6 +19,7 @@ class SaveRow extends Action
 
     /**
      * SaveRow constructor.
+     *
      * @param Context $context
      */
     public function __construct(
@@ -33,6 +31,7 @@ class SaveRow extends Action
 
     /**
      * Index action
+     *
      * @return \Magento\Backend\Model\View\Result\Page
      */
     public function execute()

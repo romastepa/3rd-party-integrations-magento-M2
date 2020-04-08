@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Log;
 
 use Magento\Backend\App\Action;
 use Emarsys\Emarsys\Model\ResourceModel\Logs;
 use Magento\Backend\App\Action\Context;
 
-/**
- * Class EmarsysLogger
- * @package Emarsys\Emarsys\Controller\Adminhtml\Log
- */
 class EmarsysLogger extends Action
 {
     /**
@@ -36,7 +33,7 @@ class EmarsysLogger extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\Result\Redirect | false | int
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute()

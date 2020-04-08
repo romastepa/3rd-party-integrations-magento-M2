@@ -13,8 +13,6 @@ namespace Emarsys\Emarsys\Model\ResourceModel\Emarsysevents;
  */
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
-
-
     /**
      * @param \Magento\Framework\Data\Collection\EntityFactory $entityFactory
      * @param \Psr\Log\LoggerInterface $logger

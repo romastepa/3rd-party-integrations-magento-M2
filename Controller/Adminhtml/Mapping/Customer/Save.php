@@ -18,11 +18,6 @@ use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class Save
- *
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer
- */
 class Save extends Action
 {
     /**
@@ -51,7 +46,7 @@ class Save extends Action
     protected $storeManager;
 
     /**
-     * @var EmarsysHelperLogs 
+     * @var EmarsysHelperLogs
      */
     protected $logsHelper;
 
@@ -103,6 +98,7 @@ class Save extends Action
 
     /**
      * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute()
     {
@@ -150,11 +146,11 @@ class Save extends Action
                     $attModel = $this->customerFactory->create();
                 }
                 $savedFields[] = $value;
-                $attModel->setData('emarsys_contact_field', $value);
-                $attModel->setData('magento_custom_attribute_id', $custMageId);
-                $attModel->setData('magento_attribute_id', $magentoAttributeId);
-                $attModel->setData('store_id', $storeId);
-                $attModel->save();
+                $attModel->setData('emarsys_contact_field', $value)
+                    ->setData('magento_custom_attribute_id', $custMageId)
+                    ->setData('magento_attribute_id', $magentoAttributeId)
+                    ->setData('store_id', $storeId)
+                    ->save();
             }
             if ($savedFields) {
                 $logsArray['description'] = 'Saved Fields Id(s) ' . \Zend_Json::encode($savedFields);
@@ -171,7 +167,7 @@ class Save extends Action
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Customer Mapping Saved Successfully';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage('Customer attributes mapped successfully');
+            $this->messageManager->addSuccessMessage(__('Customer attributes mapped successfully'));
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Customer Mapping',
@@ -179,7 +175,7 @@ class Save extends Action
                 $storeId,
                 'SaveSchema(Customer)'
             );
-            $this->messageManager->addErrorMessage('Error occurred while mapping Customer attribute');
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Customer attribute'));
         }
         $resultRedirect = $this->resultRedirectFactory->create();
 

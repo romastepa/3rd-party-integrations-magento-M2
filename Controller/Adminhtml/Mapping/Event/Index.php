@@ -15,10 +15,6 @@ use Emarsys\Emarsys\Model\EmarsyseventmappingFactory as EmarsysEventsFactory;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Magento\Store\Model\StoreManagerInterface as StoreManager;
 
-/**
- * Class Index
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event
- */
 class Index extends Action
 {
     /**
@@ -87,7 +83,9 @@ class Index extends Action
 
         $store = $this->storeManager->getStore($storeId);
 
-        $eventMappingCollection = $this->emarsysEventsFactory->create()->getCollection()->addFieldToFilter('store_id', $storeId);
+        $eventMappingCollection = $this->emarsysEventsFactory->create()
+            ->getCollection()
+            ->addFieldToFilter('store_id', $storeId);
         if ($this->emarsysHelper->isEmarsysEnabled($store->getWebsiteId())) {
             if (!$eventMappingCollection->getSize()) {
                 $logsArray['job_code'] = 'Event Mapping';
@@ -105,7 +103,9 @@ class Index extends Action
                 $this->emarsysHelper->importEvents($storeId, $logId);
                 $this->emarsysHelper->insertFirstTime($storeId);
 
-                return $this->resultRedirectFactory->create()->setUrl($this->getUrl('*/*', ['store' => $storeId]));
+                return $this->resultRedirectFactory->create()->setUrl(
+                    $this->getUrl('*/*', ['store' => $storeId])
+                );
             }
         }
         /** @var \Magento\Backend\Model\View\Result\Page $resultPage */

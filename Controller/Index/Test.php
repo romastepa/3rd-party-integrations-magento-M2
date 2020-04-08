@@ -8,6 +8,7 @@ class Test extends \Magento\Framework\App\Action\Action
 {
     /**
      * Test constructor.
+     *
      * @param Context $context
      * @param \Emarsys\Emarsys\Helper\Event $eventHelper
      */

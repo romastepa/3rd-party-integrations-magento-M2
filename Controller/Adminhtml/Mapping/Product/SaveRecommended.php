@@ -22,10 +22,6 @@ use Emarsys\Emarsys\{
     Model\ResourceModel\Product
 };
 
-/**
- * Class SaveRecommended
- * @package Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product
- */
 class SaveRecommended extends Action
 {
     /**
@@ -70,6 +66,7 @@ class SaveRecommended extends Action
 
     /**
      * SaveRecommended constructor.
+     *
      * @param Context $context
      * @param ProductFactory $productFactory
      * @param CollectionFactory $productAttributeCollection
@@ -90,8 +87,7 @@ class SaveRecommended extends Action
         EmarsysHelperLogs $logsHelper,
         DateTime $date,
         Product $resourceModelProduct
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->productFactory = $productFactory;
         $this->productAttributeCollection = $productAttributeCollection;
@@ -105,7 +101,7 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\Result\Redirect
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -138,7 +134,7 @@ class SaveRecommended extends Action
                 'url_key' => ['emarsys_attr_code' => $data[2]],
                 'image' => ['emarsys_attr_code' => $data[3]],
                 'category_ids' => ['emarsys_attr_code' => $data[4]],
-                'price' => ['emarsys_attr_code' => $data[5]]
+                'price' => ['emarsys_attr_code' => $data[5]],
             ];
             // Remove existing data
             $this->resourceModelProduct->deleteRecommendedMappingExistingAttr($recommendedData, $storeId);
@@ -168,7 +164,9 @@ class SaveRecommended extends Action
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Product Recommended Mapping Saved Successfully';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage("Recommended Product attributes mapped successfully");
+            $this->messageManager->addSuccessMessage(__(
+                'Recommended Product attributes mapped successfully'
+            ));
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Product Recommended Mapping',
@@ -176,7 +174,7 @@ class SaveRecommended extends Action
                 $storeId,
                 'Save Recommended(Product)'
             );
-            $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Product attribute'));
         }
         $resultRedirect = $this->resultRedirectFactory->create();
         return $resultRedirect->setRefererOrBaseUrl();

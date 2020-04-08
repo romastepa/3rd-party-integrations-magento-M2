@@ -373,8 +373,6 @@ class Subscriber
             $currentPageNumber++;
         }
 
-
-
         if (!$success) {
             $logsArray['status'] = 'error';
             $logsArray['messages'] = 'Error in creating subscriber !!!';
