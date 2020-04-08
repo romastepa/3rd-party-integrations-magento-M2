@@ -52,11 +52,6 @@ use Emarsys\Emarsys\{
 };
 use Zend_Json;
 
-/**
- * Class Data
- *
- * @package Emarsys\Emarsys\Helper
- */
 class Data extends AbstractHelper
 {
     const EMARSYS_CDN_API_URL = 'https://api-cdn.emarsys.net/api/v2/';
@@ -734,20 +729,44 @@ class Data extends AbstractHelper
 
             $pi = preg_replace(
                 [
-                    '#^.*<body>(.*)</body>.*$#m', '#<h2>PHP License</h2>.*$#ms',
-                    '#<h1>Configuration</h1>#', "#\r?\n#", "#</(h1|h2|h3|tr)>#", '# +<#',
-                    "#[ \t]+#", '#&nbsp;#', '#  +#', '# class=".*?"#', '%&#039;%',
+                    '#^.*<body>(.*)</body>.*$#m',
+                    '#<h2>PHP License</h2>.*$#ms',
+                    '#<h1>Configuration</h1>#',
+                    "#\r?\n#",
+                    "#</(h1|h2|h3|tr)>#",
+                    '# +<#',
+                    "#[ \t]+#",
+                    '#&nbsp;#',
+                    '#  +#',
+                    '# class=".*?"#',
+                    '%&#039;%',
                     '#<tr>(?:.*?)" src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#',
                     '#<h1><a href="(?:.*?)\?=(.*?)">PHP Credits</a></h1>#',
                     '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#',
-                    "# +#", '#<tr>#', '#</tr>#'],
+                    "# +#",
+                    '#<tr>#',
+                    '#</tr>#',
+                ],
                 [
-                    '$1', '', '', '', '</$1>' . "\n", '<', ' ', ' ', ' ', '', ' ',
+                    '$1',
+                    '',
+                    '',
+                    '',
+                    '</$1>' . "\n",
+                    '<',
+                    ' ',
+                    ' ',
+                    ' ',
+                    '',
+                    ' ',
                     '<h2>PHP Configuration</h2>' . "\n" . '<tr><td>PHP Version</td><td>$2</td></tr>' .
                     "\n" . '<tr><td>PHP Egg</td><td>$1</td></tr>',
                     '<tr><td>PHP Credits Egg</td><td>$1</td></tr>',
                     '<tr><td>Zend Engine</td><td>$2</td></tr>' . "\n" .
-                    '<tr><td>Zend Egg</td><td>$1</td></tr>', ' ', '%S%', '%E%',
+                    '<tr><td>Zend Egg</td><td>$1</td></tr>',
+                    ' ',
+                    '%S%',
+                    '%E%',
                 ],
                 ob_get_clean()
             );
@@ -1169,14 +1188,14 @@ class Data extends AbstractHelper
     public function refreshPlaceholders($mappingId, $storeId)
     {
         $store = $this->storeManager->getStore($storeId);
-        $emarsysEventMappingCollFromDbArray = [];
+        $emarsysMappingCollFromDb = [];
         $emarsysEventsMappingCollFromDb = $this->emarsysEventPlaceholderMappingFactory->create()
             ->getCollection()
             ->addFieldToFilter('event_mapping_id', $mappingId)
             ->addFieldToFilter('store_id', $storeId);
 
-        foreach ($emarsysEventsMappingCollFromDb as $emarsysEventMappingCollFromDb) {
-            $emarsysEventMappingCollFromDbArray[$emarsysEventMappingCollFromDb->getId()] = $emarsysEventMappingCollFromDb->getMagentoPlaceholderName();
+        foreach ($emarsysEventsMappingCollFromDb as $collFromDb) {
+            $emarsysMappingCollFromDb[$collFromDb->getId()] = $collFromDb->getMagentoPlaceholderName();
         }
 
         $emarsysEventMappingColl = $this->emarsysEventMapping->create()
@@ -1237,14 +1256,14 @@ class Data extends AbstractHelper
             $templatePlaceholderArray[] = $variable;
         }
 
-        $deleteFromDbArray = array_diff($emarsysEventMappingCollFromDbArray, $templatePlaceholderArray);
+        $deleteFromDbArray = array_diff($emarsysMappingCollFromDb, $templatePlaceholderArray);
 
         foreach ($deleteFromDbArray as $key => $_deleteFromDbArray) {
             $placeholderModel = $this->emarsysEventPlaceholderMappingFactory->create()->load($key);
             $placeholderModel->delete();
         }
 
-        $insertNewFromTemplate = array_diff($templatePlaceholderArray, $emarsysEventMappingCollFromDbArray);
+        $insertNewFromTemplate = array_diff($templatePlaceholderArray, $emarsysMappingCollFromDb);
 
         foreach ($insertNewFromTemplate as $key => $_insertNewFromTemplate) {
             if ($_insertNewFromTemplate) {
@@ -1334,37 +1353,37 @@ class Data extends AbstractHelper
                 return;
             }
             $findReplace = [
-                " "     => "_",
-                ".get"  => "_",
-                "."     => "_",
-                "{{"    => "_",
-                "}}"    => "_",
-                "()"    => "_",
-                "("     => "_",
-                ")"     => "_",
-                "["     => "_",
-                "]"     => "_",
-                "<"     => "_",
-                ">"     => "_",
-                "=$"    => "_",
-                "="     => "_",
-                "/"     => "_",
-                "\\"    => "_",
-                "\n"    => "_",
-                "$"     => "_",
-                "%"     => "_",
-                ","     => "_",
-                ":"     => "_",
-                "|"     => "_",
-                "'"     => "",
-                '"'     => "",
-                "var"   => "",
+                " " => "_",
+                ".get" => "_",
+                "." => "_",
+                "{{" => "_",
+                "}}" => "_",
+                "()" => "_",
+                "(" => "_",
+                ")" => "_",
+                "[" => "_",
+                "]" => "_",
+                "<" => "_",
+                ">" => "_",
+                "=$" => "_",
+                "=" => "_",
+                "/" => "_",
+                "\\" => "_",
+                "\n" => "_",
+                "$" => "_",
+                "%" => "_",
+                "," => "_",
+                ":" => "_",
+                "|" => "_",
+                "'" => "",
+                '"' => "",
+                "var" => "",
                 "trans" => "",
                 "_____" => "_",
-                "____"  => "_",
-                "___"   => "_",
-                "__"    => "_",
-                "#"     => '',
+                "____" => "_",
+                "___" => "_",
+                "__" => "_",
+                "#" => '',
             ];
             $emarsysVariable = str_replace(array_keys($findReplace), $findReplace, strtolower($variable));
             return trim(trim($emarsysVariable, "_"));
@@ -1492,12 +1511,12 @@ class Data extends AbstractHelper
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('config_path', 'design/email/header_template');
-            $emarsysEventPlaceholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
+            $placeholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
                 ->getCollection()
                 ->addFieldToFilter('event_mapping_id', $magentoEventsCollection->getFirstItem()->getId());
 
-            foreach ($emarsysEventPlaceholderMappingColls as $emarsysEventPlaceholderMappingColl) {
-                $headerPlaceholderArray[$emarsysEventPlaceholderMappingColl->getEmarsysPlaceholderName()] = $emarsysEventPlaceholderMappingColl->getMagentoPlaceholderName();
+            foreach ($placeholderMappingColls as $coll) {
+                $headerPlaceholderArray[$coll->getEmarsysPlaceholderName()] = $coll->getMagentoPlaceholderName();
             }
 
             return $headerPlaceholderArray;
@@ -1522,12 +1541,12 @@ class Data extends AbstractHelper
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('config_path', 'design/email/footer_template');
-            $emarsysEventPlaceholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
+            $placeholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
                 ->getCollection()
                 ->addFieldToFilter('event_mapping_id', $magentoEventsCollection->getFirstItem()->getId());
 
-            foreach ($emarsysEventPlaceholderMappingColls as $emarsysEventPlaceholderMappingColl) {
-                $footerPlaceholderArray[$emarsysEventPlaceholderMappingColl->getEmarsysPlaceholderName()] = $emarsysEventPlaceholderMappingColl->getMagentoPlaceholderName();
+            foreach ($placeholderMappingColls as $coll) {
+                $footerPlaceholderArray[$coll->getEmarsysPlaceholderName()] = $coll->getMagentoPlaceholderName();
             }
             return $footerPlaceholderArray;
         } catch (\Exception $e) {
@@ -1550,7 +1569,12 @@ class Data extends AbstractHelper
         $smartInsight = false;
 
         if ($websiteId) {
-            if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED, \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
+            $smartInsightEnabled = $this->scopeConfig->getValue(
+                self::XPATH_SMARTINSIGHT_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
+                $websiteId
+            );
+            if ($smartInsightEnabled) {
                 $smartInsight = true;
             }
         } else {
@@ -1580,7 +1604,8 @@ class Data extends AbstractHelper
         $result = false;
 
         if ($websiteId) {
-            if ($this->scopeConfig->getValue(self::XPATH_EMARSYS_ENABLED, \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
+            if ($this->scopeConfig->getValue(self::XPATH_EMARSYS_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
                 $result = true;
             }
         } else {
@@ -1734,7 +1759,7 @@ class Data extends AbstractHelper
     {
         $data = [
             'name' => 'Technical Support',
-            'email' => 'support@emarsys.com'
+            'email' => 'support@emarsys.com',
         ];
         return $data;
     }
@@ -1748,10 +1773,10 @@ class Data extends AbstractHelper
 
         $firstStore = false;
         foreach ($stores as $store) {
-             if ($store->getConfig(self::XPATH_EMARSYS_ENABLED)) {
-                 $firstStore = $store;
-                 break;
-             }
+            if ($store->getConfig(self::XPATH_EMARSYS_ENABLED)) {
+                $firstStore = $store;
+                break;
+            }
         }
 
         if ($firstStore) {
@@ -1839,7 +1864,8 @@ class Data extends AbstractHelper
             $magentoEventsCollection = $this->magentoEventsCollection->create();
 
             foreach ($magentoEventsCollection as $magentoEvent) {
-                if ($this->scopeConfig->getValue($magentoEvent->getConfigPath(), $storeScope, $storeId) == $templateId) {
+                $configTemplateId = $this->scopeConfig->getValue($magentoEvent->getConfigPath(), $storeScope, $storeId);
+                if ($configTemplateId == $templateId) {
                     $event_id = $magentoEvent->getId();
                     $configPath = $magentoEvent->getConfigPath();
                 }
@@ -1951,13 +1977,10 @@ class Data extends AbstractHelper
                     } else {
                         $statusToBeChanged = Subscriber::STATUS_NOT_ACTIVE;
                     }
-                    if (!in_array($magentoOptinValue, [
-                        Subscriber::STATUS_NOT_ACTIVE,
-                        Subscriber::STATUS_UNCONFIRMED
-                        ]) && !in_array($statusToBeChanged, [
-                            Subscriber::STATUS_NOT_ACTIVE,
-                            Subscriber::STATUS_UNCONFIRMED
-                    ])) {
+                    if (!in_array($magentoOptinValue, [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,])
+                        && !in_array($statusToBeChanged,
+                            [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,])
+                    ) {
                         $subscriber->setSubscriberStatus($statusToBeChanged)
                             ->setEmarsysNoExport(true)
                             ->save();
@@ -2073,7 +2096,9 @@ class Data extends AbstractHelper
                         $statusToBeChanged = Subscriber::STATUS_NOT_ACTIVE;
                     }
 
-                    if ($statusToBeChanged != $magentoSubscriptionStatus && $emarsysLastUpdateTime >= $magentoLastUpdatedTime) {
+                    if ($statusToBeChanged != $magentoSubscriptionStatus
+                        && $emarsysLastUpdateTime >= $magentoLastUpdatedTime
+                    ) {
                         $statuses[$statusToBeChanged][] = $subscriberId;
                     }
                 }
@@ -2083,7 +2108,8 @@ class Data extends AbstractHelper
                         $this->customerResourceModel->updateStatusOfSubscribers($status, $subscriberIds);
                         $logsArray['id'] = $logId;
                         $logsArray['emarsys_info'] = 'Backgroud Time Based Optin Sync Success';
-                        $logsArray['description'] = 'Status: ' . $status . ' set to: ' . Zend_Json::encode($subscriberIds);
+                        $logsArray['description'] = 'Status: ' . $status . ' set to: '
+                            . Zend_Json::encode($subscriberIds);
                         $logsArray['action'] = 'Backgroud Time Based Optin Sync';
                         $logsArray['message_type'] = 'Success';
                         $logsArray['log_action'] = 'True';
@@ -2173,7 +2199,9 @@ class Data extends AbstractHelper
             }
 
             if ((!isset($changedOptinArray) || count($changedOptinArray) <= 1)
-                || (count($changedOptinArray) == 2 && (!isset($changedOptinArray[1][0]) || empty($changedOptinArray[1][0])))
+                || (count($changedOptinArray) == 2
+                    && (!isset($changedOptinArray[1][0]) || empty($changedOptinArray[1][0]))
+                )
             ) {
                 $logsArray['messages'] = 'No opt-in updates';
                 $this->logsHelper->manualLogs($logsArray);
@@ -2205,14 +2233,22 @@ class Data extends AbstractHelper
      */
     public function getEmarsysLatestVersionInfo()
     {
-        $apiUrl = $this->scopeConfigInterface->getValue('emarsys_settings/ftp_settings/apiurl', 'default', 0);
+        $apiUrl = $this->scopeConfigInterface->getValue(
+            'emarsys_settings/ftp_settings/apiurl',
+            'default',
+            0
+        );
 
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+        curl_setopt(
+            $ch,
+            CURLOPT_USERAGENT,
+            'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13'
+        );
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 
         $data = curl_exec($ch);
@@ -2261,7 +2297,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param null|string|bool|int|StoreInterface  $store
+     * @param null|string|bool|int|StoreInterface $store
      * @param $filePath
      * @param $filename
      * @return bool

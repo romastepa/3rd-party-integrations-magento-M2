@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Model\WebDav\WebDav;
 use Emarsys\Emarsys\Model\Logs;
 
-/**
- * Class SubscriberBulkExportWebDav
- * @package Emarsys\Emarsys\Cron
- */
 class SubscriberBulkExportWebDav
 {
     /**
@@ -33,6 +30,7 @@ class SubscriberBulkExportWebDav
 
     /**
      * CustomerBulkExportWebDav constructor.
+     *
      * @param EmarsysCronHelper $cronHelper
      * @param WebDav $webDavModel
      */

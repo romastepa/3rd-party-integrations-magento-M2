@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -19,10 +20,6 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Translate\Inline\StateInterface;
 
-/**
- * Class CleanLog
- * @package Emarsys\Emarsys\Cron
- */
 class CleanLog
 {
     /**
@@ -87,6 +84,7 @@ class CleanLog
 
     /**
      * CleanLog constructor.
+     *
      * @param ScopeConfigInterface $scopeConfig
      * @param DirectoryList $baseDirPath
      * @param ResourceConnection $resource
@@ -182,8 +180,11 @@ class CleanLog
                     }
 
                     /* Delete record from log_details tables */
-                    $sqlConnection = $this->_resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
-                    $sqlConnection->delete($this->resourceConfig->getTable('emarsys_log_details'), 'DATE(created_at) <= "' . $cleanUpDate . '"');
+                    $sqlConnection = $this->_resource->getConnection(
+                        \Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION
+                    );
+                    $sqlConnection->delete($this->resourceConfig->getTable('emarsys_log_details'),
+                        'DATE(created_at) <= "' . $cleanUpDate . '"');
                     $successLog = 1;
                 } catch (\Exception $e) {
                     $errorLog = 1;
@@ -197,12 +198,19 @@ class CleanLog
                 $errorEmailData = $this->emarsysHelper->logErrorSenderEmail();
                 $senderEmailId = $errorEmailData['email'];
                 $senderEmailName = $errorEmailData['name'];
-                $logEmailRecipient = $this->scopeConfig->getValue('logs/log_setting/log_email_recipient', $scopeType, $websiteId);
+                $logEmailRecipient = $this->scopeConfig->getValue(
+                    'logs/log_setting/log_email_recipient',
+                    $scopeType,
+                    $websiteId
+                );
                 if ($logEmailRecipient == '' && $websiteId == 1) {
                     $logEmailRecipient = $this->scopeConfig->getValue('logs/log_setting/log_email_recipient');
                 }
                 if ($successLog == 1 && $archive == 'archive') {
-                    $templateOptions = ['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE, 'store' => $storeId];
+                    $templateOptions = [
+                        'area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+                        'store' => $storeId,
+                    ];
                     $templateVars = [
                         'store' => $storeId,
                         'message' => $backupFile,
@@ -216,7 +224,8 @@ class CleanLog
                         'email' => $logEmailRecipient,
                         'name' => $logEmailRecipient,
                     ];
-                    $transport = $this->_transportBuilder->setTemplateIdentifier('emarsys_log_cleaning_template')
+                    $transport = $this->_transportBuilder
+                        ->setTemplateIdentifier('emarsys_log_cleaning_template')
                         ->setTemplateOptions($templateOptions)
                         ->setTemplateVars($templateVars)
                         ->setFrom($from)
@@ -229,7 +238,10 @@ class CleanLog
                 /* Send email for Error in archived File */
                 if ($errorLog == 1) {
                     $errorMessage = implode(",", $errorResult);
-                    $templateOptions = ['area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE, 'store' => $storeId];
+                    $templateOptions = [
+                        'area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+                        'store' => $storeId,
+                    ];
                     $templateVars = [
                         'store' => $storeId,
                         'message' => $errorMessage,
@@ -243,7 +255,8 @@ class CleanLog
                         'email' => $logEmailRecipient,
                         'name' => $logEmailRecipient,
                     ];
-                    $transport = $this->_transportBuilder->setTemplateIdentifier('emarsys_log_cleaning_error_template')
+                    $transport = $this->_transportBuilder
+                        ->setTemplateIdentifier('emarsys_log_cleaning_error_template')
                         ->setTemplateOptions($templateOptions)
                         ->setTemplateVars($templateVars)
                         ->setFrom($from)
@@ -258,24 +271,33 @@ class CleanLog
                  */
 
                 if ($archive == 'archive') {
-                    $deleteArchivedData = $this->scopeConfig->getValue('logs/log_setting/delete_archive_days', $scopeType, $websiteId); // Number of days to delete old archived data
+                    $deleteArchivedData = $this->scopeConfig->getValue(
+                        'logs/log_setting/delete_archive_days',
+                        $scopeType,
+                        $websiteId
+                    ); // Number of days to delete old archived data
                     if ($deleteArchivedData == '' && $websiteId == 1) {
-                        $deleteArchivedData = $this->scopeConfig->getValue('logs/log_setting/delete_archive_days');
+                        $deleteArchivedData = $this->scopeConfig
+                            ->getValue('logs/log_setting/delete_archive_days');
                     }
-                    $deleteDate = $this->date->date('Y-m-d', strtotime("-" . $deleteArchivedData . " days")); //date to delete old archived data
+                    $deleteDate = $this->date->date('Y-m-d',
+                        strtotime("-" . $deleteArchivedData . " days")); //date to delete old archived data
                     $deleteDate = $this->emarsysHelper->getDateTimeInLocalTimezone($deleteDate);
-                    $archiveFolderPath = $archivePath;                                      //Archive folder path
-                    $dir = new \DirectoryIterator($archiveFolderPath);                      //Sub-dir inside archive dir
+                    $archiveFolderPath = $archivePath; //Archive folder path
+                    $dir = new \DirectoryIterator($archiveFolderPath); //Sub-dir inside archive dir
                     foreach ($dir as $fileinfo) {
                         if ($fileinfo->isDir() && !$fileinfo->isDot()) {
-                            $path = $archiveFolderPath . "/" . $fileinfo->getFilename();        //get sub-dir name
+                            $path = $archiveFolderPath . "/" . $fileinfo->getFilename(); //get sub-dir name
                             $stat = stat($path);
-                            $folderCreateDate = $this->date->date('Y-m-d', $stat['ctime']);  //create date of sub-dir
+                            $folderCreateDate = $this->date->date('Y-m-d', $stat['ctime']);
                             $folderCreateDate = $this->emarsysHelper->getDateTimeInLocalTimezone($folderCreateDate);
                             /* If create date of sub-dir less than delete date of sub-dir then delete sub-dir */
                             if ($folderCreateDate <= $deleteDate && is_dir($path)) {
-                                array_map('unlink', glob($path . "/*"));                      //delete all files inside directory
-                                rmdir($path);                                               //delete directory
+                                array_map(
+                                    'unlink',
+                                    glob($path . "/*")
+                                ); //delete all files inside directory
+                                rmdir($path); //delete directory
                             }
                         }
                     }

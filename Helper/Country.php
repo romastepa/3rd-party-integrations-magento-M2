@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Helper;
 
 use Magento\Framework\App\Helper\Context;
@@ -13,10 +14,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 use Magento\Store\Model\StoreManagerInterface as StoreManager;
 
-/**
- * Class Country
- * @package Emarsys\Emarsys\Helper
- */
 class Country extends AbstractHelper
 {
     protected $_mapping = [];
@@ -37,19 +34,19 @@ class Country extends AbstractHelper
     protected $storeManager;
 
     protected $_overrides = [
-        'Hong Kong'         => 'HK',
-        'Macau'             => 'MO',
+        'Hong Kong' => 'HK',
+        'Macau' => 'MO',
         'Brunei Darussalam' => 'BN',
-        'Cote d\'Ivoire'    => 'CI',
-        'Gambia, The'       => 'GM',
-        'Congo'             => 'CG',
+        'Cote d\'Ivoire' => 'CI',
+        'Gambia, The' => 'GM',
+        'Congo' => 'CG',
         'Congo, Democratic Republic of the' => 'CD',
-        'Korea, South'      => 'KR',
-        'Korea, North'      => 'KP',
-        'Myanmar'           => 'MM',
-        'The Netherlands'   => 'NL',
+        'Korea, South' => 'KR',
+        'Korea, North' => 'KP',
+        'Myanmar' => 'MM',
+        'The Netherlands' => 'NL',
         'St. Kitts and Nevis' => 'KN',
-        'St. Lucia'         => 'LC',
+        'St. Lucia' => 'LC',
         'St. Vincent and The Grenadines' => 'VC',
         'United States of America' => 'US',
     ];

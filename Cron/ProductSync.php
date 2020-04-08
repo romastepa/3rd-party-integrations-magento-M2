@@ -4,15 +4,12 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
 use Emarsys\Emarsys\Model\Logs;
 
-/**
- * Class ProductSync
- * @package Emarsys\Emarsys\Cron
- */
 class ProductSync
 {
     /**
@@ -27,6 +24,7 @@ class ProductSync
 
     /**
      * ProductSync constructor.
+     *
      * @param EmarsysProductModel $emarsysProductModel
      * @param Logs $emarsysLogs
      */
@@ -34,7 +32,7 @@ class ProductSync
         EmarsysProductModel $emarsysProductModel,
         Logs $emarsysLogs
     ) {
-        $this->emarsysProductModel =  $emarsysProductModel;
+        $this->emarsysProductModel = $emarsysProductModel;
         $this->emarsysLogs = $emarsysLogs;
     }
 
@@ -42,7 +40,9 @@ class ProductSync
     {
         try {
             set_time_limit(0);
-            $this->emarsysProductModel->consolidatedCatalogExport(\Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC);
+            $this->emarsysProductModel->consolidatedCatalogExport(
+                \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_AUTOMATIC
+            );
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'ProductSync',

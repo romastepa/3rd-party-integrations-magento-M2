@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Helper;
 
 use Magento\{
@@ -18,10 +19,6 @@ use Emarsys\Emarsys\{
     Model\Logs as Emarsyslogs
 };
 
-/**
- * Class Cron
- * @package Emarsys\Emarsys\Helper
- */
 class Cron extends AbstractHelper
 {
     const CRON_JOB_CUSTOMER_SYNC_QUEUE = 'emarsys_customer_sync_queue';
@@ -90,6 +87,7 @@ class Cron extends AbstractHelper
 
     /**
      * Returns true if cron job is scheduled
+     *
      * @param $jobCode
      * @param null $storeId
      * @param null $websiteBasedChecking

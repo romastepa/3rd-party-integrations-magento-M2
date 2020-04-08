@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
@@ -11,10 +12,6 @@ use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class SmartInsightBulkExport
- * @package Emarsys\Emarsys\Cron
- */
 class SmartInsightBulkExport
 {
     /**
@@ -47,7 +44,7 @@ class SmartInsightBulkExport
         Logs $emarsysLogs
     ) {
         $this->cronHelper = $cronHelper;
-        $this->emarsysOrderModel =  $order;
+        $this->emarsysOrderModel = $order;
         $this->storeManager = $storeManager;
         $this->emarsysLogs = $emarsysLogs;
     }

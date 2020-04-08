@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
@@ -12,10 +13,6 @@ use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class CustomerSyncQueue
- * @package Emarsys\Emarsys\Cron
- */
 class CustomerSyncQueue
 {
     /**
@@ -40,6 +37,7 @@ class CustomerSyncQueue
 
     /**
      * CustomerSyncQueue constructor.
+     *
      * @param EmarsysCronHelper $cronHelper
      * @param Contact $contactModel
      * @param StoreManagerInterface $storeManagerInterface

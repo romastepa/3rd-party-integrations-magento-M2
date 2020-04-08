@@ -4,15 +4,12 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Model\Logs;
 use Emarsys\Emarsys\Model\EmarsysCronDetails;
 
-/**
- * Class CleanCronDetails
- * @package Emarsys\Emarsys\Cron
- */
 class CleanCronDetails
 {
     /**
@@ -27,6 +24,7 @@ class CleanCronDetails
 
     /**
      * CleanCronDetails constructor.
+     *
      * @param Logs $emarsysLogs
      * @param EmarsysCronDetails $emarsysCronDetails
      */

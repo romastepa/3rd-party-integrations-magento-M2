@@ -22,11 +22,6 @@ use Emarsys\Emarsys\{
     Model\LogsFactory
 };
 
-/**
- * Class Logs
- *
- * @package Emarsys\Emarsys\Helper
- */
 class Logs extends AbstractHelper
 {
     /**
@@ -95,8 +90,7 @@ class Logs extends AbstractHelper
         StateInterface $inlineTranslation,
         TransportBuilder $transportBuilder,
         Registry $registry
-    )
-    {
+    ) {
         $this->logScheduleFactory = $logScheduleFactory;
         $this->date = $date;
         $this->registry = $registry;
@@ -202,7 +196,8 @@ class Logs extends AbstractHelper
         $logsModel->setLogExecId($schedulerId)
             ->setCreatedAt($currentDate)
             ->setEmarsysInfo(isset($logsArray['emarsys_info']) ? $logsArray['emarsys_info'] : '')
-            ->setDescription(isset($logsArray['description']) ? str_replace(',"', ' ,"', $logsArray['description']) : '')
+            ->setDescription(isset($logsArray['description']) ? str_replace(',"', ' ,"',
+                $logsArray['description']) : '')
             ->setAction(isset($logsArray['action']) ? $logsArray['action'] : 'synced to emarsys')
             ->setMessageType(isset($logsArray['message_type']) ? $logsArray['message_type'] : '')
             ->setStoreId(isset($logsArray['store_id']) ? $logsArray['store_id'] : 0)
@@ -218,7 +213,11 @@ class Logs extends AbstractHelper
             $scopeType = 'websites';
         }
 
-        $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report', $scopeType, $websiteId);
+        $sendLogReport = $this->scopeConfigInterface->getValue(
+            'logs/log_setting/log_report',
+            $scopeType,
+            $websiteId
+        );
         if ($sendLogReport == '' && $websiteId == 0) {
             $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report');
         }
@@ -253,7 +252,8 @@ class Logs extends AbstractHelper
         if ($sendLogReport == 1) {
             $templateOptions = [
                 'area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-                'store' => $this->storeManager->getStore()->getId()];
+                'store' => $this->storeManager->getStore()->getId(),
+            ];
             $templateVars = [
                 'store' => $this->storeManager->getStore(),
                 'sync_name' => $title,
@@ -268,7 +268,8 @@ class Logs extends AbstractHelper
             if (is_array($explodedemailReceipient)) {
                 for ($i = 0; $i < count($explodedemailReceipient); $i++) {
                     $to = $explodedemailReceipient[$i];
-                    $transport = $this->_transportBuilder->setTemplateIdentifier('error_log_email_template')
+                    $transport = $this->_transportBuilder
+                        ->setTemplateIdentifier('error_log_email_template')
                         ->setTemplateOptions($templateOptions)
                         ->setTemplateVars($templateVars)
                         ->setFrom($from)

@@ -4,12 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Helper;
 
 use Magento\{
     Framework\App\Helper\AbstractHelper,
     Framework\App\Helper\Context,
-    Store\Model\StoreManagerInterface  as StoreManager,
+    Store\Model\StoreManagerInterface as StoreManager,
     AdminNotification\Model\InboxFactory
 };
 use Emarsys\Emarsys\{
@@ -19,10 +20,6 @@ use Emarsys\Emarsys\{
     Model\Api\Api as EmarsysModelApiApi
 };
 
-/**
- * Class Event
- * @package Emarsys\Emarsys\Helper
- */
 class Event extends AbstractHelper
 {
     /**
@@ -47,6 +44,7 @@ class Event extends AbstractHelper
 
     /**
      * Event constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param EmarsysResourceModelEvent $resourceModelEvent
      * @param Context $context

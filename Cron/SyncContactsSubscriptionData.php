@@ -24,11 +24,6 @@ use Magento\{
     Config\Model\ResourceModel\Config
 };
 
-/**
- * Class SyncContactsSubscriptionData
- *
- * @package Emarsys\Emarsys\Cron
- */
 class SyncContactsSubscriptionData
 {
     /**
@@ -199,7 +194,10 @@ class SyncContactsSubscriptionData
 
             $dt = (new \Zend_Date());
             if ($isTimeBased) {
-                $timeRange = [$dt->subHour(1)->toString('YYYY-MM-dd'), $dt->addHour(1)->toString('YYYY-MM-dd')];
+                $timeRange = [
+                    $dt->subHour(1)->toString('YYYY-MM-dd'),
+                    $dt->addHour(1)->toString('YYYY-MM-dd'),
+                ];
             }
             $key_id = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $sId);
             $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $sId);
@@ -258,8 +256,9 @@ class SyncContactsSubscriptionData
         if ($isTimeBased) {
             $url = $this->storeManager->getStore($storeId)->getBaseUrl()
                 . 'emarsys/index/sync?_store=' . $storeId
-                . '&secret=' . $this->scopeConfig->getValue('contacts_synchronization/emarsys_emarsys/notification_secret_key')
-                . '&website_ids=' . implode(',', $websiteId)
+                . '&secret=' . $this->scopeConfig->getValue(
+                    'contacts_synchronization/emarsys_emarsys/notification_secret_key'
+                ) . '&website_ids=' . implode(',', $websiteId)
                 . '&timebased=1';
         }
         $this->registry->unregister('custom_entry_point');
@@ -278,7 +277,12 @@ class SyncContactsSubscriptionData
      */
     public function setValue($key, $value, $websiteId)
     {
-        $this->resourceConfig->saveConfig('emarsys_suite2/storage/' . $key, $value, 'websites', $websiteId);
+        $this->resourceConfig->saveConfig(
+            'emarsys_suite2/storage/' . $key,
+            $value,
+            'websites',
+            $websiteId
+        );
         $this->_cacheTypeList->cleanType('config');
     }
 }

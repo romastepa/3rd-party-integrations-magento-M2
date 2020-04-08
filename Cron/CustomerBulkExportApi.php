@@ -13,11 +13,6 @@ use Emarsys\Emarsys\{
     Model\Logs as EmarsysModelLogs
 };
 
-/**
- * Class CustomerBulkExportApi
- *
- * @package Emarsys\Emarsys\Cron
- */
 class CustomerBulkExportApi
 {
     /**
