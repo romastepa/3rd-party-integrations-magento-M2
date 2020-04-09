@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "require": {
-    "emartech/emarsys-magento2-extension",
+    "emartech/emarsys-magento2-extension": "^1.9.2",
     "sabre/dav": "~3.2.0"
   },
   "autoload": {
