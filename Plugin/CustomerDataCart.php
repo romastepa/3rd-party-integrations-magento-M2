@@ -11,11 +11,17 @@ use Magento\Checkout\CustomerData\Cart;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Catalog\Model\Product;
 
-/**
- * Class CustomerData
- */
 class CustomerDataCart
 {
+    /**
+     * @var Item
+     */
+    public $item;
+
+    /**
+     * @var Product
+     */
+    public $product;
 
     /**
      * CustomerDataCart constructor.
@@ -23,8 +29,10 @@ class CustomerDataCart
      * @param Item $item
      * @param Product $product
      */
-    public function __construct(Item $item, Product $product)
-    {
+    public function __construct(
+        Item $item,
+        Product $product
+    ) {
         $this->item = $item;
         $this->product = $product;
     }

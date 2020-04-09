@@ -10,11 +10,13 @@ namespace Emarsys\Emarsys\Plugin;
 use Magento\Customer\CustomerData\Customer;
 use Magento\Customer\Model\Session;
 
-/**
- * Class CustomerData
- */
 class CustomerData extends Customer
 {
+    /**
+     * @var Session
+     */
+    public $session;
+
     /**
      * CustomerData constructor.
      *
@@ -26,7 +28,7 @@ class CustomerData extends Customer
     }
 
     /**
-     * @param OriginalCustomerData $subject
+     * @param Customer $subject
      * @param array $result
      *
      * @return array
@@ -36,10 +38,10 @@ class CustomerData extends Customer
         $customerId = $subject->currentCustomer->getCustomerId();
         if ($customerId) {
             $customer = $subject->currentCustomer->getCustomer();
-            $result['id'] = $customerId;
-            $result['email'] = $customer->getEmail();
+            $result['webExtendCustomerId'] = $customerId;
+            $result['webExtendCustomerEmail'] = $customer->getEmail();
         } elseif ($this->session->getWebExtendCustomerEmail()) {
-            $result['email'] = $this->session->getWebExtendCustomerEmail();
+            $result['webExtendCustomerEmail'] = $this->session->getWebExtendCustomerEmail();
         }
 
         return $result;
