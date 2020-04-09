@@ -18,10 +18,6 @@ use Magento\{
     Framework\Event\ObserverInterface
 };
 
-/**
- * Class RealTimeAdminSubscriber
- * @package Emarsys\Emarsys\Observer
- */
 class RealTimeAdminSubscriber implements ObserverInterface
 {
     /**
@@ -46,6 +42,7 @@ class RealTimeAdminSubscriber implements ObserverInterface
 
     /**
      * RealTimeAdminSubscriber constructor.
+     *
      * @param Subscriber $subscriberModel
      * @param StoreManagerInterface $storeManager
      * @param Data $emarsysHelper

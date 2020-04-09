@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\File\Csv;
 
-/**
- * Class WebDavExport
- * @package Emarsys\Emarsys\Model\WebDav
- */
 class WebDavExport extends Curl
 {
     /**
@@ -28,6 +25,7 @@ class WebDavExport extends Curl
 
     /**
      * WebDavExport constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param Csv $csvWriter
      */
@@ -74,7 +72,7 @@ class WebDavExport extends Curl
                 CURLOPT_RETURNTRANSFER => 1,
                 CURLOPT_HTTPAUTH => CURLAUTH_ANY,
                 CURLOPT_POSTFIELDS => $data,
-                CURLOPT_USERPWD => "$webDavUser:$webDavPass"
+                CURLOPT_USERPWD => "$webDavUser:$webDavPass",
             ];
 
             $this->setHeaders($this->getApiHeaders());
@@ -88,11 +86,15 @@ class WebDavExport extends Curl
             if (in_array($status, ['100', '200', '201', '202', '203', '204', '205', '206'])) {
                 $response['status'] = true;
                 if ($status == '204') {
-                    $response['response_body'] = __('File have been uploaded succesfully. A file with the same name already exists.');
+                    $response['response_body'] = __(
+                        'File have been uploaded succesfully. A file with the same name already exists.'
+                    );
                 }
             }
         } else {
-            $response['response_body'] = __('Invalid Credentials. Either Webdav credentials, file name or file path missing.');
+            $response['response_body'] = __(
+                'Invalid Credentials. Either Webdav credentials, file name or file path missing.'
+            );
         }
 
         return $response;
@@ -103,18 +105,19 @@ class WebDavExport extends Curl
      * @param $webDavUser
      * @param $webDavPass
      * @return bool|int|\Magento\Framework\Phrase|string
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function testWebDavConnection($webDavUrl, $webDavUser, $webDavPass)
     {
         $fileName = 'test_connection.csv';
         $data = [
             ['test'],
-            ['test']
+            ['test'],
         ];
 
         $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath('testconnections');
         $this->emarsysHelper->checkAndCreateFolder($fileDirectory);
-        $filePath =  $fileDirectory . "/" . $fileName;
+        $filePath = $fileDirectory . "/" . $fileName;
 
         $this->csvWriter
             ->setEnclosure('"')

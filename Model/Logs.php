@@ -16,10 +16,6 @@ use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs as EmarsysLogs;
 
-/**
- * Class Logs
- * @package Emarsys\Emarsys\Model
- */
 class Logs extends \Magento\Framework\Model\AbstractModel
 {
     /**
@@ -37,6 +33,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Logs constructor.
+     *
      * @param Context $context
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
@@ -71,7 +68,7 @@ class Logs extends \Magento\Framework\Model\AbstractModel
     protected function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Logs');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Logs::class);
     }
 
     /**

@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: punk
- * Date: 8/27/18
- * Time: 15:44
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport;
@@ -19,7 +18,10 @@ class Collection extends \Magento\Sales\Model\ResourceModel\Order\Creditmemo\Col
     {
         parent::_construct();
         $this->entitySnapshot = null;
-        $this->_init(\Emarsys\Emarsys\Model\CreditmemoExport::class, \Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport::class);
+        $this->_init(
+            \Emarsys\Emarsys\Model\CreditmemoExport::class,
+            \Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport::class
+        );
     }
 
     /**

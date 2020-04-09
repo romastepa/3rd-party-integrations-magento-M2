@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Class CreditmemoExportStatus
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class CreditmemoExportStatus extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
@@ -28,6 +24,7 @@ class CreditmemoExportStatus extends \Magento\Framework\Model\ResourceModel\Db\A
 
     /**
      * CreditmemoExportStatus constructor.
+     *
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
@@ -41,7 +38,7 @@ class CreditmemoExportStatus extends \Magento\Framework\Model\ResourceModel\Db\A
         \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
         $connectionName = null
     ) {
-    
+
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;

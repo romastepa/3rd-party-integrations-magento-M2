@@ -11,10 +11,6 @@ use Emarsys\Emarsys\Model\OrderQueueFactory;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 
-/**
- * Class CreditmemoSave
- * @package Emarsys\Emarsys\Observer
- */
 class CreditmemoSave implements ObserverInterface
 {
     /**
@@ -24,6 +20,7 @@ class CreditmemoSave implements ObserverInterface
 
     /**
      * CreditmemoSave constructor.
+     *
      * @param OrderQueueFactory $orderQueueFactory
      */
     public function __construct(
@@ -44,10 +41,10 @@ class CreditmemoSave implements ObserverInterface
             $orderQueue = $orderQueueData->getFirstItem();
         }
 
-        $orderQueue->setEntityId($observer->getEvent()->getDataObject()->getOrder()->getId());
-        $orderQueue->setEntityTypeId(2);
-        $orderQueue->setWebsiteId($observer->getEvent()->getDataObject()->getOrder()->getStore()->getWebsiteId());
-        $orderQueue->setStoreId($observer->getEvent()->getDataObject()->getOrder()->getStoreId());
-        $orderQueue->save();
+        $orderQueue->setEntityId($observer->getEvent()->getDataObject()->getOrder()->getId())
+            ->setEntityTypeId(2)
+            ->setWebsiteId($observer->getEvent()->getDataObject()->getOrder()->getStore()->getWebsiteId())
+            ->setStoreId($observer->getEvent()->getDataObject()->getOrder()->getStoreId())
+            ->save();
     }
 }

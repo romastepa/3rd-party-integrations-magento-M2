@@ -4,12 +4,9 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
-/**
- * Class LogSchedule
- * @package Emarsys\Emarsys\Model
- */
 class LogSchedule extends \Magento\Framework\Model\AbstractModel
 {
     /**
@@ -20,6 +17,6 @@ class LogSchedule extends \Magento\Framework\Model\AbstractModel
     protected function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\LogSchedule');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\LogSchedule::class);
     }
 }

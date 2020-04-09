@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Class Logs
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Logs extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**

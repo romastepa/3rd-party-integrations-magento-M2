@@ -4,12 +4,9 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport;
 
-/**
- * Class Collection
- * @package Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport
- */
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
     /**
@@ -19,6 +16,9 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
      */
     protected function _construct()
     {
-        $this->_init('Emarsys\Emarsys\Model\Emarsysproductexport', 'Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport');
+        $this->_init(
+            \Emarsys\Emarsys\Model\Emarsysproductexport::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport::class
+        );
     }
 }

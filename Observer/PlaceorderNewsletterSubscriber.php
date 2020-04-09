@@ -17,10 +17,6 @@ use Magento\{
     Framework\Event\ObserverInterface
 };
 
-/**
- * Class PlaceorderNewsletterSubscriber
- * @package Emarsys\Emarsys\Observer
- */
 class PlaceorderNewsletterSubscriber implements ObserverInterface
 {
     /**

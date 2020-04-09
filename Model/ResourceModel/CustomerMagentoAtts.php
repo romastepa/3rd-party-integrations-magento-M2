@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Class CustomerMagentoAtts
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class CustomerMagentoAtts extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     protected function _construct()

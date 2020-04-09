@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\Config\Source;
 
-/**
- * Class AsyncFrequency.php
- * @package Emarsys\Emarsys\Model\Config\Source
- */
 class AsyncFrequency implements \Magento\Framework\Option\ArrayInterface
 {
     /**

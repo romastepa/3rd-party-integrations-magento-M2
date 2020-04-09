@@ -4,12 +4,9 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\Config;
 
-/**
- * Class SmartInsightCronConfig
- * @package Emarsys\Emarsys\Model\Config
- */
 class SmartInsightCronConfig extends \Magento\Framework\App\Config\Value
 {
     /**
@@ -71,7 +68,7 @@ class SmartInsightCronConfig extends \Magento\Framework\App\Config\Value
                 '*',
                 '*',
                 '*',
-                '*'
+                '*',
             ];
         }
         if ($frequency == 'Daily') {
@@ -80,7 +77,7 @@ class SmartInsightCronConfig extends \Magento\Framework\App\Config\Value
                 intval($time[0]), //Hour
                 '*',
                 '*',
-                '*'
+                '*',
             ];
         }
         if ($frequency == 'Monthly') {
@@ -89,7 +86,7 @@ class SmartInsightCronConfig extends \Magento\Framework\App\Config\Value
                 intval($time[0]), //Hour
                 '1',
                 '*',
-                '*'
+                '*',
             ];
         }
         $cronExprString = join(' ', $cronExprArray);

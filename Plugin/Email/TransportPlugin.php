@@ -11,11 +11,6 @@ use Magento\Framework\Mail\TransportInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Registry\EmailSendState;
 
-/**
- * SMTP mail transport.
- *
- * @SuppressWarnings(PHPMD.UnusedFormalParameter)
- */
 class TransportPlugin
 {
     /**
@@ -45,9 +40,8 @@ class TransportPlugin
     /**
      * @param TransportInterface $subject
      * @param callable $proceed
+     * @return null|bool
      * @throws \Exception
-     *
-     * @return null
      */
     public function aroundSendMessage(
         TransportInterface $subject,

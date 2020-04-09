@@ -26,5 +26,5 @@
 
 # Release Notes
 
-## v1.0.21
-- Event Mapping fix
+## v1.1.0
+- Code refactoring

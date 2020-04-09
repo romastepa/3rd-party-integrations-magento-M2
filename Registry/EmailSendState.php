@@ -24,6 +24,8 @@ class EmailSendState
 
     public function get()
     {
-        return $this->state ? self::STATE_YES : self::STATE_NO;
+        return $this->state
+            ? self::STATE_YES
+            : self::STATE_NO;
     }
 }

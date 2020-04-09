@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Setup;
 
 use Magento\Framework\Setup\UpgradeSchemaInterface;
@@ -12,6 +13,7 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 
 /**
  * Class UpgradeSchema
+ *
  * @package Emarsys\Emarsys\Setup
  */
 class UpgradeSchema implements UpgradeSchemaInterface
@@ -47,7 +49,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'entity_id',
                         \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                         null,
-                        ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
                         'Product Id'
                     )->addColumn(
                         'params',
@@ -80,10 +88,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 );
             }
 
-            $emarsysLogDetailsTable =  $setup->getTable(self::EMARSYS_LOG_DETAILS);
-            $emarsysLogCronScheduleTable =  $setup->getTable(self::EMARSYS_LOG_CRON_SCHEDULE);
+            $emarsysLogDetailsTable = $setup->getTable(self::EMARSYS_LOG_DETAILS);
+            $emarsysLogCronScheduleTable = $setup->getTable(self::EMARSYS_LOG_CRON_SCHEDULE);
 
-            if ($connection->isTableExists($emarsysLogDetailsTable) && $connection->isTableExists($emarsysLogCronScheduleTable)) {
+            if ($connection->isTableExists($emarsysLogDetailsTable)
+                && $connection->isTableExists($emarsysLogCronScheduleTable)
+            ) {
                 $connection->truncateTable($emarsysLogDetailsTable);
                 $connection->truncateTable($emarsysLogCronScheduleTable);
 
@@ -95,7 +105,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                         'unsigned' => true,
                         'nullable' => false,
-                        'length'   => 10,
+                        'length' => 10,
                         'comment' => 'emarsys_log_cron_schedule id',
                     ]
                 );
@@ -132,7 +142,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'entity_id',
                         \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                         null,
-                        ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
                         'Entity Id'
                     )->addColumn(
                         'website_id',
@@ -191,7 +207,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'request_body',
                     [
                         'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-                        'length'   => '128k',
+                        'length' => '128k',
                         'comment' => 'Request Body',
                     ]
                 );
@@ -202,7 +218,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'params',
                 [
                     'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-                    'length'   => '128k',
+                    'length' => '128k',
                     'comment' => 'Product Params',
                 ]
             );

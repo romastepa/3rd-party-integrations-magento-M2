@@ -9,11 +9,6 @@ namespace Emarsys\Emarsys\Model\ResourceModel\Customer;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
-/**
- * Class Collection
- *
- * @package Emarsys\Emarsys\Model\ResourceModel\Customer
- */
 class Collection extends AbstractCollection
 {
     /**
@@ -23,6 +18,9 @@ class Collection extends AbstractCollection
      */
     protected function _construct()
     {
-        $this->_init('Emarsys\Emarsys\Model\Customer', 'Emarsys\Emarsys\Model\ResourceModel\Customer');
+        $this->_init(
+            \Emarsys\Emarsys\Model\Customer::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Customer::class
+        );
     }
 }

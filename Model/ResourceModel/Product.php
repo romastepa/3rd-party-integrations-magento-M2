@@ -9,10 +9,6 @@ namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
-/**
- * Class Product
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Product extends AbstractDb
 {
     /**

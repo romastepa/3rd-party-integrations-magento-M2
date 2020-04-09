@@ -11,10 +11,6 @@ use Emarsys\Emarsys\Model\OrderQueueFactory as OrderQueueFactoryAlias;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 
-/**
- * Class OrderSave
- * @package Emarsys\Emarsys\Observer
- */
 class OrderSave implements ObserverInterface
 {
     /**
@@ -48,10 +44,10 @@ class OrderSave implements ObserverInterface
             return true;
         }
 
-        $orderQueue->setEntityId($observer->getEvent()->getOrder()->getId());
-        $orderQueue->setEntityTypeId(1);
-        $orderQueue->setWebsiteId($observer->getEvent()->getOrder()->getStore()->getWebsiteId());
-        $orderQueue->setStoreId($observer->getEvent()->getOrder()->getStoreId());
-        $orderQueue->save();
+        $orderQueue->setEntityId($observer->getEvent()->getOrder()->getId())
+            ->setEntityTypeId(1)
+            ->setWebsiteId($observer->getEvent()->getOrder()->getStore()->getWebsiteId())
+            ->setStoreId($observer->getEvent()->getOrder()->getStoreId())
+            ->save();
     }
 }

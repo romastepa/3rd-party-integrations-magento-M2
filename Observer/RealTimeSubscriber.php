@@ -20,10 +20,6 @@ use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper
 };
 
-/**
- * Class RealTimeSubscriber
- * @package Emarsys\Emarsys\Observer
- */
 class RealTimeSubscriber implements ObserverInterface
 {
     /**

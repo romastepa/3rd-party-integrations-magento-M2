@@ -1,10 +1,10 @@
 <?php
-
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Emarsys\Emarsys\Model\Logs;
@@ -15,10 +15,6 @@ use Magento\Framework\{
     Stdlib\DateTime\DateTime
 };
 
-/**
- * Class Sync
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Sync extends AbstractDb
 {
     /**
@@ -79,7 +75,7 @@ class Sync extends AbstractDb
         ScopeConfigInterface $scopeConfigInterface,
         $connectionName = null
     ) {
-    
+
         $this->date = $date;
         $this->emarsysLogs = $emarsysLogs;
         $this->scopeConfigInterface = $scopeConfigInterface;
@@ -95,7 +91,6 @@ class Sync extends AbstractDb
     }
 
     /**
-     * 
      * @param type $entity
      * @param type $storeId
      * @return array
@@ -131,7 +126,6 @@ class Sync extends AbstractDb
     }
 
     /**
-     * 
      * @param type $path
      * @param type $scope
      * @param type $scopeId

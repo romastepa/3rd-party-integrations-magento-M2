@@ -12,10 +12,6 @@ use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\DB\Ddl\Table;
 
-/**
- * Class InstallSchema
- * @package Emarsys\Emarsys\Setup
- */
 class InstallSchema implements InstallSchemaInterface
 {
     /**
@@ -35,7 +31,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )->addColumn(
                 'emarsys_field_id',
@@ -86,7 +88,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -121,7 +129,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -163,7 +177,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'ID'
             )
             ->addColumn(
@@ -203,7 +223,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -238,7 +264,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -279,7 +311,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -313,7 +351,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -353,7 +397,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )->addColumn(
                 'emarsys_inventory_id',
@@ -452,7 +502,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -492,7 +548,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )->addColumn(
                 'attributeid',
@@ -529,7 +591,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )->addColumn(
                 'event_id',
@@ -560,7 +628,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'ID'
             )->addColumn(
                 'magento_event',
@@ -585,7 +659,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'ID'
             )->addColumn(
                 'magento_event_id',
@@ -618,7 +698,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -652,7 +738,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -686,7 +778,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -727,7 +825,13 @@ class InstallSchema implements InstallSchemaInterface
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'Id'
             )
             ->addColumn(
@@ -768,36 +872,43 @@ class InstallSchema implements InstallSchemaInterface
 
         // create table 'emarsys_suite2_queue'
         $emarsys_suite2_queue = $installer->getTable('emarsys_suite2_queue');
-        $table = $installer->getConnection()->newTable($installer->getTable($emarsys_suite2_queue))
+        $table = $installer->getConnection()
+            ->newTable($installer->getTable($emarsys_suite2_queue))
             ->addColumn(
                 'id',
                 Table::TYPE_INTEGER,
                 null,
-                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
                 'ID'
             )->addColumn(
                 'entity_id',
                 Table::TYPE_INTEGER,
                 null,
-                ['unsigned' => true, 'default' => NULL],
+                ['unsigned' => true, 'default' => null],
                 'Entity ID'
             )->addColumn(
                 'website_id',
                 Table::TYPE_INTEGER,
                 null,
-                ['unsigned' => true, 'default' => NULL],
+                ['unsigned' => true, 'default' => null],
                 'Website ID'
             )->addColumn(
                 'store_id',
                 Table::TYPE_INTEGER,
                 null,
-                ['unsigned' => true, 'default' => NULL],
+                ['unsigned' => true, 'default' => null],
                 'Store ID'
             )->addColumn(
                 'entity_type_id',
                 Table::TYPE_INTEGER,
                 null,
-                ['unsigned' => true, 'default' => NULL],
+                ['unsigned' => true, 'default' => null],
                 'Entity type ID'
             )->addColumn(
                 'params',
@@ -816,37 +927,45 @@ class InstallSchema implements InstallSchemaInterface
 
         // create table 'emarsys_placeholders_mapping'
         $emarsys_placeholders_mapping = $installer->getTable('emarsys_placeholders_mapping');
-        $table = $installer->getConnection()->newTable($installer->getTable($emarsys_placeholders_mapping))->addColumn(
-            'id',
-            Table::TYPE_INTEGER,
-            null,
-            ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
-            'ID'
-        )->addColumn(
-            'event_mapping_id',
-            Table::TYPE_INTEGER,
-            null,
-            ['unsigned' => true, 'nullable' => false],
-            'Event Mapping Id'
-        )->addColumn(
-            'magento_placeholder_name',
-            Table::TYPE_TEXT,
-            null,
-            ['nullable' => false],
-            'Magento Placeholder Name'
-        )->addColumn(
-            'emarsys_placeholder_name',
-            Table::TYPE_TEXT,
-            null,
-            ['nullable' => false],
-            'Emarsys Placeholder Name'
-        )->addColumn(
-            'store_id',
-            Table::TYPE_INTEGER,
-            null,
-            ['unsigned' => true, 'nullable' => false],
-            'Store Id'
-        );
+        $table = $installer->getConnection()
+            ->newTable($installer->getTable($emarsys_placeholders_mapping))
+            ->addColumn(
+                'id',
+                Table::TYPE_INTEGER,
+                null,
+                [
+                    'identity' => true,
+                    'unsigned' => true,
+                    'nullable' => false,
+                    'primary' => true,
+                    'auto_increment' => true,
+                ],
+                'ID'
+            )->addColumn(
+                'event_mapping_id',
+                Table::TYPE_INTEGER,
+                null,
+                ['unsigned' => true, 'nullable' => false],
+                'Event Mapping Id'
+            )->addColumn(
+                'magento_placeholder_name',
+                Table::TYPE_TEXT,
+                null,
+                ['nullable' => false],
+                'Magento Placeholder Name'
+            )->addColumn(
+                'emarsys_placeholder_name',
+                Table::TYPE_TEXT,
+                null,
+                ['nullable' => false],
+                'Emarsys Placeholder Name'
+            )->addColumn(
+                'store_id',
+                Table::TYPE_INTEGER,
+                null,
+                ['unsigned' => true, 'nullable' => false],
+                'Store Id'
+            );
         $installer->getConnection()->createTable($table);
 
         //Create table 'emarsys_log_details'

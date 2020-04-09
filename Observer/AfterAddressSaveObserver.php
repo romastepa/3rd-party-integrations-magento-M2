@@ -20,10 +20,6 @@ use Emarsys\Emarsys\{
     Model\ResourceModel\Customer
 };
 
-/**
- * Class AfterAddressSaveObserver
- * @package Emarsys\Emarsys\Observer
- */
 class AfterAddressSaveObserver implements ObserverInterface
 {
     /**

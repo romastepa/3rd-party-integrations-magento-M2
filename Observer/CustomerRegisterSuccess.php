@@ -14,10 +14,6 @@ use Magento\{
     Framework\Exception\NoSuchEntityException
 };
 
-/**
- * Class CustomerRegisterSuccess
- * @package Emarsys\Emarsys\Observer
- */
 class CustomerRegisterSuccess implements ObserverInterface
 {
     /**
@@ -27,6 +23,7 @@ class CustomerRegisterSuccess implements ObserverInterface
 
     /**
      * CustomerRegisterSuccess constructor.
+     *
      * @param Session $customerSession
      */
     public function __construct(

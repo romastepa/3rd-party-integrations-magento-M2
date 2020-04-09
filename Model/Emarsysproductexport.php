@@ -23,10 +23,6 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 
-/**
- * Class Emarsysproductexport
- * @package Emarsys\Emarsys\Model
- */
 class Emarsysproductexport extends AbstractModel
 {
     CONST EMARSYS_DELIMITER = '{EMARSYS}';
@@ -184,7 +180,7 @@ class Emarsysproductexport extends AbstractModel
                 $joinCondition,
                 [
                     'is_salable' => 'stock_status',
-                    'qty'
+                    'qty',
                 ]
             );
 
@@ -262,7 +258,7 @@ class Emarsysproductexport extends AbstractModel
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    protected function _prepareData($fh)
+    public function _prepareData($fh)
     {
         $currentPageNumber = 1;
 

@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Magento\Framework\DataObject;
@@ -15,10 +16,6 @@ use Emarsys\Emarsys\Model\WebDav\Subscriber as WebDavSubscriber;
 use Emarsys\Emarsys\Model\WebDav\Contact as WebDavContact;
 use Magento\Store\Model\ScopeInterface;
 
-/**
- * Class WebDav
- * @package Emarsys\Emarsys\Model\WebDav
- */
 class WebDav extends DataObject
 {
     /**
@@ -53,6 +50,7 @@ class WebDav extends DataObject
 
     /**
      * WebDav constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param Logs $logsHelper
      * @param DateTime $date
@@ -95,14 +93,18 @@ class WebDav extends DataObject
             $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsite($websiteId);
         }
 
-        $fromDate = (isset($data['fromDate']) && !empty($data['fromDate'])) ? $data['fromDate'] : '';
-        $toDate = (isset($data['toDate']) && !empty($data['toDate'])) ? $data['toDate'] : $this->date->date('Y-m-d') . ' 23:59:59';
+        $fromDate = (isset($data['fromDate']) && !empty($data['fromDate']))
+            ? $data['fromDate']
+            : '';
+        $toDate = (isset($data['toDate']) && !empty($data['toDate']))
+            ? $data['toDate']
+            : $this->date->date('Y-m-d') . ' 23:59:59';
 
         $data = [
             'website' => $websiteId,
             'storeId' => $storeId,
             'fromDate' => $fromDate,
-            'toDate' => $toDate
+            'toDate' => $toDate,
         ];
 
         $errorStatus = true;

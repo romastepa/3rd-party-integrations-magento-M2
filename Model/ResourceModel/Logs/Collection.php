@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel\Logs;
 
-/**
- * Class Collection
- * @package Emarsys\Emarsys\Model\ResourceModel\Logs
- */
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
     /**
@@ -20,6 +16,9 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
      */
     protected function _construct()
     {
-        $this->_init('Emarsys\Emarsys\Model\Logs', 'Emarsys\Emarsys\Model\ResourceModel\Logs');
+        $this->_init(
+            \Emarsys\Emarsys\Model\Logs::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Logs::class
+        );
     }
 }

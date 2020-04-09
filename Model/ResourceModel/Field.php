@@ -14,10 +14,6 @@ use Magento\{
     Framework\Model\ResourceModel\Db\AbstractDb
 };
 
-/**
- * Class Field
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Field extends AbstractDb
 {
     /**
@@ -78,6 +74,7 @@ class Field extends AbstractDb
 
     /**
      * truncate the mapping table
+     *
      * @param $storeId
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -103,7 +100,12 @@ class Field extends AbstractDb
         if (count($fieldOptions) > 0) {
             foreach ($fieldOptions as $fieldId => $arrOptions) {
                 foreach ($arrOptions as $option) {
-                    $data = ['field_id' => $fieldId, 'option_id' => $option['id'], 'option_name' => $option['choice'], 'store_id' => $storeId];
+                    $data = [
+                        'field_id' => $fieldId,
+                        'option_id' => $option['id'],
+                        'option_name' => $option['choice'],
+                        'store_id' => $storeId,
+                    ];
                     $data = $this->_prepareDataForTable(
                         new \Magento\Framework\DataObject($data),
                         $this->getTable("emarsys_contact_field_option")
@@ -185,7 +187,7 @@ class Field extends AbstractDb
             ->where('eom.emarsys_field_id = ?', $emarsysFieldId)
             ->where('eom.store_id = ?', $storeId);
 
-        return  $this->getConnection()->fetchOne($select);
+        return $this->getConnection()->fetchOne($select);
     }
 
     /**

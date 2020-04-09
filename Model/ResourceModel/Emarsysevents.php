@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Class Emarsysevents
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Emarsysevents extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
@@ -27,7 +23,8 @@ class Emarsysevents extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     protected $entityType;
 
     /**
-     * 
+     * Emarsysevents constructor.
+     *
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
@@ -41,7 +38,6 @@ class Emarsysevents extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
         $connectionName = null
     ) {
-    
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;

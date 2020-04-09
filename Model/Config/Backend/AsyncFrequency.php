@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\Config\Backend;
 
 use Exception;
@@ -16,11 +17,6 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
 
-/**
- * Class AsyncFrequency
- *
- * @package Emarsys\Emarsys\Model\Config
- */
 class AsyncFrequency extends Value
 {
     /**
@@ -68,7 +64,7 @@ class AsyncFrequency extends Value
     public function afterSave()
     {
         $minutes = $this->getValue();
-        $cronExprString = '*/' . intval($minutes) .  ' * * * *';
+        $cronExprString = '*/' . intval($minutes) . ' * * * *';
 
         try {
             $this->_configValueFactory->create()->load(self::CRON_STRING_PATH, 'path')

@@ -18,10 +18,12 @@ use Zend_Json;
 /**
  * Class Async
  *
- * @package Emarsys\Emarsys\Model
- *
  * getWebsiteId
- *
+ * getEndpoint
+ * getEmail
+ * getCustomerId
+ * getSubscriberId
+ * getRequestBody
  */
 class Async extends AbstractModel
 {
@@ -58,7 +60,7 @@ class Async extends AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Async');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Async::class);
     }
 
     /**
@@ -105,6 +107,7 @@ class Async extends AbstractModel
     {
         return $this->getData('website_id');
     }
+
     /**
      * @param int $websiteId
      * @return Async

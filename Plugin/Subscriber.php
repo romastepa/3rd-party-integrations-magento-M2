@@ -15,11 +15,6 @@ use Magento\{
 };
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Subscriber
- *
- * @package Emarsys\Emarsys\Plugin
- */
 class Subscriber
 {
     /**
@@ -105,7 +100,10 @@ class Subscriber
         $isSubscribeOwnEmail = $this->customerSession->isLoggedIn()
             && $this->customerSession->getCustomerDataObject()->getEmail() == $email;
 
-        if (!$subscriber->getId() || $subscriber->getStatus() == Sub::STATUS_UNSUBSCRIBED || $subscriber->getStatus() == Sub::STATUS_NOT_ACTIVE) {
+        if (!$subscriber->getId()
+            || $subscriber->getStatus() == Sub::STATUS_UNSUBSCRIBED
+            || $subscriber->getStatus() == Sub::STATUS_NOT_ACTIVE
+        ) {
             if ($isConfirmNeed) {
                 $subscriber->setStatus(Sub::STATUS_NOT_ACTIVE);
             } else {

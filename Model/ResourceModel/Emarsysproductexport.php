@@ -4,16 +4,14 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Class Emarsysproductexport
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
      * Define main table
+     *
      * @return void
      */
     protected function _construct()
@@ -41,7 +39,7 @@ class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\Abs
             $lines[] = sprintf('(%s)', implode(', ', $line));
         }
 
-        $sql =  sprintf(
+        $sql = sprintf(
             'INSERT INTO %s (%s) VALUES%s ON DUPLICATE KEY UPDATE %s',
             $this->getMainTable(),
             'entity_id, params',
@@ -49,7 +47,7 @@ class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\Abs
             '`params` = CONCAT(`params` , \'' . \Emarsys\Emarsys\Model\Emarsysproductexport::EMARSYS_DELIMITER . '\' , VALUES(`params`))'
         );
 
-        return $this->getConnection()->query($sql , $bind);
+        return $this->getConnection()->query($sql, $bind);
     }
 
     /**

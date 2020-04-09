@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model;
 
-/**
- * Class Emarsyseventmapping
- * @package Emarsys\Emarsys\Model
- */
 class Emarsyseventmapping extends \Magento\Framework\Model\AbstractModel
 {
     /**
@@ -19,6 +15,6 @@ class Emarsyseventmapping extends \Magento\Framework\Model\AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Emarsyseventmapping::class);
     }
 }

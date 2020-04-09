@@ -4,12 +4,9 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model;
 
-/**
- * Class CreditmemoExportStatus
- * @package Emarsys\Emarsys\Model
- */
 class CreditmemoExportStatus extends \Magento\Framework\Model\AbstractModel
 {
     /**
@@ -18,6 +15,6 @@ class CreditmemoExportStatus extends \Magento\Framework\Model\AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\CreditmemoExportStatus');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\CreditmemoExportStatus::class);
     }
 }

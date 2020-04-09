@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Observer;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -14,10 +15,6 @@ use Magento\{
     Customer\Model\CustomerFactory
 };
 
-/**
- * Class CustomerSaveBefore
- * @package Emarsys\Emarsys\Observer
- */
 class CustomerSaveBefore implements ObserverInterface
 {
     /**
@@ -37,6 +34,7 @@ class CustomerSaveBefore implements ObserverInterface
 
     /**
      * CustomerSaveBefore constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param StoreManagerInterface $storeManager
      * @param CustomerFactory $customerFactory

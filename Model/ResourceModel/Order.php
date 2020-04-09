@@ -20,10 +20,6 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 
-/**
- * Class Order
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Order extends AbstractDb
 {
     /**
@@ -150,7 +146,7 @@ class Order extends AbstractDb
             if (empty($result)) {
                 $this->getConnection()->insert($this->getMainTable(), [
                     'magento_column_name' => $value['COLUMN_NAME'],
-                    'store_id' => $storeId
+                    'store_id' => $storeId,
                 ]);
             }
         }
@@ -180,7 +176,7 @@ class Order extends AbstractDb
             $data['emarsys_order_field'] = $key;
             $data['store_id'] = $storeId;
 
-            $this->getConnection()->insertOnDuplicate($this->getMainTable(), $data ,['emarsys_order_field']);
+            $this->getConnection()->insertOnDuplicate($this->getMainTable(), $data, ['emarsys_order_field']);
         }
     }
 
@@ -194,7 +190,7 @@ class Order extends AbstractDb
         foreach ($data as $key => $value) {
             $select = $this->getConnection()
                 ->select()
-                ->from( $this->getMainTable(), 'magento_column_name')
+                ->from($this->getMainTable(), 'magento_column_name')
                 ->where("magento_column_name = ?", $key);
 
             $result = $this->getConnection()->fetchOne($select);
@@ -204,7 +200,7 @@ class Order extends AbstractDb
                 $this->getConnection()->insert($this->getMainTable(), [
                     'magento_column_name' => $key,
                     'emarsys_order_field' => $value,
-                    'store_id' => $storeId
+                    'store_id' => $storeId,
                 ]);
             } else {
                 //else update the attribute value
@@ -289,8 +285,8 @@ class Order extends AbstractDb
         $select = $this->getConnection()
             ->select()
             ->from($this->getMainTable())
-            ->where('emarsys_order_field = (?)',$emarsysOrderField)
-            ->where('store_id = (?)',$storeId);
+            ->where('emarsys_order_field = (?)', $emarsysOrderField)
+            ->where('store_id = (?)', $storeId);
 
         $result = $this->getConnection()->fetchAll($select);
         if (!empty($result)) {

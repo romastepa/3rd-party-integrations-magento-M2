@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\Config\Source;
 
-/**
- * Class OptInStrategy
- * @package Emarsys\Emarsys\Model\Config\Source
- */
 class OptInStrategy implements \Magento\Framework\Option\ArrayInterface
 {
     /**

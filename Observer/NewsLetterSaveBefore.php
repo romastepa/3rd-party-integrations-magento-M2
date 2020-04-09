@@ -11,14 +11,11 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Newsletter\Model\SubscriberFactory;
 
-/**
- * Class NewsLetterSaveBefore
- * @package Emarsys\Emarsys\Observer
- */
 class NewsLetterSaveBefore implements ObserverInterface
 {
     /**
      * NewsLetterSaveBefore constructor.
+     *
      * @param StoreManagerInterface $storeManager
      * @param SubscriberFactory $subscriberModel
      */

@@ -14,10 +14,6 @@ use Magento\{
     Store\Api\StoreRepositoryInterface
 };
 
-/**
- * Class Event
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
@@ -115,7 +111,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         return $this->getConnection()->delete(
             $this->getTable('emarsys_events'),
             $this->getConnection()->quoteInto("store_id = ?", $storeId)
-            .  $this->getConnection()->quoteInto(" AND event_id = ?", $eventId)
+            . $this->getConnection()->quoteInto(" AND event_id = ?", $eventId)
         );
     }
 
@@ -129,7 +125,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         return $this->getConnection()->delete(
             $this->getTable('emarsys_event_mapping'),
             $this->getConnection()->quoteInto("store_id = ?", $storeId)
-            .  $this->getConnection()->quoteInto(" AND emarsys_event_id = ?", $emarsysEventId)
+            . $this->getConnection()->quoteInto(" AND emarsys_event_id = ?", $emarsysEventId)
         );
     }
 }

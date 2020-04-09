@@ -4,12 +4,9 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\Config\Source;
 
-/**
- * Class RecommendedProductOnHomePage
- * @package Emarsys\Emarsys\Model\Config\Source
- */
 class RecommendedProductOnHomePage
 {
     /**

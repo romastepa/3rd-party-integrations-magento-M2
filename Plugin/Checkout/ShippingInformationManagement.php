@@ -13,10 +13,6 @@ use Magento\{
     Checkout\Api\Data\ShippingInformationInterface
 };
 
-/**
- * Class ShippingInformationManagement
- * @package Emarsys\Emarsys\Model\Checkout
- */
 class ShippingInformationManagement
 {
     /**

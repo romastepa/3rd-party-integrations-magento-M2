@@ -4,16 +4,13 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\Config\Source;
 
 use Magento\Framework\Option\ArrayInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
-/**
- * Class MaxRecordsPerExport
- * @package Emarsys\Emarsys\Model\Config\Source
- */
 class MaxRecordsPerExport implements ArrayInterface
 {
     /**
@@ -23,6 +20,7 @@ class MaxRecordsPerExport implements ArrayInterface
 
     /**
      * MaxRecordsPerExport constructor.
+     *
      * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
@@ -44,7 +42,7 @@ class MaxRecordsPerExport implements ArrayInterface
         foreach ($list as $item) {
             $result[] = [
                 'label' => $item,
-                'value' => $item
+                'value' => $item,
             ];
         }
 

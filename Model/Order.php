@@ -34,10 +34,6 @@ use Magento\{
     Store\Model\StoreManagerInterface
 };
 
-/**
- * Class Order
- * @package Emarsys\Emarsys\Model
- */
 class Order extends AbstractModel
 {
     CONST BATCH_SIZE = 500;
@@ -144,6 +140,7 @@ class Order extends AbstractModel
 
     /**
      * Order constructor.
+     *
      * @param Context $context
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
@@ -217,7 +214,7 @@ class Order extends AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Order');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Order::class);
     }
 
     /**
@@ -349,7 +346,10 @@ class Order extends AbstractModel
                     $orderCollectionClone = clone $orderCollection;
                 }
 
-                if ($creditMemoCollection && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
+                if ($creditMemoCollection
+                    && (is_object($creditMemoCollection))
+                    && ($creditMemoCollection->getSize())
+                ) {
                     $creditMemoCollectionClone = clone $creditMemoCollection;
                 }
 
@@ -380,7 +380,9 @@ class Order extends AbstractModel
                         $logsArray['message_type'] = 'Notice';
                         $this->logsHelper->manualLogs($logsArray);
                     }
-                    if (!empty($creditMemoCollection) && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
+                    if (!empty($creditMemoCollection) && (is_object($creditMemoCollection))
+                        && ($creditMemoCollection->getSize())
+                    ) {
                         try {
                             $cmSyncStatus = $this->generateBatchFilesAndSyncToEmarsys(
                                 \Magento\Sales\Model\Order::ACTION_FLAG_CREDITMEMO,
@@ -415,7 +417,10 @@ class Order extends AbstractModel
 
                         //sync data to emarsys using API
                         $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray);
-                        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
+                        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(
+                            \Magento\Sales\Model\Order::ENTITY,
+                            $filePath
+                        );
                         if ($syncResponse['status']) {
                             $errorCount = false;
                             $logsArray['emarsys_info'] = __('File uploaded to Emarsys successfully.');
@@ -440,28 +445,34 @@ class Order extends AbstractModel
             } else {
                 //smart insight api test connection is failed
                 $logsArray['status'] = 'error';
-                $logsArray['messages'] = 'Smart Insight API test connection is failed. Please check credentials. ' . \Zend_Json::encode($response);
+                $logsArray['messages'] = 'Smart Insight API test connection is failed. Please check credentials. '
+                    . \Zend_Json::encode($response);
                 $this->logsHelper->manualLogs($logsArray);
                 if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                    $this->messageManager->addErrorMessage('Smart Insight API Test connection is failed. Please check credentials.');
+                    $this->messageManager->addErrorMessage(__(
+                        'Smart Insight API Test connection is failed. Please check credentials.'
+                    ));
                 }
             }
         } else {
             //invalid api credentials
             $logsArray['emarsys_info'] = __('Invalid API credentials. Either Merchant Id or Token is not present.');
-            $logsArray['description'] = __('Invalid API credentials. Either Merchant Id or Token is not present. Please check your settings and try again');
+            $logsArray['description'] = __('Invalid API credentials. Either Merchant Id or Token is not present.'
+                . ' Please check your settings and try again');
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->manualLogs($logsArray);
             if ($mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                $this->messageManager->addErrorMessage(
-                    __("Invalid API credentials. Either Merchant Id or Token is not present. Please check your settings and try again !!!")
-                );
+                $tryAgain = 'Invalid API credentials. Either Merchant Id or Token is not present.'
+                    . ' Please check your settings and try again!';
+                $this->messageManager->addErrorMessage($tryAgain);
             }
         }
 
         try {
             //remove file after sync
-            $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
+            $this->emarsysHelper->removeFilesInFolder(
+                $this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY)
+            );
         } catch (\Exception $e) {
             $logsArray['emarsys_info'] = __('Failed to remove exported files.');
             $logsArray['description'] = __($e->getMessage());
@@ -489,6 +500,7 @@ class Order extends AbstractModel
      * @param $exportFromDate
      * @param $exportTillDate
      * @param $logsArray
+     * @return bool
      * @throws \Exception
      */
     public function exportOrdersDataUsingFtp($storeId, $mode, $exportFromDate, $exportTillDate, $logsArray)
@@ -533,7 +545,13 @@ class Order extends AbstractModel
                         $orderCollection->clear();
                         $orderCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
                         $orderCollectionClone = clone $orderCollection;
-                        $this->generateOrderCsv($storeId, $filePath, $orderCollection, false, true);
+                        $this->generateOrderCsv(
+                            $storeId,
+                            $filePath,
+                            $orderCollection,
+                            false,
+                            true
+                        );
 
                         $logsArray['emarsys_info'] = __('Order\'s iteration %1 of %2', $i, $pages);
                         $logsArray['description'] = __('Order\'s iteration %1 of %2', $i, $pages);
@@ -559,7 +577,9 @@ class Order extends AbstractModel
                     $exportTillDate
                 );
 
-                if ($creditMemoCollection && (is_object($creditMemoCollection)) && ($creditMemoCollection->getSize())) {
+                if ($creditMemoCollection && (is_object($creditMemoCollection))
+                    && ($creditMemoCollection->getSize())
+                ) {
                     $moveFile = true;
                     $creditMemoCollection->setPageSize(self::BATCH_SIZE);
                     $pages = $creditMemoCollection->getLastPageNumber();
@@ -568,7 +588,13 @@ class Order extends AbstractModel
                         $creditMemoCollection->clear();
                         $creditMemoCollection->setPageSize(self::BATCH_SIZE)->setCurPage($i);
                         $creditMemoCollectionClone = clone $creditMemoCollection;
-                        $this->generateOrderCsv($storeId, $filePath, false, $creditMemoCollection, true);
+                        $this->generateOrderCsv(
+                            $storeId,
+                            $filePath,
+                            false,
+                            $creditMemoCollection,
+                            true
+                        );
 
                         $logsArray['emarsys_info'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
                         $logsArray['description'] = __('CreditMemo\'s iteration %1 of %2', $i, $pages);
@@ -628,7 +654,9 @@ class Order extends AbstractModel
                     $this->unsetFileHandle();
 
                     //remove file after sync
-                    $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
+                    $this->emarsysHelper->removeFilesInFolder(
+                        $this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY)
+                    );
                 } else {
                     //no sales data found for the store
                     $logsArray['emarsys_info'] = __('No Sales Data found for the store . ' . $store->getCode());
@@ -729,7 +757,9 @@ class Order extends AbstractModel
             $this->unsetFileHandle();
 
             //remove file after sync
-            $this->emarsysHelper->removeFilesInFolder($this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY));
+            $this->emarsysHelper->removeFilesInFolder(
+                $this->emarsysHelper->getEmarsysMediaDirectoryPath(\Magento\Sales\Model\Order::ENTITY)
+            );
 
             //clear the current page collection
             $entityCollection->clear();
@@ -754,7 +784,7 @@ class Order extends AbstractModel
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
-    public function sendRequestToEmarsys($filePath, $csvFileName, $logsArray, $entityName = NULL)
+    public function sendRequestToEmarsys($filePath, $csvFileName, $logsArray, $entityName = null)
     {
         $syncResult = [];
 
@@ -771,7 +801,11 @@ class Order extends AbstractModel
             } else {
                 $logsArray['emarsys_info'] = __('File uploaded to Emarsys');
             }
-            $logsArray['description'] = __('File: "%1" uploaded to Emarsys. Emarasys response: "%2"', $csvFileName, $apiExportResult['resultBody']);
+            $logsArray['description'] = __(
+                'File: "%1" uploaded to Emarsys. Emarasys response: "%2"',
+                $csvFileName,
+                $apiExportResult['resultBody']
+            );
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->manualLogs($logsArray);
@@ -779,7 +813,11 @@ class Order extends AbstractModel
         } else {
             //failed to upload file on emarsys
             $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
-            $logsArray['description'] = __('Failed to upload file: "%1" on Emarsys. Emarasys response: "%2"', $csvFileName, $apiExportResult['resultBody']);
+            $logsArray['description'] = __(
+                'Failed to upload file: "%1" on Emarsys. Emarasys response: "%2"',
+                $csvFileName,
+                $apiExportResult['resultBody']
+            );
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->manualLogs($logsArray);
@@ -808,7 +846,9 @@ class Order extends AbstractModel
     public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection, $sameFile = false)
     {
         $store = $this->storeManager->getStore($storeId);
-        $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields($this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId));
+        $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields(
+            $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId)
+        );
 
         $guestOrderExportStatus = $store->getConfig(EmarsysHelper::XPATH_SMARTINSIGHT_EXPORTGUEST_CHECKOUTORDERS);
         $taxIncluded = $this->emarsysHelper->isIncludeTax($storeId);
@@ -897,8 +937,10 @@ class Order extends AbstractModel
                     foreach ($emarsysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         $magentoColumnName = trim($field['magento_column_name']);
-                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, ["'", '"']) && !empty($magentoColumnName)) {
-                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $order->getData($magentoColumnName));
+                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder,
+                                ["'", '"']) && !empty($magentoColumnName)) {
+                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder,
+                                $order->getData($magentoColumnName));
                         }
                     }
                     if (!($order->getCustomerIsGuest() == 1 && $guestOrderExportStatus == 0)) {
@@ -980,8 +1022,12 @@ class Order extends AbstractModel
                     foreach ($emarsysFields as $field) {
                         $emarsysOrderFieldValueOrder = trim($field['emarsys_order_field']);
                         $magentoColumnName = trim($field['magento_column_name']);
-                        if (!empty($emarsysOrderFieldValueOrder) && !in_array($emarsysOrderFieldValueOrder, ["'", '"']) && !empty($magentoColumnName)) {
-                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder, $creditMemo->getData($magentoColumnName));
+                        if (!empty($emarsysOrderFieldValueOrder)
+                            && !in_array($emarsysOrderFieldValueOrder, ["'", '"'])
+                            && !empty($magentoColumnName)
+                        ) {
+                            $values[] = $this->getValueForType($emarsysOrderFieldValueOrder,
+                                $creditMemo->getData($magentoColumnName));
                         }
                     }
                     if (!($creditMemoOrder->getCustomerIsGuest() == 1 && $guestOrderExportStatus == 0)) {

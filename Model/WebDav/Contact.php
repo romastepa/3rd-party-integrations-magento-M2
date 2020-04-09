@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Magento\{
@@ -20,10 +21,6 @@ use Emarsys\Emarsys\{
     Helper\Country as EmarsysCountryHelper
 };
 
-/**
- * Class Contact
- * @package Emarsys\Emarsys\Model\WebDav
- */
 class Contact extends \Magento\Framework\DataObject
 {
     /**
@@ -72,6 +69,7 @@ class Contact extends \Magento\Framework\DataObject
 
     /**
      * Contact constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      * @param CustomerFactory $customer
      * @param Context $context
@@ -168,10 +166,11 @@ class Contact extends \Magento\Framework\DataObject
                         $headerIndex = [];
                         $indexCount = 0;
                         foreach ($mappedAttributes as $att) {
-                            if ($att['emarsys_contact_field'] == NULL) {
+                            if ($att['emarsys_contact_field'] == null) {
                                 continue;
                             }
-                            $headers[$att['magento_custom_attribute_id']] = $this->customerResourceModel->getEmarsysFieldNameContact($att, $storeId);
+                            $headers[$att['magento_custom_attribute_id']] = $this->customerResourceModel
+                                ->getEmarsysFieldNameContact($att, $storeId);
                             $headerIndex[$indexCount] = $att['magento_custom_attribute_id'];
                             $indexCount++;
                         }
@@ -217,28 +216,40 @@ class Contact extends \Magento\Framework\DataObject
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerData->getData($attributeCode['attribute_code']);
                                 } elseif ($attributeCode['entity_type_id'] == 2) {
-                                    $isShippingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_shipping_') !== false) ? true : false;
-                                    $isBillingAttr = (strpos($attributeCode['attribute_code_custom'], 'default_billing_') !== false) ? true : false;
+                                    $isShippingAttr = (strpos($attributeCode['attribute_code_custom'],
+                                            'default_shipping_') !== false) ? true : false;
+                                    $isBillingAttr = (strpos($attributeCode['attribute_code_custom'],
+                                            'default_billing_') !== false) ? true : false;
                                     $index = array_search($key, $headerIndex);
                                     $attrVal = '';
 
                                     if ($isShippingAttr) {
-                                        if (isset($customerData['default_shipping']) && $customerData['default_shipping'] != NULL && $customerData['default_shipping'] != 0) {
+                                        if (isset($customerData['default_shipping'])
+                                            && $customerData['default_shipping'] != null
+                                            && $customerData['default_shipping'] != 0
+                                        ) {
                                             if ($primaryShipping) {
                                                 $attrVal = $primaryShipping->getData($attributeCode['attribute_code']);
                                                 if ($attributeCode['attribute_code'] == 'country_id') {
-                                                    $attrVal = (isset($mappedCountries[$attrVal]) ? $mappedCountries[$attrVal] : '');
+                                                    $attrVal = isset($mappedCountries[$attrVal])
+                                                        ? $mappedCountries[$attrVal]
+                                                        : '';
                                                 } elseif ($attributeCode['attribute_code'] == 'street') {
                                                     $attrVal = str_replace("\n", ',', $attrVal);
                                                 }
                                             }
                                         }
                                     } elseif ($isBillingAttr) {
-                                        if (isset($customerData['default_billing']) && $customerData['default_billing'] != NULL && $customerData['default_billing'] != NULL) {
+                                        if (isset($customerData['default_billing'])
+                                            && $customerData['default_billing'] != null
+                                            && $customerData['default_billing'] != null
+                                        ) {
                                             if ($primaryBilling) {
                                                 $attrVal = $primaryBilling->getData($attributeCode['attribute_code']);
                                                 if ($attributeCode['attribute_code'] == 'country_id') {
-                                                    $attrVal = (isset($mappedCountries[$attrVal]) ? $mappedCountries[$attrVal] : '');
+                                                    $attrVal = isset($mappedCountries[$attrVal])
+                                                        ? $mappedCountries[$attrVal]
+                                                        : '';
                                                 } elseif ($attributeCode['attribute_code'] == 'street') {
                                                     $attrVal = str_replace("\n", ',', $attrVal);
                                                 }
@@ -268,27 +279,39 @@ class Contact extends \Magento\Framework\DataObject
                         if ($exportStatus['status']) {
                             //customer file uploaded to server successfully
                             $errorCount = false;
-                            $logsArray['emarsys_info'] = __('Customer file uploaded to server successfully for store %1', $store->getName());
-                            $logsArray['description'] = 'Emarsys response: ' . $exportStatus['response_body'] . ' File Path: ' . $webDavUrl . $outputFile;
+                            $logsArray['emarsys_info'] = __(
+                                'Customer file uploaded to server successfully for store %1',
+                                $store->getName()
+                            );
+                            $logsArray['description'] = 'Emarsys response: ' . $exportStatus['response_body']
+                                . ' File Path: ' . $webDavUrl . $outputFile;
                             $logsArray['message_type'] = 'Success';
                         } else {
                             //Failed to upload Customer file on server
-                            $logsArray['emarsys_info'] = __('Failed to upload Customer file on server  for store %1', $store->getName());
+                            $logsArray['emarsys_info'] = __(
+                                'Failed to upload Customer file on server  for store %1',
+                                $store->getName()
+                            );
                             $logsArray['description'] = $exportStatus['response_body'];
                             $logsArray['message_type'] = 'Error';
                         }
                         $this->logsHelper->manualLogs($logsArray);
                     } else {
                         //Attributes are not mapped for given store
-                        $logsArray['emarsys_info'] = __('Attributes are not mapped for the store %1', $store->getName());
-                        $logsArray['description'] = __('Failed to upload file on server. Attributes are not mapped for the store %1', $store->getName());
+                        $logsArray['emarsys_info'] = __('Attributes are not mapped for the store %1',
+                            $store->getName());
+                        $logsArray['description'] = __(
+                            'Failed to upload file on server. Attributes are not mapped for the store %1',
+                            $store->getName()
+                        );
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->manualLogs($logsArray);
                     }
                 } else {
                     //failed to login on webdav server
                     $logsArray['emarsys_info'] = 'Failed to Login with WebDav Server.';
-                    $logsArray['description'] = 'Failed to Login with WebDav Server. Please check your settings and try again. ' . $checkWebDavConnection['response_body'];
+                    $logsArray['description'] = 'Failed to Login with WebDav Server.'
+                        . ' Please check your settings and try again. ' . $checkWebDavConnection['response_body'];
                     $logsArray['message_type'] = 'Error';
                     $this->logsHelper->manualLogs($logsArray);
                 }

@@ -11,12 +11,6 @@ use Magento\Store\Model\StoreManagerInterface as StoreManager;
 use Zend_Json;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Api
- * API class for Emarsys API wrappers
- *
- * @package Emarsys\Emarsys\Model\Api
- */
 class Api extends \Magento\Framework\DataObject
 {
 

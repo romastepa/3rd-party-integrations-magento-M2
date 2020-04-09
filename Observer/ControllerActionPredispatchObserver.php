@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Observer;
 
 use Magento\{
@@ -12,10 +13,6 @@ use Magento\{
     Customer\Model\Session
 };
 
-/**
- * Class ControllerActionPredispatchObserver
- * @package Emarsys\Emarsys\Observer
- */
 class ControllerActionPredispatchObserver implements ObserverInterface
 {
     /**
@@ -25,6 +22,7 @@ class ControllerActionPredispatchObserver implements ObserverInterface
 
     /**
      * ControllerActionPredispatchObserver constructor.
+     *
      * @param Session $customerSession
      */
     public function __construct(

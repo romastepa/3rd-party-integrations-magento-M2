@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-/**
- * Class Emarsyseventmapping
- * @package Emarsys\Emarsys\Model\ResourceModel
- */
 class Emarsyseventmapping extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
@@ -27,7 +23,7 @@ class Emarsyseventmapping extends \Magento\Framework\Model\ResourceModel\Db\Abst
     protected $entityType;
 
     /**
-     * 
+     *
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
      * @param \Magento\Eav\Model\Entity\Type $entityType
      * @param \Magento\Eav\Model\Entity\Attribute $attribute
@@ -41,7 +37,6 @@ class Emarsyseventmapping extends \Magento\Framework\Model\ResourceModel\Db\Abst
         \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
         $connectionName = null
     ) {
-    
         $this->entityType = $entityType;
         $this->attribute = $attribute;
         $this->storeRepository = $storeRepository;
@@ -60,6 +55,7 @@ class Emarsyseventmapping extends \Magento\Framework\Model\ResourceModel\Db\Abst
 
     /**
      * Truncate the mapping table
+     *
      * @param $storeId
      * @throws \Magento\Framework\Exception\LocalizedException
      */

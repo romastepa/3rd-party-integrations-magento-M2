@@ -21,10 +21,6 @@ use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper
 };
 
-/**
- * Class RealTimeCustomer
- * @package Emarsys\Emarsys\Observer
- */
 class RealTimeCustomer implements ObserverInterface
 {
     /**

@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model;
 
-/**
- * Class OrderQueue
- * @package Emarsys\Emarsys\Model
- */
 class OrderQueue extends \Magento\Framework\Model\AbstractModel
 {
     /**
@@ -19,6 +15,6 @@ class OrderQueue extends \Magento\Framework\Model\AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\OrderQueue');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\OrderQueue::class);
     }
 }

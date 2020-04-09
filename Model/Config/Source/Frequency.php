@@ -7,10 +7,6 @@
 
 namespace Emarsys\Emarsys\Model\Config\Source;
 
-/**
- * Class Frequency
- * @package Emarsys\Emarsys\Model\Config\Source
- */
 class Frequency implements \Magento\Framework\Option\ArrayInterface
 {
     /**
@@ -20,7 +16,7 @@ class Frequency implements \Magento\Framework\Option\ArrayInterface
     {
         return [
             ['value' => 'Hourly', 'label' => 'Hourly'],
-            ['value' => 'Daily', 'label' => 'Daily']
+            ['value' => 'Daily', 'label' => 'Daily'],
         ];
     }
 }

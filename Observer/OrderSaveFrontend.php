@@ -4,6 +4,7 @@
  * @package    Emarsys_Emarsys
  * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
@@ -14,10 +15,6 @@ use Magento\Sales\Model\Order;
 use Magento\Customer\Model\Session as CustomerSession;
 use Emarsys\Emarsys\Model\Logs;
 
-/**
- * Class OrderSaveFrontend
- * @package Emarsys\Emarsys\Observer
- */
 class OrderSaveFrontend implements ObserverInterface
 {
     /**
@@ -105,11 +102,11 @@ class OrderSaveFrontend implements ObserverInterface
                 $orderQueue = $orderQueueData->getFirstItem();
             }
 
-            $orderQueue->setEntityId($orderId);
-            $orderQueue->setEntityTypeId(1);
-            $orderQueue->setWebsiteId($order->getStore()->getWebsiteId());
-            $orderQueue->setStoreId($order->getStoreId());
-            $orderQueue->save();
+            $orderQueue->setEntityId($orderId)
+                ->setEntityTypeId(1)
+                ->setWebsiteId($order->getStore()->getWebsiteId())
+                ->setStoreId($order->getStoreId())
+                ->save();
         }
     }
 
