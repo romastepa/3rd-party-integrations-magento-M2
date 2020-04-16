@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Api;
@@ -197,8 +197,8 @@ class Contact
 
     /**
      * @param Customer $customer
-     * @param $websiteId
-     * @param $storeId
+     * @param  $websiteId
+     * @param  $storeId
      * @param int $cron
      * @param null|Address $customerAddress
      * @return bool
@@ -369,7 +369,7 @@ class Contact
     /**
      * Fetch Customer's Mapped Address attributes values
      *
-     * @param $customer
+     * @param  $customer
      * @param int $storeId
      * @param null|Address $customerAddress
      * @return array
@@ -415,8 +415,10 @@ class Contact
                     $isShippingAttr = (strpos($attCode['attribute_code_custom'], 'default_shipping_') !== false)
                         ? true
                         : false;
-                    $isBillingAttr = (strpos($attCode['attribute_code_custom'],
-                            'default_billing_') !== false) ? true : false;
+                    $isBillingAttr = (strpos(
+                            $attCode['attribute_code_custom'],
+                            'default_billing_'
+                        ) !== false) ? true : false;
                     $attrValue = '';
                     if ($isShippingAttr && $primaryShipping) {
                         $attrValue = $primaryShipping->getData($attCode['attribute_code']);
@@ -438,10 +440,10 @@ class Contact
     }
 
     /**
-     * @param $objCustomer
-     * @param $storeId
-     * @param $emailKey
-     * @param $customerIdKey
+     * @param  $objCustomer
+     * @param  $storeId
+     * @param  $emailKey
+     * @param  $customerIdKey
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Zend_Json_Exception
@@ -488,8 +490,8 @@ class Contact
     }
 
     /**
-     * @param $customerCollectionArray
-     * @param $keyId
+     * @param  $customerCollectionArray
+     * @param  $keyId
      * @return array
      */
     public function prepareCustomerPayload($customerCollectionArray, $keyId)
@@ -504,8 +506,8 @@ class Contact
     }
 
     /**
-     * @param $exportMode
-     * @param $data
+     * @param  $exportMode
+     * @param  $data
      * @param null $logId
      * @return bool
      * @throws \Exception
@@ -654,8 +656,12 @@ class Contact
             $logsArray['message_type'] = 'Error';
             $logsArray['description'] = __('No Customers for the store with store id %1.', $this->storeId);
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addErrorMessage(__('No Customers found for the store with store id %1.',
-                $this->storeId));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'No Customers found for the store with store id %1.',
+                    $this->storeId
+                )
+            );
             return false;
         }
 
@@ -733,9 +739,11 @@ class Contact
                 $logsArray['emarsys_info'] = __('Error while customer export.');
                 $logsArray['message_type'] = 'Error';
                 $logsArray['description'] = $res;
-                $this->messageManager->addErrorMessage(__(
-                    'Customers export have an error. Please check emarsys logs for more details!!'
-                ));
+                $this->messageManager->addErrorMessage(
+                    __(
+                        'Customers export have an error. Please check emarsys logs for more details!!'
+                    )
+                );
                 $this->logsHelper->manualLogs($logsArray);
                 $this->emarsysLogger->info($logsArray['description']);
                 return false;
@@ -746,8 +754,8 @@ class Contact
     }
 
     /**
-     * @param $exportMode
-     * @param $data
+     * @param  $exportMode
+     * @param  $data
      * @return bool|void
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -800,8 +808,8 @@ class Contact
         $logsArray['action'] = 'synced to emarsys';
 
         //check if emarsys enabled for the website
-        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId) &&
-            $website->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
+        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)
+            && $website->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
         ) {
             $errorStatus = $this->exportDataToApi($exportMode, $params, $logId);
         } else {
@@ -850,7 +858,7 @@ class Contact
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return mixed
      * @throws \Magento\Framework\Exception\LocalizedException
      */

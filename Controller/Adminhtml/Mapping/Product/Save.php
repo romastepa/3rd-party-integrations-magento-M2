@@ -1,14 +1,16 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\ProductFactory;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -17,6 +19,7 @@ use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Model\ResourceModel\Product;
+use Zend_Json;
 
 class Save extends Action
 {
@@ -26,7 +29,7 @@ class Save extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -184,7 +187,7 @@ class Save extends Action
             $logsArray['emarsys_info'] = 'Save Product Mapping';
             $logsArray['action'] = 'Save Product Mapping Successful';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Product Mapping Saved as ' . \Zend_Json::encode($savedValues);
+            $logsArray['description'] = 'Product Mapping Saved as ' . Zend_Json::encode($savedValues);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';
@@ -196,7 +199,7 @@ class Save extends Action
              */
             $this->resourceModelProduct->deleteUnmappedRows($gridSessionStoreId);
             $this->messageManager->addSuccessMessage(__('Product attributes Mapped successfully'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Saving Product Mapping',
                 $e->getMessage(),

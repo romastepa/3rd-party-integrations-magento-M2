@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Testconnection;
@@ -111,7 +111,7 @@ class Index extends Action
                 try {
                     //save information in respected configuration.
                     $this->config->saveConfig(
-                        'emarsys_settings/emarsys_setting/enable',
+                        'emartech/emarsys_setting/enable',
                         1,
                         $scopeType,
                         $scopeId
@@ -127,7 +127,7 @@ class Index extends Action
 
                     //save api_endpoint information in respected configuration.
                     $this->config->saveConfig(
-                        'emarsys_settings/emarsys_setting/emarsys_api_endpoint',
+                        'emartech/emarsys_setting/emarsys_api_endpoint',
                         $endpoint,
                         $scopeType,
                         $scopeId
@@ -144,7 +144,7 @@ class Index extends Action
                     if ($endpoint == 'custom') {
                         //save custom_url information in respected configuration.
                         $this->config->saveConfig(
-                            'emarsys_settings/emarsys_setting/emarsys_custom_url',
+                            'emartech/emarsys_setting/emarsys_custom_url',
                             $url,
                             $scopeType,
                             $scopeId
@@ -161,7 +161,7 @@ class Index extends Action
 
                     //save api username information in respected configuration.
                     $this->config->saveConfig(
-                        'emarsys_settings/emarsys_setting/emarsys_api_username',
+                        'emartech/emarsys_setting/emarsys_api_username',
                         $username,
                         $scopeType,
                         $scopeId
@@ -177,7 +177,7 @@ class Index extends Action
 
                     //save api password information in respected configuration.
                     $this->config->saveConfig(
-                        'emarsys_settings/emarsys_setting/emarsys_api_password',
+                        'emartech/emarsys_setting/emarsys_api_password',
                         $password,
                         $scopeType,
                         $scopeId
@@ -210,9 +210,11 @@ class Index extends Action
                 }
             } else {
                 //test api connecton failed.
-                $this->messageManager->addErrorMessage(__(
-                    'Connection failed. Please check your credentials and try again.'
-                ));
+                $this->messageManager->addErrorMessage(
+                    __(
+                        'Connection failed. Please check your credentials and try again.'
+                    )
+                );
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());

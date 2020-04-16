@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
@@ -91,8 +91,8 @@ class Sync extends AbstractDb
     }
 
     /**
-     * @param type $entity
-     * @param type $storeId
+     * @param string $entity
+     * @param int $storeId
      * @return array
      */
     public function getAttributes($entity = null, $storeId)
@@ -126,9 +126,9 @@ class Sync extends AbstractDb
     }
 
     /**
-     * @param type $path
-     * @param type $scope
-     * @param type $scopeId
+     * @param string $path
+     * @param string $scope
+     * @param int $scopeId
      * @return array
      */
     public function getDataFromCoreConfig($path, $scope = null, $scopeId = null)

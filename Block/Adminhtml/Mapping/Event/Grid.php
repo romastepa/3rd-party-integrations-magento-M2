@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event;
@@ -148,17 +148,21 @@ class Grid extends Extended
         $recommended = $this->getRequest()->getParam('recommended');
 
         if (isset($recommended) && $recommended != "") {
-            $this->addColumn('emarsys_event_id', [
-                'header' => __('Emarsys Event'),
-                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\Emarsyseventmapping::class,
-                'filter' => false,
-            ]);
+            $this->addColumn(
+                'emarsys_event_id', [
+                    'header' => __('Emarsys Event'),
+                    'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\Emarsyseventmapping::class,
+                    'filter' => false,
+                ]
+            );
         } else {
-            $this->addColumn('emarsys_event_id', [
-                'header' => __('Emarsys Event'),
-                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\EmarsysEvent::class,
-                'filter' => false,
-            ]);
+            $this->addColumn(
+                'emarsys_event_id', [
+                    'header' => __('Emarsys Event'),
+                    'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer\EmarsysEvent::class,
+                    'filter' => false,
+                ]
+            );
         }
 
         return parent::_prepareColumns();
@@ -173,7 +177,7 @@ class Grid extends Extended
     }
 
     /**
-     * @param $row
+     * @param  $row
      * @return string
      */
     public function getRowUrl($row)

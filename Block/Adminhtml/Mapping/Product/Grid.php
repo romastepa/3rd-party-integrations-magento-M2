@@ -1,13 +1,25 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Product;
 
-class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
+use Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer\EmarsysProduct;
+use Emarsys\Emarsys\Helper\Data;
+use Exception;
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Block\Widget\Grid\Extended;
+use Magento\Backend\Model\Session;
+use Magento\Catalog\Model\Product;
+use Magento\Framework\Data\Collection;
+use Magento\Framework\DataObject;
+use Magento\Framework\DataObjectFactory;
+use Magento\Framework\Exception\LocalizedException;
+
+class Grid extends Extended
 {
     /**
      * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
@@ -15,7 +27,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $_collection;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -25,38 +37,38 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     protected $backendHelper;
 
     /**
-     * @var \Magento\Framework\Data\Collection
+     * @var Collection
      */
     protected $dataCollection;
 
     /**
-     * @var \Magento\Framework\DataObjectFactory
+     * @var DataObjectFactory
      */
     protected $dataObjectFactory;
 
     /**
-     * @var \Emarsys\Emarsys\Helper\Data
+     * @var Data
      */
     protected $emarsysHelper;
 
     /**
      * Grid constructor.
      *
-     * @param \Magento\Backend\Block\Template\Context $context
+     * @param Context $context
      * @param \Magento\Backend\Helper\Data $backendHelper
      * @param \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection $_collection
-     * @param \Magento\Framework\Data\Collection $dataCollection
-     * @param \Magento\Framework\DataObjectFactory $dataObjectFactory
-     * @param \Emarsys\Emarsys\Helper\Data $emarsysHelper
+     * @param Collection $dataCollection
+     * @param DataObjectFactory $dataObjectFactory
+     * @param Data $emarsysHelper
      * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
+        Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
         \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection $_collection,
-        \Magento\Framework\Data\Collection $dataCollection,
-        \Magento\Framework\DataObjectFactory $dataObjectFactory,
-        \Emarsys\Emarsys\Helper\Data $emarsysHelper,
+        Collection $dataCollection,
+        DataObjectFactory $dataObjectFactory,
+        Data $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getBackendSession();
@@ -70,7 +82,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _construct()
     {
@@ -114,8 +126,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return \Magento\Backend\Block\Widget\Grid\Extended
-     * @throws \Exception
+     * @return Extended
+     * @throws Exception
      */
     protected function _prepareColumns()
     {
@@ -133,7 +145,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             'emarsys_attr_code',
             [
                 'header' => __('Emarsys Attribute'),
-                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer\EmarsysProduct::class,
+                'renderer' => EmarsysProduct::class,
                 'filter' => false,
             ]
         );
@@ -142,7 +154,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $row
+     * @param Product|DataObject $row
      * @return string
      */
     public function getRowUrl($row)

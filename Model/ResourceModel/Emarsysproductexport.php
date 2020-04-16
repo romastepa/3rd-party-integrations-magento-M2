@@ -1,13 +1,18 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Zend_Db_Statement_Interface;
+
+class Emarsysproductexport extends AbstractDb
 {
     /**
      * Define main table
@@ -23,8 +28,8 @@ class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\Abs
      * Save Products to temp table
      *
      * @param array $products
-     * @return \Zend_Db_Statement_Interface
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return Zend_Db_Statement_Interface
+     * @throws LocalizedException
      */
     public function saveBulkProducts($products)
     {
@@ -53,8 +58,8 @@ class Emarsysproductexport extends \Magento\Framework\Model\ResourceModel\Db\Abs
     /**
      * Truncate a table
      *
-     * @return \Magento\Framework\DB\Adapter\AdapterInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return AdapterInterface
+     * @throws LocalizedException
      */
     public function truncateTable()
     {

@@ -1,14 +1,17 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Productexport;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Request\Http;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -93,8 +96,8 @@ class ProductExport extends Action
     /**
      * product export action
      *
-     * @return \Magento\Framework\Controller\Result\Redirect
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -139,44 +142,54 @@ class ProductExport extends Action
                                 //save details cron details table
                                 $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-                                $this->messageManager->addSuccessMessage(__(
-                                    'A cron named "%1" have been scheduled to export products for the store %2.',
-                                    EmarsysCronHelper::CRON_JOB_CATALOG_BULK_EXPORT,
-                                    $store->getName()
-                                ));
+                                $this->messageManager->addSuccessMessage(
+                                    __(
+                                        'A cron named "%1" have been scheduled to export products for the store %2.',
+                                        EmarsysCronHelper::CRON_JOB_CATALOG_BULK_EXPORT,
+                                        $store->getName()
+                                    )
+                                );
                             } else {
                                 //cron job already scheduled
-                                $this->messageManager->addErrorMessage(__(
-                                    'A cron is already scheduled to export products for the store %1 ',
-                                    $store->getName()
-                                ));
+                                $this->messageManager->addErrorMessage(
+                                    __(
+                                        'A cron is already scheduled to export products for the store %1 ',
+                                        $store->getName()
+                                    )
+                                );
                             }
                         } else {
                             //no products attribute mapping found for this store
-                            $this->messageManager->addErrorMessage(__(
-                                'Product Attributes are not mapped for the store %1 ',
-                                $store->getName()
-                            ));
+                            $this->messageManager->addErrorMessage(
+                                __(
+                                    'Product Attributes are not mapped for the store %1 ',
+                                    $store->getName()
+                                )
+                            );
                         }
                     } else {
                         //no products found for this store
-                        $this->messageManager->addErrorMessage(__(
-                            'No Product found for the store %1 ',
-                            $store->getName()
-                        ));
+                        $this->messageManager->addErrorMessage(
+                            __(
+                                'No Product found for the store %1 ',
+                                $store->getName()
+                            )
+                        );
                     }
                 } else {
                     //catalog feed export is disabled for this website
-                    $this->messageManager->addErrorMessage(__(
-                        'Catalog Feed Export is Disabled for the store %1.',
-                        $store->getName()
-                    ));
+                    $this->messageManager->addErrorMessage(
+                        __(
+                            'Catalog Feed Export is Disabled for the store %1.',
+                            $store->getName()
+                        )
+                    );
                 }
             } else {
                 //emarsys is disabled for this website
                 $this->messageManager->addErrorMessage(__('Emarsys is disabled for the website %1', $websiteId));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
                 'ProductExport',
@@ -185,10 +198,12 @@ class ProductExport extends Action
                 'ProductExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__(
-                'There was a problem while product export. %1',
-                $e->getMessage()
-            ));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'There was a problem while product export. %1',
+                    $e->getMessage()
+                )
+            );
         }
 
         $resultRedirect = $this->resultRedirectFactory->create();

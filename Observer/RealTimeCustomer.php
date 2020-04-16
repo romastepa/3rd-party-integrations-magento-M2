@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Observer;
@@ -95,7 +95,9 @@ class RealTimeCustomer implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        /** @var \Magento\Customer\Model\Customer $customer */
+        /**
+         * @var \Magento\Customer\Model\Customer $customer
+         */
         $customer = $observer->getEvent()->getCustomer();
         $customerId = $customer->getId();
         $storeId = $customer->getStoreId();

@@ -1,14 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\EventFactory;
 use Magento\Framework\Stdlib\DateTime\DateTime;
@@ -24,7 +29,7 @@ class Save extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -54,7 +59,7 @@ class Save extends Action
     protected $logHelper;
 
     /**
-     * @var \Magento\Framework\UrlInterface
+     * @var UrlInterface
      */
     protected $_urlInterface;
 
@@ -90,8 +95,8 @@ class Save extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Exception
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws Exception
      */
     public function execute()
     {
@@ -143,14 +148,16 @@ class Save extends Action
 
             $this->logHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage(__("Events mapped successfully"));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $logsArray['emarsys_info'] = 'Save Event Mapping';
             $logsArray['description'] = $e->getMessage();
             $logsArray['action'] = 'Event Mapping not successful.';
             $logsArray['message_type'] = 'Error';
-            $this->messageManager->addErrorMessage(__(
-                "Event Mapping Failed. Please refer emarsys logs for more information."
-            ));
+            $this->messageManager->addErrorMessage(
+                __(
+                    "Event Mapping Failed. Please refer emarsys logs for more information."
+                )
+            );
         }
 
         if ($errorStatus) {

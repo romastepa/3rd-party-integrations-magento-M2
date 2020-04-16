@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -88,7 +88,9 @@ class Async
 
         $collection = $this->asyncCollection->create();
 
-        /** @var \Emarsys\Emarsys\Model\Async $item */
+        /**
+         * @var \Emarsys\Emarsys\Model\Async $item
+         */
         foreach ($collection as $item) {
             try {
                 $this->api->setWebsiteId($item->getWebsiteId());
@@ -100,8 +102,7 @@ class Async
                     $response = $this->api->createContactInEmarsys($buildRequest);
                     if (isset($response['status']) && ($response['status'] == 200)
                         || ($response['status'] == 400 && isset($response['body']['replyCode'])
-                            && $response['body']['replyCode'] == 2009
-                        )
+                            && $response['body']['replyCode'] == 2009)
                     ) {
                         //contact synced to emarsys successfully
                         $response = $this->api->sendRequest('POST', $item->getEndpoint(), $requestBody);

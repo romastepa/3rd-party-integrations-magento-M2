@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\System\Config\Form;
@@ -12,6 +12,7 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
 use Magento\Framework\App\Request\Http;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\CategoryFactory;
@@ -55,12 +56,12 @@ class Categorytree extends Field
      * @param AbstractElement $element
      * @return string
      */
-    protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    protected function _getElementHtml(AbstractElement $element)
     {
         $websiteId = $this->getRequest->getParam('website');
         $categoriesExcluded = $this->customerResourceModel->getDataFromCoreConfig(
             EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES,
-            \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE,
+            ScopeInterface::SCOPE_WEBSITE,
             $websiteId
         );
         $rootCategoryId = 1;
@@ -111,7 +112,7 @@ class Categorytree extends Field
     }
 
     /**
-     * @param $parentId
+     * @param  $parentId
      * @param int $level
      * @return array
      */

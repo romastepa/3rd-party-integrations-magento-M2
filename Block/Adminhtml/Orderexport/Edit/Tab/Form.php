@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Orderexport\Edit\Tab;
@@ -80,30 +80,36 @@ class Form extends Generic
         if ($productExportStatus == 1 || $smartInsightEnable == 1) {
             $values['product'] = 'Product';
         }
-        $fieldset->addField("entitytype", "select", [
-            'label' => 'Export Entity Type',
-            'name' => 'entity_type',
-            'values' => $values,
-            'value' => 'order',
-            'onchange' => "bulkExport(this.value)",
-            'style' => 'width:200px',
-        ]);
+        $fieldset->addField(
+            "entitytype", "select", [
+                'label' => 'Export Entity Type',
+                'name' => 'entity_type',
+                'values' => $values,
+                'value' => 'order',
+                'onchange' => "bulkExport(this.value)",
+                'style' => 'width:200px',
+            ]
+        );
 
-        $fieldset->addField("fromdate", "date", [
-            'label' => 'From',
-            'name' => 'from_date',
-            'style' => 'width:200px',
-            'date_format' => $this->_localeDate->getDateFormat(\IntlDateFormatter::SHORT),
-            'time_format' => $this->_localeDate->getTimeFormat(\IntlDateFormatter::SHORT),
-        ]);
+        $fieldset->addField(
+            "fromdate", "date", [
+                'label' => 'From',
+                'name' => 'from_date',
+                'style' => 'width:200px',
+                'date_format' => $this->_localeDate->getDateFormat(\IntlDateFormatter::SHORT),
+                'time_format' => $this->_localeDate->getTimeFormat(\IntlDateFormatter::SHORT),
+            ]
+        );
 
-        $fieldset->addField("todate", "date", [
-            'label' => 'To',
-            'name' => 'to_date',
-            'style' => 'width:200px',
-            'date_format' => $this->_localeDate->getDateFormat(\IntlDateFormatter::SHORT),
-            'time_format' => $this->_localeDate->getTimeFormat(\IntlDateFormatter::SHORT),
-        ]);
+        $fieldset->addField(
+            "todate", "date", [
+                'label' => 'To',
+                'name' => 'to_date',
+                'style' => 'width:200px',
+                'date_format' => $this->_localeDate->getDateFormat(\IntlDateFormatter::SHORT),
+                'time_format' => $this->_localeDate->getTimeFormat(\IntlDateFormatter::SHORT),
+            ]
+        );
 
         return parent::_prepareForm();
     }

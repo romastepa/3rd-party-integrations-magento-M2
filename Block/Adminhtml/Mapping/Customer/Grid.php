@@ -1,41 +1,30 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\CustomerMagentoAttsFactory,
-    Model\ResourceModel\Customer
-};
-use Magento\{
-    Backend\Block\Template\Context,
-    Backend\Helper\Data as BackendHelper,
-    Eav\Model\Entity\Attribute,
-    Eav\Model\Entity\Type,
-    Framework\Data\Collection,
-    Framework\DataObjectFactory,
-    Framework\Module\Manager
-};
+use Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\EmarsysCustomer;
+use Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\MagentoAttribute;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\CustomerMagentoAttsFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Block\Widget\Grid\Extended;
+use Magento\Backend\Helper\Data as BackendHelper;
+use Magento\Backend\Model\Session;
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Framework\DataObject;
+use Magento\Framework\Exception\LocalizedException;
+use Exception;
 
-class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
+class Grid extends Extended
 {
     /**
-     * @var Manager
-     */
-    protected $moduleManager;
-
-    /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
-     */
-    protected $_collection;
-
-    /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -43,21 +32,6 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      * @var Customer
      */
     protected $resourceModelCustomer;
-
-    /**
-     * @var Collection
-     */
-    protected $dataCollection;
-
-    /**
-     * @var DataObjectFactory
-     */
-    protected $dataObjectFactory;
-
-    /**
-     * @var Type
-     */
-    protected $entityType;
 
     /**
      * @var Attribute
@@ -79,12 +53,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      *
      * @param Context $context
      * @param BackendHelper $backendHelper
-     * @param Type $entityType
      * @param Attribute $attribute
-     * @param Collection $dataCollection
-     * @param DataObjectFactory $dataObjectFactory
      * @param Customer $resourceModelCustomer
-     * @param Manager $moduleManager
      * @param CustomerMagentoAttsFactory $customerMagentoAttsFactory
      * @param EmarsysHelper $emarsysHelper
      * @param array $data
@@ -92,22 +62,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     public function __construct(
         Context $context,
         BackendHelper $backendHelper,
-        Type $entityType,
         Attribute $attribute,
-        Collection $dataCollection,
-        DataObjectFactory $dataObjectFactory,
         Customer $resourceModelCustomer,
-        Manager $moduleManager,
         CustomerMagentoAttsFactory $customerMagentoAttsFactory,
         EmarsysHelper $emarsysHelper,
         $data = []
     ) {
         $this->session = $context->getBackendSession();
-        $this->entityType = $entityType;
         $this->attribute = $attribute;
-        $this->moduleManager = $moduleManager;
-        $this->dataCollection = $dataCollection;
-        $this->dataObjectFactory = $dataObjectFactory;
         $this->resourceModelCustomer = $resourceModelCustomer;
         $this->customerMagentoAttsFactory = $customerMagentoAttsFactory;
         $this->emarsysHelper = $emarsysHelper;
@@ -116,7 +78,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _prepareCollection()
     {
@@ -124,7 +86,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
         $storeId = $this->getRequest()->getParam('store');
         $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
 
-        $collection = $this->customerMagentoAttsFactory->create()->getCollection()
+        $collection = $this->customerMagentoAttsFactory->create()
+            ->getCollection()
             ->addFieldToFilter('store_id', ['eq' => $storeId]);
         $collection->setOrder('main_table.frontend_label', 'ASC');
         $this->setCollection($collection);
@@ -132,8 +95,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return $this
-     * @throws \Exception
+     * @return                                        $this
+     * @throws                                        Exception
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function _prepareColumns()
@@ -147,14 +110,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'index' => 'frontend_label',
                 'header_css_class' => 'col-id',
                 'column_css_class' => 'col-id',
-                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\MagentoAttribute::class,
+                'renderer' => MagentoAttribute::class,
             ]
         );
         $this->addColumn(
             'emarsys_contact_header',
             [
                 'header' => __('Emarsys Customer Attribute'),
-                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Customer\Renderer\EmarsysCustomer::class,
+                'renderer' => EmarsysCustomer::class,
                 'filter' => false,
             ]
         );
@@ -164,7 +127,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 
     /**
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _construct()
     {
@@ -187,7 +150,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $row
+     * @param DataObject $row
      * @return string
      */
     public function getRowUrl($row)

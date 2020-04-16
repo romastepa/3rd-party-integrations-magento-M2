@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
@@ -108,7 +108,9 @@ class Index extends Action
                 );
             }
         }
-        /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
+        /**
+         * @var \Magento\Backend\Model\View\Result\Page $resultPage
+         */
         $resultPage = $this->resultPageFactory->create();
         $this->_setActiveMenu('Emarsys_Emarsys::emarsys_emarsysadminindex7');
         $resultPage->addBreadcrumb(__('Emarsys - Event Mapping'), __('Emarsys - Event Mapping'));

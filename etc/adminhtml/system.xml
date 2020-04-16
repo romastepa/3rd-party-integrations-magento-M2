@@ -3,7 +3,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
@@ -11,7 +11,7 @@
         <tab id="emarsys" translate="label" sortOrder="500">
             <label>Emarsys</label>
         </tab>
-        <section id="emarsys_settings" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+        <section id="emartech" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
             <class>separator-top</class>
             <label>Connections</label>
             <tab>emarsys</tab>
@@ -20,41 +20,41 @@
                 <label>API Settings</label>
                 <comment>Used for contact synchronisation, Event triggering etc.</comment>
                 <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enabled</label>
+                    <label>Enable V1</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="emarsys_api_endpoint" translate="label" type="select" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Endpoint</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\ApiEndpoint</source_model>
                     <depends>
-                        <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                        <field id="*/*/enable">1</field>
                     </depends>
                 </field>
                 <field id="emarsys_custom_url" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Custom API URL</label>
                     <depends>
-                        <field id="emarsys_settings/emarsys_setting/emarsys_api_endpoint">custom</field>
+                        <field id="*/*/emarsys_api_endpoint">custom</field>
                     </depends>
                 </field>
                 <field id="emarsys_api_username" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Username</label>
                     <validate>required-entry</validate>
                     <depends>
-                        <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                        <field id="*/*/enable">1</field>
                     </depends>
                 </field>
                 <field id="emarsys_api_password" translate="label" type="password" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Password</label>
                     <validate>required-entry</validate>
                     <depends>
-                        <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                        <field id="*/*/enable">1</field>
                     </depends>
                 </field>
                 <field id="testapiconnection" translate="button_label" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="0">
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\TestConnectionButton</frontend_model>
                     <depends>
-                        <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                        <field id="*/*/enable">1</field>
                     </depends>
                 </field>
             </group>
@@ -70,12 +70,9 @@
                     <comment>in minutes (each [x] minutes)</comment>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\AsyncFrequency</source_model>
                     <backend_model>Emarsys\Emarsys\Model\Config\Backend\AsyncFrequency</backend_model>
-                    <depends>
-                        <field id="emarsys_settings/async/enable">1</field>
-                    </depends>
                 </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/emarsys_setting/enable">1</field>
                 </depends>
             </group>
             <group id="webdav_setting" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -95,7 +92,7 @@
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\WebDavButton</frontend_model>
                 </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/emarsys_setting/enable">1</field>
                 </depends>
             </group>
             <group id="ftp_settings" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -130,7 +127,12 @@
                 </field>
                 <field id="apiurl" type="hidden" sortOrder="45" showInDefault="0" showInWebsite="0" showInStore="0" />
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/emarsys_setting/enable">1</field>
+                </depends>
+            </group>
+            <group id="emarsys" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                <depends>
+                    <field id="*/emarsys_setting/enable">0</field>
                 </depends>
             </group>
         </section>
@@ -139,14 +141,26 @@
             <label>Contact Synchronization</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 </label>
+                <field id="enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/enable">0</field>
+                </depends>
+            </group>
             <group id="enable" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization</label>
                 <field id="contact_feed" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/enable">1</field>
                 </depends>
             </group>
             <group id="emarsys_emarsys" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -154,8 +168,11 @@
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Notification secret key</label>
                 </field>
+                <field id="enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/enable">1</field>
                 </depends>
             </group>
         </section>
@@ -164,6 +181,15 @@
             <label>Opt-In</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 (extension should be enabled)</label>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">0</field>
+                </depends>
+            </group>
             <group id="optin_enable" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Enable Opt In</label>
                 <field id="enable_optin" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -174,8 +200,11 @@
                     <label>Opt-In Strategy</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\OptInStrategy</source_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="subscription_checkout_process" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -184,8 +213,11 @@
                     <label>Newsletter Subscription on Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>
@@ -194,14 +226,26 @@
             <label>Transaction Emails</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 (extension should be enabled)</label>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">0</field>
+                </depends>
+            </group>
             <group id="transactionmail" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Transaction Email</label>
                 <field id="enable_customer" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable Emarsys Transaction Emails</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="schema_check" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -217,8 +261,11 @@
                     <backend_model>Emarsys\Emarsys\Model\Config\CronConfigSchema</backend_model>
                     <comment>If you select Hourly,Hours and Minutes not applicable together</comment>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>
@@ -227,6 +274,15 @@
             <label>Smart Insight</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 (extension should be enabled)</label>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">0</field>
+                </depends>
+            </group>
             <group id="api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Smart Insight API Settings</label>
                 <field id="enableapi" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -249,8 +305,11 @@
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\SmartInsightApiTestConnection</frontend_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="smart_insight" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -273,8 +332,11 @@
                     <backend_model>Emarsys\Emarsys\Model\Config\SmartInsightCronConfig</backend_model>
                     <comment>For hours only minutes will be applicable.</comment>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>
@@ -283,14 +345,26 @@
             <label>Product Catalog</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 (extension should be enabled)</label>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">0</field>
+                </depends>
+            </group>
             <group id="enable" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Emarsys Product Export</label>
                 <field id="product_feed" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="availability" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -310,8 +384,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Consider Visibility [ YES / NO ] If NO, product visibility will be ignored</comment>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="catalog_api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -332,8 +409,11 @@
                     <button_label>Test Connection</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\CatalogApiTestConnection</frontend_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="feed_export" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -359,8 +439,11 @@
                 <field id="excludedcategories" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Excluded Categories:</label>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>
@@ -369,6 +452,15 @@
             <label>Web Extend</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 (extension should be enabled)</label>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">0</field>
+                </depends>
+            </group>
             <group id="recommended_product_pages" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Recommended product on pages</label>
                 <field id="recommended_home_page" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -395,8 +487,11 @@
                     <label>No Search Result Page</label>
                     <source_model>Emarsys\Emarsys\Model\Config\Source\RecommendedProductOnSearchPage</source_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
             <group id="javascript_tracking" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -428,8 +523,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Applicable for only purchase command. Enable this parameter if you want to track price with taxes. Please do not change the option after the initial setup</comment>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>
@@ -438,6 +536,15 @@
             <label>Logs</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
+            <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>This configuration applies to V1 (extension should be enabled)</label>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">0</field>
+                </depends>
+            </group>
             <group id="log_setting" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Log Setting</label>
                 <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
@@ -481,8 +588,11 @@
                     <button_label>Clear Logs</button_label>
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Form\LogCleanerButton</frontend_model>
                 </field>
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
+                </field>
                 <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>

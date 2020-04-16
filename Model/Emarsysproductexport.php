@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -25,8 +25,8 @@ use Magento\{
 
 class Emarsysproductexport extends AbstractModel
 {
-    CONST EMARSYS_DELIMITER = '{EMARSYS}';
-    CONST BATCH_SIZE = 500;
+    const EMARSYS_DELIMITER = '{EMARSYS}';
+    const BATCH_SIZE = 500;
 
     protected $_preparedData = [];
     protected $_mapHeader = ['item'];
@@ -123,7 +123,7 @@ class Emarsysproductexport extends AbstractModel
      * @param int|object $storeId
      * @param int $currentPageNumber
      * @param array $attributes
-     * @param null|1|0 $includeBundle
+     * @param null|1|0   $includeBundle
      * @param array $excludedCategories
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
@@ -135,7 +135,9 @@ class Emarsysproductexport extends AbstractModel
         $excludedCategories = []
     ) {
         try {
-            /** @var \Magento\Store\Model\Store $store */
+            /**
+             * @var \Magento\Store\Model\Store $store
+             */
             $store = $this->storeManager->getStore($storeId);
 
             $collection = $this->productCollectionFactory->create()
@@ -306,9 +308,9 @@ class Emarsysproductexport extends AbstractModel
     }
 
     /**
-     * @param $param
-     * @param $productId
-     * @param $data
+     * @param  $param
+     * @param  $productId
+     * @param  $data
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function prepareDataForCsv($param, $productId, &$data)
@@ -319,8 +321,8 @@ class Emarsysproductexport extends AbstractModel
             if (isset($map[$key])) {
                 if (isset($this->_mapHeader[$map[$key]])
                     && ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
-                        || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
-                    )) {
+                        || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code'])
+                ) {
                     $currencyCodeTo = $this->storeManager
                         ->getStore($item['store_id'])
                         ->getBaseCurrency()

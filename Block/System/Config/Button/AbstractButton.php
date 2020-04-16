@@ -1,14 +1,15 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\System\Config\Button;
 
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Backend\Block\Template\Context;
+use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Store\Model\Website;
 
 abstract class AbstractButton extends Field
@@ -44,10 +45,10 @@ abstract class AbstractButton extends Field
     /**
      * Render button
      *
-     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
-    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    public function render(AbstractElement $element)
     {
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
         return parent::render($element);
@@ -56,10 +57,10 @@ abstract class AbstractButton extends Field
     /**
      * Get the button and scripts contents
      *
-     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
-    protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    protected function _getElementHtml(AbstractElement $element)
     {
         $websiteId = $this->getRequest()->getParam('website');
         if ($websiteId == '') {
@@ -83,7 +84,7 @@ abstract class AbstractButton extends Field
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return mixed
      */
     abstract protected function getAjaxActionUrl($websiteId);

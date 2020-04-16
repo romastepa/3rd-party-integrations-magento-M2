@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Observer;
@@ -46,6 +46,7 @@ class PlaceorderNewsletterSubscriber implements ObserverInterface
 
     /**
      * PlaceorderNewsletterSubscriber constructor.
+     *
      * @param StoreManagerInterface $storeManager
      * @param Session $checkoutSession
      * @param EmarsysHelper $emarsysHelper

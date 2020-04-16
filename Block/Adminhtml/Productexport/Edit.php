@@ -1,15 +1,16 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Productexport;
 
+use Emarsys\Emarsys\Block\Adminhtml\Export\Edit as ExportEdit;
 use Magento\Framework\Exception\LocalizedException;
 
-class Edit extends \Emarsys\Emarsys\Block\Adminhtml\Export\Edit
+class Edit extends ExportEdit
 {
     /**
      * Support edit block

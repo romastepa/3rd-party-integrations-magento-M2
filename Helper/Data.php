@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -59,39 +59,39 @@ class Data extends AbstractHelper
     const EMARSYS_DEFAULT_API_URL = 'https://api.emarsys.net/api/v2/';
 
     //XML Path of Emarsys Credentials
-    const XPATH_EMARSYS_ENABLED = 'emarsys_settings/emarsys_setting/enable';
+    const XPATH_EMARSYS_ENABLED = 'emartech/emarsys_setting/enable';
 
-    const XPATH_EMARSYS_API_ENDPOINT = 'emarsys_settings/emarsys_setting/emarsys_api_endpoint';
+    const XPATH_EMARSYS_API_ENDPOINT = 'emartech/emarsys_setting/emarsys_api_endpoint';
 
-    const XPATH_EMARSYS_CUSTOM_URL = 'emarsys_settings/emarsys_setting/emarsys_custom_url';
+    const XPATH_EMARSYS_CUSTOM_URL = 'emartech/emarsys_setting/emarsys_custom_url';
 
-    const XPATH_EMARSYS_API_USER = 'emarsys_settings/emarsys_setting/emarsys_api_username';
+    const XPATH_EMARSYS_API_USER = 'emartech/emarsys_setting/emarsys_api_username';
 
-    const XPATH_EMARSYS_API_PASS = 'emarsys_settings/emarsys_setting/emarsys_api_password';
+    const XPATH_EMARSYS_API_PASS = 'emartech/emarsys_setting/emarsys_api_password';
 
-    const XPATH_EMARSYS_ASYNC_ENABLE = 'emarsys_settings/async/enable';
+    const XPATH_EMARSYS_ASYNC_ENABLE = 'emartech/async/enable';
 
     //XML Path of Webdav Credentials
-    const XPATH_WEBDAV_URL = 'emarsys_settings/webdav_setting/webdav_url';
+    const XPATH_WEBDAV_URL = 'emartech/webdav_setting/webdav_url';
 
-    const XPATH_WEBDAV_USER = 'emarsys_settings/webdav_setting/webdav_user';
+    const XPATH_WEBDAV_USER = 'emartech/webdav_setting/webdav_user';
 
-    const XPATH_WEBDAV_PASSWORD = 'emarsys_settings/webdav_setting/webdav_password';
+    const XPATH_WEBDAV_PASSWORD = 'emartech/webdav_setting/webdav_password';
 
     //XML Path of FTP Credentials
-    const XPATH_EMARSYS_FTP_HOSTNAME = 'emarsys_settings/ftp_settings/hostname';
+    const XPATH_EMARSYS_FTP_HOSTNAME = 'emartech/ftp_settings/hostname';
 
-    const XPATH_EMARSYS_FTP_PORT = 'emarsys_settings/ftp_settings/port';
+    const XPATH_EMARSYS_FTP_PORT = 'emartech/ftp_settings/port';
 
-    const XPATH_EMARSYS_FTP_USERNAME = 'emarsys_settings/ftp_settings/username';
+    const XPATH_EMARSYS_FTP_USERNAME = 'emartech/ftp_settings/username';
 
-    const XPATH_EMARSYS_FTP_PASSWORD = 'emarsys_settings/ftp_settings/ftp_password';
+    const XPATH_EMARSYS_FTP_PASSWORD = 'emartech/ftp_settings/ftp_password';
 
-    const XPATH_EMARSYS_FTP_BULK_EXPORT_DIR = 'emarsys_settings/ftp_settings/ftp_bulk_export_dir';
+    const XPATH_EMARSYS_FTP_BULK_EXPORT_DIR = 'emartech/ftp_settings/ftp_bulk_export_dir';
 
-    const XPATH_EMARSYS_FTP_USEFTP_OVER_SSL = 'emarsys_settings/ftp_settings/useftp_overssl';
+    const XPATH_EMARSYS_FTP_USEFTP_OVER_SSL = 'emartech/ftp_settings/useftp_overssl';
 
-    const XPATH_EMARSYS_FTP_USE_PASSIVE_MODE = 'emarsys_settings/ftp_settings/usepassive_mode';
+    const XPATH_EMARSYS_FTP_USE_PASSIVE_MODE = 'emartech/ftp_settings/usepassive_mode';
 
     //Contacts Synchronization
     const XPATH_EMARSYS_ENABLE_CONTACT_FEED = 'contacts_synchronization/enable/contact_feed';
@@ -544,7 +544,7 @@ class Data extends AbstractHelper
     /**
      * Get Emarsys API Details
      *
-     * @param type $storeId
+     * @param int $storeId
      * @throws NoSuchEntityException
      */
     public function getEmarsysAPIDetails($storeId)
@@ -568,7 +568,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @throws \Exception
      */
     public function insertFirstTime($storeId)
@@ -669,7 +669,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @param null $logId
      * @return array
      * @throws \Exception
@@ -994,7 +994,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return string
      * @throws NoSuchEntityException
      */
@@ -1002,7 +1002,8 @@ class Data extends AbstractHelper
     {
         $host = $this->storeManager->getStore($storeId)->getConfig(self::XPATH_EMARSYS_FTP_HOSTNAME);
 
-        $ports = [21, rand(32000, 32500), rand(32000, 32500)];
+        //$ports = [21, rand(32000, 32500), rand(32000, 32500)];
+        $ports = [21];
         $portStatus = [];
         foreach ($ports as $port) {
             $errno = null;
@@ -1027,11 +1028,11 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $customerId
-     * @param $websiteId
-     * @param $storeId
-     * @param $cron
-     * @param $entityType
+     * @param  $customerId
+     * @param  $websiteId
+     * @param  $storeId
+     * @param  $cron
+     * @param  $entityType
      * @throws \Exception
      */
     public function syncFail($customerId, $websiteId, $storeId, $cron, $entityType)
@@ -1061,10 +1062,10 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $customerId
-     * @param $websiteId
-     * @param $storeId
-     * @param $cron
+     * @param  $customerId
+     * @param  $websiteId
+     * @param  $storeId
+     * @param  $cron
      * @throws \Exception
      */
     public function syncSuccess($customerId, $websiteId, $storeId, $cron)
@@ -1082,8 +1083,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $mappingId
-     * @param $storeId
+     * @param  $mappingId
+     * @param  $storeId
      * @return array
      * @throws \Exception
      */
@@ -1180,8 +1181,8 @@ class Data extends AbstractHelper
     /**
      * Refresh Placeholders
      *
-     * @param $mappingId
-     * @param $storeId
+     * @param  $mappingId
+     * @param  $storeId
      * @throws \Magento\Framework\Exception\MailException
      * @throws NoSuchEntityException
      */
@@ -1285,7 +1286,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $haystack
+     * @param  $haystack
      * @param string $start
      * @param string $end
      * @return bool|string
@@ -1312,7 +1313,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $haystack
+     * @param  $haystack
      * @param string $start
      * @param string $end
      * @return bool|string
@@ -1445,7 +1446,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      */
     public function insertFirstTimeHeaderMappingPlaceholders($storeId)
@@ -1472,7 +1473,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      */
     public function insertFirstTimeFooterMappingPlaceholders($storeId)
@@ -1502,7 +1503,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      */
     public function emarsysHeaderPlaceholders($storeId)
@@ -1532,7 +1533,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      */
     public function emarsysFooterPlaceholders($storeId)
@@ -1561,7 +1562,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return string
      */
     public function getCheckSmartInsight($websiteId)
@@ -1587,7 +1588,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return string
      */
     public function getRealTimeSync($websiteId)
@@ -1596,7 +1597,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return string
      */
     public function getEmarsysConnectionSetting($websiteId)
@@ -1604,8 +1605,11 @@ class Data extends AbstractHelper
         $result = false;
 
         if ($websiteId) {
-            if ($this->scopeConfig->getValue(self::XPATH_EMARSYS_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
+            if ($this->scopeConfig->getValue(
+                self::XPATH_EMARSYS_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId
+            )
+            ) {
                 $result = true;
             }
         } else {
@@ -1618,8 +1622,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $templateId
-     * @param $storeId
+     * @param  $templateId
+     * @param  $storeId
      * @return mixed
      * @throws NoSuchEntityException
      */
@@ -1637,7 +1641,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $magentoEventId
+     * @param  $magentoEventId
      * @param null $storeId
      * @return mixed
      * @throws NoSuchEntityException
@@ -1657,7 +1661,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $magentoEventId
+     * @param  $magentoEventId
      * @param null $storeId
      * @return mixed
      * @throws LocalizedException
@@ -1686,7 +1690,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $magentoEventId
+     * @param  $magentoEventId
      * @param null $storeId
      * @return mixed
      */
@@ -1701,8 +1705,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $emarsysEventMappingId
-     * @param $storeId
+     * @param  $emarsysEventMappingId
+     * @param  $storeId
      * @return array
      * @throws NoSuchEntityException
      */
@@ -1736,9 +1740,9 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $path
-     * @param $storeCode
-     * @param $storeId
+     * @param  $path
+     * @param  $storeCode
+     * @param  $storeId
      * @return mixed
      */
     public function getConfigValue($path, $storeCode, $storeId)
@@ -1797,7 +1801,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return int
      * @throws LocalizedException
      */
@@ -1818,7 +1822,9 @@ class Data extends AbstractHelper
                 }
             }
         }
-        /** @var WebsiteInterface $websiteId */
+        /**
+         * @var WebsiteInterface $websiteId
+         */
         $website = $this->storeManager->getWebsite($websiteId);
 
         $defaultStore = $website->getDefaultStore();
@@ -1834,7 +1840,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return int
      * @throws LocalizedException
      */
@@ -1850,8 +1856,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $templateId
-     * @param $storeScope
+     * @param  $templateId
+     * @param  $storeScope
      * @param null $storeId
      * @return array
      * @throws NoSuchEntityException
@@ -1920,7 +1926,9 @@ class Data extends AbstractHelper
         $contactsSynchronization = false;
 
         if ($this->isEmarsysEnabled($websiteId)) {
-            /** @var Website $website */
+            /**
+             * @var Website $website
+             */
             $website = $this->storeManager->getWebsite($websiteId);
             $contactsSynchronization = $website->getConfig(self::XPATH_EMARSYS_ENABLE_CONTACT_FEED);
         }
@@ -1937,8 +1945,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $subscriber
-     * @param $logMessage
+     * @param  $subscriber
+     * @param  $logMessage
      * @return $this
      */
     public function realtimeTimeBasedOptinSync($subscriber, $logMessage = 'Created Subscriber in Emarsys')
@@ -1978,8 +1986,10 @@ class Data extends AbstractHelper
                         $statusToBeChanged = Subscriber::STATUS_NOT_ACTIVE;
                     }
                     if (!in_array($magentoOptinValue, [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,])
-                        && !in_array($statusToBeChanged,
-                            [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,])
+                        && !in_array(
+                            $statusToBeChanged,
+                            [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,]
+                        )
                     ) {
                         $subscriber->setSubscriberStatus($statusToBeChanged)
                             ->setEmarsysNoExport(true)
@@ -2019,7 +2029,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $emarsysTime
+     * @param  $emarsysTime
      * @return string
      */
     public function convertToUtc($emarsysTime)
@@ -2184,7 +2194,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $contents
+     * @param  $contents
      * @param bool $isTimeBased
      * @return bool
      * @throws \Exception
@@ -2200,8 +2210,7 @@ class Data extends AbstractHelper
 
             if ((!isset($changedOptinArray) || count($changedOptinArray) <= 1)
                 || (count($changedOptinArray) == 2
-                    && (!isset($changedOptinArray[1][0]) || empty($changedOptinArray[1][0]))
-                )
+                    && (!isset($changedOptinArray[1][0]) || empty($changedOptinArray[1][0])))
             ) {
                 $logsArray['messages'] = 'No opt-in updates';
                 $this->logsHelper->manualLogs($logsArray);
@@ -2234,7 +2243,7 @@ class Data extends AbstractHelper
     public function getEmarsysLatestVersionInfo()
     {
         $apiUrl = $this->scopeConfigInterface->getValue(
-            'emarsys_settings/ftp_settings/apiurl',
+            'emartech/ftp_settings/apiurl',
             'default',
             0
         );
@@ -2271,7 +2280,9 @@ class Data extends AbstractHelper
     {
         $result = false;
 
-        /** @var \Magento\Store\Model\Store $store */
+        /**
+         * @var \Magento\Store\Model\Store $store
+         */
         $store = $this->storeManager->getStore($store);
         $hostname = $store->getConfig(self::XPATH_EMARSYS_FTP_HOSTNAME);
         $port = $store->getConfig(self::XPATH_EMARSYS_FTP_PORT);
@@ -2284,22 +2295,24 @@ class Data extends AbstractHelper
             return $result;
         }
 
-        $result = $this->ftp->open([
-            'host' => $hostname,
-            'port' => $port,
-            'user' => $username,
-            'password' => $password,
-            'ssl' => $ftpSsl ? true : false,
-            'passive' => $passiveMode ? true : false,
-        ]);
+        $result = $this->ftp->open(
+            [
+                'host' => $hostname,
+                'port' => $port,
+                'user' => $username,
+                'password' => $password,
+                'ssl' => $ftpSsl ? true : false,
+                'passive' => $passiveMode ? true : false,
+            ]
+        );
 
         return $result;
     }
 
     /**
      * @param null|string|bool|int|StoreInterface $store
-     * @param $filePath
-     * @param $filename
+     * @param  $filePath
+     * @param  $filename
      * @return bool
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -2324,7 +2337,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $folderName
+     * @param  $folderName
      * @return bool
      * @throws \Exception
      */
@@ -2344,7 +2357,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $folderName
+     * @param  $folderName
      * @return string
      * @throws FileSystemException
      */
@@ -2354,8 +2367,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $folderName
-     * @param $csvFilePath
+     * @param  $folderName
+     * @param  $csvFilePath
      * @return string
      * @throws NoSuchEntityException
      */
@@ -2366,7 +2379,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return array|bool
      * @throws LocalizedException
      */
@@ -2390,8 +2403,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $entity
-     * @param $storeCode
+     * @param  $entity
+     * @param  $storeCode
      * @return string
      */
     public function getCustomerCsvFileName($entity, $storeCode)
@@ -2406,7 +2419,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $outputFile
+     * @param  $outputFile
      * @return string
      */
     public function getContactCsvGenerationPath($outputFile)
@@ -2470,7 +2483,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return $this
      */
     public function setWebsiteId($websiteId)
@@ -2480,7 +2493,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return bool|mixed
      */
     public function getEmarsysCustomerSchema($storeId)

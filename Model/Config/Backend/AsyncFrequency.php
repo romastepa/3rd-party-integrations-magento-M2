@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Config\Backend;
@@ -22,7 +22,7 @@ class AsyncFrequency extends Value
     /**
      * Cron string path
      */
-    const CRON_STRING_PATH = 'emarsys_settings/async/cron_expr';
+    const CRON_STRING_PATH = 'emartech/async/cron_expr';
 
     /**
      * @var ValueFactory

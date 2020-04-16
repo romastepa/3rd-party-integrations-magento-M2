@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Emrattribute;
@@ -67,11 +67,13 @@ class Save extends Action
                     ->getLabel();
 
                 if ($duplicateCode || $duplicateLabel) {
-                    $this->messageManager->addErrorMessage(__(
-                        'Attribute with Code %1 and Label %2 has not been Created due to duplication',
-                        $duplicateCode,
-                        $duplicateLabel
-                    ));
+                    $this->messageManager->addErrorMessage(
+                        __(
+                            'Attribute with Code %1 and Label %2 has not been Created due to duplication',
+                            $duplicateCode,
+                            $duplicateLabel
+                        )
+                    );
                     continue;
                 }
                 $attribute_type = $requestParams['attribute_type'][$loop];

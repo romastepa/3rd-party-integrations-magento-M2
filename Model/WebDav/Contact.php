@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\WebDav;
@@ -106,7 +106,7 @@ class Contact extends \Magento\Framework\DataObject
     }
 
     /**
-     * @param $data
+     * @param  $data
      * @param null $logId
      * @return bool
      * @throws \Exception
@@ -216,10 +216,14 @@ class Contact extends \Magento\Framework\DataObject
                                     $index = array_search($key, $headerIndex);
                                     $customerValues[$index] = $customerData->getData($attributeCode['attribute_code']);
                                 } elseif ($attributeCode['entity_type_id'] == 2) {
-                                    $isShippingAttr = (strpos($attributeCode['attribute_code_custom'],
-                                            'default_shipping_') !== false) ? true : false;
-                                    $isBillingAttr = (strpos($attributeCode['attribute_code_custom'],
-                                            'default_billing_') !== false) ? true : false;
+                                    $isShippingAttr = strpos(
+                                            $attributeCode['attribute_code_custom'],
+                                            'default_shipping_'
+                                        ) !== false;
+                                    $isBillingAttr = strpos(
+                                            $attributeCode['attribute_code_custom'],
+                                            'default_billing_'
+                                        ) !== false;
                                     $index = array_search($key, $headerIndex);
                                     $attrVal = '';
 
@@ -298,8 +302,10 @@ class Contact extends \Magento\Framework\DataObject
                         $this->logsHelper->manualLogs($logsArray);
                     } else {
                         //Attributes are not mapped for given store
-                        $logsArray['emarsys_info'] = __('Attributes are not mapped for the store %1',
-                            $store->getName());
+                        $logsArray['emarsys_info'] = __(
+                            'Attributes are not mapped for the store %1',
+                            $store->getName()
+                        );
                         $logsArray['description'] = __(
                             'Failed to upload file on server. Attributes are not mapped for the store %1',
                             $store->getName()

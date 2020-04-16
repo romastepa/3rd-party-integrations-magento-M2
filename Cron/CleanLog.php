@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -128,7 +128,9 @@ class CleanLog
 
     public function execute()
     {
-        /** @var \Magento\Store\Model\Store $store */
+        /**
+         * @var \Magento\Store\Model\Store $store
+         */
         foreach ($this->storeManager->getStores() as $store) {
             $websiteId = $store->getWebsiteId();
             $storeId = $store->getStoreId();
@@ -183,8 +185,10 @@ class CleanLog
                     $sqlConnection = $this->_resource->getConnection(
                         \Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION
                     );
-                    $sqlConnection->delete($this->resourceConfig->getTable('emarsys_log_details'),
-                        'DATE(created_at) <= "' . $cleanUpDate . '"');
+                    $sqlConnection->delete(
+                        $this->resourceConfig->getTable('emarsys_log_details'),
+                        'DATE(created_at) <= "' . $cleanUpDate . '"'
+                    );
                     $successLog = 1;
                 } catch (\Exception $e) {
                     $errorLog = 1;
@@ -280,8 +284,10 @@ class CleanLog
                         $deleteArchivedData = $this->scopeConfig
                             ->getValue('logs/log_setting/delete_archive_days');
                     }
-                    $deleteDate = $this->date->date('Y-m-d',
-                        strtotime("-" . $deleteArchivedData . " days")); //date to delete old archived data
+                    $deleteDate = $this->date->date(
+                        'Y-m-d',
+                        strtotime("-" . $deleteArchivedData . " days")
+                    ); //date to delete old archived data
                     $deleteDate = $this->emarsysHelper->getDateTimeInLocalTimezone($deleteDate);
                     $archiveFolderPath = $archivePath; //Archive folder path
                     $dir = new \DirectoryIterator($archiveFolderPath); //Sub-dir inside archive dir

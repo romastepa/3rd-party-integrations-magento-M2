@@ -1,19 +1,20 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
-use Magento\{
-    Backend\App\Action,
+use Magento\{Backend\App\Action,
     Backend\App\Action\Context,
+    Framework\Controller\Result\Redirect,
+    Framework\Exception\NoSuchEntityException,
     Framework\View\Result\PageFactory,
     Framework\Stdlib\DateTime\DateTime,
-    Store\Model\StoreManagerInterface
-};
+    Store\Model\StoreManagerInterface};
+use Exception;
 use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper,
     Helper\Logs
@@ -80,8 +81,8 @@ class SaveSchema extends Action
     /**
      * SaveSchema Action
      *
-     * @return $this
-     * @throws \Exception
+     * @return Redirect
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -116,7 +117,7 @@ class SaveSchema extends Action
                 $this->logsHelper->manualLogs($logsArray);
                 $this->messageManager->addErrorMessage(__('Emarsys is not Enabled for this store'));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $logsArray['emarsys_info'] = 'Update Schema';
             $logsArray['description'] = $e->getMessage();
             $logsArray['action'] = 'Update Schema not successful';

@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
@@ -60,7 +60,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      */
     public function getEmarsysEvents($storeId)
@@ -74,7 +74,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return string
      */
     public function getMagentoEventTemplateCount($storeId)
@@ -88,7 +88,7 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return string
      */
     public function checkEventMappingCount($storeId)
@@ -102,8 +102,8 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * @param $eventId
-     * @param $storeId
+     * @param  $eventId
+     * @param  $storeId
      * @return int
      */
     public function deleteEvent($eventId, $storeId)
@@ -116,8 +116,8 @@ class Event extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * @param $emarsysEventId
-     * @param $storeId
+     * @param  $emarsysEventId
+     * @param  $storeId
      * @return int
      */
     public function deleteEventMapping($emarsysEventId, $storeId)

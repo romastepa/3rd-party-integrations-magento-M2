@@ -1,9 +1,10 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Model\Api;
 
 use Emarsys\Emarsys\{
@@ -110,6 +111,7 @@ class Subscriber
 
     /**
      * Subscriber constructor.
+     *
      * @param Api $api
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
@@ -155,8 +157,8 @@ class Subscriber
     }
 
     /**
-     * @param $subscribeId
-     * @param $storeId
+     * @param  $subscribeId
+     * @param  $storeId
      * @return bool
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -245,8 +247,7 @@ class Subscriber
             $logsArray['action'] = 'Synced to Emarsys';
             $res = ' [PUT] ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($optInResult)
                 . ' [confirmation url] ' . $this->newsletterHelperData->getConfirmationUrl($objSubscriber)
-                . ' [unsubscribe url] ' . $this->newsletterHelperData->getUnsubscribeUrl($objSubscriber)
-            ;
+                . ' [unsubscribe url] ' . $this->newsletterHelperData->getUnsubscribeUrl($objSubscriber);
             if ($optInResult['status'] == '200') {
                 $logsArray['message_type'] = 'Success';
                 $logsArray['description'] = "Created subscriber '" . $objSubscriber->getSubscriberEmail() . "' in Emarsys successfully " . $res;
@@ -282,8 +283,8 @@ class Subscriber
     }
 
     /**
-     * @param $exportMode
-     * @param $params
+     * @param  $exportMode
+     * @param  $params
      * @param null $logId
      * @return bool|void
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -447,14 +448,14 @@ class Subscriber
     }
 
     /**
-     * @param $storeId
-     * @param $websiteId
-     * @param $exportMode
-     * @param $emailKey
-     * @param $subscriberIdKey
-     * @param $customerIdKey
-     * @param $optInEmarsysId
-     * @param $currentPageNumber
+     * @param  $storeId
+     * @param  $websiteId
+     * @param  $exportMode
+     * @param  $emailKey
+     * @param  $subscriberIdKey
+     * @param  $customerIdKey
+     * @param  $optInEmarsysId
+     * @param  $currentPageNumber
      * @return array
      */
     public function prepareSubscribersInfo(
@@ -504,9 +505,12 @@ class Subscriber
 
             $subscriberStatus = $subscriber->getSubscriberStatus();
 
-            if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
+            if (in_array($subscriberStatus, [
+                \Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE,
+                \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED,
+            ])) {
                 $values[$optInEmarsysId] = '';
-            } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+            } elseif ($subscriberStatus == \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
                 $values[$optInEmarsysId] = 1;
             } else {
                 $values[$optInEmarsysId] = 2;
@@ -521,8 +525,8 @@ class Subscriber
     }
 
     /**
-     * @param $subscriberData
-     * @param $keyId
+     * @param  $subscriberData
+     * @param  $keyId
      * @return array
      */
     public function prepareSubscribersPayload($subscriberData, $keyId)
@@ -557,8 +561,7 @@ class Subscriber
                     if (count($subscriberIds)) {
                         $this->emarsysHelper
                             ->setWebsiteId($websiteId)
-                            ->backgroudTimeBasedOptinSync($subscriberIds)
-                        ;
+                            ->backgroudTimeBasedOptinSync($subscriberIds);
                     }
                 }
                 $currentPageNumber = $currentPageNumber + 1;

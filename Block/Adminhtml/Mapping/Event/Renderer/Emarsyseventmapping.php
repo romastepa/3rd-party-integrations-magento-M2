@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
@@ -89,8 +89,10 @@ class Emarsyseventmapping extends AbstractRenderer
         $emarsysEventName = trim(str_replace(" ", "_", strtolower($magentoEventName)));
         $gridSessionData = $this->session->getMappingGridData();
 
-        $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id',
-            ['eq' => $this->session->getStoreId()]);
+        $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter(
+            'store_id',
+            ['eq' => $this->session->getStoreId()]
+        );
         $dbEvents = $emarsysEvents->getAllIds();
 
         $readOnly = '';

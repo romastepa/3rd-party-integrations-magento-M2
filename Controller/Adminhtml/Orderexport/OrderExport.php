@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Orderexport;
@@ -161,31 +161,39 @@ class OrderExport extends Action
                         //save details cron details table
                         $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-                        $this->messageManager->addSuccessMessage(__(
-                            'A cron named "%1" have been scheduled for smart insight export for the store %2.',
-                            EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT,
-                            $store->getName()
-                        ));
+                        $this->messageManager->addSuccessMessage(
+                            __(
+                                'A cron named "%1" have been scheduled for smart insight export for the store %2.',
+                                EmarsysCronHelper::CRON_JOB_SI_BULK_EXPORT,
+                                $store->getName()
+                            )
+                        );
                     } else {
                         //cron job already scheduled
-                        $this->messageManager->addErrorMessage(__(
-                            'A cron is already scheduled to export orders for the store %1 ',
-                            $store->getName()
-                        ));
+                        $this->messageManager->addErrorMessage(
+                            __(
+                                'A cron is already scheduled to export orders for the store %1 ',
+                                $store->getName()
+                            )
+                        );
                     }
                 } else {
                     //smart insight is disabled for this website
-                    $this->messageManager->addErrorMessage(__(
-                        'Smart Insight is disabled for the store %1.',
-                        $store->getName()
-                    ));
+                    $this->messageManager->addErrorMessage(
+                        __(
+                            'Smart Insight is disabled for the store %1.',
+                            $store->getName()
+                        )
+                    );
                 }
             } else {
                 //emarsys is disabled for this website
-                $this->messageManager->addErrorMessage(__(
-                    'Emarsys is disabled for the website %1',
-                    $websiteId
-                ));
+                $this->messageManager->addErrorMessage(
+                    __(
+                        'Emarsys is disabled for the website %1',
+                        $websiteId
+                    )
+                );
             }
         } catch (\Exception $e) {
             //add exception to logs
@@ -196,10 +204,12 @@ class OrderExport extends Action
                 'OrderExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__(
-                'There was a problem while orders export. %1',
-                $e->getMessage()
-            ));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'There was a problem while orders export. %1',
+                    $e->getMessage()
+                )
+            );
         }
 
         return $this->resultRedirectFactory->create()->setPath($url);

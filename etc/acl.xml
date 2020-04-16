@@ -3,11 +3,11 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Acl/etc/acl.xsd">
+        xsi:noNamespaceSchemaLocation="../../../../../vendor/magento/framework/Acl/etc/acl.xsd">
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
@@ -25,10 +25,14 @@
                         <resource id="Emarsys_Emarsys::emarsys_emarsys_admin_logs" title="Logs" sortOrder="40"/>
                     </resource>
                     <resource id="Emarsys_Emarsys::mapping" title="Mappings" sortOrder="20">
-                        <resource id="Emarsys_Emarsys::emarsys_customer_mapping" title="Customer Mapping" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_field_mapping" title="Customer-Field Mapping" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_emarsys_product_mapping" title="Product Mapping" sortOrder="10"/>
-                        <resource id="Emarsys_Emarsys::emarsys_emarsys_event_mapping" title="Event Mapping" sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_customer_mapping" title="Customer Mapping"
+                                  sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_field_mapping" title="Customer-Field Mapping"
+                                  sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_emarsys_product_mapping" title="Product Mapping"
+                                  sortOrder="10"/>
+                        <resource id="Emarsys_Emarsys::emarsys_emarsys_event_mapping" title="Event Mapping"
+                                  sortOrder="10"/>
                         <resource id="Emarsys_Emarsys::emarsys_order_mapping" title="Order Mapping" sortOrder="10"/>
                     </resource>
                     <resource id="Emarsys_Emarsys::operations" title="Operations" sortOrder="30"/>

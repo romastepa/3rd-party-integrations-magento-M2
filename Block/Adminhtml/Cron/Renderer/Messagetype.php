@@ -1,37 +1,31 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer;
 
+use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
+use Magento\Backend\Helper\Data;
 use Magento\Framework\DataObject;
 
-class Messagetype extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
+class Messagetype extends AbstractRenderer
 {
     /**
-     * @var \Magento\Backend\Model\Session
-     */
-    protected $session;
-
-    /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
     /**
      * Messagetype constructor.
      *
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param Data $backendHelper
      */
     public function __construct(
-        \Magento\Backend\Model\Session $session,
-        \Magento\Backend\Helper\Data $backendHelper
+        Data $backendHelper
     ) {
-        $this->session = $session;
         $this->backendHelper = $backendHelper;
     }
 
@@ -41,6 +35,6 @@ class Messagetype extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Abs
     public function render(DataObject $row)
     {
         $logconfigurl = $this->backendHelper->getUrl('adminhtml/system_config/edit/section/emarsyslog');
-        printf("<a href='" . $logconfigurl . "' style='text-decoration:none'><div style='color:red'>Edit</div></a>");
+        echo "<a href='" . $logconfigurl . "' style='text-decoration:none'><div style='color:red'>Edit</div></a>";
     }
 }

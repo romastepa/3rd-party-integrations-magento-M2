@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -142,7 +142,7 @@ class Event extends AbstractHelper
     }
 
     /**
-     * @param $websiteId
+     * @param  $websiteId
      * @return array|bool
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */

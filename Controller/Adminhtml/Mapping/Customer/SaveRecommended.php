@@ -1,19 +1,24 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 
-use Magento\{
+use Magento\{Backend\App\Action,
     Backend\App\Action\Context,
+    Backend\Model\Session,
+    Framework\Controller\Result\Redirect,
+    Framework\Exception\LocalizedException,
+    Framework\Exception\NoSuchEntityException,
     Framework\View\Result\PageFactory,
     Framework\App\Config\ScopeConfigInterface,
     Framework\Stdlib\DateTime\DateTime,
     Store\Model\StoreManagerInterface
 };
+use Exception;
 use Emarsys\Emarsys\{
     Model\CustomerFactory,
     Model\ResourceModel\Customer,
@@ -21,8 +26,9 @@ use Emarsys\Emarsys\{
     Model\Logs,
     Helper\Logs as EmarsysHelperLogs
 };
+use Zend_Json;
 
-class SaveRecommended extends \Magento\Backend\App\Action
+class SaveRecommended extends Action
 {
     /**
      * @var PageFactory
@@ -30,7 +36,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -109,9 +115,9 @@ class SaveRecommended extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -172,7 +178,7 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 }
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Recommended Mapping';
-                $logsArray['description'] = 'Saved Recommended Mapping as ' . \Zend_Json::encode($emarsysCodes);
+                $logsArray['description'] = 'Saved Recommended Mapping as ' . Zend_Json::encode($emarsysCodes);
                 $logsArray['action'] = 'Update Schema Successful';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -181,18 +187,18 @@ class SaveRecommended extends \Magento\Backend\App\Action
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Update Schema Completed Successfully';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addSuccessMessage("Recommended Customer attributes mapped successfully");
+                $this->messageManager->addSuccessMessage(__("Recommended Customer attributes mapped successfully"));
             } else {
-                $this->messageManager->addErrorMessage("No Recommendations are added");
+                $this->messageManager->addErrorMessage(__("No Recommendations are added"));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Running Customer Recommended Mapping',
                 $e->getMessage(),
                 $storeId,
                 'SaveSchema(Customer)'
             );
-            $this->messageManager->addErrorMessage("Error occurred while mapping Customer attribute");
+            $this->messageManager->addErrorMessage(__("Error occurred while mapping Customer attribute"));
         }
         $resultRedirect = $this->resultRedirectFactory->create();
 

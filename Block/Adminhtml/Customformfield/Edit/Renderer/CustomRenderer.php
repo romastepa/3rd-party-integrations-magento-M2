@@ -1,38 +1,47 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Customformfield\Edit\Renderer;
 
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Data\Form\Element\AbstractElement;
+use Magento\Framework\Data\Form\Element\CollectionFactory;
 use Magento\Framework\Data\Form\Element\Factory as Factory;
+use Magento\Framework\Escaper;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\StoreManagerInterface;
 
-class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElement
+class CustomRenderer extends AbstractElement
 {
     /**
      * CustomRenderer constructor.
      *
      * @param Factory $factoryElement
-     * @param \Magento\Framework\Data\Form\Element\CollectionFactory $factoryCollection
-     * @param \Magento\Framework\Escaper $escaper
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManagerInterface
-     * @param \Magento\Framework\App\Request\Http $http
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
-     * @param \Magento\Catalog\Model\Category $category
+     * @param CollectionFactory $factoryCollection
+     * @param Escaper $escaper
+     * @param ScopeConfigInterface $scopeConfigInterface
+     * @param StoreManagerInterface $storeManagerInterface
+     * @param Http $http
+     * @param CategoryFactory $categoryFactory
+     * @param Category $category
      * @param array $data
      */
     public function __construct(
         Factory $factoryElement,
-        \Magento\Framework\Data\Form\Element\CollectionFactory $factoryCollection,
-        \Magento\Framework\Escaper $escaper,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface,
-        \Magento\Store\Model\StoreManagerInterface $storeManagerInterface,
-        \Magento\Framework\App\Request\Http $http,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
-        \Magento\Catalog\Model\Category $category,
+        CollectionFactory $factoryCollection,
+        Escaper $escaper,
+        ScopeConfigInterface $scopeConfigInterface,
+        StoreManagerInterface $storeManagerInterface,
+        Http $http,
+        CategoryFactory $categoryFactory,
+        Category $category,
         array $data = []
     ) {
         parent::__construct($factoryElement, $factoryCollection, $escaper, $data);
@@ -45,7 +54,7 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
 
     /**
      * @return string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getElementHtml()
     {
@@ -67,10 +76,10 @@ class CustomRenderer extends \Magento\Framework\Data\Form\Element\AbstractElemen
     }
 
     /**
-     * @param $parentId
+     * @param  $parentId
      * @param int $level
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getTreeCategories($parentId, $level = 1)
     {

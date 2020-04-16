@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -278,7 +278,9 @@ class Product extends AbstractModel
 
             $allStores = $this->storeManager->getStores();
 
-            /** @var \Magento\Store\Model\Store $store */
+            /**
+             * @var \Magento\Store\Model\Store $store
+             */
             foreach ($allStores as $store) {
                 $this->setCredentials($store, $logsArray);
             }
@@ -369,15 +371,19 @@ class Product extends AbstractModel
                             $product->setStoreId($storeId);
                             $products[$product->getId()] = [
                                 'entity_id' => $product->getId(),
-                                'params' => serialize([
-                                    'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
-                                    'store' => $store['store']->getCode(),
-                                    'store_id' => $store['store']->getId(),
-                                    'data' => $this->_getProductData($magentoAttributeNames[$storeId], $product,
-                                        $categoryNames, $store['store'], $collection, $logsArray),
-                                    'header' => $header,
-                                    'currency_code' => $currencyStoreCode,
-                                ]),
+                                'params' => serialize(
+                                    [
+                                        'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
+                                        'store' => $store['store']->getCode(),
+                                        'store_id' => $store['store']->getId(),
+                                        'data' => $this->_getProductData(
+                                            $magentoAttributeNames[$storeId], $product,
+                                            $categoryNames, $store['store'], $collection, $logsArray
+                                        ),
+                                        'header' => $header,
+                                        'currency_code' => $currencyStoreCode,
+                                    ]
+                                ),
                             ];
                         }
 
@@ -652,9 +658,11 @@ class Product extends AbstractModel
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
                         if ($this->_mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                            $this->messageManager->addErrorMessage(__(
-                                'Invalid API credential. Please check your settings and try again !!!'
-                            ));
+                            $this->messageManager->addErrorMessage(
+                                __(
+                                    'Invalid API credential. Please check your settings and try again !!!'
+                                )
+                            );
                         }
                         return;
                     }
@@ -670,9 +678,11 @@ class Product extends AbstractModel
                         $logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($logsArray);
                         if ($this->_mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
-                            $this->messageManager->addErrorMessage(__(
-                                'Failed to connect with FTP server. Please check your settings and try again!'
-                            ));
+                            $this->messageManager->addErrorMessage(
+                                __(
+                                    'Failed to connect with FTP server. Please check your settings and try again!'
+                                )
+                            );
                         }
                         return;
                     }
@@ -732,9 +742,9 @@ class Product extends AbstractModel
     /**
      * Get Category Names
      *
-     * @param $catIds
-     * @param $storeId
-     * @param $excludedCategories
+     * @param  $catIds
+     * @param  $storeId
+     * @param  $excludedCategories
      * @return array
      */
     public function getCategoryNames($catIds, $storeId, $excludedCategories = [])
@@ -773,9 +783,9 @@ class Product extends AbstractModel
     }
 
     /**
-     * @param $magentoAttributeNames
+     * @param  $magentoAttributeNames
      * @param \Magento\Catalog\Model\Product $productObject
-     * @param $categoryNames
+     * @param  $categoryNames
      * @param \Magento\Store\Model\Store $store
      * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
      * @param array $logsArray
@@ -828,7 +838,9 @@ class Product extends AbstractModel
                         $attributeData[] = implode(',', $attributeOption);
                         break;
                     case 'image':
-                        /** @var \Magento\Catalog\Helper\Image $helper */
+                        /**
+                         * @var \Magento\Catalog\Helper\Image $helper
+                         */
                         $url = $this->imageHelper
                             ->init($productObject, 'product_base_image')
                             ->setImageFile($attributeOption)
@@ -893,8 +905,8 @@ class Product extends AbstractModel
     }
 
     /**
-     * @param $attributeCode
-     * @return  AbstractAttribute
+     * @param  $attributeCode
+     * @return AbstractAttribute
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function getEavAttribute($attributeCode)

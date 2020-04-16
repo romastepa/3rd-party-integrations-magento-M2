@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -64,7 +64,7 @@ class CustomerBulkExportApi
                 EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
                 $data
             );
-        } catch (\Excepiton $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_CUSTOMER,
                 $e->getMessage(),

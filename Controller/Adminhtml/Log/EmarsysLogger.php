@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Log;
@@ -10,6 +10,10 @@ namespace Emarsys\Emarsys\Controller\Adminhtml\Log;
 use Magento\Backend\App\Action;
 use Emarsys\Emarsys\Model\ResourceModel\Logs;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\LocalizedException;
+use Zend\Log\Logger;
+use Zend\Log\Writer\Stream;
 
 class EmarsysLogger extends Action
 {
@@ -22,7 +26,7 @@ class EmarsysLogger extends Action
      * EmarsysLogger constructor.
      *
      * @param Context $context
-     * @param Customer $logsResourceModel
+     * @param Logs $logsResourceModel
      */
     public function __construct(
         Context $context,
@@ -33,8 +37,8 @@ class EmarsysLogger extends Action
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect | false | int
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return Redirect | false | int
+     * @throws LocalizedException
      */
     public function execute()
     {
@@ -43,8 +47,8 @@ class EmarsysLogger extends Action
         if (file_exists($filePath)) {
             unlink($filePath);
         }
-        $writer = new \Zend\Log\Writer\Stream($filePath);
-        $logger = new \Zend\Log\Logger();
+        $writer = new Stream($filePath);
+        $logger = new Logger();
         $logger->addWriter($writer);
         foreach ($logData as $log) {
             $data = "[" . $log['created_at'] . "] : " . $log['message_type'] . " : " . $log['description'];

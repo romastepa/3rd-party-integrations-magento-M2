@@ -1,23 +1,28 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Support;
 
-use Magento\{
-    Backend\App\Action,
+use Magento\{Backend\App\Action,
     Backend\App\Action\Context,
+    Backend\App\Area\FrontNameResolver,
     Backend\Model\Auth\Session,
     Framework\App\Config\ScopeConfigInterface,
+    Framework\App\ResponseInterface,
+    Framework\Controller\ResultInterface,
+    Framework\Exception\LocalizedException,
+    Framework\Exception\NoSuchEntityException,
     Framework\Translate\Inline\StateInterface,
     Store\Model\StoreManagerInterface,
-    Framework\Mail\Template\TransportBuilder
-};
+    Framework\Mail\Template\TransportBuilder};
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Exception;
 use Psr\Log\LoggerInterface as Logger;
+use Zend_Filter_Input;
 
 class Save extends Action
 {
@@ -105,8 +110,8 @@ class Save extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return ResponseInterface|ResultInterface|void
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -129,14 +134,14 @@ class Save extends Action
                 $templateVars['subject'] = $type . ' - ' . $subject;
                 $templateVars['priority'] = $priority;
                 $templateVars['message'] = $message;
-                $templateVars['store_name'] = $this->storeManager->getStore()->getName();;
+                $templateVars['store_name'] = $this->storeManager->getStore()->getName();
                 $templateVars['domain'] = $this->storeManager->getStore()->getBaseUrl();
                 $templateVars['phpvalue'] = $req['php_version']['current']['value'];
                 $templateVars['memoryvalue'] = $req['memory_limit']['current']['value'];
                 $templateVars['magentovalue'] = $req['magento_version']['current']['value'];
                 $templateVars['curlvalue'] = $req['curl_enabled']['current']['value'];
                 $templateVars['soapvalue'] = $req['soap_enabled']['current']['value'];
-                $inputFilter = new \Zend_Filter_Input(
+                $inputFilter = new Zend_Filter_Input(
                     [],
                     [],
                     $data
@@ -155,7 +160,7 @@ class Save extends Action
                         'name' => $name,
                     ];
                     $templateOptions = [
-                        'area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
+                        'area' => FrontNameResolver::AREA_CODE,
                         'store' => $storeId,
                     ];
 
@@ -173,12 +178,12 @@ class Save extends Action
                 $data = $inputFilter->getUnescaped();
                 $id = $this->getRequest()->getParam('id');
                 if ($id) {
-                    throw new \Magento\Framework\Exception\LocalizedException(__('The wrong item is specified.'));
+                    throw new LocalizedException(__('The wrong item is specified.'));
                 }
                 $this->messageManager->addSuccessMessage(__('Request send succesfully'));
                 $this->_redirect('emarsys_emarsys/support/index');
                 return;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->messageManager->addErrorMessage(__($e->getMessage()));
                 $this->logger->critical($e);
                 $this->session->setPageData($data);

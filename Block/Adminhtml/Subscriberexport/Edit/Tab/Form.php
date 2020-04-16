@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Subscriberexport\Edit\Tab;
@@ -13,11 +13,12 @@ use Magento\Framework\Data\FormFactory;
 use Magento\Framework\App\Request\Http;
 use Magento\Backend\Block\Widget\Form\Generic;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Store\Model\StoreManagerInterface as StoreManagerInterface;
 
 class Form extends Generic
 {
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $storeManager;
 
@@ -80,14 +81,16 @@ class Form extends Generic
         if ($productExportStatus == 1 || $smartInsightEnable == 1) {
             $values['product'] = 'Product';
         }
-        $fieldset->addField("entitytype", "select", [
-            'label' => 'Export Entity Type',
-            'name' => 'entity_type',
-            'values' => $values,
-            'style' => 'width:200px',
-            'value' => 'subscriber',
-            'onchange' => "bulkExport(this.value)",
-        ]);
+        $fieldset->addField(
+            "entitytype", "select", [
+                'label' => 'Export Entity Type',
+                'name' => 'entity_type',
+                'values' => $values,
+                'style' => 'width:200px',
+                'value' => 'subscriber',
+                'onchange' => "bulkExport(this.value)",
+            ]
+        );
 
         return parent::_prepareForm();
     }

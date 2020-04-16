@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Support;
@@ -135,8 +135,10 @@ class About extends MagentoBackendBlockWidgetForm
                             );
                             $dateAdded = $this->date->date('Y-m-d H:i:s', strtotime('-7 days'));
 
-                            $adminNotification = $this->notificationCollectionFactory->addFieldToFilter('title',
-                                ['eq' => $title])
+                            $adminNotification = $this->notificationCollectionFactory->addFieldToFilter(
+                                'title',
+                                ['eq' => $title]
+                            )
                                 ->addFieldToFilter('date_added', ['gteq' => $dateAdded])
                                 ->setOrder('date_added', 'DESC');
 

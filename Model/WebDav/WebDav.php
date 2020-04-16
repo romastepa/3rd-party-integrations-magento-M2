@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\WebDav;
@@ -75,8 +75,8 @@ class WebDav extends DataObject
     }
 
     /**
-     * @param $exportMode
-     * @param $data
+     * @param  $exportMode
+     * @param  $data
      * @throws \Exception
      */
     public function syncFullContactUsingWebDav($exportMode, $data)
@@ -163,9 +163,9 @@ class WebDav extends DataObject
     }
 
     /**
-     * @param $exportMode
-     * @param $data
-     * @param $logId
+     * @param  $exportMode
+     * @param  $data
+     * @param  $logId
      * @return bool
      * @throws \Exception
      */

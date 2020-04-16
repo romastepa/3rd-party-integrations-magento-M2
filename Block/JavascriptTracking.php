@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block;
@@ -176,14 +176,16 @@ class JavascriptTracking extends Template
      */
     public function getTrackingData()
     {
-        return \Zend_Json::encode([
-            'product' => $this->getCurrentProduct(),
-            'category' => $this->getCategory(),
-            'search' => $this->getSearchData(),
-            'useBaseCurrency' => $this->useBaseCurrency(),
-            'slug' => $this->getStoreSlug(),
-            'displayCurrency' => $this->getDisplayCurrency(),
-        ]);
+        return \Zend_Json::encode(
+            [
+                'product' => $this->getCurrentProduct(),
+                'category' => $this->getCategory(),
+                'search' => $this->getSearchData(),
+                'useBaseCurrency' => $this->useBaseCurrency(),
+                'slug' => $this->getStoreSlug(),
+                'displayCurrency' => $this->getDisplayCurrency(),
+            ]
+        );
     }
 
     /**
@@ -219,13 +221,17 @@ class JavascriptTracking extends Template
 
             $categoryIds = $this->removeDefaultCategories($category->getPathIds());
 
-            /** @var Collection $categoryCollection */
+            /**
+             * @var Collection $categoryCollection
+             */
             $categoryCollection = $this->categoryCollectionFactory->create()
                 ->addIdFilter($categoryIds)
                 ->setStore($this->storeManager->getStore())
                 ->addAttributeToSelect('name');
 
-            /** @var Category $category */
+            /**
+             * @var Category $category
+             */
             foreach ($categoryCollection as $categoryItem) {
                 $categoryList[] = addcslashes($categoryItem->getName(), "'");
             }
@@ -303,7 +309,7 @@ class JavascriptTracking extends Template
     }
 
     /**
-     * @param $store
+     * @param  $store
      * @return bool
      */
     public function isDefault($store)

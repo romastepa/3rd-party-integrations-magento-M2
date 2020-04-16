@@ -1,18 +1,21 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\EventFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Event;
 use Emarsys\Emarsys\Model\PlaceholdersFactory;
+use Zend_Json;
 
 class Saveplaceholdermapping extends Action
 {
@@ -22,7 +25,7 @@ class Saveplaceholdermapping extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -66,18 +69,18 @@ class Saveplaceholdermapping extends Action
             $resultRedirect = $this->resultRedirectFactory->create();
             $placeholderData = $this->getRequest()->getPost('placeholderData');
             $placeholders = html_entity_decode($placeholderData);
-            $placeholderDataDecode = \Zend_Json::decode($placeholders, true);
+            $placeholderDataDecode = Zend_Json::decode($placeholders, true);
 
             foreach ($placeholderDataDecode as $placeholderItem) {
                 foreach ($placeholderItem as $key => $value) {
                     $emarsysEventPlaceholderMapping = $this->emarsysEventPlaceholderMappingFactory->create()
                         ->load($key);
-                    $emarsysEventPlaceholderMapping->setEmarsysPlaceholderName($value);
-                    $emarsysEventPlaceholderMapping->save();
+                    $emarsysEventPlaceholderMapping->setEmarsysPlaceholderName($value)
+                        ->save();
                 }
             }
             $this->messageManager->addSuccessMessage(__('Placeholders mapped successfully'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addErrorMessage(__('Error occurred while mapping Event %1', $e->getMessage()));
         }
 

@@ -1,13 +1,16 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Webdav;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Helper\Logs;
@@ -38,6 +41,11 @@ class Index extends Action
     protected $webDavExport;
 
     /**
+     * @var DateTime
+     */
+    protected $date;
+
+    /**
      * Index constructor.
      *
      * @param EmarsysHelper $emarsysHelper
@@ -63,6 +71,10 @@ class Index extends Action
         parent::__construct($context);
     }
 
+    /**
+     * @return ResponseInterface|ResultInterface|void
+     * @throws FileSystemException
+     */
     public function execute()
     {
         $params = $this->getRequest()->getParams();
@@ -109,7 +121,7 @@ class Index extends Action
                 }
                 //save webdav_url information in respected configuration.
                 $this->config->saveConfig(
-                    'emarsys_settings/webdav_setting/webdav_url',
+                    'emartech/webdav_setting/webdav_url',
                     $webDavUrl,
                     $scopeType,
                     $scopeId
@@ -124,7 +136,7 @@ class Index extends Action
 
                 //save webdav_user information in respected configuration.
                 $this->config->saveConfig(
-                    'emarsys_settings/webdav_setting/webdav_user',
+                    'emartech/webdav_setting/webdav_user',
                     $webDavUser,
                     $scopeType,
                     $scopeId
@@ -139,7 +151,7 @@ class Index extends Action
 
                 //save webdav_password information in respected configuration.
                 $this->config->saveConfig(
-                    'emarsys_settings/webdav_setting/webdav_password',
+                    'emartech/webdav_setting/webdav_password',
                     $webDavPass,
                     $scopeType,
                     $scopeId
@@ -161,9 +173,11 @@ class Index extends Action
                 $this->logsHelper->manualLogs($logsArray);
             } else {
                 //test connection is failed.
-                $this->messageManager->addErrorMessage(__(
-                    'Connection failed. Please check your credentials and try again.'
-                ));
+                $this->messageManager->addErrorMessage(
+                    __(
+                        'Connection failed. Please check your credentials and try again.'
+                    )
+                );
                 $logsArray['id'] = $logId;
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -174,9 +188,11 @@ class Index extends Action
             }
         } else {
             //valid credentials not found.
-            $this->messageManager->addErrorMessage(__(
-                'Connection failed. Please check your credentials and try again.'
-            ));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'Connection failed. Please check your credentials and try again.'
+                )
+            );
             $logsArray['id'] = $logId;
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());

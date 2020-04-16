@@ -1,14 +1,16 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
+use Emarsys\Emarsys\Block\Adminhtml\Scheduler\Grid;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\Exception\LocalizedException;
 
 class Scheduler extends Template
 {
@@ -29,14 +31,14 @@ class Scheduler extends Template
 
     /**
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _prepareLayout()
     {
         $this->setChild(
             'grid',
             $this->getLayout()->createBlock(
-                \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Grid::class,
+                Grid::class,
                 'emarsys.logs.grid'
             )
         );

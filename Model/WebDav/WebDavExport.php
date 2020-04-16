@@ -1,15 +1,17 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\WebDav;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\File\Csv;
+use Magento\Framework\Phrase;
 
 class WebDavExport extends Curl
 {
@@ -50,12 +52,12 @@ class WebDavExport extends Curl
     }
 
     /**
-     * @param $filePath
-     * @param $fileName
-     * @param $webDavUrl
-     * @param $webDavUser
-     * @param $webDavPass
-     * @return bool|\Magento\Framework\Phrase|string
+     * @param  $filePath
+     * @param  $fileName
+     * @param  $webDavUrl
+     * @param  $webDavUser
+     * @param  $webDavPass
+     * @return bool|Phrase|string
      */
     public function apiExport($filePath, $fileName, $webDavUrl, $webDavUser, $webDavPass)
     {
@@ -101,11 +103,11 @@ class WebDavExport extends Curl
     }
 
     /**
-     * @param $webDavUrl
-     * @param $webDavUser
-     * @param $webDavPass
-     * @return bool|int|\Magento\Framework\Phrase|string
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @param  $webDavUrl
+     * @param  $webDavUser
+     * @param  $webDavPass
+     * @return bool|int|Phrase|string
+     * @throws FileSystemException
      */
     public function testWebDavConnection($webDavUrl, $webDavUser, $webDavPass)
     {

@@ -32,7 +32,7 @@ class UpgradeData implements UpgradeDataInterface
             $tableName = $setup->getTable('core_config_data');
             $connection->update(
                 $tableName,
-                ['path' => new \Zend_Db_Expr('(TRIM(LEADING "crontab/default/jobs/" FROM `path`))')],
+                ['path' => '(TRIM(LEADING "crontab/default/jobs/" FROM `path`))'],
                 $connection->quoteInto('`path` like ?', '%crontab/default/jobs/emarsys%')
             );
             $connection->update(
@@ -49,6 +49,16 @@ class UpgradeData implements UpgradeDataInterface
                 ['config_path = ?' => 'admin/emails/forgot_email_template']
             );
         }
+
+        if (version_compare($context->getVersion(), "1.1.0", "<")) {
+            $tableName = $setup->getTable('core_config_data');
+            $setup->getConnection()->update(
+                $tableName,
+                ['path' => 'REPLACE(`path`, "emarsys_settings/", "emartech/")'],
+                'INSTR(`path`, "emarsys_settings/")'
+            );
+        }
+
         $setup->endSetup();
     }
 }

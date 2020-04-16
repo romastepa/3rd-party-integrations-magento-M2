@@ -1,18 +1,21 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Framework\{
+use Exception;
+use Magento\Framework\{Exception\FileSystemException,
+    Exception\LocalizedException,
+    Exception\NoSuchEntityException,
     HTTP\ZendClient,
     Controller\Result\RawFactory,
-    File\Csv
-};
+    File\Csv};
 
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 
 use Emarsys\Emarsys\{
@@ -20,6 +23,10 @@ use Emarsys\Emarsys\{
     Model\ResourceModel\Order as OrderResourceModel,
     Model\ResourceModel\Product as ProductResourceModel
 };
+use Zend_Http_Client;
+use Zend_Http_Client_Exception;
+use Zend_Http_Response;
+use Zend_Json;
 
 class ApiExport extends ZendClient
 {
@@ -106,9 +113,9 @@ class ApiExport extends ZendClient
     /**
      * Get API Headers
      *
-     * @param $token
+     * @param  $token
      * @return array|bool
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getApiHeaders($token)
     {
@@ -139,8 +146,8 @@ class ApiExport extends ZendClient
      * @param bool $apiUrl
      * @param bool $filePath
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Zend_Http_Client_Exception
+     * @throws NoSuchEntityException
+     * @throws Zend_Http_Client_Exception
      */
     public function apiExport($apiUrl = false, $filePath = false)
     {
@@ -178,15 +185,15 @@ class ApiExport extends ZendClient
     /**
      * Requests API call
      *
-     * @param $apiCall
+     * @param  $apiCall
      * @param string $method
      * @param array $data
      * @param bool $jsonDecode
-     * @return mixed|string|\Zend_Http_Response
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Zend_Http_Client_Exception
+     * @return mixed|string|Zend_Http_Response
+     * @throws NoSuchEntityException
+     * @throws Zend_Http_Client_Exception
      */
-    protected function _request($apiCall, $method = \Zend_Http_Client::GET, $data = [], $jsonDecode = true)
+    protected function _request($apiCall, $method = Zend_Http_Client::GET, $data = [], $jsonDecode = true)
     {
         $this->setUri($this->_apiUrl);
         $this->setHeaders($this->getApiHeaders($this->_token));
@@ -204,9 +211,9 @@ class ApiExport extends ZendClient
             $responseObject = $this->request($method);
             $response = $responseObject;
             if ($jsonDecode) {
-                $response = \Zend_Json::decode($response);
+                $response = Zend_Json::decode($response);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->emarsysHelper->addErrorLog(
                 'API Test Connection',
                 'API Test Connection Failed. | ' . $e->getMessage(),
@@ -219,11 +226,11 @@ class ApiExport extends ZendClient
     }
 
     /**
-     * @param $apiCall
+     * @param  $apiCall
      * @param array $data
-     * @return mixed|string|\Zend_Http_Response
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Zend_Http_Client_Exception
+     * @return mixed|string|Zend_Http_Response
+     * @throws NoSuchEntityException
+     * @throws Zend_Http_Client_Exception
      */
     public function post($apiCall, $data = [])
     {
@@ -231,7 +238,7 @@ class ApiExport extends ZendClient
             $data = $data->toArray();
         }
 
-        return $this->_request($apiCall, \Zend_Http_Client::POST, $data, false);
+        return $this->_request($apiCall, Zend_Http_Client::POST, $data, false);
     }
 
     /**
@@ -276,7 +283,7 @@ class ApiExport extends ZendClient
      *
      * @param array $headers
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function sampleDataCatalogExport($headers)
     {
@@ -310,7 +317,9 @@ class ApiExport extends ZendClient
      */
     public function sampleDataSmartInsightExport($headers)
     {
-        /** @var \Magento\Store\Model\Store $store */
+        /**
+         * @var Store $store
+         */
         $sampleResult = [];
 
         //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
@@ -337,11 +346,11 @@ class ApiExport extends ZendClient
     /**
      * Test Smart Insight API Credentials
      *
-     * @param $storeId
+     * @param  $storeId
      * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
+     * @throws FileSystemException
+     * @throws LocalizedException
+     * @throws Zend_Http_Client_Exception
      */
     public function testSIExportApi($storeId)
     {
@@ -351,11 +360,11 @@ class ApiExport extends ZendClient
     /**
      * Test Catalog Export Api Credentials
      *
-     * @param $storeId
+     * @param  $storeId
      * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
+     * @throws FileSystemException
+     * @throws LocalizedException
+     * @throws Zend_Http_Client_Exception
      */
     public function testCatalogExportApi($storeId)
     {
@@ -365,11 +374,11 @@ class ApiExport extends ZendClient
     /**
      * @param $entityType
      *
-     * @param $storeId
+     * @param  $storeId
      * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
+     * @throws FileSystemException
+     * @throws LocalizedException
+     * @throws Zend_Http_Client_Exception
      */
     private function testApiExport($entityType, $storeId)
     {

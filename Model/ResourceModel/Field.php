@@ -1,18 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
 use Emarsys\Emarsys\Model\ContactFieldOption as ModelContactFieldOption;
-use Magento\{
+use Magento\{Framework\DataObject,
+    Framework\Exception\LocalizedException,
+    Framework\Model\ResourceModel\Db\Collection\AbstractCollection,
     Store\Api\StoreRepositoryInterface,
     Framework\Model\ResourceModel\Db\Context,
-    Framework\Model\ResourceModel\Db\AbstractDb
-};
+    Framework\Model\ResourceModel\Db\AbstractDb};
 
 class Field extends AbstractDb
 {
@@ -58,9 +59,9 @@ class Field extends AbstractDb
     /**
      * Checking count of the mapping table
      *
-     * @param $storeId
+     * @param  $storeId
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function checkOptionsMapping($storeId)
     {
@@ -75,8 +76,8 @@ class Field extends AbstractDb
     /**
      * truncate the mapping table
      *
-     * @param $storeId
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @param  $storeId
+     * @throws LocalizedException
      */
     public function truncateMappingTable($storeId)
     {
@@ -88,7 +89,7 @@ class Field extends AbstractDb
 
     /**
      * @param array $fieldOptions
-     * @param $storeId
+     * @param  $storeId
      * @return bool
      */
     public function updateOptionSchema($fieldOptions = [], $storeId)
@@ -107,7 +108,7 @@ class Field extends AbstractDb
                         'store_id' => $storeId,
                     ];
                     $data = $this->_prepareDataForTable(
-                        new \Magento\Framework\DataObject($data),
+                        new DataObject($data),
                         $this->getTable("emarsys_contact_field_option")
                     );
                     $this->getConnection()->insert($this->getTable("emarsys_contact_field_option"), $data);
@@ -121,7 +122,7 @@ class Field extends AbstractDb
 
     /**
      * @param $storeId
-     * @return $this
+     * @return AbstractCollection
      */
     public function getEmarsysFieldOption($storeId)
     {
@@ -139,7 +140,7 @@ class Field extends AbstractDb
     }
 
     /**
-     * @param $attributeCode
+     * @param  $attributeCode
      * @return string
      */
     public function getCustomerAttributeId($attributeCode)
@@ -166,10 +167,10 @@ class Field extends AbstractDb
     }
 
     /**
-     * @param $magentoOptionId
-     * @param $emarsysOptionId
-     * @param $emarsysFieldId
-     * @param $storeId
+     * @param  $magentoOptionId
+     * @param  $emarsysOptionId
+     * @param  $emarsysFieldId
+     * @param  $storeId
      * @return string
      */
     public function checkSelectedOption($magentoOptionId, $emarsysOptionId, $emarsysFieldId, $storeId)
@@ -191,7 +192,7 @@ class Field extends AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return string
      */
     public function getEmarsysOptionCount($storeId)
@@ -205,7 +206,7 @@ class Field extends AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      */
     public function getRecommendedFieldAttribute($storeId)

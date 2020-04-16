@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -137,7 +137,9 @@ class SyncContactsSubscriptionData
     {
         $queue = [];
 
-        /** @var  \Magento\Store\Model\Website $website */
+        /**
+         * @var \Magento\Store\Model\Website $website
+         */
         $websites = $this->storeManager->getWebsites();
         foreach ($websites as $website) {
             if (!$this->emarsysHelper->isContactsSynchronizationEnable($website->getId())) {
@@ -241,7 +243,7 @@ class SyncContactsSubscriptionData
     /**
      * @param array $websiteId
      * @param bool $isTimeBased
-     * @param $storeId
+     * @param  $storeId
      * @return string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */

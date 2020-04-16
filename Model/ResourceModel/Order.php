@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
@@ -99,7 +99,7 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return string
      */
     public function getEmarsysAttrCount($storeId)
@@ -118,18 +118,20 @@ class Order extends AbstractDb
      */
     public function getSalesOrderColumnNames()
     {
-        $stmt = $this->getConnection()->query("
+        $stmt = $this->getConnection()->query(
+            "
             SELECT `COLUMN_NAME` 
             FROM `INFORMATION_SCHEMA`.`COLUMNS` 
             WHERE table_schema = DATABASE() 
             AND `TABLE_NAME`='" . $this->getTable('sales_order') . "'
-        ");
+        "
+        );
         return $stmt->fetchAll();
     }
 
     /**
-     * @param $data
-     * @param $storeId
+     * @param  $data
+     * @param  $storeId
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function insertIntoMappingTable($data, $storeId)
@@ -144,17 +146,19 @@ class Order extends AbstractDb
             $result = $this->getConnection()->fetchAll($select);
 
             if (empty($result)) {
-                $this->getConnection()->insert($this->getMainTable(), [
-                    'magento_column_name' => $value['COLUMN_NAME'],
-                    'store_id' => $storeId,
-                ]);
+                $this->getConnection()->insert(
+                    $this->getMainTable(), [
+                        'magento_column_name' => $value['COLUMN_NAME'],
+                        'store_id' => $storeId,
+                    ]
+                );
             }
         }
     }
 
     /**
-     * @param $data
-     * @param $storeId
+     * @param  $data
+     * @param  $storeId
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function insertIntoMappingTableStaticData($data, $storeId)
@@ -181,8 +185,8 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $data
-     * @param $storeId
+     * @param  $data
+     * @param  $storeId
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function insertIntoMappingTableCustomValue($data, $storeId)
@@ -197,11 +201,13 @@ class Order extends AbstractDb
             if (!$result) {
                 //insert the attribute
                 //for the first time enter the empty records for the emarsys id
-                $this->getConnection()->insert($this->getMainTable(), [
-                    'magento_column_name' => $key,
-                    'emarsys_order_field' => $value,
-                    'store_id' => $storeId,
-                ]);
+                $this->getConnection()->insert(
+                    $this->getMainTable(), [
+                        'magento_column_name' => $key,
+                        'emarsys_order_field' => $value,
+                        'store_id' => $storeId,
+                    ]
+                );
             } else {
                 //else update the attribute value
                 $this->getConnection()->update(
@@ -214,7 +220,7 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -229,7 +235,7 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array|false
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -253,7 +259,7 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return mixed
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -275,8 +281,8 @@ class Order extends AbstractDb
     }
 
     /**
-     * @param $emarsysOrderField
-     * @param $storeId
+     * @param  $emarsysOrderField
+     * @param  $storeId
      * @return int|void
      * @throws \Magento\Framework\Exception\LocalizedException
      */

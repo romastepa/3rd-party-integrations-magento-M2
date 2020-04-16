@@ -1,18 +1,20 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
-use Magento\{
-    Backend\App\Action,
+use Magento\{Backend\App\Action,
     Backend\App\Action\Context,
+    Framework\Controller\Result\Redirect,
+    Framework\Exception\LocalizedException,
+    Framework\Exception\NoSuchEntityException,
     Store\Model\StoreManagerInterface,
-    Framework\Stdlib\DateTime\DateTime
-};
+    Framework\Stdlib\DateTime\DateTime};
+use Exception;
 use Emarsys\Emarsys\{
     Model\ProductFactory,
     Model\ResourceModel\Product\CollectionFactory,
@@ -21,6 +23,7 @@ use Emarsys\Emarsys\{
     Helper\Logs as EmarsysHelperLogs,
     Model\ResourceModel\Product
 };
+use Zend_Json;
 
 class SaveRecommended extends Action
 {
@@ -101,9 +104,9 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -157,17 +160,15 @@ class SaveRecommended extends Action
             $logsArray['emarsys_info'] = 'Saved Recommended Mapping';
             $logsArray['action'] = 'Saved Recommended Mapping';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Saved Recommended Mapping as ' . \Zend_Json::encode($recommendedArray);
+            $logsArray['description'] = 'Saved Recommended Mapping as ' . Zend_Json::encode($recommendedArray);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Product Recommended Mapping Saved Successfully';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage(__(
-                'Recommended Product attributes mapped successfully'
-            ));
-        } catch (\Exception $e) {
+            $this->messageManager->addSuccessMessage(__('Recommended Product attributes mapped successfully'));
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Product Recommended Mapping',
                 $e->getMessage(),

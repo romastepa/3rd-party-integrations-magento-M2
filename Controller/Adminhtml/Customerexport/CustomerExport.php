@@ -1,12 +1,13 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
+use Exception;
 use Emarsys\Emarsys\{
     Helper\Data as EmarsysHelper,
     Model\ResourceModel\Customer,
@@ -14,15 +15,17 @@ use Emarsys\Emarsys\{
     Helper\Cron as EmarsysCronHelper,
     Model\Logs
 };
-use Magento\{
-    Backend\App\Action,
+use Magento\{Backend\App\Action,
+    Framework\App\ResponseInterface,
+    Framework\Controller\Result\Redirect,
+    Framework\Controller\ResultInterface,
+    Framework\Exception\NoSuchEntityException,
     Framework\Stdlib\DateTime\DateTime,
     Backend\App\Action\Context,
     Store\Model\StoreManagerInterface,
     Framework\Stdlib\DateTime\Timezone,
     Framework\Stdlib\DateTime\TimezoneInterface,
-    Framework\App\Request\Http
-};
+    Framework\App\Request\Http};
 
 class CustomerExport extends Action
 {
@@ -120,8 +123,8 @@ class CustomerExport extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return ResponseInterface|Redirect|ResultInterface
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -148,7 +151,9 @@ class CustomerExport extends Action
                 $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
             }
 
-            /** @var Customer $customerCollection */
+            /**
+             * @var Customer $customerCollection
+             */
             $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
             if (!$customerCollection->getSize()) {
                 //no customer found for the store
@@ -178,12 +183,14 @@ class CustomerExport extends Action
             //save details in cron details table
             $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-            $this->messageManager->addSuccessMessage(__(
-                'A cron named "%1" have been scheduled for customers export for the store %2.',
-                EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
-                $store->getName()
-            ));
-        } catch (\Exception $e) {
+            $this->messageManager->addSuccessMessage(
+                __(
+                    'A cron named "%1" have been scheduled for customers export for the store %2.',
+                    EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
+                    $store->getName()
+                )
+            );
+        } catch (Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
                 'CustomerExport',

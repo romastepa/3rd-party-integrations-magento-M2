@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -77,7 +77,7 @@ class Country extends AbstractHelper
     }
 
     /**
-     * @param $storeId
+     * @param  $storeId
      * @return array
      * @throws \Exception
      * @throws \Zend_Json_Exception
@@ -114,7 +114,7 @@ class Country extends AbstractHelper
     }
 
     /**
-     * @param $store
+     * @param  $store
      * @return array
      * @throws \Zend_Json_Exception
      */

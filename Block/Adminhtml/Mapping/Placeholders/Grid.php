@@ -1,23 +1,27 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders;
 
-use Magento\{
-    Backend\Block\Widget\Grid\Extended,
-    Backend\Block\Template\Context,
-    Backend\Helper\Data,
-    Framework\Message\ManagerInterface as MessageManagerInterface,
-    Framework\App\ResponseFactory
-};
-use Emarsys\Emarsys\{
-    Model\PlaceholdersFactory,
-    Helper\Data as EmarsysHelper
-};
+use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Block\Widget\Grid\Extended;
+use Magento\Backend\Helper\Data;
+use Magento\Backend\Model\Session;
+use Magento\Catalog\Model\Product;
+use Magento\Framework\App\ResponseFactory;
+use Magento\Framework\Data\Form\FormKey;
+use Magento\Framework\DataObject;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\UrlInterface;
+use Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Renderer\EmarsysPlaceholders;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\PlaceholdersFactory;
+use Exception;
 
 class Grid extends Extended
 {
@@ -27,7 +31,7 @@ class Grid extends Extended
     protected $_collection;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -37,7 +41,7 @@ class Grid extends Extended
     protected $backendHelper;
 
     /**
-     * @var \Magento\Framework\Data\Form\FormKey
+     * @var FormKey
      */
     protected $formKey;
 
@@ -52,7 +56,7 @@ class Grid extends Extended
     protected $emarsysHelper;
 
     /**
-     * @var \Magento\Framework\UrlInterface
+     * @var UrlInterface
      */
     protected $_url;
 
@@ -99,7 +103,7 @@ class Grid extends Extended
 
     /**
      * @return Extended
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _prepareCollection()
     {
@@ -118,7 +122,7 @@ class Grid extends Extended
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function _construct()
     {
@@ -147,7 +151,7 @@ class Grid extends Extended
 
     /**
      * @return Extended
-     * @throws \Exception
+     * @throws Exception
      */
     protected function _prepareColumns()
     {
@@ -164,7 +168,7 @@ class Grid extends Extended
             [
                 'header' => __('Emarsys Placeholder'),
                 'index' => 'emarsys_placeholder_name',
-                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Mapping\Placeholders\Renderer\EmarsysPlaceholders::class,
+                'renderer' => EmarsysPlaceholders::class,
                 'filter' => false,
             ]
         );
@@ -173,7 +177,7 @@ class Grid extends Extended
     }
 
     /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $row
+     * @param Product|DataObject $row
      * @return string
      */
     public function getRowUrl($row)
@@ -183,7 +187,7 @@ class Grid extends Extended
 
     /**
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function getMainButtonsHtml()
     {

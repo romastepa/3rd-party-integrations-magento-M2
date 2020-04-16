@@ -28,3 +28,5 @@
 
 ## v1.1.0
 - Code refactoring
+- Added V2 to configuration
+- Added Uninstall of V1

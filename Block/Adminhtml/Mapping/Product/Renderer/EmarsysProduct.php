@@ -1,49 +1,55 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Product\Renderer;
 
+use Emarsys\Emarsys\Model\ResourceModel\Product\Collection;
+use Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Sync;
+use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
+use Magento\Backend\Helper\Data;
+use Magento\Backend\Model\Session;
 use Magento\Framework\DataObject;
 
-class EmarsysProduct extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer
+class EmarsysProduct extends AbstractRenderer
 {
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Product\Collection
+     * @var Collection
      */
     protected $collectionFactory;
 
     /**
-     * @var \Magento\Backend\Helper\Data
+     * @var Data
      */
     protected $backendHelper;
 
     /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Sync
+     * @var Sync
      */
     protected $syncResourceModel;
 
     /**
      * EmarsysProduct constructor.
      *
-     * @param \Magento\Backend\Model\Session $session
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory $collectionFactory
-     * @param \Emarsys\Emarsys\Model\ResourceModel\Sync $syncResourceModel
-     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param Session $session
+     * @param CollectionFactory $collectionFactory
+     * @param Sync $syncResourceModel
+     * @param Data $backendHelper
      */
     public function __construct(
-        \Magento\Backend\Model\Session $session,
-        \Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
-        \Emarsys\Emarsys\Model\ResourceModel\Sync $syncResourceModel,
-        \Magento\Backend\Helper\Data $backendHelper
+        Session $session,
+        CollectionFactory $collectionFactory,
+        Sync $syncResourceModel,
+        Data $backendHelper
     ) {
         $this->session = $session;
         $this->collectionFactory = $collectionFactory;

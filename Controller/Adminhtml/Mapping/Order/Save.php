@@ -1,20 +1,25 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Order;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
+use Magento\Backend\Model\View\Result\Page;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\ResourceModel\Order;
+use Zend_Json;
 
 class Save extends Action
 {
@@ -24,7 +29,7 @@ class Save extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -71,8 +76,8 @@ class Save extends Action
     /**
      * Save action
      *
-     * @return \Magento\Backend\Model\View\Result\Page
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return Page
+     * @throws LocalizedException
      */
     public function execute()
     {
@@ -94,14 +99,14 @@ class Save extends Action
             $logsArray['website_id'] = $websiteId;
             $logId = $this->logsHelper->manualLogs($logsArray);
 
-            $stringJSONData = \Zend_Json::decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
+            $stringJSONData = Zend_Json::decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
 
             $this->orderResourceModel->insertIntoMappingTableCustomValue($stringArrayData, $storeId);
 
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Saved Order Mapping Successfully';
-            $logsArray['description'] = 'Save Entries as ' . \Zend_Json::encode($stringArrayData);
+            $logsArray['description'] = 'Save Entries as ' . Zend_Json::encode($stringArrayData);
             $logsArray['action'] = 'Save Order Schema';
             $logsArray['message_type'] = 'Success';
             $logsArray['status'] = 'Success';
@@ -111,7 +116,7 @@ class Save extends Action
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage(__('Order attributes mapped successfully'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($logId) {
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Save Mapping not Successful';

@@ -1,19 +1,23 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 
-use Magento\{
-    Backend\App\Action,
+use Magento\{Backend\App\Action,
     Backend\App\Action\Context,
+    Backend\Model\Session,
+    Framework\Controller\Result\Redirect,
+    Framework\Exception\LocalizedException,
+    Framework\Exception\NoSuchEntityException,
     Framework\View\Result\PageFactory,
     Framework\Stdlib\DateTime\DateTime,
     Store\Model\StoreManagerInterface
 };
+use Exception;
 use Emarsys\Emarsys\{
     Model\FieldFactory,
     Model\ResourceModel\Field,
@@ -29,7 +33,7 @@ class Save extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -97,9 +101,9 @@ class Save extends Action
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -162,7 +166,7 @@ class Save extends Action
             $logsArray['messages'] = 'Save Customer Filed Mapping Successful';
             $this->logsHelper->manualLogs($logsArray);
             $this->messageManager->addSuccessMessage(__('Customer-Field attributes mapped successfully'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->emarsysHelper->addErrorLog(
                 'Customer Filed Mapping',
                 $e->getMessage(),

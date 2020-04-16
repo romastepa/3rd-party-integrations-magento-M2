@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -88,7 +88,7 @@ class Cron extends AbstractHelper
     /**
      * Returns true if cron job is scheduled
      *
-     * @param $jobCode
+     * @param  $jobCode
      * @param null $storeId
      * @param null $websiteBasedChecking
      * @return bool
@@ -151,7 +151,7 @@ class Cron extends AbstractHelper
     /**
      * Schedule new cron job
      *
-     * @param $jobCode
+     * @param  $jobCode
      * @param null $storeId
      * @param null $websiteBasedChecking
      * @return Schedule
@@ -207,7 +207,9 @@ class Cron extends AbstractHelper
             $cron = $this->scheduleFactory->create();
         }
 
-        /** @var ScheduleFactory $cron */
+        /**
+         * @var ScheduleFactory $cron
+         */
         $result = $cron->setJobCode($jobCode)
             ->setCronExpr('* * * * *')
             ->setStatus(Schedule::STATUS_PENDING)
@@ -226,7 +228,7 @@ class Cron extends AbstractHelper
     }
 
     /**
-     * @param $jobCode
+     * @param  $jobCode
      * @return $this|bool
      */
     public function getCurrentCronInformation($jobCode)
@@ -259,7 +261,7 @@ class Cron extends AbstractHelper
     }
 
     /**
-     * @param $exportMode
+     * @param  $exportMode
      * @return array
      */
     public function getJobDetail($exportMode)

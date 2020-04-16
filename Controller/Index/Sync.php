@@ -4,11 +4,13 @@ namespace Emarsys\Emarsys\Controller\Index;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\Logs;
+use Exception;
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Request\Http;
 
-class Sync extends \Magento\Framework\App\Action\Action
+class Sync extends Action
 {
     /**
      * @var ScopeConfigInterface
@@ -74,7 +76,7 @@ class Sync extends \Magento\Framework\App\Action\Action
                     'sync action index'
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Emarsys Customer Sync',
                 $e->getMessage(),

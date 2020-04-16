@@ -1,16 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Log;
 
+use Exception;
 use Magento\Backend\App\Action\Context;
 use Emarsys\Emarsys\Model\Logs;
 use Emarsys\Emarsys\Model\ResourceModel\LogSchedule;
 use Magento\Backend\App\Action;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\LocalizedException;
 
 class ClearLogs extends Action
 {
@@ -42,8 +45,8 @@ class ClearLogs extends Action
     }
 
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return Redirect
+     * @throws LocalizedException
      */
     public function execute()
     {
@@ -56,7 +59,7 @@ class ClearLogs extends Action
             $connection->delete($tableName);
 
             $this->messageManager->addSuccessMessage(__('Log tables have been truncated successfully.'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logs->addErrorLog(
                 'ClearLogs',
                 $e->getMessage(),

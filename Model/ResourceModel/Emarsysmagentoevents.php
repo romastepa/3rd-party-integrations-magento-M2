@@ -1,41 +1,47 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel;
 
-class Emarsysmagentoevents extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+use Magento\Eav\Model\Entity\Attribute;
+use Magento\Eav\Model\Entity\Type;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Store\Api\StoreRepositoryInterface;
+
+class Emarsysmagentoevents extends AbstractDb
 {
     /**
-     * @var \Magento\Store\Api\StoreRepositoryInterface
+     * @var StoreRepositoryInterface
      */
     protected $storeRepository;
     /**
-     * @var \Magento\Eav\Model\Entity\Attribute
+     * @var Attribute
      */
     protected $attribute;
     /**
-     * @var \Magento\Eav\Model\Entity\Type
+     * @var Type
      */
     protected $entityType;
 
     /**
      * Emarsysmagentoevents constructor.
      *
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Magento\Eav\Model\Entity\Type $entityType
-     * @param \Magento\Eav\Model\Entity\Attribute $attribute
-     * @param \Magento\Store\Api\StoreRepositoryInterface $storeRepository
+     * @param Context $context
+     * @param Type $entityType
+     * @param Attribute $attribute
+     * @param StoreRepositoryInterface $storeRepository
      * @param null $connectionName
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Magento\Eav\Model\Entity\Type $entityType,
-        \Magento\Eav\Model\Entity\Attribute $attribute,
-        \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
+        Context $context,
+        Type $entityType,
+        Attribute $attribute,
+        StoreRepositoryInterface $storeRepository,
         $connectionName = null
     ) {
         $this->entityType = $entityType;

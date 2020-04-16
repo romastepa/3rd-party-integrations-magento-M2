@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
@@ -10,7 +10,6 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
 use Magento\Framework\DataObject;
 use Magento\Backend\Model\Session;
 use Magento\Backend\Helper\Data as BackendHelper;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\UrlInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsysEventsCollectionFactory;
@@ -34,11 +33,6 @@ class EmarsysEvent extends AbstractRenderer
     protected $backendHelper;
 
     /**
-     * @var StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
      * @var EmarsysHelper
      */
     protected $emarsysHelper;
@@ -53,7 +47,6 @@ class EmarsysEvent extends AbstractRenderer
      *
      * @param Session $session
      * @param BackendHelper $backendHelper
-     * @param StoreManagerInterface $storeManager
      * @param UrlInterface $urlInterface
      * @param EmarsysHelper $emarsysHelper
      * @param EmarsysEventsCollectionFactory $EmarsyseventCollection
@@ -61,14 +54,12 @@ class EmarsysEvent extends AbstractRenderer
     public function __construct(
         Session $session,
         BackendHelper $backendHelper,
-        StoreManagerInterface $storeManager,
         UrlInterface $urlInterface,
         EmarsysHelper $emarsysHelper,
         EmarsysEventsCollectionFactory $EmarsyseventCollection
     ) {
         $this->session = $session;
         $this->backendHelper = $backendHelper;
-        $this->_storeManager = $storeManager;
         $this->emarsysEventCollection = $EmarsyseventCollection;
         $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $urlInterface;

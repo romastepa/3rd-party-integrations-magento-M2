@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -67,7 +67,9 @@ class SmartInsightBulkExport
                     throw new \Exception('store_id not specify');
                 }
 
-                /** @var \Magento\Store\Model\Store $store */
+                /**
+                 * @var \Magento\Store\Model\Store $store
+                 */
                 $store = $this->storeManager->getStore($storeId);
                 if (!$store || !$store->getId()) {
                     throw new \Exception('store_id not specify');

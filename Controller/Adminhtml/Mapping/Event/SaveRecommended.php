@@ -1,20 +1,23 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
-use Magento\{
-    Backend\App\Action,
+use Magento\{Backend\App\Action,
     Backend\App\Action\Context,
+    Backend\Model\Session,
+    Framework\App\ResponseInterface,
+    Framework\Controller\ResultInterface,
     Framework\View\Result\PageFactory,
     Framework\App\Config\ScopeConfigInterface,
     Store\Model\StoreManagerInterface,
     Framework\Stdlib\DateTime\DateTime
 };
+use Exception;
 use Emarsys\Emarsys\{
     Model\ResourceModel\Event,
     Helper\Data,
@@ -32,7 +35,7 @@ class SaveRecommended extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -53,6 +56,7 @@ class SaveRecommended extends Action
 
     /**
      * SaveRecommended constructor.
+     *
      * @param Context $context
      * @param Event $eventResourceModel
      * @param PageFactory $resultPageFactory
@@ -94,8 +98,8 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Exception
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws Exception
      */
     public function execute()
     {
@@ -173,7 +177,7 @@ class SaveRecommended extends Action
                 $this->messageManager->addSuccessMessage(__('Recommended Emarsys Events Created Successfully!'));
                 $this->messageManager->addSuccessMessage(__('Important: Hit "Save" to complete the mapping!'));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Recommended Mapping';
             $logsArray['description'] = $e->getMessage();
@@ -202,7 +206,7 @@ class SaveRecommended extends Action
                     [
                         "store" => $storeId,
                         "recommended" => 1,
-                        "limit" => 200
+                        "limit" => 200,
                     ]
                 )
             );

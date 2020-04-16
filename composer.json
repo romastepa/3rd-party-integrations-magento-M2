@@ -1,6 +1,6 @@
 {
   "name": "emarsys/emarsys",
-  "description": "Emarsys Magento 2 Extension",
+  "description": "Emarsys Magento 2 Extension V1",
   "version": "1.1.0",
   "type": "magento2-module",
   "authors": [
@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "require": {
-    "emartech/emarsys-magento2-extension": "^1.9.2",
+    "emartech/emarsys-magento2-extension": ">1.10.0",
     "sabre/dav": "~3.2.0"
   },
   "autoload": {

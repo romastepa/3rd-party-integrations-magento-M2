@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -118,11 +118,9 @@ class Logs extends AbstractHelper
         }
 
         if (isset($logsArray['job_code'])
-            && (
-                empty($this->cronSchedule->getJobCode())
+            && (empty($this->cronSchedule->getJobCode())
                 || $this->cronSchedule->getJobCode() == 'Exception'
-                || $this->cronSchedule->getJobCode() == 'Notice'
-            )
+                || $this->cronSchedule->getJobCode() == 'Notice')
         ) {
             $this->cronSchedule->setJobCode($logsArray['job_code']);
         }
@@ -196,8 +194,12 @@ class Logs extends AbstractHelper
         $logsModel->setLogExecId($schedulerId)
             ->setCreatedAt($currentDate)
             ->setEmarsysInfo(isset($logsArray['emarsys_info']) ? $logsArray['emarsys_info'] : '')
-            ->setDescription(isset($logsArray['description']) ? str_replace(',"', ' ,"',
-                $logsArray['description']) : '')
+            ->setDescription(
+                isset($logsArray['description']) ? str_replace(
+                    ',"', ' ,"',
+                    $logsArray['description']
+                ) : ''
+            )
             ->setAction(isset($logsArray['action']) ? $logsArray['action'] : 'synced to emarsys')
             ->setMessageType(isset($logsArray['message_type']) ? $logsArray['message_type'] : '')
             ->setStoreId(isset($logsArray['store_id']) ? $logsArray['store_id'] : 0)
@@ -231,8 +233,8 @@ class Logs extends AbstractHelper
     }
 
     /**
-     * @param $title
-     * @param $errorMsg
+     * @param  $title
+     * @param  $errorMsg
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\MailException
      * @throws \Magento\Framework\Exception\NoSuchEntityException

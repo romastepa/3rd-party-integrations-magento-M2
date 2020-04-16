@@ -1,20 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Field\Renderer;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Customer\CollectionFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 use Magento\Backend\Helper\Data;
 use Magento\Backend\Model\Session;
 use Magento\Framework\DataObject;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Exception\LocalizedException;
 
 class FieldOption extends AbstractRenderer
 {
@@ -22,11 +21,6 @@ class FieldOption extends AbstractRenderer
      * @var Session
      */
     protected $session;
-
-    /**
-     * @var \Emarsys\Emarsys\Model\ResourceModel\Customer\Collection
-     */
-    protected $collectionFactory;
 
     /**
      * @var Data
@@ -39,11 +33,6 @@ class FieldOption extends AbstractRenderer
     protected $resourceModelField;
 
     /**
-     * @var StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
      * @var EmarsysHelper
      */
     protected $emarsysHelper;
@@ -52,32 +41,26 @@ class FieldOption extends AbstractRenderer
      * FieldOption constructor.
      *
      * @param Session $session
-     * @param CollectionFactory $collectionFactory
      * @param Data $backendHelper
      * @param Field $resourceModelField
-     * @param StoreManagerInterface $storeManager
      * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         Session $session,
-        CollectionFactory $collectionFactory,
         Data $backendHelper,
         Field $resourceModelField,
-        StoreManagerInterface $storeManager,
         EmarsysHelper $emarsysHelper
     ) {
         $this->session = $session;
-        $this->collectionFactory = $collectionFactory;
         $this->backendHelper = $backendHelper;
         $this->resourceModelField = $resourceModelField;
-        $this->_storeManager = $storeManager;
         $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
      * @param DataObject $row
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function render(DataObject $row)
     {
@@ -96,8 +79,11 @@ class FieldOption extends AbstractRenderer
 
         $emarsysContactFields = $this->resourceModelField->getEmarsysFieldOption($storeId);
         foreach ($emarsysContactFields as $field) {
-            $chkSelected = $this->resourceModelField->checkSelectedOption($optionId, $field['option_id'],
-                $field['emarsys_field_id'], $storeId);
+            $chkSelected = $this->resourceModelField->checkSelectedOption(
+                $optionId,
+                $field['option_id'],
+                $field['emarsys_field_id'], $storeId
+            );
             $selected = '';
             if ($chkSelected == 1) {
                 $selected = ' selected=selected';
