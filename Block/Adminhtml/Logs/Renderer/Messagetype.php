@@ -26,6 +26,7 @@ class Messagetype extends AbstractRenderer
         } else {
             $usermsg = '<span style="color:green">Success</span>';
         }
-        printf($usermsg);
+
+        return $usermsg;
     }
 }

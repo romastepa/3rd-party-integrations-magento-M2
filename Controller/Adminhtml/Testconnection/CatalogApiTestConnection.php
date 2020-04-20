@@ -66,7 +66,6 @@ class CatalogApiTestConnection extends TestConnection
     /**
      * Emarsys test connection api credentials
      *
-     * @return void
      * @throws FileSystemException
      * @throws LocalizedException
      * @throws Zend_Http_Client_Exception

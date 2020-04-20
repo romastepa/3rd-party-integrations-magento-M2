@@ -35,6 +35,6 @@ class Messagetype extends AbstractRenderer
     public function render(DataObject $row)
     {
         $logconfigurl = $this->backendHelper->getUrl('adminhtml/system_config/edit/section/emarsyslog');
-        echo "<a href='" . $logconfigurl . "' style='text-decoration:none'><div style='color:red'>Edit</div></a>";
+        return "<a href='" . $logconfigurl . "' style='text-decoration:none'><div style='color:red'>Edit</div></a>";
     }
 }

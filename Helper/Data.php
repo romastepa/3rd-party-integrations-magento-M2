@@ -1790,7 +1790,7 @@ class Data extends AbstractHelper
         }
 
         $website = $store->getWebsite();
-        $defaultStore = @$website->getDefaultStore();
+        $defaultStore = ($website->getDefaultStore() ?? false);
         if ($defaultStore && $defaultStore->getId()) {
             $firstStoreId = $defaultStore->getId();
         } else {

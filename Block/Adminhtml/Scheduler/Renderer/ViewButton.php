@@ -44,9 +44,10 @@ class ViewButton extends AbstractRenderer
             ]
         );
 
-        $html = '<a href="%s">'
+        $html = '<a href="' . $url . '">'
             . '<div style="color:#EB5202; text-decoration:underline; text-decoration-color:#EB5202;">View</div>'
             .'</a>';
-        printf($html, $url);
+
+        return $html;
     }
 }

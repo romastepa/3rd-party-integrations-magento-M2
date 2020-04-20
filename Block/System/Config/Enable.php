@@ -37,7 +37,7 @@ class Enable extends Field
      * @param AbstractElement $element
      * @return string
      */
-    protected function _getElementHtml(AbstractElement $element)
+    public function render(AbstractElement $element)
     {
         $value = (int)$this->config->getValue('emartech/emarsys_setting/enable');
 

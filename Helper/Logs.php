@@ -188,7 +188,7 @@ class Logs extends AbstractHelper
             return;
         }
         $currentDate = $this->date->date('Y-m-d H:i:s', time());
-        $schedulerId = @$logsArray['id'];
+        $schedulerId = $logsArray['id'] ?? false;
 
         $logsModel = $this->logsFactory->create();
         $logsModel->setLogExecId($schedulerId)
@@ -223,10 +223,10 @@ class Logs extends AbstractHelper
         if ($sendLogReport == '' && $websiteId == 0) {
             $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report');
         }
-        if ($sendLogReport && @$logsArray['message_type'] == 'Error') {
+        if ($sendLogReport && ($logsArray['message_type'] ?? false) == 'Error') {
             if ($sendLogReport) {
-                $title = ucfirst(@$logsArray['job_code']) . " : Store - " . @$logsArray['store_id'];
-                $description = @$logsArray['description'];
+                $title = ucfirst(($logsArray['job_code'] ?? false)) . " : Store - " . ($logsArray['store_id'] ?? false);
+                $description = ($logsArray['description'] ?? false);
                 $this->errorLogEmail($title, $description);
             }
         }

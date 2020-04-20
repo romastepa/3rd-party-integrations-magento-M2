@@ -142,7 +142,7 @@
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
             <group id="info" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>This configuration applies to V1 </label>
+                <label>This configuration applies to V1 (extension should be enabled)</label>
                 <field id="enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
                 </field>
@@ -150,29 +150,29 @@
                     <field id="*/*/enable">0</field>
                 </depends>
             </group>
-            <group id="enable" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="enable" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization</label>
                 <field id="contact_feed" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="emarsys_setting_enable" type="hidden" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
                 </field>
                 <depends>
-                    <field id="*/*/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
-            <group id="emarsys_emarsys" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="emarsys_emarsys" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Contact Synchronization Settings</label>
                 <field id="notification_secret_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Notification secret key</label>
                 </field>
-                <field id="enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="emarsys_setting_enable" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
                 </field>
                 <depends>
-                    <field id="*/*/enable">1</field>
+                    <field id="*/*/emarsys_setting_enable">1</field>
                 </depends>
             </group>
         </section>
@@ -558,27 +558,6 @@
                 <field id="log_cleaning" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable Log Cleaning</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="archive_data" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Log Data</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\ArchiveData</source_model>
-                </field>
-                <field id="delete_archive_days" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Delete archive data Days</label>
-                    <source_model>Emarsys\Emarsys\Model\Config\Source\DeleteArchiveDay</source_model>
-                </field>
-                <field id="archive_datapath" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Archive data path</label>
-                    <comment>Archive data path from magento root folder</comment>
-                </field>
-                <field id="log_report" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Send Log Report</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="log_email_recipient" translate="label comment" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Error Email Recipient</label>
-                    <validate>validate-emails</validate>
-                    <comment>(Comma Seperated)</comment>
                 </field>
                 <field id="downloadlogs" translate="button_label" sortOrder="12" showInDefault="100" showInWebsite="1" showInStore="0">
                     <button_label>Download Logs</button_label>

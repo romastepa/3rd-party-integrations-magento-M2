@@ -66,7 +66,6 @@ class SmartInsightApiTestConnection extends TestConnection
     /**
      * Emarsys test connection api credentials
      *
-     * @return bool
      * @throws FileSystemException
      * @throws LocalizedException
      * @throws Zend_Http_Client_Exception
@@ -185,7 +184,5 @@ class SmartInsightApiTestConnection extends TestConnection
 
         $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsHelper->manualLogs($logsArray);
-
-        return true;
     }
 }

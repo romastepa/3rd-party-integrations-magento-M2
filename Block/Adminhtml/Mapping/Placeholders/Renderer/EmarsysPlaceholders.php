@@ -19,12 +19,15 @@ class EmarsysPlaceholders extends AbstractRenderer
     public function render(DataObject $row)
     {
         static $i = 0;
-        ?>
-        <input name="emarsys_placeholder_name" id="<?php printf($row->getId()); ?>"
-               value="<?php printf($row->getEmarsysPlaceholderName()); ?>" width="100%"/>
-        <div class="placeholder-error validation-advice" id="<?php printf("divErrPlaceholder_" . $i); ?>"
-             style="display:none; color:red">Placeholders can only have Alphanumerics and Underscores.</div>
-        <?php
+
+        $html = '<input name="emarsys_placeholder_name" id="' . $row->getId() . '"'
+            . ' value="' . $row->getEmarsysPlaceholderName() . '" width="100%"/>'
+            . '<div class="placeholder-error validation-advice" id="divErrPlaceholder_' . $i . '"'
+            . ' style="display:none; color:red">'
+            . 'Placeholders can only have Alphanumerics and Underscores.'
+            . '</div>';
         $i++;
+
+        return $html;
     }
 }
