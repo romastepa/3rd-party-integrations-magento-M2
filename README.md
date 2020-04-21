@@ -26,5 +26,5 @@
 
 # Release Notes
 
-## v1.0.22
-- Fixed notice on Synchronization Contact's Subscription Data
+## v1.0.23
+- Fixed PHP message: PHP Fatal error:  Uncaught Error: Unsupported operand types

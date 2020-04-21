@@ -2,25 +2,21 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2019 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Plugin\Email;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Helper\Logs as EmarsysLogsHelper,
-    Registry\EmailSendState,
-    Model\Api\Api as EmarsysModelApiApi,
-    Model\ResourceModel\Customer as CustomerResourceModel,
-    Model\AsyncFactory
-};
-use Magento\{
-    Email\Model\Template,
-    Catalog\Helper\Image,
-    Framework\Stdlib\DateTime\DateTime,
-    Store\Model\StoreManagerInterface
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
+use Emarsys\Emarsys\Registry\EmailSendState;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as CustomerResourceModel;
+use Emarsys\Emarsys\Model\AsyncFactory;
+use Magento\Email\Model\Template;
+use Magento\Catalog\Helper\Image;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class TemplatePlugin
@@ -123,9 +119,9 @@ class TemplatePlugin
     /**
      * @param Template $subject
      * @param callable $proceed
+     * @return mixed
      * @throws \Exception
      *
-     * @return mixed
      */
     public function aroundProcessTemplate(
         Template $subject,
@@ -183,7 +179,7 @@ class TemplatePlugin
         $storeReflection = $reflection->getProperty('storeManager');
         $storeReflection->setAccessible(true);
 
-        /** @var \Magento\Store\Model\StoreManager $store **/
+        /** @var \Magento\Store\Model\StoreManager $store */
         if (isset($vars['store'])) {
             $store = $vars['store'];
         } else {
@@ -223,7 +219,10 @@ class TemplatePlugin
 
         $emarsysPlaceholders = $this->emarsysHelper->getPlaceHolders($this->magentoEventId, $this->storeId);
         if (!$emarsysPlaceholders) {
-            $emarsysPlaceholders = $this->emarsysHelper->insertFirstTimeMappingPlaceholders($this->magentoEventId, $this->storeId);
+            $emarsysPlaceholders = $this->emarsysHelper->insertFirstTimeMappingPlaceholders(
+                $this->magentoEventId,
+                $this->storeId
+            );
         }
 
         $emarsysHeaderPlaceholders = $this->emarsysHelper->emarsysHeaderPlaceholders($this->storeId);
@@ -236,7 +235,9 @@ class TemplatePlugin
             $emarsysFooterPlaceholders = $this->emarsysHelper->insertFirstTimeFooterMappingPlaceholders($this->storeId);
         }
 
-        $emarsysPlaceholders = $emarsysPlaceholders + $emarsysHeaderPlaceholders + $emarsysFooterPlaceholders;
+        $emarsysPlaceholders = (!is_array($emarsysPlaceholders) ? [] : $emarsysPlaceholders)
+            + (!is_array($emarsysHeaderPlaceholders) ? [] : $emarsysHeaderPlaceholders)
+            + (!is_array($emarsysFooterPlaceholders) ? [] : $emarsysFooterPlaceholders);
 
         $applyDesignConfig = $reflection->getMethod('applyDesignConfig');
         $applyDesignConfig->setAccessible(true);
@@ -349,7 +350,10 @@ class TemplatePlugin
             /** @var \Magento\Sales\Model\Order\Creditmemo\Item $item */
             foreach ($creditmemo->getItems() as $item) {
                 $creditmemoItem = $this->getCreditmemoData($item);
-                $creditmemoItem['order_item'] = $this->getOrderData($order->getItemById($item->getOrderItemId()), $store);
+                $creditmemoItem['order_item'] = $this->getOrderData(
+                    $order->getItemById($item->getOrderItemId()),
+                    $store
+                );
                 $creditmemoData[] = $creditmemoItem;
             }
             $processedVariables['invoice_items'] = $creditmemoData;
@@ -414,7 +418,9 @@ class TemplatePlugin
             'unitary_price_exc_tax' => $this->_formatPrice($item->getPriceInclTax() - $unitTaxAmount),
             'unitary_price_inc_tax' => $this->_formatPrice($item->getPriceInclTax()),
             'unitary_tax_amount' => $this->_formatPrice($unitTaxAmount),
-            'line_total_price_exc_tax' => $this->_formatPrice($item->getRowTotalInclTax() - $item->getTaxAmount()),
+            'line_total_price_exc_tax' => $this->_formatPrice(
+                $item->getRowTotalInclTax() - $item->getTaxAmount()
+            ),
             'line_total_price_inc_tax' => $this->_formatPrice($item->getRowTotalInclTax()),
             'line_total_tax_amount' => $this->_formatPrice($item->getTaxAmount()),
         ];
@@ -485,7 +491,10 @@ class TemplatePlugin
         }
 
         $order = array_filter($order);
-        $order['additional_data'] = ($item->getData('additional_data') ? $item->getData('additional_data') : "");
+        $order['additional_data'] = ($item->getData('additional_data')
+            ? $item->getData('additional_data')
+            : ""
+        );
 
         return $order;
     }
@@ -553,7 +562,9 @@ class TemplatePlugin
         foreach ($item->getAttributes() as $attribute) {
             if (!is_null($item->getData($attribute->getAttributeCode()))) {
                 if ($attributeText = $attribute->getFrontend()->getValue($item)) {
-                    $returnItem[$attribute->getAttributeCode()] = is_object($attributeText) ? $attributeText->getText() : $attributeText;
+                    $returnItem[$attribute->getAttributeCode()] = is_object($attributeText)
+                        ? $attributeText->getText()
+                        : $attributeText;
                 } else {
                     $returnItem[$attribute->getAttributeCode()] = $item->getData($attribute->getAttributeCode());
                 }
@@ -568,7 +579,6 @@ class TemplatePlugin
 
         return $returnItem;
     }
-
 
     /**
      * @param \Magento\Newsletter\Model\Subscriber $item
@@ -606,7 +616,7 @@ class TemplatePlugin
         $arrCustomerData = [
             "key_id" => $buildRequest['key_id'],
             "external_id" => $buildRequest[$buildRequest['key_id']],
-            "data" => $processedVariables
+            "data" => $processedVariables,
         ];
 
         if ($this->emarsysHelper->isAsyncEnabled()) {
@@ -628,7 +638,9 @@ class TemplatePlugin
 
         //log information that is about to send for contact sync
         $this->logsArray['emarsys_info'] = 'Send Contact to Emarsys';
-        $this->logsArray['description'] = 'PUT ' . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($buildRequest);;
+        $this->logsArray['description'] = 'PUT '
+            . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS
+            . ' ' . \Zend_Json::encode($buildRequest);
         $this->logsArray['action'] = EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS;
         $this->logsHelper->manualLogs($this->logsArray);
 
@@ -641,7 +653,8 @@ class TemplatePlugin
         if (($response['status'] == 200) || ($response['status'] == 400 && $response['body']['replyCode'] == 2009)) {
             //contact synced to emarsys successfully
             //log information that is about to send for email sync
-            $this->logsArray['description'] = 'POST ' . 'event/' . $this->emarsysEventApiId . '/trigger ' . \Zend_Json::encode($arrCustomerData);
+            $this->logsArray['description'] = 'POST '
+                . 'event/' . $this->emarsysEventApiId . '/trigger ' . \Zend_Json::encode($arrCustomerData);
             $this->logsHelper->manualLogs($this->logsArray);
 
             //trigger email event
@@ -671,11 +684,16 @@ class TemplatePlugin
         );
 
         //failed to sync contact to emarsys
-        $this->logsArray['description'] = 'Failed to Sync Contact to Emarsys. Emarsys Event ID :' . $this->emarsysEventApiId
-            . ', Due to this error, Email Sent From Magento for Store Id: ' . $this->storeId . ' (' . $this->templateId . ')'
+        $this->logsArray['description'] = 'Failed to Sync Contact to Emarsys. Emarsys Event ID :'
+            . $this->emarsysEventApiId
+            . ', Due to this error, Email Sent From Magento for Store Id: ' . $this->storeId
+            . ' (' . $this->templateId . ')'
             . ' Request: ' . \Zend_Json::encode($buildRequest)
             . '\n Response: ' . \Zend_Json::encode($response);
-        $this->logsArray['messages'] = __('Error while sending Transactional Email (%1), Email Sent From Magento', $this->templateId);
+        $this->logsArray['messages'] = __(
+            'Error while sending Transactional Email (%1), Email Sent From Magento',
+            $this->templateId
+        );
 
         return false;
     }
