@@ -26,5 +26,5 @@
 
 # Release Notes
 
-## v1.0.21
+## v1.0.22
 - Event Mapping fix

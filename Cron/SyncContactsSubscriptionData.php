@@ -189,7 +189,7 @@ class SyncContactsSubscriptionData
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['run_mode'] = 'Automatic';
             $logsArray['auto_log'] = 'Complete';
-            $logsArray['website_id'] = $websiteId;
+            $logsArray['website_id'] = current($websiteId);
             $logsArray['store_id'] = $sId;
             $logId = $this->logsHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
@@ -199,7 +199,10 @@ class SyncContactsSubscriptionData
 
             $dt = (new \Zend_Date());
             if ($isTimeBased) {
-                $timeRange = [$dt->subHour(1)->toString('YYYY-MM-dd'), $dt->addHour(1)->toString('YYYY-MM-dd')];
+                $timeRange = [
+                    $dt->subHour(1)->toString('YYYY-MM-dd'),
+                    $dt->addHour(1)->toString('YYYY-MM-dd')
+                ];
             }
             $key_id = $this->customerResourceModel->getKeyId(EmarsysHelper::SUBSCRIBER_ID, $sId);
             $optinFiledId = $this->customerResourceModel->getKeyId(EmarsysHelper::OPT_IN, $sId);

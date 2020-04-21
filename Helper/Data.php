@@ -883,7 +883,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.21',
+                    'value' => '1.0.22',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),
@@ -2143,7 +2143,9 @@ class Data extends AbstractHelper
                     $logsArray['messages'] = $message;
                     $this->logsHelper->logs($logsArray);
                     $offset += $limit;
-                    if (!isset($response['body']) || empty($response['body'])) {
+                    if (!isset($response['body']) || empty($response['body'])
+                        || (isset($response['status']) && in_array($response['status'], [400,410]))
+                    ) {
                         break;
                     }
                 } while ($this->_processSubscriptionUpdates($response['body'], $isTimeBased));
