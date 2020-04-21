@@ -27,4 +27,4 @@
 # Release Notes
 
 ## v1.0.22
-- Event Mapping fix
+- Fixed notice on Synchronization Contact's Subscription Data
