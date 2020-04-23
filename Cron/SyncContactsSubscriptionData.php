@@ -137,9 +137,7 @@ class SyncContactsSubscriptionData
     {
         $queue = [];
 
-        /**
-         * @var \Magento\Store\Model\Website $website
-         */
+        /** @var $website \Magento\Store\Model\Website */
         $websites = $this->storeManager->getWebsites();
         foreach ($websites as $website) {
             if (!$this->emarsysHelper->isContactsSynchronizationEnable($website->getId())) {
@@ -186,7 +184,7 @@ class SyncContactsSubscriptionData
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['run_mode'] = 'Automatic';
             $logsArray['auto_log'] = 'Complete';
-            $logsArray['website_id'] = $websiteId;
+            $logsArray['website_id'] = current($websiteId);
             $logsArray['store_id'] = $sId;
             $logId = $this->logsHelper->manualLogs($logsArray);
             $logsArray['id'] = $logId;
@@ -243,7 +241,7 @@ class SyncContactsSubscriptionData
     /**
      * @param array $websiteId
      * @param bool $isTimeBased
-     * @param  $storeId
+     * @param $storeId
      * @return string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */

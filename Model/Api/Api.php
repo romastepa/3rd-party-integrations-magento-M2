@@ -62,9 +62,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getApiUsername()
     {
-        /**
-         * @var \Magento\Store\Api\Data\WebsiteInterface $website
-         */
+        /** @var $website \Magento\Store\Api\Data\WebsiteInterface */
         $website = $this->storeManager->getWebsite($this->websiteId);
         return $website->getConfig('emartech/emarsys_setting/emarsys_api_username');
     }
@@ -77,9 +75,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getApiPassword()
     {
-        /**
-         * @var \Magento\Store\Api\Data\WebsiteInterface $website
-         */
+        /** @var $website \Magento\Store\Api\Data\WebsiteInterface */
         $website = $this->storeManager->getWebsite($this->websiteId);
         return $website->getConfig('emartech/emarsys_setting/emarsys_api_password');
     }
@@ -92,9 +88,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function setApiUrl()
     {
-        /**
-         * @var \Magento\Store\Api\Data\WebsiteInterface $website
-         */
+        /** @var $website \Magento\Store\Api\Data\WebsiteInterface */
         $website = $this->storeManager->getWebsite($this->websiteId);
         $endpoint = $website->getConfig('emartech/emarsys_setting/emarsys_api_endpoint');
         if ($endpoint == 'custom') {
@@ -124,7 +118,7 @@ class Api extends \Magento\Framework\DataObject
     }
 
     /**
-     * @param  $requestType
+     * @param $requestType
      * @param null $endPoint
      * @param array $requestBody
      * @return array
@@ -180,7 +174,7 @@ class Api extends \Magento\Framework\DataObject
                 'Nonce="' . $nonce . '", ' .
                 'Created="' . $timestamp . '"',
                 'Content-type: application/json;charset="utf-8"',
-                'Extension-Version: 1.0.21',
+                'Extension-Version: 1.1.0',
             ]
         );
 
@@ -216,7 +210,7 @@ class Api extends \Magento\Framework\DataObject
     }
 
     /**
-     * @param  $arrCustomerData
+     * @param $arrCustomerData
      * @return mixed|string
      * @throws \Exception
      */
@@ -226,7 +220,7 @@ class Api extends \Magento\Framework\DataObject
     }
 
     /**
-     * @param  $arrCustomerData
+     * @param $arrCustomerData
      * {
      *  "keyId": "12596",
      *  "keyValues": [

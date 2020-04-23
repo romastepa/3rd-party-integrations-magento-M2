@@ -1,55 +1,51 @@
 <?php
 /**
- * @category  Emarsys
- * @package   Emarsys_Emarsys
- * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
 
-use Magento\{
-    Framework\App\Filesystem\DirectoryList,
-    Framework\App\Helper\AbstractHelper,
-    Framework\App\Helper\Context,
-    Framework\App\ProductMetadataInterface,
-    Framework\Exception\FileSystemException,
-    Framework\Exception\LocalizedException,
-    Framework\Exception\NoSuchEntityException,
-    Framework\Filesystem\Io\File as FilesystemIoFile,
-    Framework\Filesystem\Io\Ftp,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\Stdlib\DateTime\Timezone,
-    Framework\Module\ModuleListInterface,
-    Framework\UrlInterface,
-    Store\Api\Data\StoreInterface,
-    Store\Api\Data\WebsiteInterface,
-    Store\Model\StoreManagerInterface,
-    Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory,
-    Store\Model\ScopeInterface,
-    Newsletter\Model\ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory,
-    Newsletter\Model\Subscriber,
-    Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory,
-    Email\Model\TemplateFactory as EmailTemplateFactory,
-    Backend\Model\Session as BackendSession,
-    Store\Model\Website
-};
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Filesystem\Io\File as FilesystemIoFile;
+use Magento\Framework\Filesystem\Io\Ftp;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Stdlib\DateTime\Timezone;
+use Magento\Framework\Module\ModuleListInterface;
+use Magento\Framework\UrlInterface;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Newsletter\Model\ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory;
+use Magento\Newsletter\Model\Subscriber;
+use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory;
+use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
+use Magento\Backend\Model\Session as BackendSession;
+use Magento\Store\Model\Website;
 
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Customer as ModelResourceModelCustomer,
-    Model\Queue,
-    Model\QueueFactory as EmarsysQueueFactory,
-    Model\ResourceModel\Emarsysmagentoevents\CollectionFactory,
-    Model\PlaceholdersFactory,
-    Model\EmarsyseventmappingFactory as EmarsysEventMappingFactory,
-    Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory,
-    Model\Emarsysevents,
-    Model\ResourceModel\Event as ModelResourceModelEvent,
-    Model\EmarsyseventsFactory,
-    Model\Api\Api as EmarsysApiApi,
-    Model\Logs as EmarsysModelLogs,
-    Helper\Logs as EmarsysHelperLogs,
-    Controller\Adminhtml\Email\Template as ControllerTemplate
-};
+use Emarsys\Emarsys\Model\ResourceModel\Customer as ModelResourceModelCustomer;
+use Emarsys\Emarsys\Model\Queue;
+use Emarsys\Emarsys\Model\QueueFactory as EmarsysQueueFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory;
+use Emarsys\Emarsys\Model\PlaceholdersFactory;
+use Emarsys\Emarsys\Model\EmarsyseventmappingFactory as EmarsysEventMappingFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory;
+use Emarsys\Emarsys\Model\Emarsysevents;
+use Emarsys\Emarsys\Model\ResourceModel\Event as ModelResourceModelEvent;
+use Emarsys\Emarsys\Model\EmarsyseventsFactory;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Controller\Adminhtml\Email\Template as ControllerTemplate;
 use Zend_Json;
 
 class Data extends AbstractHelper
@@ -568,7 +564,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @throws \Exception
      */
     public function insertFirstTime($storeId)
@@ -669,7 +665,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @param null $logId
      * @return array
      * @throws \Exception
@@ -902,7 +898,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.21',
+                    'value' => '1.1.0',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),
@@ -994,7 +990,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return string
      * @throws NoSuchEntityException
      */
@@ -1002,19 +998,21 @@ class Data extends AbstractHelper
     {
         $host = $this->storeManager->getStore($storeId)->getConfig(self::XPATH_EMARSYS_FTP_HOSTNAME);
 
-        //$ports = [21, rand(32000, 32500), rand(32000, 32500)];
-        $ports = [21];
+        $ports = [21, rand(32000, 32500), rand(32000, 32500)];
         $portStatus = [];
         foreach ($ports as $port) {
             $errno = null;
             $errstr = null;
 
-            $connection = fsockopen($host, $port, $errno, $errstr);
-
-            if (is_resource($connection)) {
-                $portStatus[] = 'open';
-                fclose($connection);
-            } else {
+            try {
+                $connection = fsockopen($host, $port, $errno, $errstr);
+                if (is_resource($connection)) {
+                    $portStatus[] = 'open';
+                    fclose($connection);
+                } else {
+                    $portStatus[] = 'closed';
+                }
+            } catch (\Exception $e) {
                 $portStatus[] = 'closed';
             }
         }
@@ -1028,11 +1026,11 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $customerId
-     * @param  $websiteId
-     * @param  $storeId
-     * @param  $cron
-     * @param  $entityType
+     * @param $customerId
+     * @param $websiteId
+     * @param $storeId
+     * @param $cron
+     * @param $entityType
      * @throws \Exception
      */
     public function syncFail($customerId, $websiteId, $storeId, $cron, $entityType)
@@ -1062,10 +1060,10 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $customerId
-     * @param  $websiteId
-     * @param  $storeId
-     * @param  $cron
+     * @param $customerId
+     * @param $websiteId
+     * @param $storeId
+     * @param $cron
      * @throws \Exception
      */
     public function syncSuccess($customerId, $websiteId, $storeId, $cron)
@@ -1083,8 +1081,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $mappingId
-     * @param  $storeId
+     * @param $mappingId
+     * @param $storeId
      * @return array
      * @throws \Exception
      */
@@ -1107,7 +1105,7 @@ class Data extends AbstractHelper
         }
 
         if (empty($value)) {
-            return false;
+            return $return;
         }
         if (is_numeric($value)) {
             $emailTemplateModelColl = $this->templateFactory->create()->getCollection()
@@ -1181,22 +1179,22 @@ class Data extends AbstractHelper
     /**
      * Refresh Placeholders
      *
-     * @param  $mappingId
-     * @param  $storeId
+     * @param $mappingId
+     * @param $storeId
      * @throws \Magento\Framework\Exception\MailException
      * @throws NoSuchEntityException
      */
     public function refreshPlaceholders($mappingId, $storeId)
     {
         $store = $this->storeManager->getStore($storeId);
-        $emarsysMappingCollFromDb = [];
+        $emarsysEventFromDbArray = [];
         $emarsysEventsMappingCollFromDb = $this->emarsysEventPlaceholderMappingFactory->create()
             ->getCollection()
             ->addFieldToFilter('event_mapping_id', $mappingId)
             ->addFieldToFilter('store_id', $storeId);
 
-        foreach ($emarsysEventsMappingCollFromDb as $collFromDb) {
-            $emarsysMappingCollFromDb[$collFromDb->getId()] = $collFromDb->getMagentoPlaceholderName();
+        foreach ($emarsysEventsMappingCollFromDb as $emarsysEventFromDb) {
+            $emarsysEventFromDbArray[$emarsysEventFromDb->getId()] = $emarsysEventFromDb->getMagentoPlaceholderName();
         }
 
         $emarsysEventMappingColl = $this->emarsysEventMapping->create()
@@ -1257,14 +1255,14 @@ class Data extends AbstractHelper
             $templatePlaceholderArray[] = $variable;
         }
 
-        $deleteFromDbArray = array_diff($emarsysMappingCollFromDb, $templatePlaceholderArray);
+        $deleteFromDbArray = array_diff($emarsysEventFromDbArray, $templatePlaceholderArray);
 
         foreach ($deleteFromDbArray as $key => $_deleteFromDbArray) {
             $placeholderModel = $this->emarsysEventPlaceholderMappingFactory->create()->load($key);
             $placeholderModel->delete();
         }
 
-        $insertNewFromTemplate = array_diff($templatePlaceholderArray, $emarsysMappingCollFromDb);
+        $insertNewFromTemplate = array_diff($templatePlaceholderArray, $emarsysEventFromDbArray);
 
         foreach ($insertNewFromTemplate as $key => $_insertNewFromTemplate) {
             if ($_insertNewFromTemplate) {
@@ -1286,7 +1284,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $haystack
+     * @param $haystack
      * @param string $start
      * @param string $end
      * @return bool|string
@@ -1313,7 +1311,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $haystack
+     * @param $haystack
      * @param string $start
      * @param string $end
      * @return bool|string
@@ -1395,58 +1393,54 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @return mixed
-     * @throws NoSuchEntityException
+     * @return array
      */
     public function emarsysDefaultPlaceholders()
     {
-        try {
-            $order['product_purchases']['unitary_price_exc_tax'] = strtoupper("unitary_price_exc_tax");
-            $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
-            $order['product_purchases']['unitary_tax_amount'] = strtoupper("unitary_tax_amount");
-            $order['product_purchases']['line_total_price_exc_tax'] = strtoupper("line_total_price_exc_tax");
-            $order['product_purchases']['line_total_tax_amount'] = strtoupper("line_total_tax_amount");
-            $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
-            $order['product_purchases']['product_id'] = strtoupper("product_id");
-            $order['product_purchases']['product_type'] = strtoupper("product_type");
-            $order['product_purchases']['base_original_price'] = strtoupper("base_original_price");
-            $order['product_purchases']['sku'] = strtoupper("sku");
-            $order['product_purchases']['product_name'] = strtoupper("product_name");
-            $order['product_purchases']['product_weight'] = strtoupper("product_weight");
-            $order['product_purchases']['qty_ordered'] = strtoupper("qty_ordered");
-            $order['product_purchases']['original_price'] = strtoupper("original_price");
-            $order['product_purchases']['price'] = strtoupper("price");
-            $order['product_purchases']['base_price'] = strtoupper("base_price");
-            $order['product_purchases']['tax_percent'] = strtoupper("tax_percent");
-            $order['product_purchases']['tax_amount'] = strtoupper("tax_amount");
-            $order['product_purchases']['discount_amount'] = strtoupper("discount_amount");
-            $order['product_purchases']['price_line_total'] = strtoupper("price_line_total");
-            $order['product_purchases']['_external_image_url'] = strtoupper("_external_image_url");
-            $order['product_purchases']['_url'] = strtoupper("_url");
-            $order['product_purchases']['_url_name'] = strtoupper("_url_name");
-            $order['product_purchases']['product_description'] = strtoupper("product_description");
-            $order['product_purchases']['short_description'] = strtoupper("short_description");
-            $order['product_purchases']['additional_data'] = strtoupper("additional_data");
-            $order['product_purchases']['full_options'] = strtoupper("full_options");
+        $order['product_purchases']['unitary_price_exc_tax'] = strtoupper("unitary_price_exc_tax");
+        $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
+        $order['product_purchases']['unitary_tax_amount'] = strtoupper("unitary_tax_amount");
+        $order['product_purchases']['line_total_price_exc_tax'] = strtoupper("line_total_price_exc_tax");
+        $order['product_purchases']['line_total_tax_amount'] = strtoupper("line_total_tax_amount");
+        $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
+        $order['product_purchases']['product_id'] = strtoupper("product_id");
+        $order['product_purchases']['product_type'] = strtoupper("product_type");
+        $order['product_purchases']['base_original_price'] = strtoupper("base_original_price");
+        $order['product_purchases']['sku'] = strtoupper("sku");
+        $order['product_purchases']['product_name'] = strtoupper("product_name");
+        $order['product_purchases']['product_weight'] = strtoupper("product_weight");
+        $order['product_purchases']['qty_ordered'] = strtoupper("qty_ordered");
+        $order['product_purchases']['original_price'] = strtoupper("original_price");
+        $order['product_purchases']['price'] = strtoupper("price");
+        $order['product_purchases']['base_price'] = strtoupper("base_price");
+        $order['product_purchases']['tax_percent'] = strtoupper("tax_percent");
+        $order['product_purchases']['tax_amount'] = strtoupper("tax_amount");
+        $order['product_purchases']['discount_amount'] = strtoupper("discount_amount");
+        $order['product_purchases']['price_line_total'] = strtoupper("price_line_total");
+        $order['product_purchases']['_external_image_url'] = strtoupper("_external_image_url");
+        $order['product_purchases']['_url'] = strtoupper("_url");
+        $order['product_purchases']['_url_name'] = strtoupper("_url_name");
+        $order['product_purchases']['product_description'] = strtoupper("product_description");
+        $order['product_purchases']['short_description'] = strtoupper("short_description");
+        $order['product_purchases']['additional_data'] = strtoupper("additional_data");
+        $order['product_purchases']['full_options'] = strtoupper("full_options");
 
-            $attributesColl = $this->magentoProductAttributeColl->create();
+        $attributesColl = $this->magentoProductAttributeColl->create();
 
-            foreach ($attributesColl as $attribute) {
-                if ($attribute['attribute_code'] == "gallery") {
-                    continue;
-                }
-                $order['product_purchases']['attribute_' . $attribute['attribute_code']] = strtoupper('attribute_' . $attribute['attribute_code']);
+        foreach ($attributesColl as $attribute) {
+            if ($attribute['attribute_code'] == "gallery") {
+                continue;
             }
-
-            return $order;
-        } catch (\Exception $e) {
-            $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog(htmlentities($e->getMessage()), $storeId, 'emarsysDefaultPlaceholders');
+            $order['product_purchases']['attribute_' . $attribute['attribute_code']] = strtoupper(
+                'attribute_' . $attribute['attribute_code']
+            );
         }
+
+        return $order;
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return array
      */
     public function insertFirstTimeHeaderMappingPlaceholders($storeId)
@@ -1470,10 +1464,11 @@ class Data extends AbstractHelper
                 'insertFirstTimeHeaderMappingPlaceholders'
             );
         }
+        return [];
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return array
      */
     public function insertFirstTimeFooterMappingPlaceholders($storeId)
@@ -1500,10 +1495,11 @@ class Data extends AbstractHelper
                 'insertFirstTimeFooterMappingPlaceholders'
             );
         }
+        return [];
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return array
      */
     public function emarsysHeaderPlaceholders($storeId)
@@ -1533,23 +1529,22 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return array
      */
     public function emarsysFooterPlaceholders($storeId)
     {
-        $footerPlaceholderArray = [];
+        $footer = [];
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('config_path', 'design/email/footer_template');
-            $placeholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
+            $emarsysEventPlaceholders = $this->emarsysEventPlaceholderMappingFactory->create()
                 ->getCollection()
                 ->addFieldToFilter('event_mapping_id', $magentoEventsCollection->getFirstItem()->getId());
 
-            foreach ($placeholderMappingColls as $coll) {
-                $footerPlaceholderArray[$coll->getEmarsysPlaceholderName()] = $coll->getMagentoPlaceholderName();
+            foreach ($emarsysEventPlaceholders as $placeholder) {
+                $footer[$placeholder->getEmarsysPlaceholderName()] = $placeholder->getMagentoPlaceholderName();
             }
-            return $footerPlaceholderArray;
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 htmlentities($e->getMessage()),
@@ -1558,24 +1553,20 @@ class Data extends AbstractHelper
             );
         }
 
-        return $footerPlaceholderArray;
+        return $footer;
     }
 
     /**
-     * @param  $websiteId
-     * @return string
+     * @param $websiteId
+     * @return bool
      */
     public function getCheckSmartInsight($websiteId)
     {
         $smartInsight = false;
 
         if ($websiteId) {
-            $smartInsightEnabled = $this->scopeConfig->getValue(
-                self::XPATH_SMARTINSIGHT_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
-                $websiteId
-            );
-            if ($smartInsightEnabled) {
+            if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
                 $smartInsight = true;
             }
         } else {
@@ -1588,7 +1579,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $websiteId
+     * @param $websiteId
      * @return string
      */
     public function getRealTimeSync($websiteId)
@@ -1597,19 +1588,16 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $websiteId
-     * @return string
+     * @param $websiteId
+     * @return bool
      */
     public function getEmarsysConnectionSetting($websiteId)
     {
         $result = false;
 
         if ($websiteId) {
-            if ($this->scopeConfig->getValue(
-                self::XPATH_EMARSYS_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId
-            )
-            ) {
+            if ($this->scopeConfig->getValue(self::XPATH_EMARSYS_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
                 $result = true;
             }
         } else {
@@ -1622,8 +1610,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $templateId
-     * @param  $storeId
+     * @param $templateId
+     * @param $storeId
      * @return mixed
      * @throws NoSuchEntityException
      */
@@ -1641,14 +1629,14 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $magentoEventId
+     * @param $magentoEventId
      * @param null $storeId
      * @return mixed
      * @throws NoSuchEntityException
      */
     public function getEmarsysEventMappingId($magentoEventId, $storeId = null)
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = $this->storeManager->getStore()->getId();
         }
 
@@ -1661,7 +1649,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $magentoEventId
+     * @param $magentoEventId
      * @param null $storeId
      * @return mixed
      * @throws LocalizedException
@@ -1669,7 +1657,7 @@ class Data extends AbstractHelper
      */
     public function getEmarsysEventApiId($magentoEventId, $storeId = null)
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = $this->storeManager->getStore()->getId();
         }
 
@@ -1690,7 +1678,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $magentoEventId
+     * @param $magentoEventId
      * @param null $storeId
      * @return mixed
      */
@@ -1705,8 +1693,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $emarsysEventMappingId
-     * @param  $storeId
+     * @param $emarsysEventMappingId
+     * @param $storeId
      * @return array
      * @throws NoSuchEntityException
      */
@@ -1719,14 +1707,10 @@ class Data extends AbstractHelper
                 ->addFieldToFilter('event_mapping_id', $emarsysEventMappingId)
                 ->addFieldToFilter('store_id', $storeId);
 
-            $variables = [];
-
             if ($emarsysPlaceholderCollection->getSize()) {
                 foreach ($emarsysPlaceholderCollection as $value) {
-                    $variables[$value->getEmarsysPlaceholderName()] = $value->getMagentoPlaceholderName();
+                    $placeHolders[$value->getEmarsysPlaceholderName()] = $value->getMagentoPlaceholderName();
                 }
-
-                return $variables;
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
@@ -1740,9 +1724,9 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $path
-     * @param  $storeCode
-     * @param  $storeId
+     * @param $path
+     * @param $storeCode
+     * @param $storeId
      * @return mixed
      */
     public function getConfigValue($path, $storeCode, $storeId)
@@ -1789,6 +1773,7 @@ class Data extends AbstractHelper
             $store = current($stores);
         }
 
+        /** @var $website \Magento\Store\Model\Website */
         $website = $store->getWebsite();
         $defaultStore = ($website->getDefaultStore() ?? false);
         if ($defaultStore && $defaultStore->getId()) {
@@ -1801,7 +1786,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $websiteId
+     * @param $websiteId
      * @return int
      * @throws LocalizedException
      */
@@ -1822,9 +1807,7 @@ class Data extends AbstractHelper
                 }
             }
         }
-        /**
-         * @var WebsiteInterface $websiteId
-         */
+        /** @var $website WebsiteInterface */
         $website = $this->storeManager->getWebsite($websiteId);
 
         $defaultStore = $website->getDefaultStore();
@@ -1840,7 +1823,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return int
      * @throws LocalizedException
      */
@@ -1856,8 +1839,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $templateId
-     * @param  $storeScope
+     * @param $templateId
+     * @param $storeScope
      * @param null $storeId
      * @return array
      * @throws NoSuchEntityException
@@ -1926,9 +1909,7 @@ class Data extends AbstractHelper
         $contactsSynchronization = false;
 
         if ($this->isEmarsysEnabled($websiteId)) {
-            /**
-             * @var Website $website
-             */
+            /** @var $website Website */
             $website = $this->storeManager->getWebsite($websiteId);
             $contactsSynchronization = $website->getConfig(self::XPATH_EMARSYS_ENABLE_CONTACT_FEED);
         }
@@ -1945,9 +1926,9 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $subscriber
-     * @param  $logMessage
-     * @return $this
+     * @param $subscriber
+     * @param $logMessage
+     * @return bool
      */
     public function realtimeTimeBasedOptinSync($subscriber, $logMessage = 'Created Subscriber in Emarsys')
     {
@@ -1985,11 +1966,13 @@ class Data extends AbstractHelper
                     } else {
                         $statusToBeChanged = Subscriber::STATUS_NOT_ACTIVE;
                     }
-                    if (!in_array($magentoOptinValue, [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,])
-                        && !in_array(
-                            $statusToBeChanged,
-                            [Subscriber::STATUS_NOT_ACTIVE, Subscriber::STATUS_UNCONFIRMED,]
-                        )
+                    if (!in_array($magentoOptinValue, [
+                            Subscriber::STATUS_NOT_ACTIVE,
+                            Subscriber::STATUS_UNCONFIRMED,
+                        ]) && !in_array($statusToBeChanged, [
+                            Subscriber::STATUS_NOT_ACTIVE,
+                            Subscriber::STATUS_UNCONFIRMED,
+                        ])
                     ) {
                         $subscriber->setSubscriberStatus($statusToBeChanged)
                             ->setEmarsysNoExport(true)
@@ -2029,7 +2012,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $emarsysTime
+     * @param $emarsysTime
      * @return string
      */
     public function convertToUtc($emarsysTime)
@@ -2118,8 +2101,8 @@ class Data extends AbstractHelper
                         $this->customerResourceModel->updateStatusOfSubscribers($status, $subscriberIds);
                         $logsArray['id'] = $logId;
                         $logsArray['emarsys_info'] = 'Backgroud Time Based Optin Sync Success';
-                        $logsArray['description'] = 'Status: ' . $status . ' set to: '
-                            . Zend_Json::encode($subscriberIds);
+                        $logsArray['description'] = 'Status: ' . $status
+                            . ' set to: ' . Zend_Json::encode($subscriberIds);
                         $logsArray['action'] = 'Backgroud Time Based Optin Sync';
                         $logsArray['message_type'] = 'Success';
                         $logsArray['log_action'] = 'True';
@@ -2194,7 +2177,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $contents
+     * @param $contents
      * @param bool $isTimeBased
      * @return bool
      * @throws \Exception
@@ -2272,7 +2255,7 @@ class Data extends AbstractHelper
 
     /**
      * @param null|string|bool|int|StoreInterface $store
-     * @return bool|true
+     * @return bool
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -2280,9 +2263,7 @@ class Data extends AbstractHelper
     {
         $result = false;
 
-        /**
-         * @var \Magento\Store\Model\Store $store
-         */
+        /** @var $store \Magento\Store\Model\Store */
         $store = $this->storeManager->getStore($store);
         $hostname = $store->getConfig(self::XPATH_EMARSYS_FTP_HOSTNAME);
         $port = $store->getConfig(self::XPATH_EMARSYS_FTP_PORT);
@@ -2311,8 +2292,8 @@ class Data extends AbstractHelper
 
     /**
      * @param null|string|bool|int|StoreInterface $store
-     * @param  $filePath
-     * @param  $filename
+     * @param $filePath
+     * @param $filename
      * @return bool
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -2337,7 +2318,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $folderName
+     * @param $folderName
      * @return bool
      * @throws \Exception
      */
@@ -2357,7 +2338,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $folderName
+     * @param $folderName
      * @return string
      * @throws FileSystemException
      */
@@ -2367,8 +2348,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $folderName
-     * @param  $csvFilePath
+     * @param $folderName
+     * @param $csvFilePath
      * @return string
      * @throws NoSuchEntityException
      */
@@ -2379,7 +2360,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $websiteId
+     * @param $websiteId
      * @return array|bool
      * @throws LocalizedException
      */
@@ -2403,8 +2384,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $entity
-     * @param  $storeCode
+     * @param $entity
+     * @param $storeCode
      * @return string
      */
     public function getCustomerCsvFileName($entity, $storeCode)
@@ -2419,12 +2400,12 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $outputFile
+     * @param $outputFile
      * @return string
      */
     public function getContactCsvGenerationPath($outputFile)
     {
-        return BP . '/var/' . $outputFile;;
+        return BP . '/var/' . $outputFile;
     }
 
     /**
@@ -2483,7 +2464,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $websiteId
+     * @param $websiteId
      * @return $this
      */
     public function setWebsiteId($websiteId)
@@ -2493,7 +2474,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param  $storeId
+     * @param $storeId
      * @return bool|mixed
      */
     public function getEmarsysCustomerSchema($storeId)

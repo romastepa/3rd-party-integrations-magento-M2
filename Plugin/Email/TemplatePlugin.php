@@ -7,20 +7,16 @@
 
 namespace Emarsys\Emarsys\Plugin\Email;
 
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Helper\Logs as EmarsysLogsHelper,
-    Registry\EmailSendState,
-    Model\Api\Api as EmarsysModelApiApi,
-    Model\ResourceModel\Customer as CustomerResourceModel,
-    Model\AsyncFactory
-};
-use Magento\{
-    Email\Model\Template,
-    Catalog\Helper\Image,
-    Framework\Stdlib\DateTime\DateTime,
-    Store\Model\StoreManagerInterface
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
+use Emarsys\Emarsys\Registry\EmailSendState;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as CustomerResourceModel;
+use Emarsys\Emarsys\Model\AsyncFactory;
+use Magento\Email\Model\Template;
+use Magento\Catalog\Helper\Image;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\StoreManagerInterface;
 
 class TemplatePlugin
 {
@@ -122,7 +118,6 @@ class TemplatePlugin
      * @param callable $proceed
      * @return mixed
      * @throws \Exception
-     *
      */
     public function aroundProcessTemplate(
         Template $subject,
@@ -180,7 +175,7 @@ class TemplatePlugin
         $storeReflection = $reflection->getProperty('storeManager');
         $storeReflection->setAccessible(true);
 
-        /** @var \Magento\Store\Model\StoreManager $store * */
+        /** @var \Magento\Store\Model\StoreManager $store */
         if (isset($vars['store'])) {
             $store = $vars['store'];
         } else {
@@ -236,7 +231,9 @@ class TemplatePlugin
             $emarsysFooterPlaceholders = $this->emarsysHelper->insertFirstTimeFooterMappingPlaceholders($this->storeId);
         }
 
-        $emarsysPlaceholders = $emarsysPlaceholders + $emarsysHeaderPlaceholders + $emarsysFooterPlaceholders;
+        $emarsysPlaceholders = (!is_array($emarsysPlaceholders) ? [] : $emarsysPlaceholders)
+            + (!is_array($emarsysHeaderPlaceholders) ? [] : $emarsysHeaderPlaceholders)
+            + (!is_array($emarsysFooterPlaceholders) ? [] : $emarsysFooterPlaceholders);
 
         $applyDesignConfig = $reflection->getMethod('applyDesignConfig');
         $applyDesignConfig->setAccessible(true);
@@ -426,7 +423,9 @@ class TemplatePlugin
             'unitary_price_exc_tax' => $this->_formatPrice($item->getPriceInclTax() - $unitTaxAmount),
             'unitary_price_inc_tax' => $this->_formatPrice($item->getPriceInclTax()),
             'unitary_tax_amount' => $this->_formatPrice($unitTaxAmount),
-            'line_total_price_exc_tax' => $this->_formatPrice($item->getRowTotalInclTax() - $item->getTaxAmount()),
+            'line_total_price_exc_tax' => $this->_formatPrice(
+                $item->getRowTotalInclTax() - $item->getTaxAmount()
+            ),
             'line_total_price_inc_tax' => $this->_formatPrice($item->getRowTotalInclTax()),
             'line_total_tax_amount' => $this->_formatPrice($item->getTaxAmount()),
         ];
