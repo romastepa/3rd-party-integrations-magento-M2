@@ -1560,36 +1560,23 @@ class Data extends AbstractHelper
      * @param $websiteId
      * @return bool
      */
-    public function getCheckSmartInsight($websiteId)
+    public function getCheckSmartInsight($websiteId = null)
     {
         $smartInsight = false;
 
-        if ($websiteId) {
-            if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
-                $smartInsight = true;
-            }
-        } else {
-            if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED)) {
-                $smartInsight = true;
-            };
+        if ($this->isEmarsysEnabled($websiteId)) {
+            /** @var $website Website */
+            $website = $this->storeManager->getWebsite($websiteId);
+            $smartInsight = $website->getConfig(self::XPATH_SMARTINSIGHT_ENABLED);
         }
 
-        return $smartInsight;
+        return (bool)$smartInsight;
     }
 
     /**
-     * @param $websiteId
-     * @return string
-     */
-    public function getRealTimeSync($websiteId)
-    {
-        return 'Enable';
-    }
-
-    /**
-     * @param $websiteId
+     * @param null $websiteId
      * @return bool
+     * @throws LocalizedException
      */
     public function getEmarsysConnectionSetting($websiteId)
     {
@@ -1626,26 +1613,6 @@ class Data extends AbstractHelper
         }
 
         return null;
-    }
-
-    /**
-     * @param $magentoEventId
-     * @param null $storeId
-     * @return mixed
-     * @throws NoSuchEntityException
-     */
-    public function getEmarsysEventMappingId($magentoEventId, $storeId = null)
-    {
-        if ($storeId === null) {
-            $storeId = $this->storeManager->getStore()->getId();
-        }
-
-        return $this->emarsysEventMapping->create()
-            ->getCollection()
-            ->addFieldToFilter('store_id', $storeId)
-            ->addFieldToFilter('magento_event_id', $magentoEventId)
-            ->getFirstItem()
-            ->getId();
     }
 
     /**

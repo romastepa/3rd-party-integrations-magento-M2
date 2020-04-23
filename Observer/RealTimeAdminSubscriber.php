@@ -7,16 +7,12 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Emarsys\{
-    Emarsys\Helper\Data,
-    Emarsys\Model\Api\Subscriber
-};
-use Magento\{
-    Framework\App\Request\Http,
-    Framework\Event\Observer,
-    Store\Model\StoreManagerInterface,
-    Framework\Event\ObserverInterface
-};
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Model\Api\Subscriber;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class RealTimeAdminSubscriber implements ObserverInterface
 {
@@ -69,9 +65,7 @@ class RealTimeAdminSubscriber implements ObserverInterface
         $subscriberId = $observer->getEvent()->getSubscriber()->getId();
         $storeId = $observer->getEvent()->getSubscriber()->getStoreId();
 
-        /**
-         * @var \Magento\Store\Model\Store $store
-         */
+        /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
         if (!$this->emarsysHelper->isContactsSynchronizationEnable($store->getWebsiteId())) {
             return;

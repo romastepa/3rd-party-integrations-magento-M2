@@ -7,6 +7,7 @@
 
 namespace Emarsys\Emarsys\Observer;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\OrderQueueFactory as OrderQueueFactoryAlias;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
@@ -19,18 +20,31 @@ class OrderSave implements ObserverInterface
     private $orderQueueFactory;
 
     /**
+     * @var EmarsysHelper
+     */
+    protected $emarsysHelper;
+
+    /**
      * OrderSave constructor.
      *
      * @param OrderQueueFactoryAlias $orderQueueFactory
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
-        OrderQueueFactoryAlias $orderQueueFactory
+        OrderQueueFactoryAlias $orderQueueFactory,
+        EmarsysHelper $emarsysHelper
     ) {
         $this->orderQueueFactory = $orderQueueFactory;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     public function execute(Observer $observer)
     {
+        $websiteId = $observer->getEvent()->getOrder()->getStore()->getWebsiteId();
+        if (!$this->emarsysHelper->getCheckSmartInsight($websiteId)) {
+            return true;
+        }
+
         $orderQueue = $this->orderQueueFactory->create();
         $orderQueueData = $orderQueue->getCollection()
             ->addFieldToFilter('entity_id', $observer->getEvent()->getOrder()->getId())

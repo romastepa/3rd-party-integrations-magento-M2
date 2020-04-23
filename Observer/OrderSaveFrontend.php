@@ -13,7 +13,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Newsletter\Model\SubscriberFactory;
 use Magento\Sales\Model\Order;
 use Magento\Customer\Model\Session as CustomerSession;
-use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 class OrderSaveFrontend implements ObserverInterface
 {
@@ -43,9 +43,9 @@ class OrderSaveFrontend implements ObserverInterface
     protected $customerSession;
 
     /**
-     * @var Logs
+     * @var EmarsysHelper
      */
-    protected $emarsysLogs;
+    protected $emarsysHelper;
 
     /**
      * OrderSaveFrontend constructor.
@@ -55,7 +55,7 @@ class OrderSaveFrontend implements ObserverInterface
      * @param SubscriberFactory $subscriberFactory
      * @param Order $orderModel
      * @param CustomerSession $customerSession
-     * @param Logs $emarsysLogs
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
         OrderQueueFactory $orderQueueFactory,
@@ -63,24 +63,31 @@ class OrderSaveFrontend implements ObserverInterface
         SubscriberFactory $subscriberFactory,
         Order $orderModel,
         CustomerSession $customerSession,
-        Logs $emarsysLogs
+        EmarsysHelper $emarsysHelper
     ) {
         $this->orderQueueFactory = $orderQueueFactory;
         $this->subscriberFactory = $subscriberFactory;
         $this->checkoutSession = $checkoutSession;
         $this->order = $orderModel;
         $this->customerSession = $customerSession;
-        $this->emarsysLogs = $emarsysLogs;
+        $this->emarsysHelper = $emarsysHelper;
     }
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
+     * @return bool|void
      * @throws \Exception
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $orderIds = $observer->getEvent()->getOrderIds();
         $order = $this->order->load($orderIds[0]);
+        $websiteId = $order->getStore()->getWebsiteId();
+
+        if (!$this->emarsysHelper->getCheckSmartInsight($websiteId)) {
+            return true;
+        }
+
         $emailId = $order->getCustomerEmail();
         $checkoutNewsSub = $this->checkoutSession->getData('newsletter_sub_checkout', false);
 

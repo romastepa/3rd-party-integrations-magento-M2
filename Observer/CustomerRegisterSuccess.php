@@ -7,12 +7,9 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Magento\{
-    Framework\Event\Observer,
-    Framework\Event\ObserverInterface,
-    Customer\Model\Session,
-    Framework\Exception\NoSuchEntityException
-};
+use Magento\Customer\Model\Session;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 
 class CustomerRegisterSuccess implements ObserverInterface
 {
@@ -34,7 +31,6 @@ class CustomerRegisterSuccess implements ObserverInterface
 
     /**
      * @param Observer $observer
-     * @throws NoSuchEntityException
      */
     public function execute(Observer $observer)
     {

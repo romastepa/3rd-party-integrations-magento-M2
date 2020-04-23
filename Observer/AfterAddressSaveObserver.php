@@ -7,18 +7,14 @@
 
 namespace Emarsys\Emarsys\Observer;
 
-use Magento\{
-    Framework\Event\ObserverInterface,
-    Framework\Event\Observer,
-    Framework\Registry,
-    Store\Model\StoreManagerInterface,
-    Customer\Model\CustomerFactory
-};
-use Emarsys\Emarsys\{
-    Helper\Data as EmarsysHelper,
-    Model\Api\Contact,
-    Model\ResourceModel\Customer
-};
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\Registry;
+use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\Api\Contact;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
 
 class AfterAddressSaveObserver implements ObserverInterface
 {

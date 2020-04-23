@@ -8,14 +8,12 @@
 namespace Emarsys\Emarsys\Observer;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Magento\{
-    Checkout\Model\Session,
-    Framework\Event\Observer,
-    Newsletter\Model\SubscriberFactory,
-    Sales\Model\Order,
-    Store\Model\StoreManagerInterface,
-    Framework\Event\ObserverInterface
-};
+use Magento\Checkout\Model\Session;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Newsletter\Model\SubscriberFactory;
+use Magento\Sales\Model\Order;
+use Magento\Store\Model\StoreManagerInterface;
 
 class PlaceorderNewsletterSubscriber implements ObserverInterface
 {
@@ -73,6 +71,9 @@ class PlaceorderNewsletterSubscriber implements ObserverInterface
     public function execute(Observer $observer)
     {
         try {
+            if (!$this->emarsysHelper->isContactsSynchronizationEnable()) {
+                return;
+            }
             $orderID = $observer->getEvent()->getOrderIds()[0];
             $order = $this->order->load($orderID);
             $checkoutNewsSub = $this->checkoutSession->getData()['newsletter_sub_checkout'];
