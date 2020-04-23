@@ -121,7 +121,6 @@ class TemplatePlugin
      * @param callable $proceed
      * @return mixed
      * @throws \Exception
-     *
      */
     public function aroundProcessTemplate(
         Template $subject,
@@ -179,7 +178,7 @@ class TemplatePlugin
         $storeReflection = $reflection->getProperty('storeManager');
         $storeReflection->setAccessible(true);
 
-        /** @var \Magento\Store\Model\StoreManager $store * */
+        /** @var \Magento\Store\Model\StoreManager $store */
         if (isset($vars['store'])) {
             $store = $vars['store'];
         } else {
@@ -235,7 +234,9 @@ class TemplatePlugin
             $emarsysFooterPlaceholders = $this->emarsysHelper->insertFirstTimeFooterMappingPlaceholders($this->storeId);
         }
 
-        $emarsysPlaceholders = $emarsysPlaceholders + $emarsysHeaderPlaceholders + $emarsysFooterPlaceholders;
+        $emarsysPlaceholders = (!is_array($emarsysPlaceholders) ? [] : $emarsysPlaceholders)
+            + (!is_array($emarsysHeaderPlaceholders) ? [] : $emarsysHeaderPlaceholders)
+            + (!is_array($emarsysFooterPlaceholders) ? [] : $emarsysFooterPlaceholders);
 
         $applyDesignConfig = $reflection->getMethod('applyDesignConfig');
         $applyDesignConfig->setAccessible(true);

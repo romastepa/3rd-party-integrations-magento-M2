@@ -901,7 +901,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.22',
+                    'value' => '1.0.23',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),
@@ -1018,7 +1018,6 @@ class Data extends AbstractHelper
             } catch (\Exception $e) {
                 $portStatus[] = 'closed';
             }
-
         }
         if (in_array('closed', $portStatus)) {
             $aggregatePortStatus = 'No';
@@ -1109,7 +1108,7 @@ class Data extends AbstractHelper
         }
 
         if (empty($value)) {
-            return false;
+            return $return;
         }
         if (is_numeric($value)) {
             $emailTemplateModelColl = $this->templateFactory->create()->getCollection()
@@ -1397,58 +1396,50 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @return mixed
-     * @throws NoSuchEntityException
+     * @return array
      */
     public function emarsysDefaultPlaceholders()
     {
-        try {
-            $order['product_purchases']['unitary_price_exc_tax'] = strtoupper("unitary_price_exc_tax");
-            $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
-            $order['product_purchases']['unitary_tax_amount'] = strtoupper("unitary_tax_amount");
-            $order['product_purchases']['line_total_price_exc_tax'] = strtoupper("line_total_price_exc_tax");
-            $order['product_purchases']['line_total_tax_amount'] = strtoupper("line_total_tax_amount");
-            $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
-            $order['product_purchases']['product_id'] = strtoupper("product_id");
-            $order['product_purchases']['product_type'] = strtoupper("product_type");
-            $order['product_purchases']['base_original_price'] = strtoupper("base_original_price");
-            $order['product_purchases']['sku'] = strtoupper("sku");
-            $order['product_purchases']['product_name'] = strtoupper("product_name");
-            $order['product_purchases']['product_weight'] = strtoupper("product_weight");
-            $order['product_purchases']['qty_ordered'] = strtoupper("qty_ordered");
-            $order['product_purchases']['original_price'] = strtoupper("original_price");
-            $order['product_purchases']['price'] = strtoupper("price");
-            $order['product_purchases']['base_price'] = strtoupper("base_price");
-            $order['product_purchases']['tax_percent'] = strtoupper("tax_percent");
-            $order['product_purchases']['tax_amount'] = strtoupper("tax_amount");
-            $order['product_purchases']['discount_amount'] = strtoupper("discount_amount");
-            $order['product_purchases']['price_line_total'] = strtoupper("price_line_total");
-            $order['product_purchases']['_external_image_url'] = strtoupper("_external_image_url");
-            $order['product_purchases']['_url'] = strtoupper("_url");
-            $order['product_purchases']['_url_name'] = strtoupper("_url_name");
-            $order['product_purchases']['product_description'] = strtoupper("product_description");
-            $order['product_purchases']['short_description'] = strtoupper("short_description");
-            $order['product_purchases']['additional_data'] = strtoupper("additional_data");
-            $order['product_purchases']['full_options'] = strtoupper("full_options");
+        $order['product_purchases']['unitary_price_exc_tax'] = strtoupper("unitary_price_exc_tax");
+        $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
+        $order['product_purchases']['unitary_tax_amount'] = strtoupper("unitary_tax_amount");
+        $order['product_purchases']['line_total_price_exc_tax'] = strtoupper("line_total_price_exc_tax");
+        $order['product_purchases']['line_total_tax_amount'] = strtoupper("line_total_tax_amount");
+        $order['product_purchases']['unitary_price_inc_tax'] = strtoupper("unitary_price_inc_tax");
+        $order['product_purchases']['product_id'] = strtoupper("product_id");
+        $order['product_purchases']['product_type'] = strtoupper("product_type");
+        $order['product_purchases']['base_original_price'] = strtoupper("base_original_price");
+        $order['product_purchases']['sku'] = strtoupper("sku");
+        $order['product_purchases']['product_name'] = strtoupper("product_name");
+        $order['product_purchases']['product_weight'] = strtoupper("product_weight");
+        $order['product_purchases']['qty_ordered'] = strtoupper("qty_ordered");
+        $order['product_purchases']['original_price'] = strtoupper("original_price");
+        $order['product_purchases']['price'] = strtoupper("price");
+        $order['product_purchases']['base_price'] = strtoupper("base_price");
+        $order['product_purchases']['tax_percent'] = strtoupper("tax_percent");
+        $order['product_purchases']['tax_amount'] = strtoupper("tax_amount");
+        $order['product_purchases']['discount_amount'] = strtoupper("discount_amount");
+        $order['product_purchases']['price_line_total'] = strtoupper("price_line_total");
+        $order['product_purchases']['_external_image_url'] = strtoupper("_external_image_url");
+        $order['product_purchases']['_url'] = strtoupper("_url");
+        $order['product_purchases']['_url_name'] = strtoupper("_url_name");
+        $order['product_purchases']['product_description'] = strtoupper("product_description");
+        $order['product_purchases']['short_description'] = strtoupper("short_description");
+        $order['product_purchases']['additional_data'] = strtoupper("additional_data");
+        $order['product_purchases']['full_options'] = strtoupper("full_options");
 
-            $attributesColl = $this->magentoProductAttributeColl->create();
+        $attributesColl = $this->magentoProductAttributeColl->create();
 
-            foreach ($attributesColl as $attribute) {
-                if ($attribute['attribute_code'] == "gallery") {
-                    continue;
-                }
-                $order['product_purchases']['attribute_' . $attribute['attribute_code']] = strtoupper(
-                    'attribute_' . $attribute['attribute_code']
-                );
+        foreach ($attributesColl as $attribute) {
+            if ($attribute['attribute_code'] == "gallery") {
+                continue;
             }
-
-            return $order;
-        } catch (\Exception $e) {
-            $storeId = $this->storeManager->getStore()->getId();
-            $this->emarsysLogs->addErrorLog(htmlentities($e->getMessage()), $storeId, 'emarsysDefaultPlaceholders');
+            $order['product_purchases']['attribute_' . $attribute['attribute_code']] = strtoupper(
+                'attribute_' . $attribute['attribute_code']
+            );
         }
 
-        return false;
+        return $order;
     }
 
     /**
@@ -1476,6 +1467,7 @@ class Data extends AbstractHelper
                 'insertFirstTimeHeaderMappingPlaceholders'
             );
         }
+        return [];
     }
 
     /**
@@ -1506,6 +1498,7 @@ class Data extends AbstractHelper
                 'insertFirstTimeFooterMappingPlaceholders'
             );
         }
+        return [];
     }
 
     /**
@@ -1555,7 +1548,6 @@ class Data extends AbstractHelper
             foreach ($emarsysEventPlaceholders as $placeholder) {
                 $footer[$placeholder->getEmarsysPlaceholderName()] = $placeholder->getMagentoPlaceholderName();
             }
-            return $footer;
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 htmlentities($e->getMessage()),
@@ -1569,7 +1561,7 @@ class Data extends AbstractHelper
 
     /**
      * @param $websiteId
-     * @return string
+     * @return bool
      */
     public function getCheckSmartInsight($websiteId)
     {
@@ -1600,7 +1592,7 @@ class Data extends AbstractHelper
 
     /**
      * @param $websiteId
-     * @return string
+     * @return bool
      */
     public function getEmarsysConnectionSetting($websiteId)
     {
@@ -1718,14 +1710,10 @@ class Data extends AbstractHelper
                 ->addFieldToFilter('event_mapping_id', $emarsysEventMappingId)
                 ->addFieldToFilter('store_id', $storeId);
 
-            $variables = [];
-
             if ($emarsysPlaceholderCollection->getSize()) {
                 foreach ($emarsysPlaceholderCollection as $value) {
-                    $variables[$value->getEmarsysPlaceholderName()] = $value->getMagentoPlaceholderName();
+                    $placeHolders[$value->getEmarsysPlaceholderName()] = $value->getMagentoPlaceholderName();
                 }
-
-                return $variables;
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
@@ -1868,8 +1856,9 @@ class Data extends AbstractHelper
             $magentoEventsCollection = $this->magentoEventsCollection->create();
 
             foreach ($magentoEventsCollection as $magentoEvent) {
-                if ($this->scopeConfig->getValue($magentoEvent->getConfigPath(), $storeScope,
-                        $storeId) == $templateId) {
+                if (
+                    $this->scopeConfig->getValue($magentoEvent->getConfigPath(), $storeScope, $storeId) == $templateId
+                ) {
                     $event_id = $magentoEvent->getId();
                     $configPath = $magentoEvent->getConfigPath();
                 }
@@ -1943,7 +1932,7 @@ class Data extends AbstractHelper
     /**
      * @param $subscriber
      * @param $logMessage
-     * @return $this
+     * @return bool
      */
     public function realtimeTimeBasedOptinSync($subscriber, $logMessage = 'Created Subscriber in Emarsys')
     {
@@ -1987,7 +1976,8 @@ class Data extends AbstractHelper
                         ]) && !in_array($statusToBeChanged, [
                             Subscriber::STATUS_NOT_ACTIVE,
                             Subscriber::STATUS_UNCONFIRMED,
-                        ])) {
+                        ])
+                    ) {
                         $subscriber->setSubscriberStatus($statusToBeChanged)
                             ->setEmarsysNoExport(true)
                             ->save();
@@ -2175,9 +2165,7 @@ class Data extends AbstractHelper
                     $logsArray['messages'] = $message;
                     $this->logsHelper->logs($logsArray);
                     $offset += $limit;
-                    if (!isset($response['body']) || empty($response['body'])
-                        || (isset($response['status']) && in_array($response['status'], [400,410]))
-                    ) {
+                    if (!isset($response['body']) || empty($response['body'])) {
                         break;
                     }
                 } while ($this->_processSubscriptionUpdates($response['body'], $isTimeBased));
@@ -2268,7 +2256,7 @@ class Data extends AbstractHelper
 
     /**
      * @param null|string|bool|int|StoreInterface $store
-     * @return bool|true
+     * @return bool
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
