@@ -198,8 +198,8 @@ window.onload = function () {
         document.getElementById('contacts_synchronization_initial_db_load_initial_db_load2').disabled = true;
         document.getElementById('contacts_synchronization_initial_db_load_initial_db_load3').disabled = true;
     }
-    if (document.getElementById('row_emarsys_settings_ftp_settings_apiurl')) {
-        document.getElementById('row_emarsys_settings_ftp_settings_apiurl').style.display = 'none';
+    if (document.getElementById('row_emartech_ftp_settings_apiurl')) {
+        document.getElementById('row_emartech_ftp_settings_apiurl').style.display = 'none';
     }
 };
 

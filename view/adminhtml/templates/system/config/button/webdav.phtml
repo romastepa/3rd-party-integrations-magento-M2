@@ -4,9 +4,9 @@
         function webDavConnection() {
 
             params = {
-                'url': document.getElementById('emarsys_settings_webdav_setting_webdav_url').value,
-                'username': document.getElementById('emarsys_settings_webdav_setting_webdav_user').value,
-                'password': document.getElementById('emarsys_settings_webdav_setting_webdav_password').value,
+                'url': document.getElementById('emartech_webdav_setting_webdav_url').value,
+                'username': document.getElementById('emartech_webdav_setting_webdav_user').value,
+                'password': document.getElementById('emartech_webdav_setting_webdav_password').value,
             };
             new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
                 parameters: params,

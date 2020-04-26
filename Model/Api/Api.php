@@ -7,9 +7,9 @@
 
 namespace Emarsys\Emarsys\Model\Api;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Store\Model\StoreManagerInterface as StoreManager;
 use Zend_Json;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
 class Api extends \Magento\Framework\DataObject
 {
@@ -167,7 +167,9 @@ class Api extends \Magento\Framework\DataObject
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));
         curl_setopt(
-            $ch, CURLOPT_HTTPHEADER, [
+            $ch,
+            CURLOPT_HTTPHEADER,
+            [
                 'X-WSSE: UsernameToken ' .
                 'Username="' . $this->getApiUsername() . '", ' .
                 'PasswordDigest="' . $passwordDigest . '", ' .

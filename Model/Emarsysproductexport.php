@@ -9,19 +9,17 @@ namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-use Magento\{
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\Filesystem\Driver\File,
-    Framework\Registry,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Model\AbstractModel,
-    Catalog\Model\Product as ProductModel,
-    Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
-    Directory\Model\CurrencyFactory,
-    Store\Model\StoreManagerInterface
-};
+use Magento\Catalog\Model\Product as ProductModel;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Filesystem\Driver\File;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Emarsysproductexport extends AbstractModel
 {
@@ -315,7 +313,7 @@ class Emarsysproductexport extends AbstractModel
      */
     public function prepareDataForCsv($param, $productId, &$data)
     {
-        $item = $this->serializer->unserialize($param);
+        $item = unserialize($param);
         $map = $this->_processedStores[$item['store']];
         foreach ($item['data'] as $key => $value) {
             if (isset($map[$key])) {

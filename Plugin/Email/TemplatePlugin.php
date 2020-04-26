@@ -9,12 +9,12 @@ namespace Emarsys\Emarsys\Plugin\Email;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
-use Emarsys\Emarsys\Registry\EmailSendState;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as CustomerResourceModel;
 use Emarsys\Emarsys\Model\AsyncFactory;
-use Magento\Email\Model\Template;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as CustomerResourceModel;
+use Emarsys\Emarsys\Registry\EmailSendState;
 use Magento\Catalog\Helper\Image;
+use Magento\Email\Model\Template;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -181,7 +181,7 @@ class TemplatePlugin
         } else {
             $store = $this->storeManager->getStore();
         }
-        $this->storeId = $store->getId();
+        $this->storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($store->getId());
         $this->websiteId = $store->getWebsiteId();
         if (!(bool)$store->getConfig('transaction_mail/transactionmail/enable_customer')) {
             return false;
@@ -643,7 +643,7 @@ class TemplatePlugin
         //log information that is about to send for contact sync
         $this->logsArray['emarsys_info'] = 'Send Contact to Emarsys';
         $this->logsArray['description'] = 'PUT ' . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS
-            . ' ' . \Zend_Json::encode($buildRequest);;
+            . ' ' . \Zend_Json::encode($buildRequest);
         $this->logsArray['action'] = EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS;
         $this->logsHelper->manualLogs($this->logsArray);
 
