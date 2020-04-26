@@ -9,12 +9,12 @@ namespace Emarsys\Emarsys\Plugin\Email;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
-use Emarsys\Emarsys\Registry\EmailSendState;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as CustomerResourceModel;
 use Emarsys\Emarsys\Model\AsyncFactory;
-use Magento\Email\Model\Template;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as CustomerResourceModel;
+use Emarsys\Emarsys\Registry\EmailSendState;
 use Magento\Catalog\Helper\Image;
+use Magento\Email\Model\Template;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -185,7 +185,7 @@ class TemplatePlugin
         } else {
             $store = $this->storeManager->getStore();
         }
-        $this->storeId = $store->getId();
+        $this->storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($store->getId());
         $this->websiteId = $store->getWebsiteId();
         if (!(bool)$store->getConfig('transaction_mail/transactionmail/enable_customer')) {
             return false;
@@ -491,7 +491,8 @@ class TemplatePlugin
         }
 
         $order = array_filter($order);
-        $order['additional_data'] = ($item->getData('additional_data')
+        $order['additional_data'] = (
+            $item->getData('additional_data')
             ? $item->getData('additional_data')
             : ""
         );

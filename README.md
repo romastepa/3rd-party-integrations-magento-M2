@@ -26,5 +26,5 @@
 
 # Release Notes
 
-## v1.0.23
-- Fixed PHP message: PHP Fatal error:  Uncaught Error: Unsupported operand types
+## v1.0.24
+- fixed email event mapping issue
