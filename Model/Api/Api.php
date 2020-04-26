@@ -178,7 +178,7 @@ class Api extends \Magento\Framework\DataObject
             'Nonce="' . $nonce . '", ' .
             'Created="' . $timestamp . '"',
             'Content-type: application/json;charset="utf-8"',
-            'Extension-Version: 1.0.23',
+            'Extension-Version: 1.0.24',
         ]);
 
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
