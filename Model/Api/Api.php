@@ -62,7 +62,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getApiUsername()
     {
-        /** @var $website \Magento\Store\Api\Data\WebsiteInterface */
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
         $website = $this->storeManager->getWebsite($this->websiteId);
         return $website->getConfig('emartech/emarsys_setting/emarsys_api_username');
     }
@@ -75,7 +75,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function getApiPassword()
     {
-        /** @var $website \Magento\Store\Api\Data\WebsiteInterface */
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
         $website = $this->storeManager->getWebsite($this->websiteId);
         return $website->getConfig('emartech/emarsys_setting/emarsys_api_password');
     }
@@ -88,7 +88,7 @@ class Api extends \Magento\Framework\DataObject
      */
     public function setApiUrl()
     {
-        /** @var $website \Magento\Store\Api\Data\WebsiteInterface */
+        /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
         $website = $this->storeManager->getWebsite($this->websiteId);
         $endpoint = $website->getConfig('emartech/emarsys_setting/emarsys_api_endpoint');
         if ($endpoint == 'custom') {
