@@ -7,6 +7,23 @@
 
 namespace Emarsys\Emarsys\Helper;
 
+use Emarsys\Emarsys\Controller\Adminhtml\Email\Template as ControllerTemplate;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
+use Emarsys\Emarsys\Model\EmarsyseventmappingFactory as EmarsysEventMappingFactory;
+use Emarsys\Emarsys\Model\Emarsysevents;
+use Emarsys\Emarsys\Model\EmarsyseventsFactory;
+use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
+use Emarsys\Emarsys\Model\PlaceholdersFactory;
+use Emarsys\Emarsys\Model\Queue;
+use Emarsys\Emarsys\Model\QueueFactory as EmarsysQueueFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as ModelResourceModelCustomer;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event as ModelResourceModelEvent;
+use Magento\Backend\Model\Session as BackendSession;
+use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory;
+use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -14,38 +31,21 @@ use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+
 use Magento\Framework\Filesystem\Io\File as FilesystemIoFile;
 use Magento\Framework\Filesystem\Io\Ftp;
+use Magento\Framework\Module\ModuleListInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\Timezone;
-use Magento\Framework\Module\ModuleListInterface;
 use Magento\Framework\UrlInterface;
-use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Api\Data\WebsiteInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Newsletter\Model\ResourceModel\Subscriber\CollectionFactory as SubscriberCollectionFactory;
 use Magento\Newsletter\Model\Subscriber;
-use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductCollectionFactory;
-use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
-use Magento\Backend\Model\Session as BackendSession;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\Website;
-
-use Emarsys\Emarsys\Model\ResourceModel\Customer as ModelResourceModelCustomer;
-use Emarsys\Emarsys\Model\Queue;
-use Emarsys\Emarsys\Model\QueueFactory as EmarsysQueueFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory;
-use Emarsys\Emarsys\Model\PlaceholdersFactory;
-use Emarsys\Emarsys\Model\EmarsyseventmappingFactory as EmarsysEventMappingFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsyseventsCollectionFactory;
-use Emarsys\Emarsys\Model\Emarsysevents;
-use Emarsys\Emarsys\Model\ResourceModel\Event as ModelResourceModelEvent;
-use Emarsys\Emarsys\Model\EmarsyseventsFactory;
-use Emarsys\Emarsys\Model\Api\Api as EmarsysApiApi;
-use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Emarsys\Emarsys\Controller\Adminhtml\Email\Template as ControllerTemplate;
 use Zend_Json;
 
 /**
@@ -1568,14 +1568,17 @@ class Data extends AbstractHelper
         $smartInsight = false;
 
         if ($websiteId) {
-            if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
+            if ($this->scopeConfig->getValue(
+                self::XPATH_SMARTINSIGHT_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
+                $websiteId
+            )) {
                 $smartInsight = true;
             }
         } else {
             if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED)) {
                 $smartInsight = true;
-            };
+            }
         }
 
         return $smartInsight;
@@ -1599,8 +1602,11 @@ class Data extends AbstractHelper
         $result = false;
 
         if ($websiteId) {
-            if ($this->scopeConfig->getValue(self::XPATH_EMARSYS_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES, $websiteId)) {
+            if ($this->scopeConfig->getValue(
+                self::XPATH_EMARSYS_ENABLED,
+                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
+                $websiteId
+            )) {
                 $result = true;
             }
         } else {
@@ -1761,6 +1767,7 @@ class Data extends AbstractHelper
     public function getFirstStoreId()
     {
         $stores = $this->storeManager->getStores();
+        asort($stores);
 
         $firstStore = false;
         foreach ($stores as $store) {
@@ -1796,6 +1803,7 @@ class Data extends AbstractHelper
     public function getFirstStoreIdOfWebsite($websiteId)
     {
         $websites = $this->storeManager->getWebsites();
+        asort($websites);
 
         foreach ($websites as $wId => $website) {
             if ($website->getConfig(self::XPATH_EMARSYS_ENABLED)) {
@@ -1880,7 +1888,6 @@ class Data extends AbstractHelper
      */
     public function getDateTimeInLocalTimezone($dateTime = '')
     {
-
         $toTimezone = $this->timezone->getConfigTimezone();
         $returnDateTime = $this->timezone->date($dateTime);
         $returnDateTime->setTimezone(new \DateTimeZone($toTimezone));
@@ -2240,8 +2247,11 @@ class Data extends AbstractHelper
         curl_setopt($ch, CURLOPT_URL, $apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_USERAGENT,
-            'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+        curl_setopt(
+            $ch,
+            CURLOPT_USERAGENT,
+            'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13'
+        );
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 
         $data = curl_exec($ch);
@@ -2330,7 +2340,6 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-
         }
 
         return false;
