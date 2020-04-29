@@ -217,7 +217,6 @@ class Subscriber
             $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
             if ($this->emarsysHelper->isAsyncEnabled()) {
-
                 $this->asyncModel->create()
                     ->setWebsiteId($websiteId)
                     ->setEndpoint(Api::CONTACT_CREATE_IF_NOT_EXISTS)
@@ -244,8 +243,7 @@ class Subscriber
             $logsArray['action'] = 'Synced to Emarsys';
             $res = ' [PUT] ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($optInResult)
                 . ' [confirmation url] ' . $this->newsletterHelperData->getConfirmationUrl($objSubscriber)
-                . ' [unsubscribe url] ' . $this->newsletterHelperData->getUnsubscribeUrl($objSubscriber)
-            ;
+                . ' [unsubscribe url] ' . $this->newsletterHelperData->getUnsubscribeUrl($objSubscriber);
             if ($optInResult['status'] == '200') {
                 $logsArray['message_type'] = 'Success';
                 $logsArray['description'] = "Created subscriber '" . $objSubscriber->getSubscriberEmail() . "' in Emarsys successfully " . $res;
@@ -368,8 +366,6 @@ class Subscriber
             $currentPageNumber++;
         }
 
-
-
         if (!$success) {
             $logsArray['status'] = 'error';
             $logsArray['messages'] = 'Error in creating subscriber !!!';
@@ -385,7 +381,6 @@ class Subscriber
 
     public function processBatch($subscriberData, $subscriberIdKey, $logsArray)
     {
-
         if (empty($subscriberData)) {
             //no Subscribers data found
             $logsArray['emarsys_info'] = 'No Subscribers Data Found.';
@@ -557,8 +552,7 @@ class Subscriber
                     if (count($subscriberIds)) {
                         $this->emarsysHelper
                             ->setWebsiteId($websiteId)
-                            ->backgroudTimeBasedOptinSync($subscriberIds)
-                        ;
+                            ->backgroudTimeBasedOptinSync($subscriberIds);
                     }
                 }
                 $currentPageNumber = $currentPageNumber + 1;

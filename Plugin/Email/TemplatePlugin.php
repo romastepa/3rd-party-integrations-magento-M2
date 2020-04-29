@@ -138,7 +138,9 @@ class TemplatePlugin
                 $this->logsArray['status'] = 'error';
                 $this->logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $this->logsHelper->manualLogs($this->logsArray);
-                return $proceed();
+                if ($this->state->get() != EmailSendState::STATE_YES) {
+                    return $proceed();
+                }
             }
             $this->logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->manualLogs($this->logsArray);
@@ -186,9 +188,11 @@ class TemplatePlugin
         }
         $this->storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($store->getId());
         $this->websiteId = $store->getWebsiteId();
+
         if (!(bool)$store->getConfig('transaction_mail/transactionmail/enable_customer')) {
             return false;
         }
+
         $this->email = false;
         $this->customerId = false;
         $this->subscribeId = false;
@@ -203,6 +207,10 @@ class TemplatePlugin
                 'TemplatePlugin::prepareEmarsysData | ' . $this->templateId
             );
             return false;
+        }
+
+        if ((bool)$store->getConfig('transaction_mail/transactionmail/lock_magento_emails')) {
+            $this->state->set(EmailSendState::STATE_YES);
         }
 
         $this->emarsysEventApiId = $this->emarsysHelper->getEmarsysEventApiId($this->magentoEventId, $this->storeId);

@@ -8,17 +8,17 @@
 namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Filesystem\Driver\File;
-use Magento\Framework\Registry;
-use Magento\Framework\Model\Context;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Framework\Model\AbstractModel;
-use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Directory\Model\CurrencyFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Filesystem\Driver\File;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -329,7 +329,8 @@ class Emarsysproductexport extends AbstractModel
         foreach ($item['data'] as $key => $value) {
             if (isset($map[$key])) {
                 if (isset($this->_mapHeader[$map[$key]])
-                    && ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
+                    && (
+                        $this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
                         || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
                     )) {
                     $currencyCodeTo = $this->storeManager
@@ -351,5 +352,4 @@ class Emarsysproductexport extends AbstractModel
             }
         }
     }
-
 }

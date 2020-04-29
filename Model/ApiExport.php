@@ -119,7 +119,7 @@ class ApiExport extends ZendClient
             $headers[] = "Authorization: bearer " . $token;
             $headers[] = "Content-type: text/csv";
             $headers[] = "Accept: text/plain";
-            $headers[] = "Extension-Version: 1.0.24";
+            $headers[] = "Extension-Version: 1.0.25";
 
             return $headers;
         }
