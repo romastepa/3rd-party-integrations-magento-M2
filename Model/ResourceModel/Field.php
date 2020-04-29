@@ -137,33 +137,6 @@ class Field extends AbstractDb
     }
 
     /**
-     * @param $attributeCode
-     * @return string
-     */
-    public function getCustomerAttributeId($attributeCode)
-    {
-        if (strpos($attributeCode, 'BILLADD_') !== false) {
-            $entityTypeId = 2;
-            $attributeCode = str_replace('BILLADD_', '', $attributeCode);
-        } else {
-            $entityTypeId = 1;
-        }
-        $attributeCode = $this->getConnection()->quoteInto($attributeCode);
-        $select = $this->getConnection()
-            ->select()
-            ->from($this->getTable('eav_attribute'), 'attribute_id')
-            ->where('attribute_code = ?', $attributeCode)
-            ->where('entity_type_id = ?', $entityTypeId);
-
-        $attributeId = $this->getConnection()->fetchOne($select);
-        if ($attributeId) {
-            return $attributeId;
-        } else {
-            return '';
-        }
-    }
-
-    /**
      * @param $magentoOptionId
      * @param $emarsysOptionId
      * @param $emarsysFieldId

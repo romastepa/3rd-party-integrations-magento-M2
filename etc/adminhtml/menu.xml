@@ -12,7 +12,7 @@
         <add id="Emarsys_Emarsys::emarsys"
              title="Emarsys"
              module="Emarsys_Emarsys"
-             sortOrder="10"
+             sortOrder="33"
              dependsOnModule="Emarsys_Emarsys"
              resource="Emarsys_Emarsys::emarsys"/>
         <add id="Emarsys_Emarsys::settings"
