@@ -1,29 +1,24 @@
 <?php
 /**
- * @category  Emarsys
- * @package   Emarsys_Emarsys
- * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category   Emarsys
+ * @package    Emarsys_Emarsys
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
-
 namespace Emarsys\Emarsys\Model\Api;
 
-use Emarsys\Emarsys\{
-    Model\ResourceModel\Customer as customerResourceModel,
-    Model\QueueFactory,
-    Model\AsyncFactory,
-    Helper\Data as EmarsysHelper,
-    Helper\Logs,
-    Helper\Cron as EmarsysCronHelper,
-    Logger\Logger as EmarsysLogger
-};
-use Magento\{
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\Message\ManagerInterface as MessageManagerInterface,
-    Framework\App\ResourceConnection,
-    Store\Model\StoreManagerInterface,
-    Newsletter\Model\SubscriberFactory,
-    Newsletter\Helper\Data as NewsletterHelperData
-};
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Logger\Logger as EmarsysLogger;
+use Emarsys\Emarsys\Model\AsyncFactory;
+use Emarsys\Emarsys\Model\QueueFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Newsletter\Helper\Data as NewsletterHelperData;
+use Magento\Newsletter\Model\SubscriberFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Subscriber
 {
@@ -111,7 +106,6 @@ class Subscriber
 
     /**
      * Subscriber constructor.
-     *
      * @param Api $api
      * @param customerResourceModel $customerResourceModel
      * @param DateTime $date
@@ -157,8 +151,8 @@ class Subscriber
     }
 
     /**
-     * @param  $subscribeId
-     * @param  $storeId
+     * @param $subscribeId
+     * @param $storeId
      * @return bool
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -220,7 +214,6 @@ class Subscriber
             $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($buildRequest);
             $logsArray['log_action'] = 'sync';
             if ($this->emarsysHelper->isAsyncEnabled()) {
-
                 $this->asyncModel->create()
                     ->setWebsiteId($websiteId)
                     ->setEndpoint(Api::CONTACT_CREATE_IF_NOT_EXISTS)
@@ -283,8 +276,8 @@ class Subscriber
     }
 
     /**
-     * @param  $exportMode
-     * @param  $params
+     * @param $exportMode
+     * @param $params
      * @param null $logId
      * @return bool|void
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -385,7 +378,6 @@ class Subscriber
 
     public function processBatch($subscriberData, $subscriberIdKey, $logsArray)
     {
-
         if (empty($subscriberData)) {
             //no Subscribers data found
             $logsArray['emarsys_info'] = 'No Subscribers Data Found.';
@@ -448,14 +440,14 @@ class Subscriber
     }
 
     /**
-     * @param  $storeId
-     * @param  $websiteId
-     * @param  $exportMode
-     * @param  $emailKey
-     * @param  $subscriberIdKey
-     * @param  $customerIdKey
-     * @param  $optInEmarsysId
-     * @param  $currentPageNumber
+     * @param $storeId
+     * @param $websiteId
+     * @param $exportMode
+     * @param $emailKey
+     * @param $subscriberIdKey
+     * @param $customerIdKey
+     * @param $optInEmarsysId
+     * @param $currentPageNumber
      * @return array
      */
     public function prepareSubscribersInfo(
@@ -505,12 +497,9 @@ class Subscriber
 
             $subscriberStatus = $subscriber->getSubscriberStatus();
 
-            if (in_array($subscriberStatus, [
-                \Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE,
-                \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED,
-            ])) {
+            if (in_array($subscriberStatus, [\Magento\Newsletter\Model\Subscriber::STATUS_NOT_ACTIVE, \Magento\Newsletter\Model\Subscriber::STATUS_UNCONFIRMED])) {
                 $values[$optInEmarsysId] = '';
-            } elseif ($subscriberStatus == \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
+            } elseif ($subscriberStatus ==  \Magento\Newsletter\Model\Subscriber::STATUS_SUBSCRIBED) {
                 $values[$optInEmarsysId] = 1;
             } else {
                 $values[$optInEmarsysId] = 2;
@@ -525,8 +514,8 @@ class Subscriber
     }
 
     /**
-     * @param  $subscriberData
-     * @param  $keyId
+     * @param $subscriberData
+     * @param $keyId
      * @return array
      */
     public function prepareSubscribersPayload($subscriberData, $keyId)

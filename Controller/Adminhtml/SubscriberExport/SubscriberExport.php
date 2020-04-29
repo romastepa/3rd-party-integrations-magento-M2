@@ -113,7 +113,7 @@ class SubscriberExport extends Action
             $returnUrl = $this->getUrl("emarsys_emarsys/subscriberexport/index", ["store" => $storeId]);
 
             //check emarsys enable for website
-            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 $optInStatus = $this->customerResourceModel->getDataFromCoreConfig(
                     'contacts_synchronization/initial_db_load/initial_db_load',
                     $scope,

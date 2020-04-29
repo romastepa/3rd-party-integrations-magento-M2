@@ -125,7 +125,7 @@ class WebDav extends DataObject
         $logsArray['action'] = 'synced to emarsys';
 
         //check if emarsys enabled for the website
-        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+        if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
 
             //webDav credentials from admin configurations
             $webDavCredentials = $this->emarsysHelper->collectWebDavCredentials($websiteId);

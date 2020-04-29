@@ -7,39 +7,34 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\{
-    Eav\Model\Config as EavConfig,
-    Framework\App\Area,
-    Framework\Model\AbstractModel,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Registry,
-    Framework\Message\ManagerInterface as MessageManagerInterface,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Stdlib\DateTime\DateTime,
-    Framework\App\Filesystem\DirectoryList,
-    Framework\File\Csv,
-    Catalog\Helper\Image,
-    Catalog\Model\Product\Attribute\Source\Status,
-    Catalog\Model\Product\Visibility,
-    Catalog\Model\CategoryFactory,
-    Catalog\Model\Product as ProductModel,
-    Store\Model\App\Emulation,
-    Store\Model\StoreManagerInterface,
-    ConfigurableProduct\Model\Product\Type\Configurable as TypeConfigurable,
-    Bundle\Model\Product\Type as TypeBundle,
-    GroupedProduct\Model\Product\Type\Grouped as TypeGrouped
-};
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\Emarsysproductexport as ProductExportModel;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel;
+use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
+use Magento\Bundle\Model\Product\Type as TypeBundle;
+use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\Product as ProductModel;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as TypeConfigurable;
+use Magento\Eav\Model\Config as EavConfig;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\File\Csv;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
 
-use Emarsys\Emarsys\{
-    Helper\Logs as EmarsysHelperLogs,
-    Helper\Data as EmarsysHelper,
-    Model\ApiExport,
-    Model\ResourceModel\Customer as EmarsysResourceModelCustomer,
-    Model\ResourceModel\Product as ProductResourceModel,
-    Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel,
-    Model\Emarsysproductexport as ProductExportModel
-};
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\GroupedProduct\Model\Product\Type\Grouped as TypeGrouped;
+use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Product extends AbstractModel
 {
@@ -302,7 +297,7 @@ class Product extends AbstractModel
                 $this->productExportResourceModel->truncateTable();
 
                 $defaultStoreID = false;
-                $this->_mapHeader = ['item'];
+                $this->_mapHeader = ['item', 'group_id'];
                 $this->_processedStores = [];
                 foreach ($website as $storeId => $store) {
                     $this->appEmulation->startEnvironmentEmulation(
@@ -338,7 +333,14 @@ class Product extends AbstractModel
                     );
 
                     $lastPageNumber = $collection->getLastPageNumber();
-                    $header = $emarsysFieldNames[$storeId];
+                    $headerOld = $emarsysFieldNames[$storeId];
+                    $header = [];
+                    foreach ($headerOld as $el) {
+                        $header[] = $el;
+                        if ($el == 'item') {
+                            $header[] = 'group_id';
+                        }
+                    }
                     $this->_categoryNames = [];
                     $this->_parentProducts = [];
 
@@ -377,8 +379,12 @@ class Product extends AbstractModel
                                         'store' => $store['store']->getCode(),
                                         'store_id' => $store['store']->getId(),
                                         'data' => $this->_getProductData(
-                                            $magentoAttributeNames[$storeId], $product,
-                                            $categoryNames, $store['store'], $collection, $logsArray
+                                            $magentoAttributeNames[$storeId],
+                                            $product,
+                                            $categoryNames,
+                                            $store['store'],
+                                            $collection,
+                                            $logsArray
                                         ),
                                         'header' => $header,
                                         'currency_code' => $currencyStoreCode,
@@ -476,6 +482,11 @@ class Product extends AbstractModel
                 if (strtolower($value) == 'item') {
                     unset($header[$key]);
                     $this->_processedStores[$storeCode][$key] = 0;
+                    continue;
+                }
+                if (strtolower($value) == 'group_id') {
+                    unset($header[$key]);
+                    $this->_processedStores[$storeCode][$key] = 1;
                     continue;
                 }
 
@@ -814,6 +825,43 @@ class Product extends AbstractModel
                     }
                 }
                 switch ($attributeCode) {
+                    case 'sku':
+                        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
+                            $attributeData[] = $attributeOption;
+                            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+                            $this->_productTypeInstance = $this->typeConfigurable;
+                            if (empty($parentProducts)) {
+                                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+                                $this->_productTypeInstance = $this->typeBundle;
+                                if (empty($parentProducts)) {
+                                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                                    $this->_productTypeInstance = $this->typeGrouped;
+                                }
+                            }
+                            if (!empty($parentProducts)) {
+                                $parentId = current($parentProducts);
+                                $parentProduct = $collection->getItemById($parentId);
+                                if (!$parentProduct) {
+                                    if (!isset($this->_parentProducts[$parentId])) {
+                                        $this->productModel->setTypeInstance($this->_productTypeInstance);
+                                        $this->_parentProducts[$parentId] = $this->productModel->load($parentId);
+                                        $parentProduct = $this->_parentProducts[$parentId];
+                                    } else {
+                                        $parentProduct = $this->_parentProducts[$parentId];
+                                    }
+                                }
+                                if ($parentProduct) {
+                                    $parentProduct->setStoreId($store->getId());
+                                    $attributeData[] = $parentProduct->getSku();
+                                }
+                            } else {
+                                $attributeData[] = $attributeOption;
+                            }
+                        } else {
+                            $attributeData[] = 'g/' . $attributeOption;
+                            $attributeData[] = $attributeOption;
+                        }
+                        break;
                     case 'quantity_and_stock_status':
                         $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
                             ? ($productObject->getStatus() == Status::STATUS_ENABLED)

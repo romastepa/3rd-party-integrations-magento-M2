@@ -74,7 +74,7 @@ class LayoutProcessor
         $store = $this->storeManagerInterface->getStore();
 
         $isEnable = $store->getConfig(Data::XPATH_EMARSYS_ENABLED);
-        $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS);
+        $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT);
 
         if (!$isEnable || !$newsLetterConfValue) {
             return $jsLayout;

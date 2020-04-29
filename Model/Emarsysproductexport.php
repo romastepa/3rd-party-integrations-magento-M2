@@ -133,9 +133,7 @@ class Emarsysproductexport extends AbstractModel
         $excludedCategories = []
     ) {
         try {
-            /**
-             * @var \Magento\Store\Model\Store $store
-             */
+            /** @var \Magento\Store\Model\Store $store */
             $store = $this->storeManager->getStore($storeId);
 
             $collection = $this->productCollectionFactory->create()
@@ -180,7 +178,7 @@ class Emarsysproductexport extends AbstractModel
                 $joinCondition,
                 [
                     'is_salable' => 'stock_status',
-                    'qty',
+                    'qty'
                 ]
             );
 

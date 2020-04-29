@@ -198,7 +198,7 @@ class JavascriptTracking extends Template
         $product = $this->coreRegistry->registry('current_product');
         if ($product instanceof Product) {
             return [
-                'sku' => $product->getSku(),
+                'sku' => 'g/' . $product->getSku(),
                 'id' => $product->getId(),
             ];
         }

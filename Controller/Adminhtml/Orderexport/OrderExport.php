@@ -129,7 +129,7 @@ class OrderExport extends Action
         $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
         try {
             //check emarsys enabled for the website
-            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 //check smart insight enabled for the website
                 if ($this->emarsysHelper->getCheckSmartInsight($websiteId)) {
                     if (isset($data['fromDate']) && $data['fromDate'] != '') {
