@@ -9,19 +9,17 @@ namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-use Magento\{
-    Framework\App\Config\ScopeConfigInterface,
-    Framework\Filesystem\Driver\File,
-    Framework\Registry,
-    Framework\Model\Context,
-    Framework\Model\ResourceModel\AbstractResource,
-    Framework\Data\Collection\AbstractDb,
-    Framework\Model\AbstractModel,
-    Catalog\Model\Product as ProductModel,
-    Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory,
-    Directory\Model\CurrencyFactory,
-    Store\Model\StoreManagerInterface
-};
+use Magento\Catalog\Model\Product as ProductModel;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Filesystem\Driver\File;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Emarsysproductexport
@@ -29,8 +27,8 @@ use Magento\{
  */
 class Emarsysproductexport extends AbstractModel
 {
-    CONST EMARSYS_DELIMITER = '{EMARSYS}';
-    CONST BATCH_SIZE = 500;
+    const EMARSYS_DELIMITER = '{EMARSYS}';
+    const BATCH_SIZE = 500;
 
     protected $_preparedData = [];
     protected $_mapHeader = ['item'];
@@ -118,7 +116,7 @@ class Emarsysproductexport extends AbstractModel
     public function _construct()
     {
         parent::_construct();
-        $this->_init('Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport');
+        $this->_init(\Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport::class);
     }
 
     /**
@@ -290,7 +288,8 @@ class Emarsysproductexport extends AbstractModel
                     foreach ($item['data'] as $key => $value) {
                         if (isset($map[$key])) {
                             if (isset($this->_mapHeader[$map[$key]]) &&
-                                ($this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
+                                (
+                                    $this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
                                     || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
                                 )) {
                                 $currencyCodeTo = $this->storeManager->getStore($item['store_id'])->getBaseCurrency()->getCode();

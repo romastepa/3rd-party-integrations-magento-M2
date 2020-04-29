@@ -200,6 +200,14 @@
                     <label>Enable Emarsys Transaction Emails</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="lock_magento_emails" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Lock email process via Magento</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Do not process emails via Magento if there is an error on Emarsys side</comment>
+                    <depends>
+                        <field id="*/*/enable_customer">1</field>
+                    </depends>
+                </field>
                 <depends>
                     <field id="emarsys_settings/emarsys_setting/enable">1</field>
                 </depends>
@@ -268,7 +276,7 @@
                 </field>
                 <field id="smartinsightfrequency" translate="label comment" sortOrder="24" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Frequency</label>
-                    <!-- source model which we created for drop down opt$exportBlock->getCsvFile()ions -->
+                    <!-- source model which we created for drop down options -->
                     <source_model>Emarsys\Emarsys\Model\Config\Source\Smartinsightfrequency</source_model>
                     <backend_model>Emarsys\Emarsys\Model\Config\SmartInsightCronConfig</backend_model>
                     <comment>For hours only minutes will be applicable.</comment>

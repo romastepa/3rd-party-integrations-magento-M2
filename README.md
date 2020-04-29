@@ -26,5 +26,6 @@
 
 # Release Notes
 
-## v1.0.24
-- fixed email event mapping issue
+## v1.0.25
+- fixed single choice customer mapping
+- added switcher "Lock email process via Magento"
