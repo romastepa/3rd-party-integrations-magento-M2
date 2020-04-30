@@ -109,7 +109,7 @@ class ProductExport extends Action
             $websiteId = $store->getWebsiteId();
 
             //check emarsys enabled for the website
-            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
 
                 //check feed export enabled for the website
                 if ($store->getConfig(EmarsysHelper::XPATH_PREDICT_ENABLE_NIGHTLY_PRODUCT_FEED)) {

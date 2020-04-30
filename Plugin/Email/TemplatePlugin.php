@@ -135,7 +135,9 @@ class TemplatePlugin
                 $this->logsArray['status'] = 'error';
                 $this->logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $this->logsHelper->manualLogs($this->logsArray);
-                return $proceed();
+                if ($this->state->get() != EmailSendState::STATE_YES) {
+                    return $proceed();
+                }
             }
             $this->logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->manualLogs($this->logsArray);
@@ -183,9 +185,11 @@ class TemplatePlugin
         }
         $this->storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($store->getId());
         $this->websiteId = $store->getWebsiteId();
-        if (!(bool)$store->getConfig('transaction_mail/transactionmail/enable_customer')) {
+
+        if (!(bool)$store->getConfig(EmarsysHelper::XPATH_TRANSACTION_MAIL_ENABLED)) {
             return false;
         }
+
         $this->email = false;
         $this->customerId = false;
         $this->subscribeId = false;
@@ -200,6 +204,10 @@ class TemplatePlugin
                 'TemplatePlugin::prepareEmarsysData | ' . $this->templateId
             );
             return false;
+        }
+
+        if ((bool)$store->getConfig(EmarsysHelper::XPATH_TRANSACTION_MAIL_LOCK_MAGENTO_EMAILS)) {
+            $this->state->set(EmailSendState::STATE_YES);
         }
 
         $this->emarsysEventApiId = $this->emarsysHelper->getEmarsysEventApiId($this->magentoEventId, $this->storeId);
@@ -309,10 +317,7 @@ class TemplatePlugin
             /** @var \Magento\Sales\Model\Order\Shipment\Item $item */
             foreach ($shipment->getItems() as $item) {
                 $shipmentItem = $this->getShipmentData($item);
-                $shipmentItem['order_item'] = $this->getOrderData(
-                    $order->getItemById($item->getOrderItemId()),
-                    $store
-                );
+                $shipmentItem['order_item'] = $this->getOrderData($order->getItemById($item->getOrderItemId()), $store);
                 $shipmentData[] = $shipmentItem;
             }
             $processedVariables['shipment_items'] = $shipmentData;
@@ -331,10 +336,7 @@ class TemplatePlugin
             /** @var \Magento\Sales\Model\Order\Invoice\Item $item */
             foreach ($invoice->getItems() as $item) {
                 $invoiceItem = $this->getInvoiceData($item);
-                $invoiceItem['order_item'] = $this->getOrderData(
-                    $order->getItemById($item->getOrderItemId()),
-                    $store
-                );
+                $invoiceItem['order_item'] = $this->getOrderData($order->getItemById($item->getOrderItemId()), $store);
                 $invoiceData[] = $invoiceItem;
             }
             $processedVariables['invoice_items'] = $invoiceData;
@@ -373,10 +375,7 @@ class TemplatePlugin
             /** @var \Magento\Rma\Model\Item $item */
             foreach ($rma->getItemsForDisplay() as $item) {
                 $rmaItem = $this->getRmaData($item);
-                $rmaItem['order_item'] = $this->getOrderData(
-                    $order->getItemById($item->getOrderItemId()),
-                    $store
-                );
+                $rmaItem['order_item'] = $this->getOrderData($order->getItemById($item->getOrderItemId()), $store);
                 $returnItems[] = $rmaItem;
             }
             $processedVariables['returned_items'] = $returnItems;
@@ -496,9 +495,11 @@ class TemplatePlugin
         }
 
         $order = array_filter($order);
-        $order['additional_data'] = $item->getData('additional_data')
+        $order['additional_data'] = (
+            $item->getData('additional_data')
             ? $item->getData('additional_data')
-            : '';
+            : ""
+        );
 
         return $order;
     }
@@ -642,7 +643,8 @@ class TemplatePlugin
 
         //log information that is about to send for contact sync
         $this->logsArray['emarsys_info'] = 'Send Contact to Emarsys';
-        $this->logsArray['description'] = 'PUT ' . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS
+        $this->logsArray['description'] = 'PUT '
+            . EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS
             . ' ' . \Zend_Json::encode($buildRequest);
         $this->logsArray['action'] = EmarsysModelApiApi::CONTACT_CREATE_IF_NOT_EXISTS;
         $this->logsHelper->manualLogs($this->logsArray);
@@ -656,8 +658,8 @@ class TemplatePlugin
         if (($response['status'] == 200) || ($response['status'] == 400 && $response['body']['replyCode'] == 2009)) {
             //contact synced to emarsys successfully
             //log information that is about to send for email sync
-            $this->logsArray['description'] = 'POST ' . 'event/' . $this->emarsysEventApiId . '/trigger '
-                . ' ' . \Zend_Json::encode($arrCustomerData);
+            $this->logsArray['description'] = 'POST '
+                . 'event/' . $this->emarsysEventApiId . '/trigger ' . \Zend_Json::encode($arrCustomerData);
             $this->logsHelper->manualLogs($this->logsArray);
 
             //trigger email event
@@ -687,8 +689,8 @@ class TemplatePlugin
         );
 
         //failed to sync contact to emarsys
-        $this->logsArray['description'] = 'Failed to Sync Contact to Emarsys.'
-            . ' Emarsys Event ID:' . $this->emarsysEventApiId
+        $this->logsArray['description'] = 'Failed to Sync Contact to Emarsys. Emarsys Event ID :'
+            . $this->emarsysEventApiId
             . ', Due to this error, Email Sent From Magento for Store Id: ' . $this->storeId
             . ' (' . $this->templateId . ')'
             . ' Request: ' . \Zend_Json::encode($buildRequest)

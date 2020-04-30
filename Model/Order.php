@@ -248,7 +248,7 @@ class Order extends AbstractModel
         $errorCount = false;
 
         //check emarsys enabled for the website
-        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+        if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
             //check smart insight enabled for the website
             if ($this->emarsysHelper->getCheckSmartInsight($websiteId)) {
                 //get configuration of catalog export method

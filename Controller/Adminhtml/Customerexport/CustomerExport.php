@@ -138,7 +138,7 @@ class CustomerExport extends Action
 
         try {
             //check emarsys enable for website
-            if (!$this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 //emarsys is disabled for this website
                 $this->messageManager->addErrorMessage(__('Emarsys is disabled for the website %1', $websiteId));
                 return $resultRedirect->setPath($returnUrl);
