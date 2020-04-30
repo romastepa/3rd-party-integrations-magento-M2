@@ -7,9 +7,9 @@
 
 namespace Emarsys\Emarsys\Setup;
 
-use Magento\Framework\Setup\UpgradeDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
+use Magento\Framework\Setup\UpgradeDataInterface;
 
 class UpgradeData implements UpgradeDataInterface
 {
@@ -24,7 +24,8 @@ class UpgradeData implements UpgradeDataInterface
             $tableName = $setup->getTable('emarsys_customer_field_mapping');
             $connection = $setup->getConnection();
             if ($connection->isTableExists($tableName)) {
-                $connection->delete($tableName,
+                $connection->delete(
+                    $tableName,
                     ['emarsys_contact_field in (?)' => [0, 27, 28, 29, 30, 33, 34, 36, 47, 48]]
                 );
             }
@@ -52,10 +53,10 @@ class UpgradeData implements UpgradeDataInterface
 
         if (version_compare($context->getVersion(), "1.1.0", "<")) {
             $tableName = $setup->getTable('core_config_data');
-            $setup->getConnection()->update(
-                $tableName,
-                ['path' => 'REPLACE(`path`, "emarsys_settings/", "emartech/")'],
-                'INSTR(`path`, "emarsys_settings/")'
+            $setup->getConnection()->query(
+                'UPDATE ' . $tableName
+                . ' SET `path` = REPLACE(`path`, "emarsys_settings/", "emartech/")'
+                . ' WHERE (INSTR(`path`, "emarsys_settings/"))'
             );
         }
 
