@@ -1,7 +1,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 require(
@@ -188,6 +188,9 @@ function openMyPopup(url)
         },
         error: function (jqXhr, textStatus, errorThrown) {
             console.log(errorThrown);
+            document.getElementById('json-data-container').innerHTML = errorThrown;
+            jQuery(".loading-mask").css("display", "none");
+            jQuery("#myModal").css("display", "block");
         }
     });
 }

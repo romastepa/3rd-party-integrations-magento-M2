@@ -104,7 +104,7 @@ class Data extends AbstractHelper
 
     const XPATH_OPTIN_EVERYPAGE_STRATEGY = 'opt_in/optin_enable/opt_in_strategy';
 
-    const XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS = 'opt_in/subscription_checkout_process/newsletter_sub_checkout_yes_no';
+    const XPATH_OPTIN_SUBSCRIPTION_CHECKOUT = 'opt_in/subscription_checkout_process/newsletter_sub_checkout_yes_no';
 
     //Smart Insight
     const XPATH_SMARTINSIGHT_ENABLED = 'smart_insight/smart_insight/smartinsight_enabled';
@@ -901,7 +901,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.25',
+                    'value' => '1.0.26',
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),

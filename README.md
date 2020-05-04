@@ -26,6 +26,7 @@
 
 # Release Notes
 
-## v1.0.25
-- fixed single choice customer mapping
-- added switcher "Lock email process via Magento"
+## v1.0.26
+- fixed checkout subscription logic
+- fixed placeholders view on mapping
+- added Predict Parent-Child
