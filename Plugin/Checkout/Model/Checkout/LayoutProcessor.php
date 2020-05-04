@@ -70,7 +70,7 @@ class LayoutProcessor
         $store = $this->storeManagerInterface->getStore();
 
         $isEnable = $store->getConfig(Data::XPATH_EMARSYS_ENABLED);
-        $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT_PROCESS);
+        $newsLetterConfValue = $store->getConfig(Data::XPATH_OPTIN_SUBSCRIPTION_CHECKOUT);
 
         if (!$isEnable || !$newsLetterConfValue) {
             return $jsLayout;
@@ -88,7 +88,8 @@ class LayoutProcessor
 
         if (!$this->session->isLoggedIn() || !$subscribed) {
             if (isset($jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
-                ['shippingAddress']['children']['shipping-address-fieldset']['children']['emarsys_subscriber'])) {
+                ['shippingAddress']['children']['shipping-address-fieldset']['children']
+            )) {
                 $jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
                 ['shippingAddress']['children']['shipping-address-fieldset']['children']['emarsys_subscriber'] = [
                     'component' => 'Emarsys_Emarsys/js/view/newsletter_sub_checkout',

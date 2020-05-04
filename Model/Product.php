@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -37,9 +37,6 @@ use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysproductexport as ProductExportResourceModel;
 use Emarsys\Emarsys\Model\Emarsysproductexport as ProductExportModel;
 
-/**
- * Class Product
- */
 class Product extends AbstractModel
 {
     /**
@@ -284,8 +281,11 @@ class Product extends AbstractModel
             $this->_mode = $mode;
 
             $allStores = $this->storeManager->getStores();
+            asort($allStores);
 
-            /** @var \Magento\Store\Model\Store $store */
+            /**
+             * @var \Magento\Store\Model\Store $store
+             */
             foreach ($allStores as $store) {
                 $this->setCredentials($store, $logsArray);
             }
@@ -307,10 +307,14 @@ class Product extends AbstractModel
                 $this->productExportResourceModel->truncateTable();
 
                 $defaultStoreID = false;
-                $this->_mapHeader = ['item'];
+                $this->_mapHeader = ['item', 'group_id'];
                 $this->_processedStores = [];
                 foreach ($website as $storeId => $store) {
-                    $this->appEmulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
+                    $this->appEmulation->startEnvironmentEmulation(
+                        $storeId,
+                        Area::AREA_FRONTEND,
+                        true
+                    );
                     $currencyStoreCode = $store['store']->getDefaultCurrencyCode();
                     if (!$defaultStoreID) {
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
@@ -339,7 +343,14 @@ class Product extends AbstractModel
                     );
 
                     $lastPageNumber = $collection->getLastPageNumber();
-                    $header = $emarsysFieldNames[$storeId];
+                    $headerOld = $emarsysFieldNames[$storeId];
+                    $header = [];
+                    foreach ($headerOld as $el) {
+                        $header[] = $el;
+                        if ($el == 'item') {
+                            $header[] = 'group_id';
+                        }
+                    }
                     $this->_categoryNames = [];
                     $this->_parentProducts = [];
 
@@ -415,6 +426,8 @@ class Product extends AbstractModel
                         $logsArray
                     );
 
+                    $store = reset($this->_credentials[$websiteId]);
+
                     $uploaded = $this->moveFile($store['store'], $csvFilePath, $logsArray, $mode);
                     if ($uploaded) {
                         $logsArray['emarsys_info'] = __('Data for was uploaded');
@@ -479,6 +492,11 @@ class Product extends AbstractModel
                 if (strtolower($value) == 'item') {
                     unset($header[$key]);
                     $this->_processedStores[$storeCode][$key] = 0;
+                    continue;
+                }
+                if (strtolower($value) == 'group_id') {
+                    unset($header[$key]);
+                    $this->_processedStores[$storeCode][$key] = 1;
                     continue;
                 }
 
@@ -662,7 +680,9 @@ class Product extends AbstractModel
                         $this->logsHelper->logs($logsArray);
                         if ($this->_mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
-                                __('Invalid API credential. Please check your settings and try again !!!')
+                                __(
+                                    'Invalid API credential. Please check your settings and try again !!!'
+                                )
                             );
                         }
                         return;
@@ -680,7 +700,9 @@ class Product extends AbstractModel
                         $this->logsHelper->logs($logsArray);
                         if ($this->_mode == EmarsysHelper::ENTITY_EXPORT_MODE_MANUAL) {
                             $this->messageManager->addErrorMessage(
-                                __("Failed to connect with FTP server. Please check your settings and try again !!!")
+                                __(
+                                    'Failed to connect with FTP server. Please check your settings and try again!'
+                                )
                             );
                         }
                         return;
@@ -741,9 +763,9 @@ class Product extends AbstractModel
     /**
      * Get Category Names
      *
-     * @param $catIds
-     * @param $storeId
-     * @param $excludedCategories
+     * @param  $catIds
+     * @param  $storeId
+     * @param  $excludedCategories
      * @return array
      */
     public function getCategoryNames($catIds, $storeId, $excludedCategories = [])
@@ -782,9 +804,9 @@ class Product extends AbstractModel
     }
 
     /**
-     * @param $magentoAttributeNames
+     * @param  $magentoAttributeNames
      * @param \Magento\Catalog\Model\Product $productObject
-     * @param $categoryNames
+     * @param  $categoryNames
      * @param \Magento\Store\Model\Store $store
      * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
      * @param array $logsArray
@@ -813,6 +835,43 @@ class Product extends AbstractModel
                     }
                 }
                 switch ($attributeCode) {
+                    case 'sku':
+                        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
+                            $attributeData[] = $attributeOption;
+                            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+                            $this->_productTypeInstance = $this->typeConfigurable;
+                            if (empty($parentProducts)) {
+                                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+                                $this->_productTypeInstance = $this->typeBundle;
+                                if (empty($parentProducts)) {
+                                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                                    $this->_productTypeInstance = $this->typeGrouped;
+                                }
+                            }
+                            if (!empty($parentProducts)) {
+                                $parentId = current($parentProducts);
+                                $parentProduct = $collection->getItemById($parentId);
+                                if (!$parentProduct) {
+                                    if (!isset($this->_parentProducts[$parentId])) {
+                                        $this->productModel->setTypeInstance($this->_productTypeInstance);
+                                        $this->_parentProducts[$parentId] = $this->productModel->load($parentId);
+                                        $parentProduct = $this->_parentProducts[$parentId];
+                                    } else {
+                                        $parentProduct = $this->_parentProducts[$parentId];
+                                    }
+                                }
+                                if ($parentProduct) {
+                                    $parentProduct->setStoreId($store->getId());
+                                    $attributeData[] = $parentProduct->getSku();
+                                }
+                            } else {
+                                $attributeData[] = $attributeOption;
+                            }
+                        } else {
+                            $attributeData[] = 'g/' . $attributeOption;
+                            $attributeData[] = $attributeOption;
+                        }
+                        break;
                     case 'quantity_and_stock_status':
                         $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
                             ? ($productObject->getStatus() == Status::STATUS_ENABLED)
@@ -838,7 +897,9 @@ class Product extends AbstractModel
                         $attributeData[] = implode(',', $attributeOption);
                         break;
                     case 'image':
-                        /** @var \Magento\Catalog\Helper\Image $helper */
+                        /**
+                         * @var \Magento\Catalog\Helper\Image $helper
+                         */
                         $url = $this->imageHelper
                             ->init($productObject, 'product_base_image')
                             ->setImageFile($attributeOption)
@@ -859,17 +920,15 @@ class Product extends AbstractModel
                                 }
                             }
                             if (!empty($parentProducts)) {
-                                $parentProductId = current($parentProducts);
-                                $parentProduct = $collection->getItemById($parentProductId);
+                                $parentId = current($parentProducts);
+                                $parentProduct = $collection->getItemById($parentId);
                                 if (!$parentProduct) {
-                                    if (!isset($this->_parentProducts[$parentProductId])) {
+                                    if (!isset($this->_parentProducts[$parentId])) {
                                         $this->productModel->setTypeInstance($this->_productTypeInstance);
-                                        $this->_parentProducts[$parentProductId] = $this->productModel->load(
-                                            $parentProductId
-                                        );
-                                        $parentProduct = $this->_parentProducts[$parentProductId];
+                                        $this->_parentProducts[$parentId] = $this->productModel->load($parentId);
+                                        $parentProduct = $this->_parentProducts[$parentId];
                                     } else {
-                                        $parentProduct = $this->_parentProducts[$parentProductId];
+                                        $parentProduct = $this->_parentProducts[$parentId];
                                     }
                                 }
                                 if ($parentProduct) {
@@ -905,8 +964,8 @@ class Product extends AbstractModel
     }
 
     /**
-     * @param $attributeCode
-     * @return  AbstractAttribute
+     * @param  $attributeCode
+     * @return AbstractAttribute
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function getEavAttribute($attributeCode)
