@@ -188,6 +188,9 @@ function openMyPopup(url)
         },
         error: function (jqXhr, textStatus, errorThrown) {
             console.log(errorThrown);
+            document.getElementById('json-data-container').innerHTML = errorThrown;
+            jQuery(".loading-mask").css("display", "none");
+            jQuery("#myModal").css("display", "block");
         }
     });
 }
