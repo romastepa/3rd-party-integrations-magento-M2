@@ -13,6 +13,76 @@
 
 <?php if ($webExtendStatus && !empty($merchantId)): ?>
     <?php $pageHandleData = $block->getPageHandleStatus(); ?>
+    <?php if (isset($pageHandleData['status']) && isset($pageHandleData['logic']) && $pageHandleData['logic'] != ''): ?>
+        <?php if ($pageHandleData['logic'] != 'HOME_'): ?>
+            <?php if ($pageHandleData['logic'] == 'DEPARTMENT'): ?>
+                <div id="dept1"></div>
+                <div id="dept2"></div>
+                <div id="dept3"></div>
+                <div id="dept4"></div>
+                <div id="dept5"></div>
+                <div id="dept6"></div>
+                <div id="dept7"></div>
+                <div id="dept8"></div>
+                <div id="dept9"></div>
+                <div id="dept10"></div>
+                <script type="text/html" id="<?php echo $pageHandleData['templateId']; ?>">
+                    <![CDATA[
+                    <h4>{{= SC.title }}</h4>
+                    {{ for (var i = 0; i < SC.page.products.length; i++) { }}
+                    {{ var p = SC.page.products[i]; }}
+                    <span data-scarabitem="{{= p.id }}" style="display: inline-block" class="rec-item">
+                            <a href="{{= p.link }}" target="_blank"><img src="{{= p.image }}" class="rec-image" title="{{= p.title }}"></a>
+                        </span>
+                    {{ } }}
+                    ]]>
+                </script>
+            <?php else: ?>
+                <div id="recommended-product"></div>
+                <script type="text/html" id="<?php echo $pageHandleData['templateId']; ?>">
+                    <![CDATA[
+                    {{ if (SC.page.products.length) { }}
+                    <div class="scarab-itemlist">
+                        <div class="scarab-prev">◀</div>
+                        {{ for (var i = 0; i < SC.page.products.length; i++) { }}
+                        {{ var p = SC.page.products[i]; }}
+                        <span data-scarabitem="{{= p.id }}" class="scarab-item">
+                                <a href="{{= p.link }}">
+                                    <img src="{{= p.image }}" title="{{= p.title }}">
+                                    {{= p.title }}
+                                </a>
+                            </span>
+                        {{ } }}
+                        <div class="scarab-next">▶</div>
+                    </div>
+                    {{ } }}
+                    ]]>
+                </script>
+            <?php endif; ?>
+        <?php else: ?>
+            <div id="home1"></div>
+            <div id="home2"></div>
+            <div id="home3"></div>
+            <div id="home4"></div>
+            <div id="home5"></div>
+            <div id="home6"></div>
+            <div id="home7"></div>
+            <div id="home8"></div>
+            <div id="home9"></div>
+            <div id="home10"></div>
+            <script type="text/html" id="<?php echo $pageHandleData['templateId']; ?>">
+                <![CDATA[
+                <h4>{{= SC.title }}</h4>
+                {{ for (var i = 0; i < SC.page.products.length; i++) { }}
+                {{ var p = SC.page.products[i]; }}
+                <span data-scarabitem="{{= p.id }}" style="display: inline-block" class="rec-item">
+                        <a href="{{=p.link}}" target="_blank"><img src="{{= p.image }}" class="rec-image" title="{{= p.title }}"></a>
+                    </span>
+                {{ } }}
+                ]]>
+            </script>
+        <?php endif; ?>
+    <?php endif; ?>
     <script type="text/javascript">
         var ScarabQueue = ScarabQueue || [];
         (function(id) {
@@ -217,74 +287,4 @@
             }
         });
     </script>
-    <?php if (isset($pageHandleData['status']) && isset($pageHandleData['logic']) && $pageHandleData['logic'] != ''): ?>
-        <?php if ($pageHandleData['logic'] != 'HOME_'): ?>
-            <?php if ($pageHandleData['logic'] == 'DEPARTMENT'): ?>
-                <div id="dept1"></div>
-                <div id="dept2"></div>
-                <div id="dept3"></div>
-                <div id="dept4"></div>
-                <div id="dept5"></div>
-                <div id="dept6"></div>
-                <div id="dept7"></div>
-                <div id="dept8"></div>
-                <div id="dept9"></div>
-                <div id="dept10"></div>
-                <script type="text/html" id="<?php echo $pageHandleData['templateId']; ?>">
-                    <![CDATA[
-                    <h4>{{= SC.title }}</h4>
-                    {{ for (var i = 0; i < SC.page.products.length; i++) { }}
-                    {{ var p = SC.page.products[i]; }}
-                    <span data-scarabitem="{{= p.id }}" style="display: inline-block" class="rec-item">
-                            <a href="{{= p.link }}" target="_blank"><img src="{{= p.image }}" class="rec-image" title="{{= p.title }}"></a>
-                        </span>
-                    {{ } }}
-                    ]]>
-                </script>
-            <?php else: ?>
-                <div id="recommended-product"></div>
-                <script type="text/html" id="<?php echo $pageHandleData['templateId']; ?>">
-                    <![CDATA[
-                    {{ if (SC.page.products.length) { }}
-                    <div class="scarab-itemlist">
-                        <div class="scarab-prev">◀</div>
-                        {{ for (var i = 0; i < SC.page.products.length; i++) { }}
-                        {{ var p = SC.page.products[i]; }}
-                        <span data-scarabitem="{{= p.id }}" class="scarab-item">
-                                <a href="{{= p.link }}">
-                                    <img src="{{= p.image }}" title="{{= p.title }}">
-                                    {{= p.title }}
-                                </a>
-                            </span>
-                        {{ } }}
-                        <div class="scarab-next">▶</div>
-                    </div>
-                    {{ } }}
-                    ]]>
-                </script>
-            <?php endif; ?>
-        <?php else: ?>
-            <div id="home1"></div>
-            <div id="home2"></div>
-            <div id="home3"></div>
-            <div id="home4"></div>
-            <div id="home5"></div>
-            <div id="home6"></div>
-            <div id="home7"></div>
-            <div id="home8"></div>
-            <div id="home9"></div>
-            <div id="home10"></div>
-            <script type="text/html" id="<?php echo $pageHandleData['templateId']; ?>">
-                <![CDATA[
-                <h4>{{= SC.title }}</h4>
-                {{ for (var i = 0; i < SC.page.products.length; i++) { }}
-                {{ var p = SC.page.products[i]; }}
-                <span data-scarabitem="{{= p.id }}" style="display: inline-block" class="rec-item">
-                        <a href="{{=p.link}}" target="_blank"><img src="{{= p.image }}" class="rec-image" title="{{= p.title }}"></a>
-                    </span>
-                {{ } }}
-                ]]>
-            </script>
-        <?php endif; ?>
-    <?php endif; ?>
 <?php endif; ?>
