@@ -272,6 +272,7 @@ class Product extends AbstractModel
             $this->_mode = $mode;
 
             $allStores = $this->storeManager->getStores();
+            asort($allStores);
 
             /**
              * @var \Magento\Store\Model\Store $store
@@ -417,6 +418,8 @@ class Product extends AbstractModel
                         $this->_processedStores,
                         $logsArray
                     );
+
+                    $store = reset($this->_credentials[$websiteId]);
 
                     $uploaded = $this->moveFile($store['store'], $csvFilePath, $logsArray, $mode);
                     if ($uploaded) {
