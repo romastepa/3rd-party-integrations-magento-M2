@@ -2,13 +2,12 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Block\Adminhtml\Logs;
 
 /**
  * Class Grid
- * @package Emarsys\Emarsys\Block\Adminhtml\Logs
  */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
 {
@@ -136,57 +135,50 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareColumns()
     {
-        $this->addColumn("id", [
-            "header" => __("Id"),
-            "align" => "left",
+        $this->addColumn('id', [
+            'header' => __('Id'),
+            'align' => 'left',
             'width' => '10',
-            "index" => "id"
+            'index' => 'id'
         ]);
 
-        $this->addColumn("created_at", [
-            "header" => __("Creation Date"),
-            "align" => "left",
+        $this->addColumn('created_at', [
+            'header' => __('Creation Date'),
+            'align' => 'left',
             'width' => '25',
-            "index" => "created_at",
+            'index' => 'created_at',
             'type' => 'datetime'
         ]);
 
-        $this->addColumn("emarsys_info", [
-            "header" => __("Emarsys Info"),
-            "align" => "left",
+        $this->addColumn('emarsys_info', [
+            'header' => __('Emarsys Info'),
+            'align' => 'left',
             'width' => '25',
-            "index" => "emarsys_info"
+            'index' => 'emarsys_info'
         ]);
 
-        $this->addColumn("description", [
-            "header" => __("Description"),
-            "align" => "left",
+        $this->addColumn('description', [
+            'header' => __('Description'),
+            'align' => 'left',
             'width' => '25'
         ]);
 
-        $this->addColumn("description", [
-            "header" => __("Description"),
-            "align" => "left",
+        $this->addColumn('description', [
+            'header' => __('Description'),
+            'align' => 'left',
             'width' => '25',
-            "index" => "description",
+            'index' => 'description',
+            'lineLength' => 120,
+            'renderer' => \Magento\Backend\Block\Widget\Grid\Column\Renderer\Wrapline::class,
         ]);
 
-        $this->addColumn("message_type", [
-            "header" => __("Type"),
-            "align" => "left",
-            "index" => "message_type",
+        $this->addColumn('message_type', [
+            'header' => __('Type'),
+            'align' => 'left',
+            'index' => 'message_type',
             'width' => '150',
-            'renderer' => 'Emarsys\Emarsys\Block\Adminhtml\Logs\Renderer\Messagetype',
+            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Logs\Renderer\Messagetype::class,
         ]);
         return parent::_prepareColumns();
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\DataObject $item
-     * @return string|void
-     */
-    public function getRowUrl($item)
-    {
-        parent::getRowUrl($item);
     }
 }

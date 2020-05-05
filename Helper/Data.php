@@ -1747,7 +1747,7 @@ class Data extends AbstractHelper
     public function getFirstStoreId()
     {
         $stores = $this->storeManager->getStores();
-        asort($stores);
+        ksort($stores);
 
         $firstStore = false;
         foreach ($stores as $store) {
@@ -1760,7 +1760,7 @@ class Data extends AbstractHelper
         if ($firstStore) {
             $store = $firstStore;
         } else {
-            $store = current($stores);
+            $store = reset($stores);
         }
 
         /** @var \Magento\Store\Model\Website $website */
@@ -1783,7 +1783,7 @@ class Data extends AbstractHelper
     public function getFirstStoreIdOfWebsite($websiteId)
     {
         $websites = $this->storeManager->getWebsites();
-        asort($websites);
+        ksort($websites);
 
         foreach ($websites as $wId => $website) {
             if ($website->getConfig(self::XPATH_EMARSYS_ENABLED)) {
@@ -1806,7 +1806,8 @@ class Data extends AbstractHelper
             $firstStoreId = $defaultStore->getId();
         } else {
             $stores = $website->getStores();
-            $store = current($stores);
+            ksort($stores);
+            $store = reset($stores);
             $firstStoreId = $store->getId();
         }
 

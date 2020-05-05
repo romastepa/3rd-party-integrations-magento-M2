@@ -6,6 +6,7 @@
  */
 ?>
 <?php if ($websites = $block->getWebsites()): ?>
+    <?php ksort($websites); ?>
     <div class="store-switcher store-view">
         <span class="store-switcher-label">
             <?php echo __('Store View:') ?>
@@ -40,6 +41,9 @@
                 id="store-change-button"><?php echo $block->getCurrentSelectionName() ?></button>
             <ul class="dropdown-menu" data-role="stores-list">
                 <?php foreach ($websites as $website): ?>
+                    <?php if (!(bool)$website->getConfig('emarsys_settings/emarsys_setting/enable')): ?>
+                        <?php continue; ?>
+                    <?php endif; ?>
                     <?php $showWebsite = false; ?>
                     <?php foreach ($website->getGroups() as $group): ?>
                         <?php $showGroup = false; ?>
