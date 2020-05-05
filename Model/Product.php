@@ -281,7 +281,7 @@ class Product extends AbstractModel
             $this->_mode = $mode;
 
             $allStores = $this->storeManager->getStores();
-            asort($allStores);
+            ksort($allStores);
 
             /**
              * @var \Magento\Store\Model\Store $store

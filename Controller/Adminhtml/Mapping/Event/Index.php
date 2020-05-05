@@ -86,8 +86,8 @@ class Index extends Action
 
         $store = $this->storeManager->getStore($storeId);
 
-        $eventMappingCollection = $this->emarsysEventsFactory->create()->getCollection()->addFieldToFilter('store_id', $storeId);
         if ($this->emarsysHelper->isEmarsysEnabled($store->getWebsiteId())) {
+            $eventMappingCollection = $this->emarsysEventsFactory->create()->getCollection()->addFieldToFilter('store_id', $storeId);
             if (!$eventMappingCollection->getSize()) {
                 $logsArray['job_code'] = 'Event Mapping';
                 $logsArray['status'] = 'started';

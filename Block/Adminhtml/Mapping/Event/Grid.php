@@ -91,9 +91,7 @@ class Grid extends Extended
     {
         $eventMappingCollection = $this->emarsysMagentoEvents->create()->getCollection();
         $storeId = (int)$this->getRequest()->getParam('store');
-        if (!$storeId) {
-            $storeId = $this->emarsysHelper->getFirstStoreId();
-        }
+        $storeId = $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId);
 
         $eventMappingCollection->getSelect()->joinLeft(
             ['emarsys_event_mapping' => $this->resourceConnection->getTableName('emarsys_event_mapping')],
