@@ -17,6 +17,7 @@ use Magento\Catalog\Helper\Image;
 use Magento\Email\Model\Template;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
 
 /**
  * Class TemplatePlugin
@@ -69,6 +70,11 @@ class TemplatePlugin
     protected $storeManager;
 
     /**
+     * @var TransportBuilder
+     */
+    protected $transportBuilder;
+
+    /**
      * Temp variables
      */
     protected $storeId = false;
@@ -93,6 +99,7 @@ class TemplatePlugin
      * @param CustomerResourceModel $customerResourceModel
      * @param AsyncFactory $asyncModel
      * @param StoreManagerInterface $storeManager
+     * @param TransportBuilder $transportBuilder
      */
     public function __construct(
         EmarsysHelper $emarsysHelper,
@@ -103,7 +110,8 @@ class TemplatePlugin
         EmarsysModelApiApi $api,
         CustomerResourceModel $customerResourceModel,
         AsyncFactory $asyncModel,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        TransportBuilder $transportBuilder
     ) {
         $this->emarsysHelper = $emarsysHelper;
         $this->logsHelper = $logsHelper;
@@ -114,6 +122,7 @@ class TemplatePlugin
         $this->customerResourceModel = $customerResourceModel;
         $this->asyncModel = $asyncModel;
         $this->storeManager = $storeManager;
+        $this->transportBuilder = $transportBuilder;
     }
 
     /**
@@ -176,9 +185,6 @@ class TemplatePlugin
         $varsReflection = $reflection->getProperty('_vars');
         $varsReflection->setAccessible(true);
         $vars = $varsReflection->getValue($subject);
-
-        $storeReflection = $reflection->getProperty('storeManager');
-        $storeReflection->setAccessible(true);
 
         /** @var \Magento\Store\Model\StoreManager $store */
         if (isset($vars['store'])) {
@@ -384,6 +390,18 @@ class TemplatePlugin
             $processedVariables['returned_items'] = $returnItems;
         }
 
+        if (!$this->email) {
+            $transportBuilder = \Closure::bind(function (\Magento\Framework\Mail\Template\TransportBuilder $transportBuilder) {
+                return $transportBuilder->messageData;
+            }, null, '\Magento\Framework\Mail\Template\TransportBuilder');
+
+            $messageData = $transportBuilder($this->transportBuilder);
+
+            if (isset($messageData['to'][0])) {
+                $this->email = $messageData['to'][0]->getEmail();
+            }
+        }
+
         if ($isDesignApplied) {
             $cancelDesignConfig = $reflection->getMethod('cancelDesignConfig');
             $cancelDesignConfig->setAccessible(true);
@@ -499,7 +517,7 @@ class TemplatePlugin
 
         $order = array_filter($order);
         $order['additional_data'] = (
-            $item->getData('additional_data')
+        $item->getData('additional_data')
             ? $item->getData('additional_data')
             : ""
         );
