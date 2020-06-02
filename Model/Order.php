@@ -9,25 +9,24 @@ namespace Emarsys\Emarsys\Model;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Emarsys\Emarsys\Model\ApiExport;
+use Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport\CollectionFactory as EmarsysCreditmemoExportFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
 use Emarsys\Emarsys\Model\ResourceModel\Order as OrderResourceModel;
 use Emarsys\Emarsys\Model\ResourceModel\OrderExport\CollectionFactory as EmarsysOrderExportFactory;
-use Emarsys\Emarsys\Model\ResourceModel\CreditmemoExport\CollectionFactory as EmarsysCreditmemoExportFactory;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Model\AbstractModel;
 use Magento\Framework\Model\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Model\ResourceModel\Db\VersionControl\SnapshotFactory;
+use Magento\Framework\Registry;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
-use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Sales\Model\OrderFactory;
-use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
 use Magento\Sales\Model\ResourceModel\Order\Creditmemo\Item\CollectionFactory as CreditmemoItemCollectionFactory;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -804,8 +803,11 @@ class Order extends AbstractModel
             } else {
                 $logsArray['emarsys_info'] = __('File uploaded to Emarsys');
             }
-            $logsArray['description'] = __('File: "%1" uploaded to Emarsys. Emarasys response: "%2"', $csvFileName,
-                $apiExportResult['resultBody']);
+            $logsArray['description'] = __(
+                'File: "%1" uploaded to Emarsys. Emarasys response: "%2"',
+                $csvFileName,
+                $apiExportResult['resultBody']
+            );
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Success';
             $this->logsHelper->manualLogs($logsArray);
@@ -813,8 +815,11 @@ class Order extends AbstractModel
         } else {
             //failed to upload file on emarsys
             $logsArray['emarsys_info'] = __('Failed to upload file on Emarsys');
-            $logsArray['description'] = __('Failed to upload file: "%1" on Emarsys. Emarasys response: "%2"',
-                $csvFileName, $apiExportResult['resultBody']);
+            $logsArray['description'] = __(
+                'Failed to upload file: "%1" on Emarsys. Emarasys response: "%2"',
+                $csvFileName,
+                $apiExportResult['resultBody']
+            );
             $logsArray['action'] = 'synced to emarsys';
             $logsArray['message_type'] = 'Error';
             $this->logsHelper->manualLogs($logsArray);
@@ -1127,7 +1132,6 @@ class Order extends AbstractModel
                 $toDate = $this->timezone->date($exportTillDate)
                     ->setTimezone(new \DateTimeZone($toTimezone))
                     ->format('Y-m-d H:i:s');
-
 
                 $orderCollection->addFieldToFilter(
                     'created_at',

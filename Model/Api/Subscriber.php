@@ -304,7 +304,7 @@ class Subscriber
         //initial logging of the process
         $logsArray['job_code'] = 'subscriber';
         $logsArray['status'] = 'started';
-        $logsArray['messages'] = 'Subscriber is sync to Emarsys';
+        $logsArray['messages'] = 'Subscribers are syncing to Emarsys';
         $logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
         $logsArray['run_mode'] = 'Manual';
         $logsArray['auto_log'] = 'Complete';

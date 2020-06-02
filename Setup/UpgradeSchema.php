@@ -7,9 +7,10 @@
 
 namespace Emarsys\Emarsys\Setup;
 
-use Magento\Framework\Setup\UpgradeSchemaInterface;
+use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\Setup\UpgradeSchemaInterface;
 
 /**
  * Class UpgradeSchema
@@ -25,6 +26,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
     const EMARSYS_LOG_CRON_SCHEDULE = 'emarsys_log_cron_schedule';
 
     const EMARSYS_ASYNC_EVENTS = 'emarsys_async_events';
+
+    const EMARSYS_MAGENTO_EVENTS = 'emarsys_magento_events';
 
     /**
      * {@inheritdoc}
@@ -220,6 +223,24 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'comment' => 'Product Params',
                 ]
             );
+        }
+
+        if (version_compare($context->getVersion(), '1.0.27', '<')) {
+            $connection = $setup->getConnection();
+            $emarsysMagentoEventsTable = $setup->getTable(self::EMARSYS_MAGENTO_EVENTS);
+
+            if ($connection->isTableExists($emarsysMagentoEventsTable)) {
+                $connection->addColumn(
+                    $emarsysMagentoEventsTable,
+                    'template_id',
+                    [
+                        'type' => Table::TYPE_TEXT,
+                        'length' => 255,
+                        'nullable' => true,
+                        'comment' => 'Magento Template Id'
+                    ]
+                );
+            }
         }
 
         $setup->endSetup();

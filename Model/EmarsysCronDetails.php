@@ -103,9 +103,7 @@ class EmarsysCronDetails extends \Magento\Framework\Model\AbstractModel
                 );
 
             if ($processedCronJobs->getSize()) {
-                foreach ($processedCronJobs as $job) {
-                    array_push($itemIdsToRemove, $job->getScheduleId());
-                }
+                $itemIdsToRemove = $processedCronJobs->getAllIds();
             }
 
             //get collection of that are already removed from cron_schedule table
@@ -119,9 +117,7 @@ class EmarsysCronDetails extends \Magento\Framework\Model\AbstractModel
                 ->where('main_table.schedule_id is null');
 
             if ($clearedCronJobs->getSize()) {
-                foreach ($clearedCronJobs as $job) {
-                    array_push($itemIdsToRemove, $job->getScheduleId());
-                }
+                $itemIdsToRemove = $itemIdsToRemove + $clearedCronJobs->getAllIds();
             }
 
             //remove items from emarsys cron details table

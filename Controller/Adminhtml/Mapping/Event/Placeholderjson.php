@@ -43,6 +43,7 @@ class Placeholderjson extends Action
 
     /**
      * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()
@@ -72,7 +73,7 @@ class Placeholderjson extends Action
             $emarsysFooterPlaceholders
         );
 
-        if (!empty($emarsysPlaceholders)) {
+        if (!empty($dataArray['global'])) {
             if (stristr($magentoEventName, "Order")
                 || stristr($magentoEventName, "Shipment")
                 || stristr($magentoEventName, "Invoice")
@@ -86,7 +87,10 @@ class Placeholderjson extends Action
                 $dataArray['product_purchases'] = $dataProductPurchasesArray;
             }
             $finalArray = ["external_id" => "RECIPIENT_EMAIL", "key_id" => "KEY_ID", "data" => $dataArray];
-            echo \Zend_Json::prettyPrint(\Zend_Json::encode($finalArray));
+
+            $this->getResponse()
+                ->setHeader('Content-type', 'application/json')
+                ->setBody(\Zend_Json::prettyPrint(\Zend_Json::encode($finalArray)));
         }
     }
 }

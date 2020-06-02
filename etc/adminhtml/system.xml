@@ -78,26 +78,6 @@
                     <field id="emarsys_settings/emarsys_setting/enable">1</field>
                 </depends>
             </group>
-            <group id="webdav_setting" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>WebDAV Settings</label>
-                <comment>Used for bulk contact synchronisation</comment>
-                <field id="webdav_url" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>WebDAV URL</label>
-                </field>
-                <field id="webdav_user" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>WebDAV User</label>
-                </field>
-                <field id="webdav_password" translate="label" type="password" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>WebDAV Password</label>
-                </field>
-                <field id="testwebdavconnection" translate="button_label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <button_label>Test Connection</button_label>
-                    <frontend_model>Emarsys\Emarsys\Block\System\Config\Button\WebDavButton</frontend_model>
-                </field>
-                <depends>
-                    <field id="emarsys_settings/emarsys_setting/enable">1</field>
-                </depends>
-            </group>
             <group id="ftp_settings" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>FTP Settings</label>
                 <comment>Used for all your e-commerce data.</comment>
@@ -451,6 +431,11 @@
                 <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="save_to_file" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Save Logs Into Files</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>save logs into files with format emarsys_cron_log-YYYY-MM-DD.csv in magento var/log</comment>
                 </field>
                 <field id="log_days" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Save Log Days</label>

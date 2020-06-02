@@ -21,22 +21,11 @@ class Cron extends AbstractHelper
 {
     const CRON_JOB_CUSTOMER_SYNC_QUEUE = 'emarsys_customer_sync_queue';
 
-    const CRON_JOB_CUSTOMER_BULK_EXPORT_WEBDAV = 'emarsys_customer_bulk_export_webdav';
-
     const CRON_JOB_CUSTOMER_BULK_EXPORT_API = 'emarsys_customer_bulk_export_api';
-
-    //subscribers related
-    const CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV = 'emarsys_subscriber_bulk_export_webdav';
 
     const CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API = 'emarsys_subscriber_bulk_export_api';
 
-    //product related
     const CRON_JOB_CATALOG_BULK_EXPORT = 'emarsys_catalog_bulk_export';
-
-    const CRON_JOB_CATALOG_SYNC = 'emarsys_product_sync';
-
-    //smart insight related
-    const CRON_JOB_SI_SYNC_QUEUE = 'emarsys_smartinsight_sync_queue';
 
     const CRON_JOB_SI_BULK_EXPORT = 'emarsys_smartinsight_bulk_export';
 
@@ -253,28 +242,6 @@ class Cron extends AbstractHelper
         }
 
         return false;
-    }
-
-    /**
-     * @param $exportMode
-     * @return array
-     */
-    public function getJobDetail($exportMode)
-    {
-        $jobDetails = [];
-
-        switch ($exportMode) {
-            case self::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_WEBDAV:
-                $jobDetails['job_code'] = 'subscriber';
-                $jobDetails['job_title'] = 'Subscriber Bulk Export';
-                break;
-            default:
-                $jobDetails['job_code'] = 'customer';
-                $jobDetails['job_title'] = 'Customer Bulk Export';
-                break;
-        }
-
-        return $jobDetails;
     }
 
     /**

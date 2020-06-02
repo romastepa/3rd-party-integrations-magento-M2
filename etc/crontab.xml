@@ -29,15 +29,13 @@
 
         <!-- log tables cleaning Related Job -->
         <job name="emarsys_clean_log" instance="Emarsys\Emarsys\Cron\CleanLog" method="execute">
-            <schedule>0 1 * * *</schedule>
+            <schedule>17 */1 * * *</schedule>
         </job>
         <job name="emarsys_clean_cron_details" instance="Emarsys\Emarsys\Cron\CleanCronDetails" method="execute">
-            <schedule>30 1 * * *</schedule>
+            <schedule>18 */1 * * *</schedule>
         </job>
 
-        <job name="emarsys_customer_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\CustomerBulkExportWebDav" method="execute" />
         <job name="emarsys_customer_bulk_export_api" instance="Emarsys\Emarsys\Cron\CustomerBulkExportApi" method="execute" />
-        <job name="emarsys_subscriber_bulk_export_webdav" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportWebDav" method="execute" />
         <job name="emarsys_subscriber_bulk_export_api" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportApi" method="execute" />
         <job name="emarsys_catalog_bulk_export" instance="Emarsys\Emarsys\Cron\ProductBulkExport" method="execute" />
         <job name="emarsys_smartinsight_bulk_export" instance="Emarsys\Emarsys\Cron\SmartInsightBulkExport" method="execute" />

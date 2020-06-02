@@ -7,14 +7,14 @@
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Support;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Translate\Inline\StateInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Mail\Template\TransportBuilder;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Psr\Log\LoggerInterface as Logger;
 
 /**
@@ -130,7 +130,7 @@ class Save extends Action
                 $templateVars['priority'] = $priority;
                 $templateVars['message'] = $message;
                 $templateVars['store_name'] = $this->storeManager->getStore()->getName();
-                ;
+
                 $templateVars['domain'] = $this->storeManager->getStore()->getBaseUrl();
                 $templateVars['phpvalue'] = $req['php_version']['current']['value'];
                 $templateVars['memoryvalue'] = $req['memory_limit']['current']['value'];
@@ -162,7 +162,7 @@ class Save extends Action
 
                     $this->inlineTranslation->suspend();
                     $transport = $this->transportBuilder
-                        ->setTemplateIdentifier('help_email_template_id')
+                        ->setTemplateIdentifier('emarsys_help_email_template_id')
                         ->setTemplateOptions($templateOptions)
                         ->setTemplateVars($templateVars)
                         ->setFrom($from)
