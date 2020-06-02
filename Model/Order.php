@@ -1115,13 +1115,13 @@ class Order extends AbstractModel
                         'entity_id',
                         ['in' => $orderQueueCollection->getColumnValues('entity_id')]
                     )
-                    ->addFieldToFilter('status', ['nin' => \Magento\Sales\Model\Order::STATE_CLOSED]);
+                    ->addFieldToFilter('state', ['nin' => \Magento\Sales\Model\Order::STATE_CLOSED]);
             }
         } else {
             $orderCollection = $this->emarsysOrderExportFactory->create()
                 ->addFieldToFilter('store_id', ['eq' => $storeId])
                 ->addOrder('created_at', 'ASC')
-                ->addFieldToFilter('status', ['nin' => \Magento\Sales\Model\Order::STATE_CLOSED]);
+                ->addFieldToFilter('state', ['nin' => \Magento\Sales\Model\Order::STATE_CLOSED]);
 
             if (isset($exportFromDate) && isset($exportTillDate) && $exportFromDate != '' && $exportTillDate != '') {
                 $toTimezone = $this->timezone->getDefaultTimezone();

@@ -60,6 +60,7 @@
                 <smartinsightfrequency>Daily</smartinsightfrequency>
             </smart_insight>
             <api_settings>
+                <max_records_per_export>500</max_records_per_export>
                 <max_records_per_export_option>100,500,1000</max_records_per_export_option>
                 <smartinsight_api_url>https://admin.scarabresearch.com/hapi/merchant/</smartinsight_api_url>
                 <smartinsight_order_api_url_key>/sales-data/api</smartinsight_order_api_url_key>
