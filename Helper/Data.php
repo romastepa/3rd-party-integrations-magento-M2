@@ -70,13 +70,6 @@ class Data extends AbstractHelper
 
     const XPATH_EMARSYS_ASYNC_ENABLE = 'emarsys_settings/async/enable';
 
-    //XML Path of Webdav Credentials
-    const XPATH_WEBDAV_URL = 'emarsys_settings/webdav_setting/webdav_url';
-
-    const XPATH_WEBDAV_USER = 'emarsys_settings/webdav_setting/webdav_user';
-
-    const XPATH_WEBDAV_PASSWORD = 'emarsys_settings/webdav_setting/webdav_password';
-
     //XML Path of FTP Credentials
     const XPATH_EMARSYS_FTP_HOSTNAME = 'emarsys_settings/ftp_settings/hostname';
 
@@ -1629,12 +1622,28 @@ class Data extends AbstractHelper
         $store = $this->storeManager->getStore($storeId);
         $magentoEventsCollection = $this->magentoEventsCollection->create();
         foreach ($magentoEventsCollection as $magentoEvent) {
-            if ($store->getConfig($magentoEvent->getConfigPath()) == $templateId) {
+            if ($store->getConfig($magentoEvent->getConfigPath()) == $templateId
+                || $magentoEvent->getTemplateId() == $templateId
+            ) {
                 return $magentoEvent->getId();
             }
         }
 
-        return null;
+        try {
+            $magentoEvent = clone $magentoEvent;
+            $magentoEvent->setData([]);
+            $magentoEvent->setData(
+                [
+                    'magento_event' => ucwords(str_ireplace('_', ' ', $templateId)),
+                    'template_id' => $templateId
+                ]
+            );
+            $magentoEvent->save();
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        return $magentoEvent->getId();
     }
 
     /**
@@ -2346,30 +2355,6 @@ class Data extends AbstractHelper
     {
         return $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_MEDIA)
             . 'emarsys/' . $folderName . '/' . basename($csvFilePath);
-    }
-
-    /**
-     * @param $websiteId
-     * @return array|bool
-     * @throws LocalizedException
-     */
-    public function collectWebDavCredentials($websiteId)
-    {
-        //webDav credentials from admin configurations
-        $webDavUrl = $this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_WEBDAV_URL);
-        $webDavUser = $this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_WEBDAV_USER);
-        $webDavPass = $this->storeManager->getWebsite($websiteId)->getConfig(self::XPATH_WEBDAV_PASSWORD);
-
-        if ($webDavUrl != '' && $webDavUser != '' && $webDavPass != '') {
-            return [
-                'baseUri' => $webDavUrl,
-                'userName' => $webDavUser,
-                'password' => $webDavPass,
-                'proxy' => '',
-            ];
-        }
-
-        return false;
     }
 
     /**

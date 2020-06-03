@@ -96,11 +96,6 @@ class Contact
     protected $messageManager;
 
     /**
-     * @var EmarsysCronHelper
-     */
-    protected $cronHelper;
-
-    /**
      * @var Subscriber
      */
     protected $subscriberApi;
@@ -176,7 +171,6 @@ class Contact
      * @param QueueFactory $queueModel
      * @param AsyncFactory $asyncModel
      * @param MessageManagerInterface $messageManager
-     * @param EmarsysCronHelper $cronHelper
      * @param Subscriber $subscriberApi
      * @param EmarsysLogger $emarsysLogger
      * @param EmarsysFieldCollectionFactory $fieldCollection
@@ -195,7 +189,6 @@ class Contact
         QueueFactory $queueModel,
         AsyncFactory $asyncModel,
         MessageManagerInterface $messageManager,
-        EmarsysCronHelper $cronHelper,
         Subscriber $subscriberApi,
         EmarsysLogger $emarsysLogger,
         EmarsysFieldCollectionFactory $fieldCollection
@@ -213,7 +206,6 @@ class Contact
         $this->queueModel = $queueModel;
         $this->asyncModel = $asyncModel;
         $this->messageManager = $messageManager;
-        $this->cronHelper = $cronHelper;
         $this->subscriberApi = $subscriberApi;
         $this->emarsysLogger = $emarsysLogger;
         $this->fieldCollection = $fieldCollection;
@@ -517,12 +509,11 @@ class Contact
         $this->customerIdKey = $customerIdKey;
 
         $success = false;
-        $jobDetails = $this->cronHelper->getJobDetail($exportMode);
 
         //initial logs for customer export
-        $this->logsArray['job_code'] = $jobDetails['job_code'];
+        $this->logsArray['job_code'] = 'customer';
         $this->logsArray['status'] = 'started';
-        $this->logsArray['messages'] = $jobDetails['job_title'] . ' initiated';
+        $this->logsArray['messages'] = 'Customer Bulk Export initiated';
         $this->logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsArray['run_mode'] = 'Manual';
         $this->logsArray['auto_log'] = 'Complete';
@@ -736,8 +727,6 @@ class Contact
      */
     public function syncFullContactUsingApi($exportMode, $data)
     {
-        $jobDetails = $this->cronHelper->getJobDetail($exportMode);
-
         $websiteId = $data['website'];
 
         $website = $this->storeManager->getWebsite($websiteId);
@@ -772,9 +761,9 @@ class Contact
         $errorStatus = true;
 
         //initial logs for customer export
-        $this->logsArray['job_code'] = $jobDetails['job_code'];
+        $this->logsArray['job_code'] = 'customer';
         $this->logsArray['status'] = 'started';
-        $this->logsArray['messages'] = $jobDetails['job_title'] . ' initiated';
+        $this->logsArray['messages'] = 'Customer Bulk Export initiated';
         $this->logsArray['created_at'] = $this->date->date('Y-m-d H:i:s', time());
         $this->logsArray['run_mode'] = 'Manual';
         $this->logsArray['auto_log'] = 'Complete';

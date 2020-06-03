@@ -12,11 +12,8 @@ use Emarsys\Emarsys\Model\LogsFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Mail\Template\TransportBuilder;
-use Magento\Framework\Registry;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Translate\Inline\StateInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Filesystem\Driver\File;
+use Magento\Framework\App\Filesystem\DirectoryList;
 
 class Logs extends AbstractHelper
 {
@@ -24,31 +21,6 @@ class Logs extends AbstractHelper
      * @var LogScheduleFactory
      */
     protected $logScheduleFactory;
-
-    /**
-     * @var DateTime
-     */
-    protected $date;
-
-    /**
-     * @var Registry
-     */
-    protected $registry;
-
-    /**
-     * @var TransportBuilder
-     */
-    protected $_transportBuilder;
-
-    /**
-     * @var StateInterface
-     */
-    protected $inlineTranslation;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
 
     /**
      * @var ScopeConfigInterface
@@ -66,35 +38,28 @@ class Logs extends AbstractHelper
     protected $cronSchedule = null;
 
     /**
+     * @var File
+     */
+    protected $file;
+
+    /**
      * Logs constructor.
      *
      * @param Context $context
-     * @param StoreManagerInterface $storeManager
      * @param LogScheduleFactory $logScheduleFactory
      * @param LogsFactory $logsFactory
-     * @param DateTime $date
-     * @param StateInterface $inlineTranslation
-     * @param TransportBuilder $transportBuilder
-     * @param Registry $registry
+     * @param File $file
      */
     public function __construct(
         Context $context,
-        StoreManagerInterface $storeManager,
         LogScheduleFactory $logScheduleFactory,
         LogsFactory $logsFactory,
-        DateTime $date,
-        StateInterface $inlineTranslation,
-        TransportBuilder $transportBuilder,
-        Registry $registry
+        File $file
     ) {
         $this->logScheduleFactory = $logScheduleFactory;
-        $this->date = $date;
-        $this->registry = $registry;
-        $this->_transportBuilder = $transportBuilder;
-        $this->inlineTranslation = $inlineTranslation;
-        $this->storeManager = $storeManager;
         $this->scopeConfigInterface = $context->getScopeConfig();
         $this->logsFactory = $logsFactory;
+        $this->file = $file;
         parent::__construct($context);
     }
 
@@ -179,117 +144,44 @@ class Logs extends AbstractHelper
      * For saving Logs
      *
      * @param array $logsArray
-     * @return bool|void
+     * @return true
      */
     public function logs($logsArray = [])
     {
         try {
             if (!$this->scopeConfigInterface->getValue('logs/log_setting/enable')) {
-                return;
+                return true;
             }
-            $currentDate = $this->date->date('Y-m-d H:i:s', time());
-            $schedulerId = $logsArray['id'] ?? null;
+
+            $data = [
+                'log_exec_id' => $logsArray['id'] ?? null,
+                'created_at' => $this->date->date('Y-m-d H:i:s', time()),
+                'emarsys_info' => $logsArray['emarsys_info'] ?? '',
+                'description' => $logsArray['description'] ?? '',
+                'action' => $logsArray['action'] ?? 'synced to emarsys',
+                'message_type' => $logsArray['message_type'] ?? '',
+                'store_id' => $logsArray['store_id'] ?? 0,
+                'website_id' => $logsArray['website_id'] ?? 0,
+                'log_action' => $logsArray['log_action'] ?? 'sync',
+            ];
+
+            if ($this->scopeConfigInterface->getValue('logs/log_setting/save_to_file')) {
+                $dirConfig = DirectoryList::getDefaultConfig();
+                $fileDirectory = $dirConfig[DirectoryList::LOG][DirectoryList::PATH];
+
+                $name = 'emarsys_cron_log' . date("Y-m-d") . '.csv';
+                $file = $fileDirectory . '/' . $name;
+
+                $fh = fopen($file, 'a');
+                $this->file->filePutCsv($fh, $data);
+                return true;
+            }
 
             $logsModel = $this->logsFactory->create();
-            $logsModel->setLogExecId($schedulerId)
-                ->setCreatedAt($currentDate)
-                ->setEmarsysInfo(isset($logsArray['emarsys_info']) ? $logsArray['emarsys_info'] : '')
-                ->setDescription(
-                    isset($logsArray['description']) ? str_replace(
-                        ',"',
-                        ' ,"',
-                        $logsArray['description']
-                    ) : ''
-                )
-                ->setAction(isset($logsArray['action']) ? $logsArray['action'] : 'synced to emarsys')
-                ->setMessageType(isset($logsArray['message_type']) ? $logsArray['message_type'] : '')
-                ->setStoreId(isset($logsArray['store_id']) ? $logsArray['store_id'] : 0)
-                ->setWebsiteId(isset($logsArray['website_id']) ? $logsArray['website_id'] : 0)
-                ->setLogAction(isset($logsArray['log_action']) ? $logsArray['log_action'] : 'sync');
-
+            $logsModel->setData($data);
             $logsModel->save();
-
-            $websiteId = isset($logsArray['website_id']) ? $logsArray['website_id'] : 0;
-            if ($websiteId == 0) {
-                $scopeType = 'default';
-            } else {
-                $scopeType = 'websites';
-            }
-
-            $sendLogReport = $this->scopeConfigInterface->getValue(
-                'logs/log_setting/log_report',
-                $scopeType,
-                $websiteId
-            );
-            if ($sendLogReport == '' && $websiteId == 0) {
-                $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report');
-            }
-            if ($sendLogReport && ($logsArray['message_type'] ?? false) == 'Error') {
-                if ($sendLogReport) {
-                    $title = ucfirst(($logsArray['job_code'] ?? false)) . " : Store - " . ($logsArray['store_id'] ?? false);
-                    $description = ($logsArray['description'] ?? false);
-                    $this->errorLogEmail($title, $description);
-                }
-            }
         } catch (\Exception $e) {
-
         }
-        return true;
-    }
-
-    /**
-     * @param $title
-     * @param $errorMsg
-     * @return bool|void
-     */
-    public function errorLogEmail($title, $errorMsg)
-    {
-        try {
-            $customerVar = 'emarsys_send_email';
-            if ($this->registry->registry($customerVar) == 'sent') {
-                return;
-            }
-            $this->registry->register($customerVar, 'sent');
-
-            $sendLogReport = $this->scopeConfigInterface->getValue('logs/log_setting/log_report');
-            $emailReceipient = $this->scopeConfigInterface->getValue('logs/log_setting/log_email_recipient');
-            $explodedemailReceipient = explode(",", $emailReceipient);
-
-            if ($sendLogReport == 1) {
-                $templateOptions = [
-                    'area' => \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-                    'store' => $this->storeManager->getStore()->getId(),
-                ];
-                $templateVars = [
-                    'store' => $this->storeManager->getStore(),
-                    'sync_name' => $title,
-                    'message' => $errorMsg,
-                ];
-                $from = [
-                    'email' => "support@emarsys.com",
-                    'name' => "Support",
-                ];
-                $this->inlineTranslation->suspend();
-
-                if (is_array($explodedemailReceipient)) {
-                    for ($i = 0; $i < count($explodedemailReceipient); $i++) {
-                        $to = $explodedemailReceipient[$i];
-                        $transport = $this->_transportBuilder
-                            ->setTemplateIdentifier('error_log_email_template')
-                            ->setTemplateOptions($templateOptions)
-                            ->setTemplateVars($templateVars)
-                            ->setFrom($from)
-                            ->addTo($to)
-                            ->getTransport();
-                        $transport->sendMessage();
-                    }
-                }
-                $this->inlineTranslation->resume();
-            }
-        } catch (\Exception $e) {
-
-        }
-
         return true;
     }
 }

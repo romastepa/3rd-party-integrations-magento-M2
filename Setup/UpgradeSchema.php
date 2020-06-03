@@ -2,17 +2,18 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Setup;
 
-use Magento\Framework\Setup\UpgradeSchemaInterface;
+use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\Setup\UpgradeSchemaInterface;
 
 /**
  * Class UpgradeSchema
- * @package Emarsys\Emarsys\Setup
  */
 class UpgradeSchema implements UpgradeSchemaInterface
 {
@@ -25,6 +26,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
     const EMARSYS_LOG_CRON_SCHEDULE = 'emarsys_log_cron_schedule';
 
     const EMARSYS_ASYNC_EVENTS = 'emarsys_async_events';
+
+    const EMARSYS_MAGENTO_EVENTS = 'emarsys_magento_events';
 
     /**
      * {@inheritdoc}
@@ -47,7 +50,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'entity_id',
                         \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                         null,
-                        ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
                         'Product Id'
                     )->addColumn(
                         'params',
@@ -80,10 +89,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 );
             }
 
-            $emarsysLogDetailsTable =  $setup->getTable(self::EMARSYS_LOG_DETAILS);
-            $emarsysLogCronScheduleTable =  $setup->getTable(self::EMARSYS_LOG_CRON_SCHEDULE);
+            $emarsysLogDetailsTable = $setup->getTable(self::EMARSYS_LOG_DETAILS);
+            $emarsysLogCronScheduleTable = $setup->getTable(self::EMARSYS_LOG_CRON_SCHEDULE);
 
-            if ($connection->isTableExists($emarsysLogDetailsTable) && $connection->isTableExists($emarsysLogCronScheduleTable)) {
+            if ($connection->isTableExists($emarsysLogDetailsTable)
+                && $connection->isTableExists($emarsysLogCronScheduleTable)
+            ) {
                 $connection->truncateTable($emarsysLogDetailsTable);
                 $connection->truncateTable($emarsysLogCronScheduleTable);
 
@@ -95,7 +106,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                         'unsigned' => true,
                         'nullable' => false,
-                        'length'   => 10,
+                        'length' => 10,
                         'comment' => 'emarsys_log_cron_schedule id',
                     ]
                 );
@@ -132,7 +143,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'entity_id',
                         \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                         null,
-                        ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true, 'auto_increment' => true],
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
                         'Entity Id'
                     )->addColumn(
                         'website_id',
@@ -191,7 +208,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'request_body',
                     [
                         'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-                        'length'   => '128k',
+                        'length' => '128k',
                         'comment' => 'Request Body',
                     ]
                 );
@@ -202,10 +219,28 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'params',
                 [
                     'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-                    'length'   => '128k',
+                    'length' => '128k',
                     'comment' => 'Product Params',
                 ]
             );
+        }
+
+        if (version_compare($context->getVersion(), '1.0.27', '<')) {
+            $connection = $setup->getConnection();
+            $emarsysMagentoEventsTable = $setup->getTable(self::EMARSYS_MAGENTO_EVENTS);
+
+            if ($connection->isTableExists($emarsysMagentoEventsTable)) {
+                $connection->addColumn(
+                    $emarsysMagentoEventsTable,
+                    'template_id',
+                    [
+                        'type' => Table::TYPE_TEXT,
+                        'length' => 255,
+                        'nullable' => true,
+                        'comment' => 'Magento Template Id'
+                    ]
+                );
+            }
         }
 
         $setup->endSetup();

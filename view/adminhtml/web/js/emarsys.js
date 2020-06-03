@@ -182,7 +182,7 @@ function openMyPopup(url)
         url: url,
         method: "GET",
         success: function (data) {
-            document.getElementById('json-data-container').innerHTML = '<pre>' + data + '</pre>';
+            document.getElementById('json-data-container').innerHTML = '<pre>' + JSON.stringify(data,undefined, 4) + '</pre>';
             jQuery(".loading-mask").css("display", "none");
             jQuery("#myModal").css("display", "block");
         },

@@ -3,7 +3,7 @@
 /**
  * @category   Emarsys
  * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2017 Emarsys. (http://www.emarsys.net/)
+ * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -60,6 +60,7 @@
                 <smartinsightfrequency>Daily</smartinsightfrequency>
             </smart_insight>
             <api_settings>
+                <max_records_per_export>500</max_records_per_export>
                 <max_records_per_export_option>100,500,1000</max_records_per_export_option>
                 <smartinsight_api_url>https://admin.scarabresearch.com/hapi/merchant/</smartinsight_api_url>
                 <smartinsight_order_api_url_key>/sales-data/api</smartinsight_order_api_url_key>
@@ -97,8 +98,8 @@
         <logs>
             <log_setting>
                 <enable>1</enable>
-                <log_days>15</log_days>
-                <log_cleaning>0</log_cleaning>
+                <log_days>2</log_days>
+                <log_cleaning>1</log_cleaning>
                 <log_report>0</log_report>
             </log_setting>
         </logs>
