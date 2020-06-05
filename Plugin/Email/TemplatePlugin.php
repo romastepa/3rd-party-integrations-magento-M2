@@ -700,15 +700,6 @@ class TemplatePlugin
             }
         }
 
-        $this->asyncModel->create()->saveToAsyncQueue(
-            $this->websiteId,
-            'event/' . $this->emarsysEventApiId . '/trigger',
-            $this->email,
-            $this->customerId,
-            null,
-            [$buildRequest, $arrCustomerData]
-        );
-
         //failed to sync contact to emarsys
         $this->logsArray['description'] = 'Failed to Sync Contact to Emarsys. Emarsys Event ID :'
             . $this->emarsysEventApiId
