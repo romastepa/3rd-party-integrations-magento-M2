@@ -8,12 +8,8 @@
 namespace Emarsys\Emarsys\Cron;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Helper\Logs as EmarsysLogsHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-
-use Magento\Framework\Stdlib\DateTime\DateTime;
+use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
 
 /**
  * Class Async
@@ -21,24 +17,9 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 class Async
 {
     /**
-     * @var EmarsysCronHelper
-     */
-    protected $cronHelper;
-
-    /**
      * @var EmarsysHelper
      */
     protected $emarsysHelper;
-
-    /**
-     * @var EmarsysLogsHelper
-     */
-    protected $logsHelper;
-
-    /**
-     * @var DateTime
-     */
-    protected $date;
 
     /**
      * @var EmarsysModelApiApi
@@ -53,25 +34,16 @@ class Async
     /**
      * Async constructor.
      *
-     * @param EmarsysCronHelper $cronHelper
      * @param EmarsysHelper $emarsysHelper
-     * @param EmarsysLogsHelper $logsHelper
-     * @param DateTime $date
      * @param EmarsysModelApiApi $api
      * @param CollectionFactory $asyncCollection
      */
     public function __construct(
-        EmarsysCronHelper $cronHelper,
         EmarsysHelper $emarsysHelper,
-        EmarsysLogsHelper $logsHelper,
-        DateTime $date,
         EmarsysModelApiApi $api,
         CollectionFactory $asyncCollection
     ) {
-        $this->cronHelper = $cronHelper;
         $this->emarsysHelper = $emarsysHelper;
-        $this->logsHelper = $logsHelper;
-        $this->date = $date;
         $this->api = $api;
         $this->asyncCollection = $asyncCollection;
     }
@@ -79,13 +51,6 @@ class Async
     public function execute()
     {
         set_time_limit(0);
-        $currentCronInfo = $this->cronHelper->getCurrentCronInformation(
-            \Emarsys\Emarsys\Helper\Cron::CRON_JOB_CATALOG_BULK_EXPORT
-        );
-
-        if (!$currentCronInfo) {
-            return;
-        }
 
         $collection = $this->asyncCollection->create();
 

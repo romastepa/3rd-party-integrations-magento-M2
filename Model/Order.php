@@ -733,27 +733,35 @@ class Order extends AbstractModel
             $filePath = $fileDirectory . "/" . $outputFile;
 
             if ($entity == \Magento\Sales\Model\Order::ENTITY) {
-                $this->generateOrderCsv($storeId, $filePath, $entityCollection, false);
+                $generatedOrderCsv = $this->generateOrderCsv($storeId, $filePath, $entityCollection, false);
             } else {
-                $this->generateOrderCsv($storeId, $filePath, false, $entityCollection);
+                $generatedOrderCsv = $this->generateOrderCsv($storeId, $filePath, false, $entityCollection);
             }
 
-            $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
-
-            $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
-
-            if ($syncResponse['status']) {
+            if (!$generatedOrderCsv) {
                 array_push($messageCollector, 1);
-                $logsArray['emarsys_info'] = __('File uploaded to Emarsys.');
-                $logsArray['description'] = $url . ' > ' . $outputFile;
-                $logsArray['message_type'] = 'Success';
+                $logsArray['emarsys_info'] = __('No records for export');
+                $logsArray['description'] = 'No records for export';
+                $logsArray['message_type'] = 'Notice';
                 $this->logsHelper->manualLogs($logsArray);
             } else {
-                array_push($messageCollector, 0);
-                $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
-                $logsArray['description'] = __('Failed to upload %1 on Emarsys %2', $url, $outputFile);
-                $logsArray['message_type'] = 'Error';
-                $this->logsHelper->manualLogs($logsArray);
+                $syncResponse = $this->sendRequestToEmarsys($filePath, $outputFile, $logsArray, $entity);
+
+                $url = $this->emarsysHelper->getEmarsysMediaUrlPath(\Magento\Sales\Model\Order::ENTITY, $filePath);
+
+                if ($syncResponse['status']) {
+                    array_push($messageCollector, 1);
+                    $logsArray['emarsys_info'] = __('File uploaded to Emarsys.');
+                    $logsArray['description'] = $url . ' > ' . $outputFile;
+                    $logsArray['message_type'] = 'Success';
+                    $this->logsHelper->manualLogs($logsArray);
+                } else {
+                    array_push($messageCollector, 0);
+                    $logsArray['emarsys_info'] = __('Failed to upload file to Emarsys.');
+                    $logsArray['description'] = __('Failed to upload %1 on Emarsys %2', $url, $outputFile);
+                    $logsArray['message_type'] = 'Error';
+                    $this->logsHelper->manualLogs($logsArray);
+                }
             }
             //unset file handle
             $this->unsetFileHandle();
@@ -847,6 +855,7 @@ class Order extends AbstractModel
      */
     public function generateOrderCsv($storeId, $filePath, $orderCollection, $creditMemoCollection, $sameFile = false)
     {
+        $result = false;
         $store = $this->storeManager->getStore($storeId);
         $emarsysFields = $this->orderResourceModel->getEmarsysOrderFields(
             $this->emarsysHelper->getFirstStoreIdOfWebsiteByStoreId($storeId)
@@ -874,6 +883,9 @@ class Order extends AbstractModel
                 $orderId = $order->getRealOrderId();
                 $createdDate = date('Y-m-d', strtotime($order->getCreatedAt()));
                 $customerEmail = $order->getCustomerEmail();
+                if (!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+                    continue;
+                }
 
                 $fullyInvoiced = false;
                 if ($order->getState() == \Magento\Sales\Model\Order::STATE_COMPLETE) {
@@ -901,7 +913,7 @@ class Order extends AbstractModel
                     //set customer
                     $values[] = $customerEmail;
                     //set product sku/id
-                    $values[] = $item->getSku();
+                    $values[] = trim($item->getSku());
 
                     $rowTotal = 0;
                     $qty = 0;
@@ -951,6 +963,7 @@ class Order extends AbstractModel
                     }
                     if (!($order->getCustomerIsGuest() == 1 && $guestOrderExportStatus == 0)) {
                         fputcsv($this->handle, $values);
+                        $result = true;
                     }
                 }
             }
@@ -1040,11 +1053,12 @@ class Order extends AbstractModel
                     }
                     if (!($creditMemoOrder->getCustomerIsGuest() == 1 && $guestOrderExportStatus == 0)) {
                         fputcsv($this->handle, $values);
+                        $result = true;
                     }
                 }
             }
         }
-        return true;
+        return $result;
     }
 
     /**

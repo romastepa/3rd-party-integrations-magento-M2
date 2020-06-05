@@ -7,13 +7,13 @@
 
 namespace Emarsys\Emarsys\Model;
 
-use Magento\Cron\Model\ScheduleFactory;
 use Magento\Cron\Model\Schedule;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Model\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Cron\Model\ScheduleFactory;
 use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class EmarsysCronDetails
