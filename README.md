@@ -30,7 +30,10 @@
 - removed WebDav
 - added more magento events
 - now if event is absent in a mapping list, magento will add it automatically
-- ability to save logs into the file on regular bases
+- ability to save logs into file on regular bases
 - added default value max_records_per_export
 - state instead of status for order collections
 - added a workaround when email in TransportBuilder->messageData
+- fixed order export messaging
+- added validation for order export data
+- fixed async export
