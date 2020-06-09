@@ -155,7 +155,7 @@ class Logs extends AbstractHelper
 
             $data = [
                 'log_exec_id' => $logsArray['id'] ?? null,
-                'created_at' => $this->date->date('Y-m-d H:i:s', time()),
+                'created_at' => date('Y-m-d H:i:s', time()),
                 'emarsys_info' => $logsArray['emarsys_info'] ?? '',
                 'description' => $logsArray['description'] ?? '',
                 'action' => $logsArray['action'] ?? 'synced to emarsys',
