@@ -134,6 +134,7 @@ class Logs extends AbstractHelper
                 $this->logs($logsArray);
             }
         } catch (\Exception $e) {
+            $this->_logger->critical($e->getMessage());
             $id = null;
         }
 
@@ -152,7 +153,6 @@ class Logs extends AbstractHelper
             if (!$this->scopeConfigInterface->getValue('logs/log_setting/enable')) {
                 return true;
             }
-
             $data = [
                 'log_exec_id' => $logsArray['id'] ?? null,
                 'created_at' => date('Y-m-d H:i:s', time()),
@@ -176,11 +176,11 @@ class Logs extends AbstractHelper
                 $this->file->filePutCsv($fh, $data);
                 return true;
             }
-
             $logsModel = $this->logsFactory->create();
             $logsModel->setData($data);
             $logsModel->save();
         } catch (\Exception $e) {
+            $this->_logger->critical($e->getMessage());
         }
         return true;
     }
