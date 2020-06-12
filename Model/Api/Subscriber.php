@@ -6,19 +6,19 @@
  */
 namespace Emarsys\Emarsys\Model\Api;
 
-use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
-use Emarsys\Emarsys\Model\QueueFactory;
-use Emarsys\Emarsys\Model\AsyncFactory;
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Logger\Logger as EmarsysLogger;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Emarsys\Emarsys\Model\AsyncFactory;
+use Emarsys\Emarsys\Model\QueueFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as customerResourceModel;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Newsletter\Model\SubscriberFactory;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Newsletter\Helper\Data as NewsletterHelperData;
+use Magento\Newsletter\Model\SubscriberFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Subscriber

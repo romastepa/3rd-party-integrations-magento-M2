@@ -105,25 +105,21 @@ class Success extends Template
                 if ($taxIncluded) {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotalInclTax() - $bundleBaseDiscount)
-                        : ($item->getRowTotalInclTax() - $bundleDiscount)
-                    ;
+                        : ($item->getRowTotalInclTax() - $bundleDiscount);
                 } else {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotal() - $bundleBaseDiscount)
-                        : $item->getRowTotal() - $bundleDiscount
-                    ;
+                        : $item->getRowTotal() - $bundleDiscount;
                 }
             } else {
                 if ($taxIncluded) {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount())
-                        : ($item->getRowTotalInclTax() - $item->getDiscountAmount())
-                    ;
+                        : ($item->getRowTotalInclTax() - $item->getDiscountAmount());
                 } else {
                     $price = $useBaseCurrency
                         ? ($item->getBaseRowTotal() - $item->getBaseDiscountAmount())
-                        : ($item->getRowTotal() - $item->getDiscountAmount())
-                    ;
+                        : ($item->getRowTotal() - $item->getDiscountAmount());
                 }
             }
 
@@ -131,7 +127,7 @@ class Success extends Template
             if ($uniqueIdentifier == "product_id") {
                 $sku = $item->getProductId();
             } else {
-                $sku = $item->getSku();
+                $sku = 'g/' . $item->getSku();
             }
             $items[] = [
                 'item' => addslashes($sku),
