@@ -999,6 +999,9 @@ class Order extends AbstractModel
                 $orderId = $creditMemoOrder->getRealOrderId();
                 $createdDate = date('Y-m-d', strtotime($creditMemo->getCreatedAt()));
                 $customerEmail = $creditMemo->getOrder()->getCustomerEmail();
+                if (!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+                    continue;
+                }
 
                 $parentSku = null;
                 $items = $this->creditmemoItemCollectionFactory->create(['entitySnapshot' => $dummySnapshot])
@@ -1024,7 +1027,7 @@ class Order extends AbstractModel
                     //set customer
                     $values[] = $customerEmail;
                     //set product sku/id
-                    $values[] = 'g/' . $item->getSku();
+                    $values[] = 'g/' . trim($item->getSku());
 
                     $rowTotal = 0;
                     $qty = (int)$item->getQty();

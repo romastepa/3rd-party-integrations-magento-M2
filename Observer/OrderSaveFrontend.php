@@ -77,6 +77,7 @@ class OrderSaveFrontend implements ObserverInterface
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
+     * @return bool
      * @throws \Exception
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
@@ -91,6 +92,12 @@ class OrderSaveFrontend implements ObserverInterface
 
         if ($checkoutNewsSub) {
             $this->subscriberFactory->create()->subscribe($emailId);
+        }
+
+        if (!((bool)$order->getStore()->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED))
+            || !((bool)$order->getStore()->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_ENABLED))
+        ) {
+            return true;
         }
 
         foreach ($orderIds as $orderId) {

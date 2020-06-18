@@ -108,5 +108,40 @@
                 <release_url>https://github.com/emartech/3rd-party-integrations-magento-M2/releases/</release_url>
             </emarsys_release>
         </about_emarsys>
+        <emarsys_schema_check>
+            <schedule>
+                <cron_expr>0 0 * * *</cron_expr>
+            </schedule>
+        </emarsys_schema_check>
+        <emarsys_reoptin_import>
+            <schedule>
+                <cron_expr>57 */2 * * *</cron_expr>
+            </schedule>
+        </emarsys_reoptin_import>
+        <emarsys_product_sync>
+            <schedule>
+                <cron_expr>7 */6 * * *</cron_expr>
+            </schedule>
+        </emarsys_product_sync>
+        <emarsys_smartinsight_sync_queue>
+            <schedule>
+                <cron_expr>17 */2 * * *</cron_expr>
+            </schedule>
+        </emarsys_smartinsight_sync_queue>
+        <emarsys_clean_log>
+            <schedule>
+                <cron_expr>27 */1 * * *</cron_expr>
+            </schedule>
+        </emarsys_clean_log>
+        <emarsys_clean_cron_details>
+            <schedule>
+                <cron_expr>29 */1 * * *</cron_expr>
+            </schedule>
+        </emarsys_clean_cron_details>
+        <emarsys_settings>
+            <async>
+                <cron_expr>*/2 * * * *</cron_expr>
+            </async>
+        </emarsys_settings>
     </default>
 </config>

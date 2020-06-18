@@ -215,7 +215,7 @@
             <label>Smart Insight</label>
             <tab>emarsys</tab>
             <resource>Emarsys_Emarsys::settings</resource>
-            <group id="api_settings" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="api_settings" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Smart Insight API Settings</label>
                 <field id="enableapi" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enable API Export</label>
@@ -241,7 +241,7 @@
                     <field id="emarsys_settings/emarsys_setting/enable">1</field>
                 </depends>
             </group>
-            <group id="smart_insight" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="smart_insight" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Smart Insight</label>
                 <field id="smartinsight_enabled" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Smart Insight Enabled</label>

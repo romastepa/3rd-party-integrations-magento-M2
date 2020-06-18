@@ -15,7 +15,7 @@
 
         <!-- Emarsys reoptin import Job -->
         <job name="emarsys_reoptin_import" instance="Emarsys\Emarsys\Cron\SyncContactsSubscriptionData" method="execute">
-            <schedule>57 */2 * * *</schedule>
+            <config_path>emarsys_reoptin_import/schedule/cron_expr</config_path>
         </job>
 
         <!-- catalog Related Jobs -->
@@ -29,10 +29,10 @@
 
         <!-- log tables cleaning Related Job -->
         <job name="emarsys_clean_log" instance="Emarsys\Emarsys\Cron\CleanLog" method="execute">
-            <schedule>17 */1 * * *</schedule>
+            <config_path>emarsys_clean_log/schedule/cron_expr</config_path>
         </job>
         <job name="emarsys_clean_cron_details" instance="Emarsys\Emarsys\Cron\CleanCronDetails" method="execute">
-            <schedule>18 */1 * * *</schedule>
+            <config_path>emarsys_clean_cron_details/schedule/cron_expr</config_path>
         </job>
 
         <job name="emarsys_customer_bulk_export_api" instance="Emarsys\Emarsys\Cron\CustomerBulkExportApi" method="execute" />

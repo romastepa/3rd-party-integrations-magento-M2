@@ -34,23 +34,31 @@ class OrderSave implements ObserverInterface
 
     public function execute(Observer $observer)
     {
+        $order = $observer->getEvent()->getOrder();
+
+        if (!((bool)$order->getStore()->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_EMARSYS_ENABLED))
+            || !((bool)$order->getStore()->getConfig(\Emarsys\Emarsys\Helper\Data::XPATH_SMARTINSIGHT_ENABLED))
+        ) {
+            return true;
+        }
+
         $orderQueue = $this->orderQueueFactory->create();
         $orderQueueData = $orderQueue->getCollection()
-            ->addFieldToFilter('entity_id', $observer->getEvent()->getOrder()->getId())
+            ->addFieldToFilter('entity_id', $order->getId())
             ->addFieldToFilter('entity_type_id', 1);
 
         if ($orderQueueData->getSize()) {
             $orderQueue = $orderQueueData->getFirstItem();
         }
 
-        if ($observer->getEvent()->getOrder()->getState() == \Magento\Sales\Model\Order::STATE_CLOSED) {
+        if ($order->getState() == \Magento\Sales\Model\Order::STATE_CLOSED) {
             return true;
         }
 
-        $orderQueue->setEntityId($observer->getEvent()->getOrder()->getId());
+        $orderQueue->setEntityId($order->getId());
         $orderQueue->setEntityTypeId(1);
-        $orderQueue->setWebsiteId($observer->getEvent()->getOrder()->getStore()->getWebsiteId());
-        $orderQueue->setStoreId($observer->getEvent()->getOrder()->getStoreId());
+        $orderQueue->setWebsiteId($order->getStore()->getWebsiteId());
+        $orderQueue->setStoreId($order->getStoreId());
         $orderQueue->save();
     }
 }
