@@ -43,5 +43,9 @@
         <job name="emarsys_async_export" instance="Emarsys\Emarsys\Cron\Async" method="execute" >
             <config_path>emarsys_settings/async/cron_expr</config_path>
         </job>
+
+        <job name="emarsys_country_mapping" instance="Emarsys\Emarsys\Cron\Country" method="execute" >
+            <config_path>emarsys_settings/country/cron_expr</config_path>
+        </job>
     </group>
 </config>

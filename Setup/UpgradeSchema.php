@@ -29,6 +29,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
     const EMARSYS_MAGENTO_EVENTS = 'emarsys_magento_events';
 
+    const EMARSYS_COUNTRY_MAPPING = 'emarsys_country_mapping';
+
     /**
      * {@inheritdoc}
      */
@@ -240,6 +242,54 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'comment' => 'Magento Template Id'
                     ]
                 );
+            }
+        }
+
+        if (version_compare($context->getVersion(), '1.0.29', '<')) {
+            $connection = $setup->getConnection();
+            $emarsysCountryMappingTable = $setup->getTable(self::EMARSYS_COUNTRY_MAPPING);
+
+            if (!$connection->isTableExists($emarsysCountryMappingTable)) {
+                $table = $connection
+                    ->newTable($emarsysCountryMappingTable)
+                    ->addColumn(
+                        'id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
+                        'Id'
+                    )->addColumn(
+                        'choice',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                        255,
+                        ['default' => null, 'nullable' => true],
+                        'Choice'
+                    )->addColumn(
+                        'bit_position',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                        255,
+                        ['default' => null, 'nullable' => true],
+                        'Bit Position'
+                    )->addColumn(
+                        'magento_id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                        255,
+                        ['default' => null, 'nullable' => true],
+                        'Magento Country Id'
+                    )->addColumn(
+                        'website_id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['default' => 0, 'nullable' => false],
+                        'Website Id'
+                    )->setComment('Emarsys Country Mapping');
+                $setup->getConnection()->createTable($table);
             }
         }
 

@@ -26,6 +26,5 @@
 
 # Release Notes
 
-## v1.0.28
-- fixed Web Extend Order matching issue
-- fixed issue with Logs
+## v1.0.29
+- fixed County Mapping calls

@@ -27,6 +27,9 @@
                 <frequency>2</frequency>
                 <cron_expr>*/2 * * * *</cron_expr>
             </async>
+            <country>
+                <cron_expr>37 1 * * *</cron_expr>
+            </country>
         </emarsys_settings>
         <contacts_synchronization>
             <emarsys_emarsys>
@@ -138,10 +141,5 @@
                 <cron_expr>29 */1 * * *</cron_expr>
             </schedule>
         </emarsys_clean_cron_details>
-        <emarsys_settings>
-            <async>
-                <cron_expr>*/2 * * * *</cron_expr>
-            </async>
-        </emarsys_settings>
     </default>
 </config>

@@ -53,6 +53,8 @@ use Zend_Json;
  */
 class Data extends AbstractHelper
 {
+    const VERSION = '1.0.29';
+
     const EMARSYS_CDN_API_URL = 'https://api-cdn.emarsys.net/api/v2/';
 
     const EMARSYS_DEFAULT_API_URL = 'https://api.emarsys.net/api/v2/';
@@ -894,7 +896,7 @@ class Data extends AbstractHelper
                 'title' => 'Emarsys Extension Version',
                 'condition' => [
                     'sign' => '>=',
-                    'value' => '1.0.26',
+                    'value' => self::VERSION,
                 ],
                 'current' => [
                     'value' => $this->getEmarsysVersion(),

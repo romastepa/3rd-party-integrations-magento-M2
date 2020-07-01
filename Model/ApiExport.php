@@ -117,7 +117,7 @@ class ApiExport extends ZendClient
             $headers[] = "Authorization: bearer " . $token;
             $headers[] = "Content-type: text/csv";
             $headers[] = "Accept: text/plain";
-            $headers[] = "Extension-Version: 1.0.26";
+            $headers[] = "Extension-Version: " . \Emarsys\Emarsys\Helper\Data::VERSION;
 
             return $headers;
         }

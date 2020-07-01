@@ -52,4 +52,8 @@
     <type name="Magento\Email\Model\Template">
         <plugin name="emarsys_template" type="Emarsys\Emarsys\Plugin\Email\TemplatePlugin" sortOrder="100" disabled="false"/>
     </type>
+
+    <preference for="Emarsys\Emarsys\Api\CountryRepositoryInterface" type="Emarsys\Emarsys\Model\CountryRepository"/>
+    <preference for="Emarsys\Emarsys\Api\Data\CountryInterface" type="Emarsys\Emarsys\Model\CountryRepository"/>
+    <preference for="Emarsys\Emarsys\Api\Data\CountrySearchResultInterface" type="Emarsys\Emarsys\Model\CountrySearchResult"/>
 </config>
