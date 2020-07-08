@@ -134,6 +134,7 @@ class Emarsysproductexport extends AbstractModel
      * @param array $attributes
      * @param null|1|0 $includeBundle
      * @param array $excludedCategories
+     * @param \Emarsys\Emarsys\Model\ProductExportQueue|null $page
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
     public function getCatalogExportProductCollection(
@@ -141,7 +142,8 @@ class Emarsysproductexport extends AbstractModel
         $currentPageNumber,
         $attributes,
         $includeBundle = null,
-        $excludedCategories = []
+        $excludedCategories = [],
+        $page = null
     ) {
         try {
             /** @var \Magento\Store\Model\Store $store */
@@ -152,8 +154,17 @@ class Emarsysproductexport extends AbstractModel
                 ->setPageSize(self::BATCH_SIZE)
                 ->setCurPage($currentPageNumber)
                 ->addAttributeToSelect($attributes)
-                ->addAttributeToSelect(['visibility', 'status'])
-                ->addUrlRewrite();
+                ->addAttributeToSelect(['visibility', 'status']);
+
+            if ($page && $page->getFrom() > 0) {
+                $collection->addAttributeToFilter('entity_id', ['gteq' => $page->getFrom()]);
+            }
+
+            if ($page && $page->getTo() > 0) {
+                $collection->addAttributeToFilter('entity_id', ['lt' => $page->getTo()]);
+            }
+
+            $collection->addUrlRewrite();
 
             if (is_null($includeBundle)) {
                 $includeBundle = $store->getConfig(EmarsysHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
@@ -291,7 +302,6 @@ class Emarsysproductexport extends AbstractModel
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
                 foreach ($productData as $param) {
                     $item = $this->serializer->unserialize($param);
-                    $map = $this->_processedStores[$item['store']];
 
                     if (!isset($data[$productId])) {
                         $data[$productId] = array_fill(0, count($this->_mapHeader), "");
@@ -351,5 +361,25 @@ class Emarsysproductexport extends AbstractModel
                 $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
             }
         }
+    }
+
+    /**
+     * Gets Size of Product Collection And Max Product Id
+     *
+     * @return [int, int]
+     */
+    public function getSizeAndMaxId()
+    {
+        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
+        $collection = $this->productCollectionFactory->create();
+        $size = $collection->getSize();
+
+        $collection = $this->productCollectionFactory->create();
+        $select = $collection->getResource()->getConnection()
+            ->select()
+            ->from($collection->getMainTable(), ['id' => 'MAX(entity_id)']);
+        $maxId = $collection->getResource()->getConnection()->fetchOne($select);
+
+        return [$size, $maxId];
     }
 }

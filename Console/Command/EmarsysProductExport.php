@@ -15,6 +15,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Emarsys\Emarsys\Model\Product;
+use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Command for deployment of Sample Data
@@ -32,17 +34,33 @@ class EmarsysProductExport extends Command
     private $product;
 
     /**
+     * @var ProductExportAsync
+     */
+    private $productAsync;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * EmarsysProductExport constructor.
      *
      * @param State $state
      * @param Product $product
+     * @param ProductExportAsync $productAsync
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         State $state,
-        Product $product
+        Product $product,
+        ProductExportAsync $productAsync,
+        StoreManagerInterface $storeManager
     ) {
         $this->state = $state;
         $this->product = $product;
+        $this->productAsync = $productAsync;
+        $this->storeManager = $storeManager;
         parent::__construct();
     }
 
@@ -66,7 +84,20 @@ class EmarsysProductExport extends Command
         $output->writeln('<info>Starting product bulk export.</info>');
 
         try {
-            $this->product->consolidatedCatalogExport(Data::ENTITY_EXPORT_MODE_MANUAL);
+            $async = false;
+            foreach ($this->storeManager->getStores(true) as $store) {
+                $async = $store->getConfig('emarsys_predict/enable/async');
+                if ($async) {
+                    break;
+                }
+            }
+            if ($async) {
+                echo "Regular \n";
+                $this->product->consolidatedCatalogExport(Data::ENTITY_EXPORT_MODE_MANUAL);
+            } else {
+                echo "Async \n";
+                $this->productAsync->run(Data::ENTITY_EXPORT_MODE_MANUAL);
+            }
         } catch (Exception $e) {
             $output->writeln($e->getMessage());
         }

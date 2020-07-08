@@ -31,6 +31,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
     const EMARSYS_COUNTRY_MAPPING = 'emarsys_country_mapping';
 
+    const EMARSYS_PRODUCT_EXPORT_DATA = 'emarsys_product_export_data';
+    const EMARSYS_PRODUCT_EXPORT_QUEUE = 'emarsys_product_export_queue';
+
     /**
      * {@inheritdoc}
      */
@@ -248,7 +251,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
         if (version_compare($context->getVersion(), '1.0.29', '<')) {
             $connection = $setup->getConnection();
             $emarsysCountryMappingTable = $setup->getTable(self::EMARSYS_COUNTRY_MAPPING);
-
             if (!$connection->isTableExists($emarsysCountryMappingTable)) {
                 $table = $connection
                     ->newTable($emarsysCountryMappingTable)
@@ -291,9 +293,73 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     )->setComment('Emarsys Country Mapping');
                 $setup->getConnection()->createTable($table);
             }
-        }
 
-        $setup->endSetup();
+            $emarsysProductExportDataTable = $setup->getTable(self::EMARSYS_PRODUCT_EXPORT_DATA);
+            if (!$connection->isTableExists($emarsysProductExportDataTable)) {
+                $table = $connection
+                    ->newTable($emarsysProductExportDataTable)
+                    ->addColumn(
+                        'id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
+                        'Website Id'
+                    )->addColumn(
+                        'export_data',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
+                        '128k',
+                        [],
+                        'Export Params'
+                    )->setComment('Emarsys Product Export Params');
+                $setup->getConnection()->createTable($table);
+            }
+
+            $emarsysProductExportQueueTable = $setup->getTable(self::EMARSYS_PRODUCT_EXPORT_QUEUE);
+            if (!$connection->isTableExists($emarsysProductExportQueueTable)) {
+                $table = $connection
+                    ->newTable($emarsysProductExportQueueTable)
+                    ->addColumn(
+                        'id',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        [
+                            'identity' => true,
+                            'unsigned' => true,
+                            'nullable' => false,
+                            'primary' => true,
+                            'auto_increment' => true,
+                        ],
+                        'Id'
+                    )->addColumn(
+                        'from',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['default' => 0, 'nullable' => false],
+                        'From'
+                    )->addColumn(
+                        'to',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        null,
+                        ['default' => 0, 'nullable' => false],
+                        'to'
+                    )->addColumn(
+                        'status',
+                        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                        255,
+                        ['default' => 'ready', 'nullable' => false],
+                        'Status'
+                    )->setComment('Emarsys Product Export Queue');
+                $setup->getConnection()->createTable($table);
+            }
+
+            $setup->endSetup();
+        }
     }
 
     /**

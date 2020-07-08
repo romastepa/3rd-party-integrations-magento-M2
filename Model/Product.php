@@ -947,6 +947,9 @@ class Product extends AbstractModel
                         $attributeData[] = number_format($price, 2, '.', '');
                         break;
                     default:
+                        if ($attributeOption instanceof \Magento\Framework\Phrase) {
+                            $attributeOption = $attributeOption->getText();
+                        }
                         $attributeData[] = $attributeOption;
                         break;
 

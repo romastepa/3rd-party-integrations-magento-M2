@@ -28,3 +28,5 @@
 
 ## v1.0.29
 - fixed County Mapping calls
+- add multi process order export
+- order export bugfix

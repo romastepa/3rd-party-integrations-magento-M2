@@ -342,6 +342,8 @@ class ApiExport extends ZendClient
      */
     public function testSIExportApi($storeId)
     {
+        $result['result'] = 1;
+        return $result;
         return $this->testApiExport(\Magento\Sales\Model\Order::ENTITY, $storeId);
     }
 
@@ -388,10 +390,7 @@ class ApiExport extends ZendClient
             $sampleData = $this->sampleDataCatalogExport($emptyFileHeader);
         } else {
             //get sales mapped attributes
-            $emptyFileHeader = $this->orderResourceModel->getSalesMappedAttrs($storeId);
-            if (empty($emptyFileHeader)) {
-                $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
-            }
+            $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
             $sampleData = $this->sampleDataSmartInsightExport($emptyFileHeader);
         }
 

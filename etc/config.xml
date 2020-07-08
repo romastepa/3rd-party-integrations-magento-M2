@@ -73,6 +73,7 @@
         <emarsys_predict>
             <enable>
                 <product_feed>0</product_feed>
+                <async>0</async>
             </enable>
             <availability>
                 <status>1</status>

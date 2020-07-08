@@ -421,7 +421,7 @@ class Order extends AbstractModel
                                 && $creditMemoCollection->getSize()
                             )
                         ) {
-                            $status = $this->generateOrderCsv(
+                            $generateOrderCsvStatus = $this->generateOrderCsv(
                                 $storeId,
                                 $filePath,
                                 $orderCollection,
@@ -903,7 +903,7 @@ class Order extends AbstractModel
             foreach ($orderCollection as $order) {
                 $orderId = $order->getRealOrderId();
                 $createdDate = date('Y-m-d', strtotime($order->getCreatedAt()));
-                $customerEmail = $order->getCustomerEmail();
+                $customerEmail = trim($order->getCustomerEmail());
                 if (!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
                     continue;
                 }
@@ -932,7 +932,7 @@ class Order extends AbstractModel
                     //set timestamp
                     $values[] = $createdDate;
                     //set customer
-                    $values[] = $customerEmail;
+                    $values[] = $this->emailValidation($customerEmail);
                     //set product sku/id
                     $values[] = 'g/' . trim($item->getSku());
 
@@ -998,7 +998,7 @@ class Order extends AbstractModel
                 $creditMemoOrder = $this->salesOrderFactory->create()->load($creditMemo->getOrderId());
                 $orderId = $creditMemoOrder->getRealOrderId();
                 $createdDate = date('Y-m-d', strtotime($creditMemo->getCreatedAt()));
-                $customerEmail = $creditMemo->getOrder()->getCustomerEmail();
+                $customerEmail = trim($creditMemo->getOrder()->getCustomerEmail());
                 if (!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
                     continue;
                 }
@@ -1025,7 +1025,7 @@ class Order extends AbstractModel
                     //set timestamp
                     $values[] = $createdDate;
                     //set customer
-                    $values[] = $customerEmail;
+                    $values[] = $this->emailValidation($customerEmail);
                     //set product sku/id
                     $values[] = 'g/' . trim($item->getSku());
 
@@ -1289,5 +1289,15 @@ class Order extends AbstractModel
         }
 
         return $value;
+    }
+
+    protected function emailValidation($customerEmail)
+    {
+        $search = [
+            '`', '!', '#', '$', '%', '^', '&', '*', '(', ')', '-', '\'', '"',
+            '<', '>', '\\', '/', '?', ',', ':', ';', '|', '[', ']', '{', '}',
+        ];
+
+        return str_replace($search, '', $customerEmail);
     }
 }

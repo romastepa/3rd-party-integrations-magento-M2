@@ -52,7 +52,7 @@ class Country extends AbstractExtensibleModel implements CountryInterface
      */
     public function getBitPosition()
     {
-        return $this->setData(self::BIT_POSITION);
+        return $this->_getData(self::BIT_POSITION);
     }
 
     /**
@@ -69,7 +69,7 @@ class Country extends AbstractExtensibleModel implements CountryInterface
      */
     public function getWebsiteId()
     {
-        return $this->setData(self::WEBSITE_ID);
+        return $this->_getData(self::WEBSITE_ID);
     }
 
     /**
@@ -86,7 +86,7 @@ class Country extends AbstractExtensibleModel implements CountryInterface
      */
     public function getMagentoId()
     {
-        return $this->setData(self::MAGENTO_ID);
+        return $this->_getData(self::MAGENTO_ID);
     }
 
     /**
