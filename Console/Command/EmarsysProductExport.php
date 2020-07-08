@@ -91,7 +91,7 @@ class EmarsysProductExport extends Command
                     break;
                 }
             }
-            if ($async) {
+            if (!$async) {
                 echo "Regular \n";
                 $this->product->consolidatedCatalogExport(Data::ENTITY_EXPORT_MODE_MANUAL);
             } else {
