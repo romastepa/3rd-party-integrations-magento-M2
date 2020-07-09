@@ -51,17 +51,20 @@ class ProductBulkExport
      * @param EmarsysProductModel $emarsysProductModel
      * @param Logs $emarsysLogs
      * @param StoreManagerInterface $storeManager
+     * @param ProductExportAsync $productAsync
      */
     public function __construct(
         CronHelper $cronHelper,
         EmarsysProductModel $emarsysProductModel,
         Logs $emarsysLogs,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        ProductExportAsync $productAsync
     ) {
         $this->cronHelper = $cronHelper;
         $this->emarsysProductModel = $emarsysProductModel;
         $this->emarsysLogs = $emarsysLogs;
         $this->storeManager = $storeManager;
+        $this->productAsync = $productAsync;
     }
 
     public function execute()
