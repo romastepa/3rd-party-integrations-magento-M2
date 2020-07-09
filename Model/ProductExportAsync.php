@@ -210,17 +210,15 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 $list = $this->queueRepository->getList($filter);
                 while (count($this->currentJobs) >= $this->maxProcesses) {
                     $list = $this->queueRepository->getList($filter);
-                    echo $list->getTotalCount() . " => " . "Maximum children allowed, waiting...\n";
-                    while (!sleep(10)) {
-                        $this->spinner();
-                    }
+                    $this->spinner();
+                    echo "..... " . $list->getTotalCount() . " => " . "Maximum children allowed, waiting...";
                 }
 
                 $this->launchJob($jobID, $website, $websiteId);
             }
 
             //Wait for child processes to finish before exiting here
-            echo "Waiting for current jobs to finish. \n";
+            echo "\nWaiting for current jobs to finish. \n";
             while (count($this->currentJobs)) {
                 $this->spinner();
             }
@@ -241,9 +239,18 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                     $this->logsArray
                 );
 
+                $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
+                $gzFilePath = $fileDirectory . '/' . 'products_' . $websiteId . '.gz';
+
+                //Export CSV to API
+                $string = file_get_contents($csvFilePath);
+                $gz = gzopen($gzFilePath, 'w9');
+                gzwrite($gz, $string);
+                gzclose($gz);
+
                 $store = reset($this->_credentials[$websiteId]);
 
-                $uploaded = $this->moveFile($store['store'], $csvFilePath);
+                $uploaded = $this->moveFile($store['store'], $csvFilePath, $gzFilePath);
                 if ($uploaded) {
                     $this->logsArray['emarsys_info'] = __('Data for was uploaded');
                     $this->logsArray['description'] = __('Data for was uploaded');
@@ -279,13 +286,13 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             // So let's go ahead and process it now as if we'd just received the signal
 
             if (isset($this->signalQueue[$pid])) {
-                echo "found $pid in the signal queue, processing it now \n";
+                echo "..... Found $pid in the signal queue, processing it now";
                 $this->childSignalHandler(SIGCHLD, $pid, $this->signalQueue[$pid]);
                 unset($this->signalQueue[$pid]);
             }
         } else {
             //Forked child, do your deeds....
-            echo $jobID . " => Doing something fun in pid " . getmypid() . "\n";
+            echo "..... " . $jobID . " => Doing something fun in pid " . getmypid();
 
             $exitStatus = 0;
             try {
@@ -336,13 +343,13 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             if ($pid && isset($this->currentJobs[$pid])) {
                 $exitCode = pcntl_wexitstatus($status);
                 if ($exitCode != 0) {
-                    echo "$pid exited with status " . \json_encode($exitCode) . "\n";
+                    echo "$pid exited with status " . \json_encode($exitCode);
                 }
                 unset($this->currentJobs[$pid]);
             } elseif ($pid) {
                 //Oh no, our job has finished before this parent process could even note that it had been launched!
                 //Let's make note of it and handle it when the parent process is ready for it
-                echo "..... Adding $pid to the signal queue ..... \n";
+                echo "..... Adding $pid to the signal queue ..... .....    ";
                 $this->signalQueue[$pid] = $status;
             }
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
@@ -359,12 +366,12 @@ class ProductExportAsync extends \Magento\Framework\DataObject
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Zend_Http_Client_Exception
      */
-    public function moveFile($store, $csvFilePath)
+    public function moveFile($store, $csvFilePath, $gzFilePath)
     {
         $result = true;
         $apiExportEnabled = $store->getConfig(EmarsysHelper::XPATH_PREDICT_API_ENABLED);
 
-        $isBig = (filesize($csvFilePath) / pow(1024, 2)) > 100;
+        $isBig = (filesize($gzFilePath) / pow(1024, 2)) > 100;
         $merchantId = $store->getConfig(EmarsysHelper::XPATH_PREDICT_MERCHANT_ID);
         $websiteId = $store->getWebsiteId();
         $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY . '/' . $websiteId, $csvFilePath);
@@ -373,13 +380,12 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             $token = $store->getConfig(EmarsysHelper::XPATH_PREDICT_TOKEN);
 
             //Assign API Credentials
-            $this->apiExport->assignApiCredentials($merchantId, $token);
+            $this->apiExport->assignApiCredentials($merchantId, $token, true);
 
             //Get catalog API Url
             $apiUrl = $this->apiExport->getApiUrl(ProductModel::ENTITY);
 
-            //Export CSV to API
-            $apiExportResult = $this->apiExport->apiExport($apiUrl, $csvFilePath);
+            $apiExportResult = $this->apiExport->apiExport($apiUrl, $gzFilePath);
             if ($apiExportResult['result'] == 1) {
                 //successfully uploaded file on Emarsys
                 $this->logsArray['emarsys_info'] = __('File uploaded to Emarsys');
@@ -551,24 +557,30 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     public function spinner()
     {
         $spins = [
-            '≠=========',
-            '=≠========',
-            '==≠=======',
-            '===≠======',
-            '====≠=====',
-            '=====≠====',
-            '======≠===',
-            '=======≠==',
-            '========≠=',
-            '=========≠',
-            '========≠=',
-            '=======≠==',
-            '======≠===',
-            '=====≠====',
-            '====≠=====',
-            '===≠======',
-            '==≠=======',
-            '=≠========',
+            '≠============',
+            '=≠===========',
+            '==≠==========',
+            '===≠=========',
+            '====≠========',
+            '=====≠=======',
+            '======≠======',
+            '=======≠=====',
+            '========≠====',
+            '=========≠===',
+            '==========≠==',
+            '===========≠=',
+            '============≠',
+            '===========≠=',
+            '==========≠==',
+            '=========≠===',
+            '========≠====',
+            '=======≠=====',
+            '======≠======',
+            '=====≠=======',
+            '====≠========',
+            '===≠=========',
+            '==≠==========',
+            '=≠===========',
         ];
         foreach ($spins as $spin) {
             echo "\r" . $spin;

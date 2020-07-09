@@ -34,6 +34,8 @@ class ApiExport extends ZendClient
 
     protected $_token;
 
+    protected $_gz;
+
     /**
      * @var Data
      */
@@ -93,11 +95,13 @@ class ApiExport extends ZendClient
     /**
      * @param $merchantId
      * @param $token
+     * @param bool $gz
      */
-    public function assignApiCredentials($merchantId, $token)
+    public function assignApiCredentials($merchantId, $token, $gz = false)
     {
         $this->_merchantId = $merchantId;
         $this->_token = $token;
+        $this->_gz = $gz;
     }
 
     /**
@@ -118,6 +122,9 @@ class ApiExport extends ZendClient
             $headers[] = "Content-type: text/csv";
             $headers[] = "Accept: text/plain";
             $headers[] = "Extension-Version: " . \Emarsys\Emarsys\Helper\Data::VERSION;
+            if ($this->_gz) {
+                $headers[] = "Content-Encoding: gzip";
+            }
 
             return $headers;
         }
