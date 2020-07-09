@@ -144,6 +144,8 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     {
         echo "Running \n";
         $this->productAsync->truncateExportTable();
+        $queueModel = $this->queueRepository->getById(0);
+        $this->queueRepository->truncate($queueModel);
 
         $this->logsArray['job_code'] = 'product';
         $this->logsArray['status'] = 'started';
@@ -168,55 +170,57 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             $this->setCredentials($store);
         }
 
-        [$size, $maxId] = $this->productAsync->getSizeAndMaxId();
+        [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
 
         $d = 25;
-        $page = (int)ceil($maxId/$d);
+        $page = (int)ceil(($maxId - $minId)/$d);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
             $this->productAsync->truncateExportTable();
 
-            $model = $this->queueRepository->getById(0);
-            $this->queueRepository->truncate($model);
-
+            $this->queueRepository->truncate($queueModel);
             for ($x = 1; $x < 26; $x++) {
                 if ($x == 1) {
-                    $from = 1;
-                    $to = $page;
+                    $from = $minId;
+                    $to = ($minId + $page);
+                } elseif ($x == 25) {
+                    $from = $minId + $page * ($x - 1);
+                    $to = $minId + $page * ($x + 1);
                 } else {
-                    $from = $page * ($x - 1);
-                    $to = $page * $x;
+                    $from = $minId + $page * ($x - 1);
+                    $to = $minId + $page * $x;
                 }
 
-                $model->setData([
+                $queueModel->setData([
                     'id' => $x,
                     'from' => $from,
                     'to' => $to,
                 ]);
-                $model->isObjectNew(true);
-                $this->queueRepository->save($model);
-            }
 
+                $queueModel->isObjectNew(true);
+                $this->queueRepository->save($queueModel);
+            }
             $filter = $this->searchCriteriaBuilder
                 ->addFilter('status', 'processing', 'neq')
                 ->create();
 
             $list = $this->queueRepository->getList($filter);
-
             while ($list->getTotalCount()) {
                 $jobID = rand(0, 10000000000000);
                 $list = $this->queueRepository->getList($filter);
                 while (count($this->currentJobs) >= $this->maxProcesses) {
                     $list = $this->queueRepository->getList($filter);
                     echo $list->getTotalCount() . " => " . "Maximum children allowed, waiting...\n";
-                    sleep(10);
+                    while (!sleep(10)) {
+                        $this->spinner();
+                    }
                 }
 
                 $this->launchJob($jobID, $website, $websiteId);
             }
 
             //Wait for child processes to finish before exiting here
-            echo "Waiting for current jobs to finish.";
+            echo "Waiting for current jobs to finish. \n";
             while (count($this->currentJobs)) {
                 $this->spinner();
             }
@@ -472,6 +476,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         );
                         $this->logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($this->logsArray);
+                        echo $this->logsArray['description'] . "\n";
                         return;
                     }
                     $this->logsArray['emarsys_info'] = __('Set API credentials');
@@ -485,12 +490,14 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['description'] = __('Failed to connect with FTP server.');
                         $this->logsArray['message_type'] = 'Error';
                         $this->logsHelper->logs($this->logsArray);
+                        echo $this->logsArray['description'] . "\n";
                         return;
                     }
                     $this->logsArray['emarsys_info'] = __('Set FTP credentials');
                     $this->logsArray['description'] = __('Set FTP credentials for store %1', $storeId);
                     $this->logsArray['message_type'] = 'Success';
                     $this->logsHelper->logs($this->logsArray);
+                    echo $this->logsArray['description'] . "\n";
                 }
 
                 $mappedAttributes = $this->productResourceModel->getMappedProductAttribute(
@@ -521,6 +528,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 $this->logsArray['message_type'] = 'Error';
                 $this->logsHelper->logs($this->logsArray);
             }
+            echo $this->logsArray['description'] . "\n";
         }
     }
 

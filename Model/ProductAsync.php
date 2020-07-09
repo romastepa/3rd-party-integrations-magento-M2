@@ -705,10 +705,10 @@ class ProductAsync extends AbstractModel
     /**
      * Gets Size of Product Collection And Max Product Id
      *
-     * @return int
+     * @return [int, int, int]
      */
-    public function getSizeAndMaxId()
+    public function getSizeAndMaxAndMinId()
     {
-        return $this->productExportModel->getSizeAndMaxId();
+        return $this->productExportModel->getSizeAndMaxAndMinId();
     }
 }

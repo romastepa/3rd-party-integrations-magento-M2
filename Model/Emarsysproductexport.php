@@ -366,9 +366,9 @@ class Emarsysproductexport extends AbstractModel
     /**
      * Gets Size of Product Collection And Max Product Id
      *
-     * @return [int, int]
+     * @return [int, int, int]
      */
-    public function getSizeAndMaxId()
+    public function getSizeAndMaxAndMinId()
     {
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $this->productCollectionFactory->create();
@@ -380,6 +380,12 @@ class Emarsysproductexport extends AbstractModel
             ->from($collection->getMainTable(), ['id' => 'MAX(entity_id)']);
         $maxId = $collection->getResource()->getConnection()->fetchOne($select);
 
-        return [$size, $maxId];
+        $collection = $this->productCollectionFactory->create();
+        $select = $collection->getResource()->getConnection()
+            ->select()
+            ->from($collection->getMainTable(), ['id' => 'MIN(entity_id)']);
+        $minId = $collection->getResource()->getConnection()->fetchOne($select);
+
+        return [$size, $maxId, $minId];
     }
 }
