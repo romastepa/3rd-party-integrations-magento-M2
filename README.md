@@ -27,6 +27,6 @@
 # Release Notes
 
 ## v1.0.29
-- fixed County Mapping calls
-- add multi process order export
-- order export bugfix
+- County Mapping calls bugfix (improved speed)
+- Added multi process product export (improved speed) 
+- Order export bugfix
