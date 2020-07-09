@@ -176,6 +176,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $page = (int)ceil(($maxId - $minId)/$d);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
+            echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
             $this->productAsync->truncateExportTable();
 
             $this->queueRepository->truncate($queueModel);
@@ -211,14 +212,14 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 while (count($this->currentJobs) >= $this->maxProcesses) {
                     $list = $this->queueRepository->getList($filter);
                     $this->spinner();
-                    echo "..... " . $list->getTotalCount() . " => " . "Maximum children allowed, waiting...";
+                    echo "\r             Maximum children allowed, waiting => " . $list->getTotalCount();
                 }
 
                 $this->launchJob($jobID, $website, $websiteId);
             }
 
             //Wait for child processes to finish before exiting here
-            echo "\nWaiting for current jobs to finish. \n";
+            echo "\n ..... Waiting for current jobs to finish. ..... \n";
             while (count($this->currentJobs)) {
                 $this->spinner();
             }
@@ -228,6 +229,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 $this->logsArray['description'] = __('Starting data uploading');
                 $this->logsArray['message_type'] = 'Success';
                 $this->logsHelper->manualLogs($this->logsArray);
+                echo $this->logsArray['description'] . "\n";
 
                 $modelData = $this->dataRepository->getById($websiteId);
                 [$this->_mapHeader, $this->_processedStores] = $this->serializer->unserialize($modelData->getExportData());
@@ -286,13 +288,13 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             // So let's go ahead and process it now as if we'd just received the signal
 
             if (isset($this->signalQueue[$pid])) {
-                echo "..... Found $pid in the signal queue, processing it now";
+                echo "\r..... Found $pid in the signal queue, processing it now";
                 $this->childSignalHandler(SIGCHLD, $pid, $this->signalQueue[$pid]);
                 unset($this->signalQueue[$pid]);
             }
         } else {
             //Forked child, do your deeds....
-            echo "..... " . $jobID . " => Doing something fun in pid " . getmypid();
+            echo "\r..... " . $jobID . " => Doing something fun in pid " . getmypid();
 
             $exitStatus = 0;
             try {
@@ -343,13 +345,13 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             if ($pid && isset($this->currentJobs[$pid])) {
                 $exitCode = pcntl_wexitstatus($status);
                 if ($exitCode != 0) {
-                    echo "$pid exited with status " . \json_encode($exitCode);
+                    echo "$pid exited with status " . \json_encode($exitCode) . "\n";
                 }
                 unset($this->currentJobs[$pid]);
             } elseif ($pid) {
                 //Oh no, our job has finished before this parent process could even note that it had been launched!
                 //Let's make note of it and handle it when the parent process is ready for it
-                echo "..... Adding $pid to the signal queue ..... .....    ";
+                echo "..... Adding $pid to the signal queue ..... \n";
                 $this->signalQueue[$pid] = $status;
             }
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
@@ -429,6 +431,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 $result = false;
             }
         }
+        echo $this->logsArray['description'] . "\n";
 
         $this->emarsysHelper->removeFilesInFolder(
             $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId)
