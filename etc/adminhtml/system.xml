@@ -277,10 +277,16 @@
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="async" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="async" translate="label comment" type="select" sortOrder="15" showInDefault="0" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Multi Process</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Beta Multi Process Export (increases speed of product export)</comment>
+                </field>
+                <field id="process" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Max Process At Ones</label>
+                    <depends>
+                        <field id="emarsys_predict/enable/async">1</field>
+                    </depends>
                 </field>
                 <depends>
                     <field id="emarsys_settings/emarsys_setting/enable">1</field>

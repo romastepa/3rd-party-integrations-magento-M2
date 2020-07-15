@@ -74,6 +74,7 @@
             <enable>
                 <product_feed>0</product_feed>
                 <async>0</async>
+                <process>8</process>
             </enable>
             <availability>
                 <status>1</status>

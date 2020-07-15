@@ -252,9 +252,9 @@ class ApiExport extends ZendClient
             $entityApiUrlKey = $this->emarsysHelper->getOrderApiUrlKey();
         }
         $emarsysApiUrl = $this->emarsysHelper->getEmarsysApiUrl();
-        $apiUrl = $emarsysApiUrl . $this->_merchantId . $entityApiUrlKey;
+        $this->_apiUrl = $emarsysApiUrl . $this->_merchantId . $entityApiUrlKey;
 
-        return $apiUrl;
+        return $this->_apiUrl;
     }
 
     /**
@@ -309,33 +309,12 @@ class ApiExport extends ZendClient
     /**
      * Get Sales Order Sample Data for Test Connection Button.
      *
-     * @param array $headers
      * @return array
      */
-    public function sampleDataSmartInsightExport($headers)
+    public function sampleDataSmartInsightExport()
     {
-        /** @var \Magento\Store\Model\Store $store */
-        $sampleResult = [];
-
         //header ['order', 'timestamp', 'email', 'item', 'price', 'quantity'];
-        $sampleData = [
-            'order' => '00000',
-            'timestamp' => '2017-07-07',
-            'email' => 'sample@data.com',
-            'item' => 'test_product_item_1',
-            'price' => '0.00',
-            'quantity' => '0',
-        ];
-
-        foreach ($headers as $item) {
-            $itemVal = '';
-            if (isset($sampleData[$item])) {
-                $itemVal = $sampleData[$item];
-            }
-            array_push($sampleResult, $itemVal);
-        }
-
-        return $sampleResult;
+        return [uniqid(), '2017-07-07', 'sample@data.com', 'test_product_item_1','0.00', '0'];
     }
 
     /**
@@ -398,7 +377,7 @@ class ApiExport extends ZendClient
         } else {
             //get sales mapped attributes
             $emptyFileHeader = $this->emarsysHelper->getSalesOrderCsvDefaultHeader();
-            $sampleData = $this->sampleDataSmartInsightExport($emptyFileHeader);
+            $sampleData = $this->sampleDataSmartInsightExport();
         }
 
         $data = [
@@ -416,12 +395,8 @@ class ApiExport extends ZendClient
             ->setDelimiter(',')
             ->saveData($filePath, $data);
 
-        $this->_apiUrl = $apiUrl = $this->getApiUrl($entityType);
-        $result = $this->apiExport($apiUrl, $filePath);
-
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
+        $this->getApiUrl($entityType);
+        $result = $this->apiExport($this->_apiUrl, $filePath);
 
         if (!$result['result'] && $result['status'] == 400) {
             $result['result'] = 1;

@@ -7,14 +7,14 @@
 
 namespace Emarsys\Emarsys\Console\Command;
 
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
+use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
 use Exception;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
-use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 
 /**
  * Command for deployment of Sample Data
@@ -72,7 +72,8 @@ class EmarsysAsyncExport extends Command
         $this->state->setAreaCode(Area::AREA_GLOBAL);
         $output->writeln('');
         $output->writeln('<info>Starting Async export.</info>');
-
+        $output->writeln('');
+        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
 
         $collection = $this->asyncCollection->create();
 
@@ -87,7 +88,8 @@ class EmarsysAsyncExport extends Command
                     list($buildRequest, $requestBody) = \Zend_Json::decode($item->getRequestBody());
                     $response = $this->api->createContactInEmarsys($buildRequest);
                     if (isset($response['status']) && ($response['status'] == 200)
-                        || ($response['status'] == 400 && isset($response['body']['replyCode'])
+                        || (
+                            $response['status'] == 400 && isset($response['body']['replyCode'])
                             && $response['body']['replyCode'] == 2009
                         )
                     ) {
@@ -113,12 +115,8 @@ class EmarsysAsyncExport extends Command
             }
         }
 
-
-        $error = error_get_last();
-        if (!empty($error['message'])) {
-            $output->writeln($error);
-        }
-
+        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
+        $output->writeln('');
         $output->writeln('<info>Product bulk export complete</info>');
         $output->writeln('');
     }

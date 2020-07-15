@@ -147,6 +147,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $queueModel = $this->queueRepository->getById(0);
         $this->queueRepository->truncate($queueModel);
 
+        $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
+        if ($maxProcesses) {
+            $this->maxProcesses = $maxProcesses;
+        }
+
         $this->logsArray['job_code'] = 'product';
         $this->logsArray['status'] = 'started';
         $this->logsArray['messages'] = __('Bulk product export started');

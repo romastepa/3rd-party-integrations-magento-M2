@@ -113,6 +113,8 @@ class EmarsysCustomerExport extends Command
         $this->state->setAreaCode(Area::AREA_GLOBAL);
         $output->writeln('');
         $output->writeln('<info>Starting customer bulk export.</info>');
+        $output->writeln('');
+        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
 
         /** @var Store $store */
         foreach ($this->storeManager->getStores() as $storeId => $store) {
@@ -144,11 +146,8 @@ class EmarsysCustomerExport extends Command
             }
         }
 
-        $error = error_get_last();
-        if (!empty($error['message'])) {
-            $output->writeln($error);
-        }
-
+        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
+        $output->writeln('');
         $output->writeln('<info>Customer bulk export complete</info>');
         $output->writeln('');
     }

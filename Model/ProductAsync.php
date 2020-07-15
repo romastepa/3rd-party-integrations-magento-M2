@@ -355,6 +355,8 @@ class ProductAsync extends AbstractModel
 
                     $products = [];
                     foreach ($collection as $product) {
+                        $collection->getSelect()->query()->closeCursor();
+                        echo '.';
                         $catIds = $product->getCategoryIds();
                         $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                         $product->setStoreId($storeId);
@@ -618,7 +620,11 @@ class ProductAsync extends AbstractModel
                         $attributeData[] = $url;
                         break;
                     case 'url_key':
-                        $url = $productObject->getProductUrl();
+                        $url = $productObject->getRequestPath();
+                        if (empty($url)) {
+                            $url = 'catalog/product/view/id/' . $productObject->getId();
+                        }
+                        $url = $store->getBaseUrl() . $url;
                         if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
                             $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
                             $this->_productTypeInstance = $this->typeConfigurable;
@@ -644,7 +650,11 @@ class ProductAsync extends AbstractModel
                                 }
                                 if ($parentProduct) {
                                     $parentProduct->setStoreId($store->getId());
-                                    $url = $parentProduct->getProductUrl();
+                                    $url = $parentProduct->getRequestPath();
+                                    if (empty($url)) {
+                                        $url = 'catalog/product/view/id/' . $parentProduct->getId();
+                                    }
+                                    $url = $store->getBaseUrl() . $url;
                                 }
                             }
                         }

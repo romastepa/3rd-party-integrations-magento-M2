@@ -82,31 +82,24 @@ class EmarsysProductExport extends Command
         $this->state->setAreaCode(Area::AREA_GLOBAL);
         $output->writeln('');
         $output->writeln('<info>Starting product bulk export.</info>');
+        $output->writeln('');
+        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
 
         try {
-            $async = false;
-            foreach ($this->storeManager->getStores(true) as $store) {
-                $async = $store->getConfig('emarsys_predict/enable/async');
-                if ($async) {
-                    break;
-                }
-            }
+            $async = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/async');
             if (!$async) {
-                echo "Regular \n";
+                $output->writeln('Regular');
                 $this->product->consolidatedCatalogExport(Data::ENTITY_EXPORT_MODE_MANUAL);
             } else {
-                echo "Async \n";
+                $output->writeln('Async');
                 $this->productAsync->run(Data::ENTITY_EXPORT_MODE_MANUAL);
             }
         } catch (Exception $e) {
             $output->writeln($e->getMessage());
         }
 
-        $error = error_get_last();
-        if (!empty($error['message'])) {
-            $output->writeln($error);
-        }
-
+        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
+        $output->writeln('');
         $output->writeln('<info>Product bulk export complete</info>');
         $output->writeln('');
     }

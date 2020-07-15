@@ -80,6 +80,7 @@ class ProductExportQueueRepository
         $connection = $productExportQueue->getResource()->getConnection();
         $tableName = $productExportQueue->getResource()->getMainTable();
         $connection->truncateTable($tableName);
+        unset($connection);
     }
 
     /**
@@ -93,8 +94,6 @@ class ProductExportQueueRepository
         $this->addFiltersToCollection($searchCriteria, $collection);
         $this->addSortOrdersToCollection($searchCriteria, $collection);
         $this->addPagingToCollection($searchCriteria, $collection);
-
-        $collection->load();
 
         return $this->buildSearchResult($searchCriteria, $collection);
     }
@@ -149,6 +148,8 @@ class ProductExportQueueRepository
         $searchResults->setSearchCriteria($searchCriteria);
         $searchResults->setItems($collection->getItems());
         $searchResults->setTotalCount($collection->getSize());
+        $collection->getSelect()->query()->closeCursor();
+        unset($collection);
 
         return $searchResults;
     }
