@@ -356,7 +356,7 @@ class ProductAsync extends AbstractModel
                     $products = [];
                     foreach ($collection as $product) {
                         $collection->getSelect()->query()->closeCursor();
-                        echo '.';
+                        echo " ";
                         $catIds = $product->getCategoryIds();
                         $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                         $product->setStoreId($storeId);
