@@ -277,7 +277,7 @@
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="async" translate="label comment" type="select" sortOrder="15" showInDefault="0" showInWebsite="1" showInStore="0" canRestore="1">
+                <field id="async" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Multi Process</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Beta Multi Process Export (increases speed of product export)</comment>
