@@ -164,8 +164,6 @@ class Emarsysproductexport extends AbstractModel
                 $collection->addAttributeToFilter('entity_id', ['lt' => $page->getTo()]);
             }
 
-            $collection->addUrlRewrite();
-
             if (is_null($includeBundle)) {
                 $includeBundle = $store->getConfig(EmarsysHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT);
             }

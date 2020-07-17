@@ -356,7 +356,6 @@ class ProductAsync extends AbstractModel
                     $products = [];
                     foreach ($collection as $product) {
                         $collection->getSelect()->query()->closeCursor();
-                        echo " ";
                         $catIds = $product->getCategoryIds();
                         $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                         $product->setStoreId($storeId);
@@ -399,13 +398,11 @@ class ProductAsync extends AbstractModel
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = __('Product export completed');
             }
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->manualLogs($logsArray);
             $result = true;
         } catch (\Exception $e) {
             $logsArray['messages'] = __('consolidatedCatalogExport Exception');
             $logsArray['status'] = 'error';
-            $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $this->logsHelper->manualLogs($logsArray);
 
             $logsArray['emarsys_info'] = __('%1 consolidatedCatalogExport Exception', $pid);
@@ -620,9 +617,11 @@ class ProductAsync extends AbstractModel
                         $attributeData[] = $url;
                         break;
                     case 'url_key':
-                        $url = $productObject->getRequestPath();
+                        $url = $productObject->getUrlKey();
                         if (empty($url)) {
                             $url = 'catalog/product/view/id/' . $productObject->getId();
+                        } else {
+                            $url = $url . '.html';
                         }
                         $url = $store->getBaseUrl() . $url;
                         if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
@@ -650,9 +649,11 @@ class ProductAsync extends AbstractModel
                                 }
                                 if ($parentProduct) {
                                     $parentProduct->setStoreId($store->getId());
-                                    $url = $parentProduct->getRequestPath();
+                                    $url = $parentProduct->getUrlKey();
                                     if (empty($url)) {
                                         $url = 'catalog/product/view/id/' . $parentProduct->getId();
+                                    } else {
+                                        $url = $url . '.html';
                                     }
                                     $url = $store->getBaseUrl() . $url;
                                 }

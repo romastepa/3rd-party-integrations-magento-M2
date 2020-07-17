@@ -268,6 +268,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                     $this->logsArray['description'] = __('Error during data uploading');
                     $this->logsArray['message_type'] = 'Error';
                 }
+                $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
                 $this->logsHelper->manualLogs($this->logsArray);
             }
         }
