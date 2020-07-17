@@ -284,7 +284,7 @@ class Emarsysproductexport extends AbstractModel
         $emptyArray = array_fill(0, $columnCount, "");
 
         $collection = $this->getCollection();
-        $collection->setPageSize(self::BATCH_SIZE)
+        $collection->setPageSize(100)
             ->setCurPage($currentPageNumber);
 
         $lastPageNumber = $collection->getLastPageNumber();
@@ -295,6 +295,7 @@ class Emarsysproductexport extends AbstractModel
                 $collection->clear();
             }
             foreach ($collection as $product) {
+                $collection->getSelect()->query()->closeCursor();
                 $data = [];
                 $productId = $product->getId();
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());

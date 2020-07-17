@@ -618,7 +618,7 @@ class ProductAsync extends AbstractModel
                         break;
                     case 'url_key':
                         $url = $productObject->getUrlKey();
-                        if (empty($url)) {
+                        if (empty($url) || stristr($url, ' ')) {
                             $url = 'catalog/product/view/id/' . $productObject->getId();
                         } else {
                             $url = $url . '.html';
@@ -650,7 +650,7 @@ class ProductAsync extends AbstractModel
                                 if ($parentProduct) {
                                     $parentProduct->setStoreId($store->getId());
                                     $url = $parentProduct->getUrlKey();
-                                    if (empty($url)) {
+                                    if (empty($url) || stristr($url, ' ')) {
                                         $url = 'catalog/product/view/id/' . $parentProduct->getId();
                                     } else {
                                         $url = $url . '.html';

@@ -16,8 +16,8 @@ use Emarsys\Emarsys\Model\ProductExportQueueRepository;
 use Emarsys\Emarsys\Model\ResourceModel\Product as ProductResourceModel;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
+use Magento\Store\Model\StoreManagerInterface;
 
 class ProductExportAsync extends \Magento\Framework\DataObject
 {
@@ -147,6 +147,8 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->productAsync->truncateExportTable();
         $queueModel = $this->queueRepository->getById(0);
         $this->queueRepository->truncate($queueModel);
+        $modelData = $this->dataRepository->getById(0);
+        $this->dataRepository->truncate($modelData);
 
         $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
         if ($maxProcesses) {
@@ -184,8 +186,9 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         foreach ($this->getCredentials() as $websiteId => $website) {
             echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
             $this->productAsync->truncateExportTable();
-
             $this->queueRepository->truncate($queueModel);
+            $this->dataRepository->truncate($modelData);
+
             for ($x = 1; $x < 26; $x++) {
                 if ($x == 1) {
                     $from = $minId;
@@ -218,7 +221,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 while (count($this->currentJobs) >= $this->maxProcesses) {
                     $list = $this->queueRepository->getList($filter);
                     $this->spinner();
-                    echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount();
+                    echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
                 }
 
                 $this->launchJob($jobID, $website, $websiteId);
@@ -276,6 +279,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
     /**
      * Launch a job from the job queue
+     *
+     * @param $jobID
+     * @param $website
+     * @param $websiteId
+     * @return bool
      */
     protected function launchJob($jobID, $website, $websiteId)
     {
