@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -14,9 +14,6 @@ use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data;
 
-/**
- * Class ProductBulkExport
- */
 class ProductBulkExport
 {
     /**
@@ -93,7 +90,6 @@ class ProductBulkExport
                 echo "Async \n";
                 $this->productAsync->run(Data::ENTITY_EXPORT_MODE_MANUAL);
             }
-
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'ProductBulkExport',

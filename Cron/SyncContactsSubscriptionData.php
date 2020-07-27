@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -20,9 +20,6 @@ use Magento\Framework\Registry;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Config\Model\ResourceModel\Config;
 
-/**
- * Class SyncContactsSubscriptionData
- */
 class SyncContactsSubscriptionData
 {
     /**
@@ -136,7 +133,7 @@ class SyncContactsSubscriptionData
     {
         $queue = [];
 
-        /** @var  \Magento\Store\Model\Website $website */
+        /** @var \Magento\Store\Model\Website $website */
         $websites = $this->storeManager->getWebsites();
         foreach ($websites as $website) {
             if (!$this->emarsysHelper->isContactsSynchronizationEnable($website->getId())) {
@@ -253,13 +250,11 @@ class SyncContactsSubscriptionData
         $this->registry->register('custom_entry_point', 'index.php');
 
         if ($isTimeBased) {
-            $notificationSecretKey = $this->scopeConfig->getValue(
-                'contacts_synchronization/emarsys_emarsys/notification_secret_key'
-            );
             $url = $this->storeManager->getStore($storeId)->getBaseUrl()
                 . 'emarsys/index/sync?_store=' . $storeId
-                . '&secret=' . $notificationSecretKey
-                . '&website_ids=' . implode(',', $websiteId)
+                . '&secret=' . $this->scopeConfig->getValue(
+                    'contacts_synchronization/emarsys_emarsys/notification_secret_key'
+                ) . '&website_ids=' . implode(',', $websiteId)
                 . '&timebased=1';
         }
         $this->registry->unregister('custom_entry_point');

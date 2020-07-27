@@ -1,31 +1,33 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
-/**
- * Class CronData
- */
-class CronData extends \Magento\Framework\View\Element\Template
+use Magento\Cron\Model\ConfigInterface;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+
+class CronData extends Template
 {
     /**
-     * @var \Magento\Cron\Model\ConfigInterface
+     * @var ConfigInterface
      */
     protected $_config;
 
     /**
      * CronData constructor.
-     * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Magento\Cron\Model\ConfigInterface $config
+     *
+     * @param Context $context
+     * @param ConfigInterface $config
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Cron\Model\ConfigInterface $config,
+        Context $context,
+        ConfigInterface $config,
         $data = []
     ) {
         parent::__construct($context, $data);
@@ -35,7 +37,7 @@ class CronData extends \Magento\Framework\View\Element\Template
     /**
      * @return array
      */
-    public function getCronData()
+    function getCronData()
     {
         return $this->_config->getJobs();
     }

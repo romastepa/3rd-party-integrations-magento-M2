@@ -1,25 +1,27 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Store\Model\StoreManagerInterface;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\FieldFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Field;
-use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Exception;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class Save
- */
 class Save extends Action
 {
     /**
@@ -28,7 +30,7 @@ class Save extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -64,6 +66,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Context $context
      * @param FieldFactory $fieldFactory
      * @param Field $resourceModelField
@@ -95,9 +98,9 @@ class Save extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -159,15 +162,15 @@ class Save extends Action
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Customer Filed Mapping Successful';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage('Customer-Field attributes mapped successfully');
-        } catch (\Exception $e) {
+            $this->messageManager->addSuccessMessage(__('Customer-Field attributes mapped successfully'));
+        } catch (Exception $e) {
             $this->emarsysHelper->addErrorLog(
                 'Customer Filed Mapping',
                 $e->getMessage(),
                 $storeId,
                 'Save (Customer Filed)'
             );
-            $this->messageManager->addErrorMessage('Error occurred while mapping Customer-Field');
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Customer-Field'));
         }
 
         return $resultRedirect->setRefererOrBaseUrl();

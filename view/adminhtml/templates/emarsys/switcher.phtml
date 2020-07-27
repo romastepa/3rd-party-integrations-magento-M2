@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 ?>
 <?php if ($websites = $block->getWebsites()): ?>
@@ -41,7 +41,7 @@
                 id="store-change-button"><?php echo $block->getCurrentSelectionName() ?></button>
             <ul class="dropdown-menu" data-role="stores-list">
                 <?php foreach ($websites as $website): ?>
-                    <?php if (!(bool)$website->getConfig('emarsys_settings/emarsys_setting/enable')): ?>
+                    <?php if (!(bool)$website->getConfig('emartech/emarsys_setting/enable')): ?>
                         <?php continue; ?>
                     <?php endif; ?>
                     <?php $showWebsite = false; ?>
@@ -50,9 +50,9 @@
                         <?php foreach ($block->getStores($group) as $store): ?>
                             <li class="store-switcher-store-view <?php if (!($block->isStoreSwitchEnabled() && !$block->isStoreSelected($store))) {
                                 echo "disabled";
-                                                                 } ?> <?php if ($block->isStoreSelected($store)) {
-    ?> current<?php
-                                                                 } ?>">
+                            } ?> <?php if ($block->isStoreSelected($store)) {
+                                ?> current<?php
+                            } ?>">
                                 <?php if ($block->isStoreSwitchEnabled() && !$block->isStoreSelected($store)) {
                                     ?>
                                     <a data-role="store-view-id"

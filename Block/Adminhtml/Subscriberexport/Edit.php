@@ -1,18 +1,16 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Subscriberexport;
 
+use Emarsys\Emarsys\Block\Adminhtml\Export\Edit as ExportEdit;
 use Magento\Framework\Exception\LocalizedException;
 
-/**
- * Class Edit
- */
-class Edit extends \Emarsys\Emarsys\Block\Adminhtml\Export\Edit
+class Edit extends ExportEdit
 {
     /**
      * Subscriber edit block

@@ -1,26 +1,30 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Backend\Model\Session;
 use Magento\Eav\Model\Entity\Attribute;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
-use Emarsys\Emarsys\Model\Logs;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Zend_Json;
 
-/**
- * Class SaveSchema
- */
 class SaveSchema extends Action
 {
     /**
@@ -29,7 +33,7 @@ class SaveSchema extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -105,9 +109,9 @@ class SaveSchema extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -140,7 +144,7 @@ class SaveSchema extends Action
 
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Update Schema';
-            $logsArray['description'] = 'Updated Schema as ' . \Zend_Json::encode($customerAttData);
+            $logsArray['description'] = 'Updated Schema as ' . Zend_Json::encode($customerAttData);
             $logsArray['action'] = 'Update Schema Successful';
             $logsArray['message_type'] = 'Success';
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -165,7 +169,7 @@ class SaveSchema extends Action
                     'SaveSchema(Customer)'
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Customer schema added/updated',
                 $e->getMessage(),

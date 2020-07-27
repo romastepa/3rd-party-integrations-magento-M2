@@ -1,19 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
+use Magento\Backend\Model\View\Result\Page;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Index
- */
 class Index extends Action
 {
     /**
@@ -27,12 +27,13 @@ class Index extends Action
     protected $emarsysHelper;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $adminSession;
 
     /**
      * Index constructor.
+     *
      * @param Context $context
      * @param EmarsysHelper $emarsysHelper
      * @param PageFactory $resultPageFactory
@@ -50,7 +51,8 @@ class Index extends Action
 
     /**
      * Index action
-     * @return \Magento\Backend\Model\View\Result\Page
+     *
+     * @return Page
      */
     public function execute()
     {

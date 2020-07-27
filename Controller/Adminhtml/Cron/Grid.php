@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Cron;
@@ -11,9 +11,6 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-/**
- * Class Grid
- */
 class Grid extends Action
 {
     /**
@@ -23,6 +20,7 @@ class Grid extends Action
 
     /**
      * Grid constructor.
+     *
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */

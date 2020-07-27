@@ -1,12 +1,17 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Orderexport;
 
+use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\EmarsysCronDetails;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Request\Http;
@@ -14,15 +19,7 @@ use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\Timezone as TimeZone;
 use Magento\Store\Model\StoreManagerInterface;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
-use Emarsys\Emarsys\Model\Order as EmarsysOrderModel;
-use Emarsys\Emarsys\Model\EmarsysCronDetails;
-use Emarsys\Emarsys\Model\Logs;
 
-/**
- * Class OrderExport
- */
 class OrderExport extends Action
 {
     /**
@@ -128,17 +125,18 @@ class OrderExport extends Action
         $url = $this->getUrl("emarsys_emarsys/orderexport/index", ["store" => $storeId]);
         try {
             //check emarsys enabled for the website
-            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 //check smart insight enabled for the website
                 if ($this->emarsysHelper->getCheckSmartInsight($websiteId)) {
                     if (isset($data['fromDate']) && $data['fromDate'] != '') {
-                        $data['fromDate'] = $this->date->date('Y-m-d', strtotime($data['fromDate']))
-                            . ' 00:00:01';
+                        $data['fromDate'] = $this->date->date(
+                            'Y-m-d',
+                            strtotime($data['fromDate'])
+                        ) . ' 00:00:01';
                     }
 
                     if (isset($data['toDate']) && $data['toDate'] != '') {
-                        $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate']))
-                            . ' 23:59:59';
+                        $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
                     }
 
                     //check sales collection exist
@@ -168,21 +166,30 @@ class OrderExport extends Action
                         );
                     } else {
                         //cron job already scheduled
-                        $this->messageManager->addErrorMessage(__(
-                            'A cron is already scheduled to export orders for the store %1 ',
-                            $store->getName()
-                        ));
+                        $this->messageManager->addErrorMessage(
+                            __(
+                                'A cron is already scheduled to export orders for the store %1 ',
+                                $store->getName()
+                            )
+                        );
                     }
                 } else {
                     //smart insight is disabled for this website
-                    $this->messageManager->addErrorMessage(__(
-                        'Smart Insight is disabled for the store %1.',
-                        $store->getName()
-                    ));
+                    $this->messageManager->addErrorMessage(
+                        __(
+                            'Smart Insight is disabled for the store %1.',
+                            $store->getName()
+                        )
+                    );
                 }
             } else {
                 //emarsys is disabled for this website
-                $this->messageManager->addErrorMessage(__('Emarsys is disabled for the website %1', $websiteId));
+                $this->messageManager->addErrorMessage(
+                    __(
+                        'Emarsys is disabled for the website %1',
+                        $websiteId
+                    )
+                );
             }
         } catch (\Exception $e) {
             //add exception to logs
@@ -193,7 +200,12 @@ class OrderExport extends Action
                 'OrderExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__('There was a problem while orders export. %1', $e->getMessage()));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'There was a problem while orders export. %1',
+                    $e->getMessage()
+                )
+            );
         }
 
         return $this->resultRedirectFactory->create()->setPath($url);

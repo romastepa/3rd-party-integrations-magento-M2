@@ -1,16 +1,14 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Cronschedule;
 
 use Magento\Backend\Block\Widget\Container;
 
-/**
- * Class Content
- */
 class Content extends Container
 {
     /**

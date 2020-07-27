@@ -1,15 +1,14 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\System\Config\Form;
 
-/**
- * Class Logger
- */
+use Magento\Framework\Data\Form\Element\AbstractElement;
+
 class Logger extends Button
 {
     /**
@@ -27,10 +26,10 @@ class Logger extends Button
     /**
      * Get the button and scripts contents
      *
-     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
-    protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    protected function _getElementHtml(AbstractElement $element)
     {
         $websiteId = $this->getRequest()->getParam('website');
         if ($websiteId == '') {
@@ -41,11 +40,13 @@ class Logger extends Button
         $buttonLabel = !empty($originalData['button_label'])
             ? $originalData['button_label']
             : $this->_testConnectionButtonLabel;
-        $this->addData([
-            'button_label' => __($buttonLabel),
-            'html_id' => $element->getHtmlId(),
-            'ajax_url' => $ajaxUrl,
-        ]);
+        $this->addData(
+            [
+                'button_label' => __($buttonLabel),
+                'html_id' => $element->getHtmlId(),
+                'ajax_url' => $ajaxUrl,
+            ]
+        );
 
         return $this->_toHtml();
     }

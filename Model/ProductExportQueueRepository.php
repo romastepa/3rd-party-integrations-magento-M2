@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -120,7 +120,7 @@ class ProductExportQueueRepository
      */
     private function addSortOrdersToCollection(SearchCriteriaInterface $searchCriteria, Collection $collection)
     {
-        foreach ((array) $searchCriteria->getSortOrders() as $sortOrder) {
+        foreach ((array)$searchCriteria->getSortOrders() as $sortOrder) {
             $direction = $sortOrder->getDirection() == SortOrder::SORT_ASC ? 'asc' : 'desc';
             $collection->addOrder($sortOrder->getField(), $direction);
         }

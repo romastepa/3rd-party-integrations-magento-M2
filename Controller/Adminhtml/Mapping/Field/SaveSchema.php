@@ -1,26 +1,29 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Field;
 
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Field as EmarsysResourceModelField;
 use Emarsys\Emarsys\Helper\Logs;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 use Emarsys\Emarsys\Model\ResourceModel\Customer as EmarsysResourceModelCustomer;
+use Emarsys\Emarsys\Model\ResourceModel\Field as EmarsysResourceModelField;
+use Exception;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Zend_Json;
 
-/**
- * Class SaveSchema
- */
 class SaveSchema extends Action
 {
     /**
@@ -29,7 +32,7 @@ class SaveSchema extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -106,9 +109,9 @@ class SaveSchema extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -135,7 +138,7 @@ class SaveSchema extends Action
                 $logId = $this->logsHelper->manualLogs($logsArray);
                 $logsArray['id'] = $logId;
                 $logsArray['emarsys_info'] = 'Update Schema';
-                $logsArray['description'] = 'Updated Schema as ' . \Zend_Json::encode($schemaData);
+                $logsArray['description'] = 'Updated Schema as ' . Zend_Json::encode($schemaData);
                 $logsArray['action'] = 'Update Schema Successful';
                 $logsArray['message_type'] = 'Success';
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
@@ -144,7 +147,7 @@ class SaveSchema extends Action
                 $logsArray['status'] = 'success';
                 $logsArray['messages'] = 'Update Schema Completed Successfully';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addSuccessMessage('Customer-Field schema added/updated successfully');
+                $this->messageManager->addSuccessMessage(__('Customer-Field schema added/updated successfully'));
             } else {
                 $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
                 $logId = $this->logsHelper->manualLogs($logsArray);
@@ -159,10 +162,10 @@ class SaveSchema extends Action
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = 'Failed Update Schema';
                 $this->logsHelper->manualLogs($logsArray);
-                $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
+                $this->messageManager->addErrorMessage(__('Failed to update Customer-Field Schema'));
             }
-        } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage('Failed to update Customer-Field Schema');
+        } catch (Exception $e) {
+            $this->messageManager->addErrorMessage(__('Failed to update Customer-Field Schema'));
             $this->emarsysHelper->addErrorLog(
                 'Customer Field Update Schema',
                 $e->getMessage(),
@@ -175,10 +178,10 @@ class SaveSchema extends Action
     }
 
     /**
-     * @param $storeId
-     * @param $websiteId
+     * @param  $storeId
+     * @param  $websiteId
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getEmarsysOptionSchema($storeId, $websiteId)
     {

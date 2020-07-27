@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -12,6 +12,11 @@ use Emarsys\Emarsys\Model\LogsFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Framework\Registry;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\App\Filesystem\DirectoryList;
 

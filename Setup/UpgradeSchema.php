@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Setup;
@@ -248,7 +248,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
-        if (version_compare($context->getVersion(), '1.0.29', '<')) {
+        if (version_compare($context->getVersion(), '1.0.30', '<')) {
             $connection = $setup->getConnection();
             $emarsysCountryMappingTable = $setup->getTable(self::EMARSYS_COUNTRY_MAPPING);
             if (!$connection->isTableExists($emarsysCountryMappingTable)) {

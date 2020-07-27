@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 ?>
 <?php if ($websites = $block->getWebsites()): ?>
@@ -55,20 +55,20 @@
                         <?php foreach ($block->getStores($group) as $store): ?>
                             <li class="store-switcher-store-view <?php if (!($block->isStoreSwitchEnabled() && !$block->isStoreSelected($store))) {
                                 echo "disabled";
-                                                                 } ?> <?php if ($block->isStoreSelected($store)) {
-    ?> current<?php
-                                                                 } ?>">
+                            } ?> <?php if ($block->isStoreSelected($store)) {
+                                ?> current<?php
+                            } ?>">
                                 <?php if ($block->isStoreSwitchEnabled() && !$block->isStoreSelected($store)) {
                                     ?>
                                     <a data-role="store-view-id"
                                        data-value="<?php echo $block->escapeHtml($store->getId()) ?>" href="#">
                                         <?php echo $block->escapeHtml($store->getName()) ?>
                                     </a>
-                                    <?php
+                                <?php
                                 } else {
                                     ?>
                                     <span><?php echo $block->escapeHtml($store->getName()) ?></span>
-                                    <?php
+                                <?php
                                 } ?>
                             </li>
                         <?php endforeach; ?>

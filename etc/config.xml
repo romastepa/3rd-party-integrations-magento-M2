@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <!--
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
-        <emarsys_settings>
+        <emartech>
             <emarsys_setting>
                 <enable>0</enable>
                 <emarsys_api_endpoint>default</emarsys_api_endpoint>
@@ -30,7 +30,7 @@
             <country>
                 <cron_expr>37 1 * * *</cron_expr>
             </country>
-        </emarsys_settings>
+        </emartech>
         <contacts_synchronization>
             <emarsys_emarsys>
                 <realtime_sync>1</realtime_sync>
@@ -110,7 +110,7 @@
         </logs>
         <about_emarsys>
             <emarsys_release>
-                <release_url>https://github.com/emartech/3rd-party-integrations-magento-M2/releases/</release_url>
+                <release_url>https://github.com/romastepa/3rd-party-integrations-magento-M2/releases/</release_url>
             </emarsys_release>
         </about_emarsys>
         <emarsys_schema_check>

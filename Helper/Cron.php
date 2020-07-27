@@ -1,9 +1,10 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -74,7 +75,8 @@ class Cron extends AbstractHelper
 
     /**
      * Returns true if cron job is scheduled
-     * @param $jobCode
+     *
+     * @param  $jobCode
      * @param null $storeId
      * @param null $websiteBasedChecking
      * @return bool

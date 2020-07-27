@@ -1,25 +1,29 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Support;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\App\Area\FrontNameResolver;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Translate\Inline\StateInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface as Logger;
+use Zend_Filter_Input;
 
-/**
- * Class Save
- */
 class Save extends Action
 {
     /**
@@ -74,6 +78,7 @@ class Save extends Action
 
     /**
      * Save constructor.
+     *
      * @param Session $authSession
      * @param ScopeConfigInterface $scopeConfigInterface
      * @param StoreManagerInterface $storeManager
@@ -105,8 +110,8 @@ class Save extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return ResponseInterface|ResultInterface|void
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -130,14 +135,13 @@ class Save extends Action
                 $templateVars['priority'] = $priority;
                 $templateVars['message'] = $message;
                 $templateVars['store_name'] = $this->storeManager->getStore()->getName();
-
                 $templateVars['domain'] = $this->storeManager->getStore()->getBaseUrl();
                 $templateVars['phpvalue'] = $req['php_version']['current']['value'];
                 $templateVars['memoryvalue'] = $req['memory_limit']['current']['value'];
                 $templateVars['magentovalue'] = $req['magento_version']['current']['value'];
                 $templateVars['curlvalue'] = $req['curl_enabled']['current']['value'];
                 $templateVars['soapvalue'] = $req['soap_enabled']['current']['value'];
-                $inputFilter = new \Zend_Filter_Input(
+                $inputFilter = new Zend_Filter_Input(
                     [],
                     [],
                     $data
@@ -145,7 +149,7 @@ class Save extends Action
                 $user = $this->authSession->getUser();
                 $from = [
                     'email' => $user->getEmail(),
-                    'name' => $user->getUsername()
+                    'name' => $user->getUsername(),
                 ];
                 $storeId = $this->emarsysHelper->getFirstStoreId();
                 $emailRecievers = explode(',', $typeArray[1]);
@@ -153,16 +157,16 @@ class Save extends Action
                 foreach ($emailRecievers as $emailReciever) {
                     $to = [
                         'email' => $emailReciever,
-                        'name' => $name
+                        'name' => $name,
                     ];
                     $templateOptions = [
-                        'area' =>  \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE,
-                        'store' => $storeId
+                        'area' => FrontNameResolver::AREA_CODE,
+                        'store' => $storeId,
                     ];
 
                     $this->inlineTranslation->suspend();
                     $transport = $this->transportBuilder
-                        ->setTemplateIdentifier('emarsys_help_email_template_id')
+                        ->setTemplateIdentifier('help_email_template_id')
                         ->setTemplateOptions($templateOptions)
                         ->setTemplateVars($templateVars)
                         ->setFrom($from)
@@ -174,12 +178,12 @@ class Save extends Action
                 $data = $inputFilter->getUnescaped();
                 $id = $this->getRequest()->getParam('id');
                 if ($id) {
-                    throw new \Magento\Framework\Exception\LocalizedException(__('The wrong item is specified.'));
+                    throw new LocalizedException(__('The wrong item is specified.'));
                 }
                 $this->messageManager->addSuccessMessage(__('Request send succesfully'));
                 $this->_redirect('emarsys_emarsys/support/index');
                 return;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->messageManager->addErrorMessage(__($e->getMessage()));
                 $this->logger->critical($e);
                 $this->session->setPageData($data);

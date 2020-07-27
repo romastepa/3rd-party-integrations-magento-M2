@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Order\Renderer;
@@ -11,9 +11,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 use Magento\Framework\DataObject;
 
-/**
- * Class EmarsysOrderField
- */
 class EmarsysOrderField extends AbstractRenderer
 {
     /**
@@ -23,6 +20,7 @@ class EmarsysOrderField extends AbstractRenderer
 
     /**
      * EmarsysOrderField constructor.
+     *
      * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
@@ -42,11 +40,11 @@ class EmarsysOrderField extends AbstractRenderer
         if (in_array($row->getData('emarsys_order_field'), $heading)
             || (in_array($row->getData('magento_column_name'), $heading))
         ) {
-            $html = "<label >" . $row->getData('emarsys_order_field') . "  </label>";
+            $html = '<label >' . $row->getData('emarsys_order_field') . '</label>';
         } else {
-            $html = "<input class = 'admin__control-text emarsysatts' type='text' name = '"
-                . $row->getData('magento_column_name') . "' value = '"
-                . $row->getData('emarsys_order_field') . "'  />";
+            $html = '<input class="admin__control-text emarsysatts" type="text"'
+                . ' name="' . $row->getData('magento_column_name') . '"'
+                . ' value="' . $row->getData('emarsys_order_field') . '"/>';
         }
 
         return $html;

@@ -22,6 +22,7 @@ use Magento\Store\Model\StoreManagerInterface;
 class ProductExportAsync extends \Magento\Framework\DataObject
 {
     public $maxProcesses = 8;
+    public $maxQueues = 25;
     protected $currentJobs = [];
     protected $signalQueue = [];
     protected $parentPID;
@@ -180,8 +181,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
         [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
 
-        $d = 25;
-        $page = (int)ceil(($maxId - $minId)/$d);
+        $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
             echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
@@ -189,7 +189,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             $this->queueRepository->truncate($queueModel);
             $this->dataRepository->truncate($modelData);
 
-            for ($x = 1; $x < 26; $x++) {
+            for ($x = 1; $x < ($this->maxQueues + 1); $x++) {
                 if ($x == 1) {
                     $from = $minId;
                     $to = ($minId + $page);
@@ -232,6 +232,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             while (count($this->currentJobs)) {
                 $this->spinner();
             }
+            $this->spinner(10);
 
             if (!empty($website)) {
                 $this->logsArray['emarsys_info'] = __('Starting data uploading');
@@ -572,7 +573,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         return $this->_websites[$apiUserName];
     }
 
-    public function spinner()
+    public function spinner($seconds = 1)
     {
         $spins = [
             '≠============',
@@ -600,9 +601,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             '==≠==========',
             '=≠===========',
         ];
-        foreach ($spins as $spin) {
-            echo "\r" . $spin;
-            usleep(100000);
+        for ($i = 0; $i < $seconds; $i++) {
+            foreach ($spins as $spin) {
+                echo "\r" . $spin;
+                usleep(100000);
+            }
         }
     }
 }

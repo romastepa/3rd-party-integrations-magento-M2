@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 ?>
 <?php
@@ -20,7 +20,7 @@ $addEmarsysBtn = $block->getUrl('emarsys_emarsys/mapping_emrattribute/index', ["
                 onChange="top.location.href=this.options[this.selectedIndex].value;"
                 value="GO">
             <?php foreach ($mappingOptions as $option): ?>
-                <option <?php if ($option['selected'] == true): ?> selected="selected" <?php endif; ?> value="<?php echo $option['value'] ?>">
+                <option <?php if ($option['selected'] == true) : ?> selected="selected" <?php endif; ?> value="<?php echo $option['value'] ?>">
                       <?php echo __($option['label']) ?>
                 </option>
             <?php endforeach; ?>

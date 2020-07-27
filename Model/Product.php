@@ -360,6 +360,7 @@ class Product extends AbstractModel
                         $currencyStoreCode,
                         ($storeId == $defaultStoreID) ? $storeId : 0
                     );
+                    $collection->addUrlRewrite();
 
                     while ($currentPageNumber <= $lastPageNumber) {
                         if ($currentPageNumber != 1) {
@@ -370,6 +371,7 @@ class Product extends AbstractModel
                                 $includeBundle,
                                 $excludedCategories
                             );
+                            $collection->addUrlRewrite();
                         }
                         $logsArray['emarsys_info'] = __('Processing data for store %1', $storeId);
                         $logsArray['description'] = __('%1 of %2', $currentPageNumber, $lastPageNumber);

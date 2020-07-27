@@ -1,31 +1,44 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml;
 
+use Emarsys\Emarsys\Block\Adminhtml\Scheduler\Grid;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\Exception\LocalizedException;
 
-/**
- * Class Scheduler
- */
 class Scheduler extends Template
 {
     protected $_template = 'cron/grid.phtml';
 
     /**
+     * Scheduler constructor.
+     *
+     * @param Context $context
+     * @param array $data
+     */
+    public function __construct(
+        Context $context,
+        $data = []
+    ) {
+        parent::__construct($context, $data);
+    }
+
+    /**
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _prepareLayout()
     {
         $this->setChild(
             'grid',
             $this->getLayout()->createBlock(
-                \Emarsys\Emarsys\Block\Adminhtml\Scheduler\Grid::class,
+                Grid::class,
                 'emarsys.logs.grid'
             )
         );
@@ -34,6 +47,7 @@ class Scheduler extends Template
 
     /**
      * Render grid
+     *
      * @return string
      */
     public function getGridHtml()

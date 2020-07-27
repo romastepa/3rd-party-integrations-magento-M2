@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 namespace Emarsys\Emarsys\Model\Api;
 
@@ -20,9 +20,6 @@ use Magento\Newsletter\Helper\Data as NewsletterHelperData;
 use Magento\Newsletter\Model\SubscriberFactory;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class Subscriber
- */
 class Subscriber
 {
     const BATCH_SIZE = 1000;
@@ -400,7 +397,8 @@ class Subscriber
             $logsArray['emarsys_info'] = 'Send subscriber to Emarsys';
             $logsArray['action'] = 'Magento to Emarsys';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . json_encode($buildRequest, JSON_PRETTY_PRINT);
+            $logsArray['description'] = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS
+                . ' ' . \Zend_Json::encode($buildRequest);
             $this->logsHelper->manualLogs($logsArray);
             $this->emarsysLogger->info($logsArray['description']);
 
@@ -410,7 +408,7 @@ class Subscriber
 
             $logsArray['emarsys_info'] = 'Create subscriber in Emarsys';
             $logsArray['action'] = 'Synced to Emarsys';
-            $res = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . json_encode($result, JSON_PRETTY_PRINT);
+            $res = 'PUT ' . Api::CONTACT_CREATE_IF_NOT_EXISTS . ' ' . \Zend_Json::encode($result);
 
             if ($result['status'] == '200') {
                 //successful response from emarsys

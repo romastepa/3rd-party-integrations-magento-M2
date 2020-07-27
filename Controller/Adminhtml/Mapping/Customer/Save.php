@@ -1,14 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Customer;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\Session;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Result\PageFactory;
 use Emarsys\Emarsys\Model\CustomerFactory;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
@@ -17,10 +22,8 @@ use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
 use Emarsys\Emarsys\Model\Logs;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
+use Zend_Json;
 
-/**
- * Class Save
- */
 class Save extends Action
 {
     /**
@@ -29,7 +32,7 @@ class Save extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -100,7 +103,8 @@ class Save extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws LocalizedException
      */
     public function execute()
     {
@@ -124,7 +128,7 @@ class Save extends Action
             $logsArray['website_id'] = $websiteId;
             $logsArray['store_id'] = $storeId;
             $logId = $this->logsHelper->manualLogs($logsArray);
-            $stringJSONData = \Zend_Json::decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
+            $stringJSONData = Zend_Json::decode(stripslashes($this->getRequest()->getParam('jsonstringdata')));
             $stringArrayData = (array)$stringJSONData;
 
             foreach ($stringArrayData as $key => $value) {
@@ -148,14 +152,14 @@ class Save extends Action
                     $attModel = $this->customerFactory->create();
                 }
                 $savedFields[] = $value;
-                $attModel->setData('emarsys_contact_field', $value);
-                $attModel->setData('magento_custom_attribute_id', $custMageId);
-                $attModel->setData('magento_attribute_id', $magentoAttributeId);
-                $attModel->setData('store_id', $storeId);
-                $attModel->save();
+                $attModel->setData('emarsys_contact_field', $value)
+                    ->setData('magento_custom_attribute_id', $custMageId)
+                    ->setData('magento_attribute_id', $magentoAttributeId)
+                    ->setData('store_id', $storeId)
+                    ->save();
             }
             if ($savedFields) {
-                $logsArray['description'] = 'Saved Fields Id(s) ' . \Zend_Json::encode($savedFields);
+                $logsArray['description'] = 'Saved Fields Id(s) ' . Zend_Json::encode($savedFields);
             } else {
                 $logsArray['description'] = 'Customer Mapping Saved';
             }
@@ -169,15 +173,15 @@ class Save extends Action
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Save Customer Mapping Saved Successfully';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage('Customer attributes mapped successfully');
-        } catch (\Exception $e) {
+            $this->messageManager->addSuccessMessage(__('Customer attributes mapped successfully'));
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Customer Mapping',
                 $e->getMessage(),
                 $storeId,
                 'SaveSchema(Customer)'
             );
-            $this->messageManager->addErrorMessage('Error occurred while mapping Customer attribute');
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Customer attribute'));
         }
         $resultRedirect = $this->resultRedirectFactory->create();
 

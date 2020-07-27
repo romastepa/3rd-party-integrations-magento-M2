@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Setup;
@@ -349,6 +349,15 @@ class UpgradeData implements UpgradeDataInterface
                     ]);
                 }
             }
+        }
+
+        if (version_compare($context->getVersion(), "1.0.30", "<")) {
+            $tableName = $setup->getTable('core_config_data');
+            $setup->getConnection()->query(
+                'UPDATE ' . $tableName
+                . ' SET `path` = REPLACE(`path`, "emarsys_settings/", "emartech/")'
+                . ' WHERE (INSTR(`path`, "emarsys_settings/"))'
+            );
         }
 
         $setup->endSetup();

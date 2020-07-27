@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model;
@@ -20,14 +20,6 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class ApiExport extends ZendClient
 {
-    const MIN_CATALOG_RECORDS_COUNT = 1;
-
-    const API_ERROR_CONNECTION = 'Connection error';
-
-    const API_ERROR_RESPONSE_INVALID = 'Invalid response';
-
-    const DEBUG_KEY = 'EMARSYS_DEBUG_INFO';
-
     protected $_apiUrl;
 
     protected $_merchantId;
@@ -175,6 +167,7 @@ class ApiExport extends ZendClient
                 'ApiExport::apiExport()'
             );
         }
+        echo '.';
 
         return $result;
     }
@@ -328,8 +321,6 @@ class ApiExport extends ZendClient
      */
     public function testSIExportApi($storeId)
     {
-        $result['result'] = 1;
-        return $result;
         return $this->testApiExport(\Magento\Sales\Model\Order::ENTITY, $storeId);
     }
 

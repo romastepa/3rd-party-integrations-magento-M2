@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml;
@@ -12,16 +12,14 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Block\Widget\Grid\Extended;
 use Magento\Backend\Helper\Data;
 use Magento\Backend\Model\Session;
+use Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection as AttributeCollection;
 use Magento\Framework\Data\Collection;
 use Magento\Framework\DataObjectFactory;
 
-/**
- * Class Cron
- */
 class Cron extends Extended
 {
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\Attribute\Collection
+     * @var AttributeCollection
      */
     protected $_collection;
 
@@ -57,6 +55,7 @@ class Cron extends Extended
 
     /**
      * Cron constructor.
+     *
      * @param Context $context
      * @param Data $backendHelper
      * @param Collection $dataCollection
@@ -74,11 +73,11 @@ class Cron extends Extended
         EmarsysHelper $emarsysHelper,
         $data = []
     ) {
-        $this->session = $context->getSession();
+        $this->session = $context->getBackendSession();
         $this->backendHelper = $backendHelper;
         $this->dataCollection = $dataCollection;
         $this->dataObjectFactory = $dataObjectFactory;
-        $this->cronData  = $cronData;
+        $this->cronData = $cronData;
         $this->emarsysHelper = $emarsysHelper;
         parent::__construct($context, $backendHelper, $data);
     }
@@ -117,12 +116,11 @@ class Cron extends Extended
                 if (isset($datahere['name'])) {
                     $emarsysexp = explode("_", $datahere['name']);
                 }
-                if ($emarsysexp[0]!='emarsys') {
+                if ($emarsysexp[0] != 'emarsys') {
                     continue;
                 }
 
                 /* filter code ends here */
-
                 // use this create method to prevent getting only the last data in the grid.
                 $rowObj = $this->dataObjectFactory->create();
                 $rowObj->setData($datahere)->toJson();
@@ -138,36 +136,48 @@ class Cron extends Extended
 
     protected function _prepareColumns()
     {
-        $this->addColumn("name", [
-            "header" => __("Code"),
-            "align" => "left",
-            'width' => '25',
-            "index" => "name",
-        ]);
+        $this->addColumn(
+            "name",
+            [
+                "header" => __("Code"),
+                "align" => "left",
+                'width' => '25',
+                "index" => "name",
+            ]
+        );
 
-        $this->addColumn("method", [
-            "header" => __("Method"),
-            "align" => "center",
-            "index" => "method",
-            'width' => '150'
+        $this->addColumn(
+            "method",
+            [
+                "header" => __("Method"),
+                "align" => "center",
+                "index" => "method",
+                'width' => '150',
 
-        ]);
+            ]
+        );
 
-        $this->addColumn("schedule", [
-            "header" =>__("Schedule"),
-            "align"  => "left",
-            "index"  => "schedule",
-            'width'  => '150'
+        $this->addColumn(
+            "schedule",
+            [
+                "header" => __("Schedule"),
+                "align" => "left",
+                "index" => "schedule",
+                'width' => '150',
 
-        ]);
+            ]
+        );
 
-        $this->addColumn("rowid", [
-            "header" =>__("Action"),
-            "align"  => "left",
-            "index"  => "rowid",
-            'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer\Messagetype::class,
-            'width'  => '150'
-        ]);
+        $this->addColumn(
+            "rowid",
+            [
+                "header" => __("Action"),
+                "align" => "left",
+                "index" => "rowid",
+                'renderer' => \Emarsys\Emarsys\Block\Adminhtml\Cron\Renderer\Messagetype::class,
+                'width' => '150',
+            ]
+        );
         return parent::_prepareColumns();
     }
 }

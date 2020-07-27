@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -11,9 +11,6 @@ use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
 
-/**
- * Class Async
- */
 class Async
 {
     /**

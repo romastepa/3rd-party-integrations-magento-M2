@@ -1,20 +1,20 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Email;
 
 use Magento\Backend\App\Action\Context;
+use Magento\Email\Controller\Adminhtml\Email\Template as EmailTemplate;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Registry;
 use Magento\Email\Model\BackendTemplateFactory;
 
-/**
- * Class Template
- */
-class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
+class Template extends EmailTemplate
 {
     /**
      * Authorization level of a basic admin session
@@ -26,7 +26,7 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
     /**
      * Core registry
      *
-     * @var \Magento\Framework\Registry
+     * @var Registry
      */
     protected $_coreRegistry = null;
 
@@ -37,6 +37,7 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
 
     /**
      * Template constructor.
+     *
      * @param Context $context
      * @param Registry $coreRegistry
      * @param BackendTemplateFactory $backendTemplate
@@ -54,7 +55,7 @@ class Template extends \Magento\Email\Controller\Adminhtml\Email\Template
     /**
      * Dispatch request
      *
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
+     * @return ResponseInterface|ResultInterface|void
      */
     public function execute()
     {

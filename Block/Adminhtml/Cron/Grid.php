@@ -1,18 +1,27 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Cron;
 
-/**
- * Class Grid
- */
 class Grid extends \Magento\Backend\Block\Template
 {
     protected $_template = 'cron/grid.phtml';
+
+    /**
+     * @param \Magento\Backend\Block\Widget\Context $context
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Widget\Context $context,
+        $data = []
+    ) {
+
+        parent::__construct($context, $data);
+    }
 
     /**
      * @return $this
@@ -32,6 +41,7 @@ class Grid extends \Magento\Backend\Block\Template
 
     /**
      * Render grid
+     *
      * @return string
      */
     public function getGridHtml()

@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -12,9 +12,6 @@ use Emarsys\Emarsys\Model\Api\Contact;
 use Emarsys\Emarsys\Model\Logs as EmarsysModelLogs;
 use Emarsys\Emarsys\Model\Api\Subscriber;
 
-/**
- * Class SubscriberBulkExportApi
- */
 class SubscriberBulkExportApi
 {
     /**
@@ -76,7 +73,7 @@ class SubscriberBulkExportApi
                 EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API,
                 $data
             );
-        } catch (\Excepiton $e) {
+        } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 \Emarsys\Emarsys\Helper\Data::LOG_MESSAGE_SUBSCRIBER,
                 $e->getMessage(),

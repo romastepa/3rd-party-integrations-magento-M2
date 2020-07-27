@@ -1,26 +1,28 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Product;
 
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
+use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Model\ProductFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Product;
+use Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory;
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Model\ProductFactory;
-use Emarsys\Emarsys\Model\ResourceModel\Product\CollectionFactory;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Model\Logs;
-use Emarsys\Emarsys\Helper\Logs as EmarsysHelperLogs;
-use Emarsys\Emarsys\Model\ResourceModel\Product;
+use Magento\Store\Model\StoreManagerInterface;
+use Zend_Json;
 
-/**
- * Class SaveRecommended
- */
 class SaveRecommended extends Action
 {
     /**
@@ -65,6 +67,7 @@ class SaveRecommended extends Action
 
     /**
      * SaveRecommended constructor.
+     *
      * @param Context $context
      * @param ProductFactory $productFactory
      * @param CollectionFactory $productAttributeCollection
@@ -98,9 +101,9 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Redirect
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -131,7 +134,7 @@ class SaveRecommended extends Action
                 'url_key' => ['emarsys_attr_code' => $data[2]],
                 'image' => ['emarsys_attr_code' => $data[3]],
                 'category_ids' => ['emarsys_attr_code' => $data[4]],
-                'price' => ['emarsys_attr_code' => $data[5]]
+                'price' => ['emarsys_attr_code' => $data[5]],
             ];
             // Remove existing data
             $this->resourceModelProduct->deleteRecommendedMappingExistingAttr($recommendedData, $storeId);
@@ -154,22 +157,22 @@ class SaveRecommended extends Action
             $logsArray['emarsys_info'] = 'Saved Recommended Mapping';
             $logsArray['action'] = 'Saved Recommended Mapping';
             $logsArray['message_type'] = 'Success';
-            $logsArray['description'] = 'Saved Recommended Mapping as ' . \Zend_Json::encode($recommendedArray);
+            $logsArray['description'] = 'Saved Recommended Mapping as ' . Zend_Json::encode($recommendedArray);
             $logsArray['executed_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['finished_at'] = $this->date->date('Y-m-d H:i:s', time());
             $logsArray['log_action'] = 'True';
             $logsArray['status'] = 'success';
             $logsArray['messages'] = 'Product Recommended Mapping Saved Successfully';
             $this->logsHelper->manualLogs($logsArray);
-            $this->messageManager->addSuccessMessage("Recommended Product attributes mapped successfully");
-        } catch (\Exception $e) {
+            $this->messageManager->addSuccessMessage(__('Recommended Product attributes mapped successfully'));
+        } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'Product Recommended Mapping',
                 $e->getMessage(),
                 $storeId,
                 'Save Recommended(Product)'
             );
-            $this->messageManager->addErrorMessage("Error occurred while mapping Product attribute");
+            $this->messageManager->addErrorMessage(__('Error occurred while mapping Product attribute'));
         }
         $resultRedirect = $this->resultRedirectFactory->create();
         return $resultRedirect->setRefererOrBaseUrl();

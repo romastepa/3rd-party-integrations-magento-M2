@@ -1,18 +1,16 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Cron;
 
-use Emarsys\Emarsys\Model\Order as EmarsysModelOrder;
 use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Model\Order as EmarsysModelOrder;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class OrderSyncQueue
- */
 class OrderSyncQueue
 {
     /**
@@ -32,6 +30,7 @@ class OrderSyncQueue
 
     /**
      * OrderSyncQueue constructor.
+     *
      * @param EmarsysModelOrder $emarsysOrderModel
      * @param StoreManagerInterface $storeManager
      * @param Logs $emarsysLogs

@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Productexport\Edit\Tab;
@@ -13,14 +13,12 @@ use Magento\Framework\Data\FormFactory;
 use Magento\Framework\App\Request\Http;
 use Magento\Backend\Block\Widget\Form\Generic;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Magento\Store\Model\StoreManagerInterface as StoreManagerInterface;
 
-/**
- * Class Form
- */
 class Form extends Generic
 {
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     protected $storeManager;
 
@@ -36,6 +34,7 @@ class Form extends Generic
 
     /**
      * Form constructor.
+     *
      * @param Context $context
      * @param Registry $registry
      * @param FormFactory $formFactory
@@ -59,6 +58,8 @@ class Form extends Generic
 
     /**
      * Init form
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareForm()
     {
@@ -83,25 +84,29 @@ class Form extends Generic
             $values['product'] = 'Product';
         }
 
-        $fieldset->addField("entitytype", "select", [
-            'label' => 'Export Entity Type',
-            'name' => 'entity_type',
-            'values' => $values,
-            'style' => 'width:350px',
-            'value' => 'product',
-            'onchange' => "bulkExport(this.value)",
-        ]);
+        $fieldset->addField(
+            "entitytype", "select", [
+                'label' => 'Export Entity Type',
+                'name' => 'entity_type',
+                'values' => $values,
+                'style' => 'width:350px',
+                'value' => 'product',
+                'onchange' => "bulkExport(this.value)",
+            ]
+        );
 
-        $fieldset->addField("include_bundle", "select", [
-            'label' => 'Include Bundle Product',
-            'name' => 'include_bundle',
-            'values' => [
-                '0' => 'No',
-                '1' => 'Yes',
-            ],
-            'value' => $store->getConfig(EmarsysHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT),
-            'style' => 'width:350px'
-        ]);
+        $fieldset->addField(
+            "include_bundle", "select", [
+                'label' => 'Include Bundle Product',
+                'name' => 'include_bundle',
+                'values' => [
+                    '0' => 'No',
+                    '1' => 'Yes',
+                ],
+                'value' => $store->getConfig(EmarsysHelper::XPATH_PREDICT_INCLUDE_BUNDLE_PRODUCT),
+                'style' => 'width:350px',
+            ]
+        );
 
         return parent::_prepareForm();
     }

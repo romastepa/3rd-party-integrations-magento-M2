@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Schedular
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Schedular
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer;
@@ -10,9 +10,6 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Scheduler\Renderer;
 use Magento\Framework\DataObject;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
-/**
- * Class StatusColor
- */
 class StatusColor extends AbstractRenderer
 {
     /**
@@ -21,7 +18,7 @@ class StatusColor extends AbstractRenderer
      */
     public function render(DataObject $row)
     {
-        $value =  $row->getData($this->getColumn()->getIndex());
+        $value = $row->getData($this->getColumn()->getIndex());
         switch (strtolower($value)) {
             case 'success':
                 $color = 'green';

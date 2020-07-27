@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Api;
@@ -24,10 +24,6 @@ use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class Contact
- * API class for Emarsys API wrappers
- */
 class Contact
 {
     /**
@@ -775,7 +771,7 @@ class Contact
         $this->logsArray['action'] = 'synced to emarsys';
 
         //check if emarsys enabled for the website
-        if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId) &&
+        if ($this->emarsysHelper->isEmarsysEnabled($websiteId) &&
             $website->getConfig(EmarsysHelperData::XPATH_EMARSYS_ENABLE_CONTACT_FEED)
         ) {
             $errorStatus = $this->exportDataToApi($exportMode, $params);

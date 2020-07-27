@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Helper;
@@ -48,44 +48,41 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\Website;
 use Zend_Json;
 
-/**
- * Main Helper
- */
 class Data extends AbstractHelper
 {
-    const VERSION = '1.0.29';
+    const VERSION = '1.0.30';
 
     const EMARSYS_CDN_API_URL = 'https://api-cdn.emarsys.net/api/v2/';
 
     const EMARSYS_DEFAULT_API_URL = 'https://api.emarsys.net/api/v2/';
 
     //XML Path of Emarsys Credentials
-    const XPATH_EMARSYS_ENABLED = 'emarsys_settings/emarsys_setting/enable';
+    const XPATH_EMARSYS_ENABLED = 'emartech/emarsys_setting/enable';
 
-    const XPATH_EMARSYS_API_ENDPOINT = 'emarsys_settings/emarsys_setting/emarsys_api_endpoint';
+    const XPATH_EMARSYS_API_ENDPOINT = 'emartech/emarsys_setting/emarsys_api_endpoint';
 
-    const XPATH_EMARSYS_CUSTOM_URL = 'emarsys_settings/emarsys_setting/emarsys_custom_url';
+    const XPATH_EMARSYS_CUSTOM_URL = 'emartech/emarsys_setting/emarsys_custom_url';
 
-    const XPATH_EMARSYS_API_USER = 'emarsys_settings/emarsys_setting/emarsys_api_username';
+    const XPATH_EMARSYS_API_USER = 'emartech/emarsys_setting/emarsys_api_username';
 
-    const XPATH_EMARSYS_API_PASS = 'emarsys_settings/emarsys_setting/emarsys_api_password';
+    const XPATH_EMARSYS_API_PASS = 'emartech/emarsys_setting/emarsys_api_password';
 
-    const XPATH_EMARSYS_ASYNC_ENABLE = 'emarsys_settings/async/enable';
+    const XPATH_EMARSYS_ASYNC_ENABLE = 'emartech/async/enable';
 
     //XML Path of FTP Credentials
-    const XPATH_EMARSYS_FTP_HOSTNAME = 'emarsys_settings/ftp_settings/hostname';
+    const XPATH_EMARSYS_FTP_HOSTNAME = 'emartech/ftp_settings/hostname';
 
-    const XPATH_EMARSYS_FTP_PORT = 'emarsys_settings/ftp_settings/port';
+    const XPATH_EMARSYS_FTP_PORT = 'emartech/ftp_settings/port';
 
-    const XPATH_EMARSYS_FTP_USERNAME = 'emarsys_settings/ftp_settings/username';
+    const XPATH_EMARSYS_FTP_USERNAME = 'emartech/ftp_settings/username';
 
-    const XPATH_EMARSYS_FTP_PASSWORD = 'emarsys_settings/ftp_settings/ftp_password';
+    const XPATH_EMARSYS_FTP_PASSWORD = 'emartech/ftp_settings/ftp_password';
 
-    const XPATH_EMARSYS_FTP_BULK_EXPORT_DIR = 'emarsys_settings/ftp_settings/ftp_bulk_export_dir';
+    const XPATH_EMARSYS_FTP_BULK_EXPORT_DIR = 'emartech/ftp_settings/ftp_bulk_export_dir';
 
-    const XPATH_EMARSYS_FTP_USEFTP_OVER_SSL = 'emarsys_settings/ftp_settings/useftp_overssl';
+    const XPATH_EMARSYS_FTP_USEFTP_OVER_SSL = 'emartech/ftp_settings/useftp_overssl';
 
-    const XPATH_EMARSYS_FTP_USE_PASSIVE_MODE = 'emarsys_settings/ftp_settings/usepassive_mode';
+    const XPATH_EMARSYS_FTP_USE_PASSIVE_MODE = 'emartech/ftp_settings/usepassive_mode';
 
     //Contacts Synchronization
     const XPATH_EMARSYS_ENABLE_CONTACT_FEED = 'contacts_synchronization/enable/contact_feed';
@@ -538,7 +535,7 @@ class Data extends AbstractHelper
     /**
      * Get Emarsys API Details
      *
-     * @param type $storeId
+     * @param int $storeId
      * @throws NoSuchEntityException
      */
     public function getEmarsysAPIDetails($storeId)
@@ -1506,12 +1503,12 @@ class Data extends AbstractHelper
         try {
             $magentoEventsCollection = $this->magentoEventsCollection->create()
                 ->addFieldToFilter('config_path', 'design/email/header_template');
-            $emarsysEventPlaceholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
+            $placeholderMappingColls = $this->emarsysEventPlaceholderMappingFactory->create()
                 ->getCollection()
                 ->addFieldToFilter('event_mapping_id', $magentoEventsCollection->getFirstItem()->getId());
 
-            foreach ($emarsysEventPlaceholderMappingColls as $emarsysEventPlaceholderMappingColl) {
-                $headerPlaceholderArray[$emarsysEventPlaceholderMappingColl->getEmarsysPlaceholderName()] = $emarsysEventPlaceholderMappingColl->getMagentoPlaceholderName();
+            foreach ($placeholderMappingColls as $coll) {
+                $headerPlaceholderArray[$coll->getEmarsysPlaceholderName()] = $coll->getMagentoPlaceholderName();
             }
 
             return $headerPlaceholderArray;
@@ -1558,34 +1555,17 @@ class Data extends AbstractHelper
      * @param $websiteId
      * @return bool
      */
-    public function getCheckSmartInsight($websiteId)
+    public function getCheckSmartInsight($websiteId = null)
     {
         $smartInsight = false;
 
-        if ($websiteId) {
-            if ($this->scopeConfig->getValue(
-                self::XPATH_SMARTINSIGHT_ENABLED,
-                \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES,
-                $websiteId
-            )) {
-                $smartInsight = true;
-            }
-        } else {
-            if ($this->scopeConfig->getValue(self::XPATH_SMARTINSIGHT_ENABLED)) {
-                $smartInsight = true;
-            }
+        if ($this->isEmarsysEnabled($websiteId)) {
+            /** @var $website Website */
+            $website = $this->storeManager->getWebsite($websiteId);
+            $smartInsight = $website->getConfig(self::XPATH_SMARTINSIGHT_ENABLED);
         }
 
-        return $smartInsight;
-    }
-
-    /**
-     * @param $websiteId
-     * @return string
-     */
-    public function getRealTimeSync($websiteId)
-    {
-        return 'Enable';
+        return (bool)$smartInsight;
     }
 
     /**
@@ -1856,9 +1836,8 @@ class Data extends AbstractHelper
             $magentoEventsCollection = $this->magentoEventsCollection->create();
 
             foreach ($magentoEventsCollection as $magentoEvent) {
-                if (
-                    $this->scopeConfig->getValue($magentoEvent->getConfigPath(), $storeScope, $storeId) == $templateId
-                ) {
+                $configTemplateId = $this->scopeConfig->getValue($magentoEvent->getConfigPath(), $storeScope, $storeId);
+                if ($configTemplateId == $templateId) {
                     $event_id = $magentoEvent->getId();
                     $configPath = $magentoEvent->getConfigPath();
                 }
@@ -2229,7 +2208,7 @@ class Data extends AbstractHelper
     public function getEmarsysLatestVersionInfo()
     {
         $apiUrl = $this->scopeConfigInterface->getValue(
-            'emarsys_settings/ftp_settings/apiurl',
+            'emartech/ftp_settings/apiurl',
             'default',
             0
         );

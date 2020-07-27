@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Cron;
@@ -13,9 +13,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class CleanLog
- */
 class CleanLog
 {
     /**
@@ -66,9 +63,6 @@ class CleanLog
         $this->storeManager = $storeManager;
     }
 
-    /**
-     * @return void
-     */
     public function execute()
     {
         /** @var \Magento\Store\Model\Store $store */
@@ -76,19 +70,21 @@ class CleanLog
             $logCleaning = $store->getConfig('logs/log_setting/log_cleaning');
             if ($logCleaning) {
                 $logCleaningDays = $store->getConfig('logs/log_setting/log_days');
-                $cleanUpDate = $this->date->date(
-                    'Y-m-d',
-                    strtotime("-" . $logCleaningDays . " days")
-                );
+                $cleanUpDate = $this->date->date('Y-m-d', strtotime("-" . $logCleaningDays . " days"));
                 $cleanUpDate = $this->emarsysHelper->getDateTimeInLocalTimezone($cleanUpDate);
 
-                /* Delete record from log_details tables */
-                $sqlConnection = $this->_resource
-                    ->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
-                $sqlConnection->delete(
-                    $this->resourceConfig->getTable('emarsys_log_details'),
-                    'DATE(created_at) <= "' . $cleanUpDate . '"'
-                );
+                try {
+                    /* Delete record from log_details tables */
+                    $sqlConnection = $this->_resource->getConnection(
+                        \Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION
+                    );
+                    $sqlConnection->delete(
+                        $this->resourceConfig->getTable('emarsys_log_details'),
+                        'DATE(created_at) <= "' . $cleanUpDate . '"'
+                    );
+                } catch (\Exception $e) {
+                    $errorResult[] = $e->getMessage();
+                }
             }
         }
     }

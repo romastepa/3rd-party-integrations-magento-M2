@@ -43,7 +43,6 @@ class Placeholderjson extends Action
 
     /**
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute()

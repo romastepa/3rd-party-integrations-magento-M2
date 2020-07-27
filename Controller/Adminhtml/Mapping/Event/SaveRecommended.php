@@ -1,24 +1,28 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Mapping\Event;
 
+use Emarsys\Emarsys\Helper\Data;
+use Emarsys\Emarsys\Helper\Logs;
+use Emarsys\Emarsys\Model\Api\Api;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory;
+use Emarsys\Emarsys\Model\ResourceModel\Event;
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
+use Magento\Backend\Model\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Emarsys\Emarsys\Model\ResourceModel\Event;
-use Emarsys\Emarsys\Helper\Data;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory;
-use Emarsys\Emarsys\Helper\Logs;
-use Emarsys\Emarsys\Model\ResourceModel\Emarsysmagentoevents\CollectionFactory as EmarsysmagentoeventsCollectionFactory;
-use Emarsys\Emarsys\Model\Api\Api;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 class SaveRecommended extends Action
 {
@@ -28,7 +32,7 @@ class SaveRecommended extends Action
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Backend\Model\Session
+     * @var Session
      */
     protected $session;
 
@@ -49,6 +53,7 @@ class SaveRecommended extends Action
 
     /**
      * SaveRecommended constructor.
+     *
      * @param Context $context
      * @param Event $eventResourceModel
      * @param PageFactory $resultPageFactory
@@ -90,8 +95,8 @@ class SaveRecommended extends Action
     }
 
     /**
-     * @return $this|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Exception
+     * @return $this|ResponseInterface|ResultInterface
+     * @throws Exception
      */
     public function execute()
     {
@@ -166,10 +171,10 @@ class SaveRecommended extends Action
                 }
                 $errorStatus = false;
                 $urlHasRecommendation = true;
-                $this->messageManager->addSuccessMessage("Recommended Emarsys Events Created Successfully!");
-                $this->messageManager->addSuccessMessage('Important: Hit "Save" to complete the mapping!');
+                $this->messageManager->addSuccessMessage(__('Recommended Emarsys Events Created Successfully!'));
+                $this->messageManager->addSuccessMessage(__('Important: Hit "Save" to complete the mapping!'));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $logsArray['id'] = $logId;
             $logsArray['emarsys_info'] = 'Recommended Mapping';
             $logsArray['description'] = $e->getMessage();
@@ -178,7 +183,7 @@ class SaveRecommended extends Action
             $logsArray['log_action'] = 'True';
             $logsArray['website_id'] = $websiteId;
             $this->logsHelper->logHelper($logsArray);
-            $this->messageManager->addErrorMessage('Error occurred while Recommended Mapping' . $e->getMessage());
+            $this->messageManager->addErrorMessage(__('Error occurred while Recommended Mapping %1', $e->getMessage()));
         }
 
         if ($errorStatus) {
@@ -198,7 +203,7 @@ class SaveRecommended extends Action
                     [
                         "store" => $storeId,
                         "recommended" => 1,
-                        "limit" => 200
+                        "limit" => 200,
                     ]
                 )
             );

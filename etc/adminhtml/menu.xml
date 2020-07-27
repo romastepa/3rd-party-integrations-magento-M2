@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <!--
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,20 +14,23 @@
              module="Emarsys_Emarsys"
              sortOrder="33"
              dependsOnModule="Emarsys_Emarsys"
-             resource="Emarsys_Emarsys::emarsys"/>
+             resource="Emarsys_Emarsys::emarsys"
+        />
         <add id="Emarsys_Emarsys::settings"
              title="Settings"
              module="Emarsys_Emarsys"
              sortOrder="20"
              parent="Emarsys_Emarsys::emarsys"
-             resource="Emarsys_Emarsys::settings"/>
+             resource="Emarsys_Emarsys::settings"
+        />
         <add id="Emarsys_Emarsys::emarsys_setting_connection"
              title="Connection"
              module="Emarsys_Emarsys"
              sortOrder="30"
              parent="Emarsys_Emarsys::settings"
-             action="adminhtml/system_config/edit/section/emarsys_settings/"
-             resource="Emarsys_Emarsys::settings"/>
+             action="adminhtml/system_config/edit/section/emartech/"
+             resource="Emarsys_Emarsys::settings"
+        />
         <add id="Emarsys_Emarsys::emarsys_setting_synchronization"
              title="Contact Synchronization"
              module="Emarsys_Emarsys"
@@ -35,7 +38,8 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/contacts_synchronization/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_setting_opt_in"
              title="Opt-In"
              module="Emarsys_Emarsys"
@@ -43,7 +47,8 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/opt_in/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_transactionmail"
              title="Transaction Email"
              module="Emarsys_Emarsys"
@@ -51,7 +56,8 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/transaction_mail/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_smartinsight"
              title="Smart Insight"
              module="Emarsys_Emarsys"
@@ -59,7 +65,8 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/smart_insight/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_predict"
              title="Product Catalog"
              module="Emarsys_Emarsys"
@@ -67,7 +74,8 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/emarsys_predict/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_web_extend"
              title="Web Extend"
              module="Emarsys_Emarsys"
@@ -75,7 +83,8 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/web_extend/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_emarsys_admin_logs"
              title="Logs"
              module="Emarsys_Emarsys"
@@ -83,15 +92,16 @@
              parent="Emarsys_Emarsys::settings"
              action="adminhtml/system_config/edit/section/logs/"
              resource="Emarsys_Emarsys::settings"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
-
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::mapping"
              title="Mappings"
              module="Emarsys_Emarsys"
              sortOrder="110"
              parent="Emarsys_Emarsys::emarsys"
              resource="Emarsys_Emarsys::mapping"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_customer_mapping"
              title="Customer"
              module="Emarsys_Emarsys"
@@ -99,7 +109,8 @@
              parent="Emarsys_Emarsys::mapping"
              action="emarsys_emarsys/mapping_customer/index"
              resource="Emarsys_Emarsys::mapping"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_field_mapping"
              title="Customer-Field"
              module="Emarsys_Emarsys"
@@ -107,7 +118,8 @@
              parent="Emarsys_Emarsys::mapping"
              action="emarsys_emarsys/mapping_field/index"
              resource="Emarsys_Emarsys::mapping"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_emarsys_product_mapping"
              title="Product"
              module="Emarsys_Emarsys"
@@ -115,7 +127,8 @@
              parent="Emarsys_Emarsys::mapping"
              action="emarsys_emarsys/mapping_product/index"
              resource="Emarsys_Emarsys::mapping"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_emarsys_event_mapping"
              title="Event"
              module="Emarsys_Emarsys"
@@ -123,7 +136,8 @@
              parent="Emarsys_Emarsys::mapping"
              action="emarsys_emarsys/mapping_event/index"
              resource="Emarsys_Emarsys::mapping"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_order_mapping"
              title="Order"
              module="Emarsys_Emarsys"
@@ -131,15 +145,16 @@
              parent="Emarsys_Emarsys::mapping"
              action="emarsys_emarsys/mapping_order/index"
              resource="Emarsys_Emarsys::mapping"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
-
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::operations"
              title="Operations"
              module="Emarsys_Emarsys"
              sortOrder="170"
              parent="Emarsys_Emarsys::emarsys"
              resource="Emarsys_Emarsys::operations"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_check_list"
              title="Installation Checklist"
              module="Emarsys_Emarsys"
@@ -147,7 +162,8 @@
              parent="Emarsys_Emarsys::operations"
              action="emarsys_emarsys/installation/checklist"
              resource="Emarsys_Emarsys::operations"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_bulk_export"
              title="Bulk Export"
              module="Emarsys_Emarsys"
@@ -155,7 +171,8 @@
              parent="Emarsys_Emarsys::operations"
              action="emarsys_emarsys/customerexport/index"
              resource="Emarsys_Emarsys::operations"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_schedulerslogs"
              title="Logs"
              module="Emarsys_Emarsys"
@@ -163,7 +180,8 @@
              parent="Emarsys_Emarsys::operations"
              action="schedulers/scheduler/index"
              resource="Emarsys_Emarsys::operations"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::emarsys_cronscheduler"
              title="Scheduler"
              module="Emarsys_Emarsys"
@@ -171,15 +189,16 @@
              parent="Emarsys_Emarsys::operations"
              action="emarsys_emarsys/cronschedule/index"
              resource="Emarsys_Emarsys::operations"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
-
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::help"
              title="Help"
              module="Emarsys_Emarsys"
              sortOrder="220"
              parent="Emarsys_Emarsys::emarsys"
              resource="Emarsys_Emarsys::support"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
         <add id="Emarsys_Emarsys::support"
              title="Support"
              module="Emarsys_Emarsys"
@@ -187,6 +206,7 @@
              parent="Emarsys_Emarsys::help"
              action="emarsys_emarsys/support"
              resource="Emarsys_Emarsys::support"
-             dependsOnConfig="emarsys_settings/emarsys_setting/enable"/>
+             dependsOnConfig="emartech/emarsys_setting/enable"
+        />
     </menu>
 </config>

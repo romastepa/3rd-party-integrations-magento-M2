@@ -26,7 +26,8 @@
 
 # Release Notes
 
-## v1.0.29
-- County Mapping calls bugfix (improved speed)
-- Added multi process product export (improved speed) 
-- Order export bugfix
+## v1.0.30
+- Code Style
+- Possibility to install v2 in parallel
+- Async product export
+- Uninstall script

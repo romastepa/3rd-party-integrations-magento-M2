@@ -1,20 +1,18 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping;
 
-use Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Grid as EmrattributeGrid;
+use Emarsys\Emarsys\Block\Adminhtml\Mapping\Emrattribute\Grid;
 use Emarsys\Emarsys\Model\ResourceModel\Emrattribute\CollectionFactory;
 use Magento\Backend\Block\Widget\Container;
 use Magento\Backend\Block\Widget\Context;
 use Magento\Framework\Exception\LocalizedException;
 
-/**
- * Class Emrattribute
- */
 class Emrattribute extends Container
 {
     /**
@@ -29,8 +27,9 @@ class Emrattribute extends Container
 
     /**
      * Emrattribute constructor.
+     *
      * @param Context $context
-     * @param CollectionFactory $collectionFactory
+     * @param CollectionFactory $CollectionFactory
      * @param array $data
      */
     public function __construct(
@@ -51,8 +50,8 @@ class Emrattribute extends Container
         $this->setChild(
             'grid',
             $this->getLayout()->createBlock(
-                EmrattributeGrid::class,
-                'emarsys.order.grid'
+                Grid::class,
+                'emarsys.add.attribute.grid'
             )
         );
         return parent::_prepareLayout();

@@ -1,23 +1,18 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\Api;
 
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Store\Model\StoreManagerInterface as StoreManager;
 use Zend_Json;
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Api
- * API class for Emarsys API wrappers
- */
 class Api extends \Magento\Framework\DataObject
 {
-
     const CONTACT_CREATE_IF_NOT_EXISTS = 'contact/?create_if_not_exists=1';
     const CONTACT_GETDATA = 'contact/getdata';
 
@@ -69,7 +64,7 @@ class Api extends \Magento\Framework\DataObject
     {
         /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
         $website = $this->storeManager->getWebsite($this->websiteId);
-        return $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_username');
+        return $website->getConfig('emartech/emarsys_setting/emarsys_api_username');
     }
 
     /**
@@ -82,7 +77,7 @@ class Api extends \Magento\Framework\DataObject
     {
         /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
         $website = $this->storeManager->getWebsite($this->websiteId);
-        return $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_password');
+        return $website->getConfig('emartech/emarsys_setting/emarsys_api_password');
     }
 
     /**
@@ -95,9 +90,9 @@ class Api extends \Magento\Framework\DataObject
     {
         /** @var \Magento\Store\Api\Data\WebsiteInterface $website */
         $website = $this->storeManager->getWebsite($this->websiteId);
-        $endpoint = $website->getConfig('emarsys_settings/emarsys_setting/emarsys_api_endpoint');
+        $endpoint = $website->getConfig('emartech/emarsys_setting/emarsys_api_endpoint');
         if ($endpoint == 'custom') {
-            $url = $website->getConfig('emarsys_settings/emarsys_setting/emarsys_custom_url');
+            $url = $website->getConfig('emartech/emarsys_setting/emarsys_custom_url');
             if (trim($url) == '') {
                 $url = EmarsysHelper::EMARSYS_DEFAULT_API_URL;
             }
@@ -171,15 +166,19 @@ class Api extends \Magento\Framework\DataObject
         $nonce = hash('sha256', time());
         $timestamp = gmdate("c");
         $passwordDigest = base64_encode(sha1($nonce . $timestamp . $this->getApiPassword(), false));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'X-WSSE: UsernameToken ' .
-            'Username="' . $this->getApiUsername() . '", ' .
-            'PasswordDigest="' . $passwordDigest . '", ' .
-            'Nonce="' . $nonce . '", ' .
-            'Created="' . $timestamp . '"',
-            'Content-type: application/json;charset="utf-8"',
-            'Extension-Version: ' . EmarsysHelper::VERSION,
-        ]);
+        curl_setopt(
+            $ch,
+            CURLOPT_HTTPHEADER,
+            [
+                'X-WSSE: UsernameToken ' .
+                'Username="' . $this->getApiUsername() . '", ' .
+                'PasswordDigest="' . $passwordDigest . '", ' .
+                'Nonce="' . $nonce . '", ' .
+                'Created="' . $timestamp . '"',
+                'Content-type: application/json;charset="utf-8"',
+                'Extension-Version: ' . EmarsysHelper::VERSION,
+            ]
+        );
 
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 5);

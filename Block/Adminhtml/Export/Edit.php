@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Export;
@@ -12,9 +12,6 @@ use Magento\Backend\Block\Widget\Form\Container;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Magento\Framework\App\Request\Http;
 
-/**
- * Class Edit
- */
 class Edit extends Container
 {
     protected $_objectId = 'entity_id';
@@ -32,6 +29,7 @@ class Edit extends Container
 
     /**
      * Edit constructor.
+     *
      * @param Context $context
      * @param Http $request
      * @param EmarsysHelper $emarsysHelper

@@ -1,14 +1,19 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\SubscriberExport;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Emarsys\Emarsys\Model\ResourceModel\Customer;
 use Magento\Framework\App\Request\Http;
@@ -18,9 +23,6 @@ use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
 use Emarsys\Emarsys\Model\EmarsysCronDetails;
 use Emarsys\Emarsys\Model\Logs as EmarsysLogsModel;
 
-/**
- * Class SubscriberExport
- */
 class SubscriberExport extends Action
 {
     const MAX_SUBSCRIBERS_RECORDS = 100000;
@@ -92,6 +94,10 @@ class SubscriberExport extends Action
         parent::__construct($context);
     }
 
+    /**
+     * @return ResponseInterface|Redirect|ResultInterface
+     * @throws NoSuchEntityException
+     */
     public function execute()
     {
         try {
@@ -107,7 +113,7 @@ class SubscriberExport extends Action
             $returnUrl = $this->getUrl("emarsys_emarsys/subscriberexport/index", ["store" => $storeId]);
 
             //check emarsys enable for website
-            if ($this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if ($this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 $optInStatus = $this->customerResourceModel->getDataFromCoreConfig(
                     'contacts_synchronization/initial_db_load/initial_db_load',
                     $scope,
@@ -150,23 +156,27 @@ class SubscriberExport extends Action
                     //save details in cron details table
                     $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-                    $this->messageManager->addSuccessMessage(__(
-                        'A cron named "%1" have been scheduled for subscribers export for the store %2.',
-                        $cronJobName,
-                        $store->getName()
-                    ));
+                    $this->messageManager->addSuccessMessage(
+                        __(
+                            'A cron named "%1" have been scheduled for subscribers export for the store %2.',
+                            $cronJobName,
+                            $store->getName()
+                        )
+                    );
                 } else {
                     //cron job already scheduled
-                    $this->messageManager->addErrorMessage(__(
-                        'A cron is already scheduled to export subscribers for the store %1 ',
-                        $store->getName()
-                    ));
+                    $this->messageManager->addErrorMessage(
+                        __(
+                            'A cron is already scheduled to export subscribers for the store %1 ',
+                            $store->getName()
+                        )
+                    );
                 }
             } else {
                 //emarsys is disabled for this website
                 $this->messageManager->addErrorMessage(__('Emarsys is disabled for the website %1', $websiteId));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
                 'SubscriberExport',
@@ -175,10 +185,12 @@ class SubscriberExport extends Action
                 'SubscriberExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__(
-                'There was a problem while subscribers export. %1',
-                $e->getMessage()
-            ));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'There was a problem while subscribers export. %1',
+                    $e->getMessage()
+                )
+            );
         }
 
         return $resultRedirect->setPath($returnUrl);

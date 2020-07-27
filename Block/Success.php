@@ -1,9 +1,10 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block;
 
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
@@ -15,9 +16,6 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
 
-/**
- * Class Success
- */
 class Success extends Template
 {
     /**
@@ -132,7 +130,7 @@ class Success extends Template
             $items[] = [
                 'item' => addslashes($sku),
                 'price' => $price,
-                'quantity' => (int)$qty
+                'quantity' => (int)$qty,
             ];
         }
 

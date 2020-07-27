@@ -1,16 +1,14 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: punk
- * Date: 8/27/18
- * Time: 15:44
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Model\ResourceModel\OrderExport;
 
 class Collection extends \Magento\Sales\Model\ResourceModel\Order\Collection
 {
-
     /**
      * Model initialization
      *

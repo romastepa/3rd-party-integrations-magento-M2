@@ -1,20 +1,20 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Console\Command;
 
-use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
-use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
 use Exception;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Emarsys\Emarsys\Model\ResourceModel\Async\CollectionFactory;
+use Emarsys\Emarsys\Model\Api\Api as EmarsysModelApiApi;
 
 /**
  * Command for deployment of Sample Data

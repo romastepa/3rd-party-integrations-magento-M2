@@ -1,14 +1,14 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
+
 namespace Emarsys\Emarsys\Block\System\Config\Form;
 
-/**
- * Class CronDetailsCleanerButton
- */
+use Magento\Framework\Data\Form\Element\AbstractElement;
+
 class CronDetailsCleanerButton extends Button
 {
     /**
@@ -25,10 +25,11 @@ class CronDetailsCleanerButton extends Button
 
     /**
      * Get the button and scripts contents
-     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     *
+     * @param AbstractElement $element
      * @return string
      */
-    protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    protected function _getElementHtml(AbstractElement $element)
     {
         $originalData = $element->getOriginalData();
         $ajaxUrl = $this->_urlBuilder->getUrl("emarsys_emarsys/cronschedule/clear");

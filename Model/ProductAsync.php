@@ -349,7 +349,7 @@ class ProductAsync extends AbstractModel
                         );
                     }
                     $logsArray['emarsys_info'] = __('%1 - Processing data for store %2', $pid, $storeId);
-                    $logsArray['description'] = __('%1 of %2', $currentPageNumber, $lastPageNumber);
+                    $logsArray['description'] = __('%1 of %2 (%3:%4)', $currentPageNumber, $lastPageNumber, $page->getFrom(), $page->getTo());
                     $logsArray['message_type'] = 'Success';
                     $this->logsHelper->manualLogs($logsArray);
 
@@ -385,7 +385,7 @@ class ProductAsync extends AbstractModel
                     $currentPageNumber++;
                 }
                 $logsArray['emarsys_info'] = __('%1 - Data for store %2 prepared', $pid, $storeId);
-                $logsArray['description'] = __('Data for store %1 prepared', $storeId);
+                $logsArray['description'] = __('Data for store %1 prepared (%2:%3)', $storeId, $page->getFrom(), $page->getTo());
                 $logsArray['message_type'] = 'Success';
                 $this->logsHelper->manualLogs($logsArray);
                 $this->appEmulation->stopEnvironmentEmulation();

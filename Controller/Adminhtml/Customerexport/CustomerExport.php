@@ -1,35 +1,34 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Customerexport;
 
-use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
-use Emarsys\Emarsys\Model\ResourceModel\Customer;
-use Emarsys\Emarsys\Model\EmarsysCronDetails;
 use Emarsys\Emarsys\Helper\Cron as EmarsysCronHelper;
+use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
+use Emarsys\Emarsys\Model\EmarsysCronDetails;
 use Emarsys\Emarsys\Model\Logs;
+use Emarsys\Emarsys\Model\ResourceModel\Customer;
 use Exception;
 use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Backend\App\Action\Context;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Stdlib\DateTime\Timezone;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Framework\App\Request\Http;
+use Magento\Store\Model\StoreManagerInterface;
 
-/**
- * Class CustomerExport
- */
 class CustomerExport extends Action
 {
+    const MAX_CUSTOMER_RECORDS = 100000;
+
     /**
      * @var StoreManagerInterface
      */
@@ -137,7 +136,7 @@ class CustomerExport extends Action
 
         try {
             //check emarsys enable for website
-            if (!$this->emarsysHelper->getEmarsysConnectionSetting($websiteId)) {
+            if (!$this->emarsysHelper->isEmarsysEnabled($websiteId)) {
                 //emarsys is disabled for this website
                 $this->messageManager->addErrorMessage(__('Emarsys is disabled for the website %1', $websiteId));
                 return $resultRedirect->setPath($returnUrl);
@@ -150,7 +149,9 @@ class CustomerExport extends Action
                 $data['toDate'] = $this->date->date('Y-m-d', strtotime($data['toDate'])) . ' 23:59:59';
             }
 
-            /** @var Customer $customerCollection */
+            /**
+             * @var Customer $customerCollection
+             */
             $customerCollection = $this->customerResourceModel->getCustomerCollection($data, $storeId);
             if (!$customerCollection->getSize()) {
                 //no customer found for the store
@@ -165,10 +166,9 @@ class CustomerExport extends Action
             );
             if ($isCronjobScheduled) {
                 //cron job already scheduled
-                $this->messageManager->addErrorMessage(__(
-                    'A cron is already scheduled to export customers for the store %1 ',
-                    $store->getName()
-                ));
+                $this->messageManager->addErrorMessage(
+                    __('A cron is already scheduled to export customers for the store %1', $store->getName())
+                );
                 return $resultRedirect->setPath($returnUrl);
             }
 
@@ -181,11 +181,13 @@ class CustomerExport extends Action
             //save details in cron details table
             $this->emarsysCronDetails->addEmarsysCronDetails($cron->getScheduleId(), $params);
 
-            $this->messageManager->addSuccessMessage(__(
-                'A cron named "%1" have been scheduled for customers export for the store %2.',
-                EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
-                $store->getName()
-            ));
+            $this->messageManager->addSuccessMessage(
+                __(
+                    'A cron named "%1" have been scheduled for customers export for the store %2.',
+                    EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API,
+                    $store->getName()
+                )
+            );
         } catch (Exception $e) {
             //add exception to logs
             $this->emarsysLogs->addErrorLog(
@@ -195,10 +197,9 @@ class CustomerExport extends Action
                 'CustomerExport::execute()'
             );
             //report error
-            $this->messageManager->addErrorMessage(__(
-                'There was a problem while customer export. %1',
-                $e->getMessage()
-            ));
+            $this->messageManager->addErrorMessage(
+                __('There was a problem while customer export. %1', $e->getMessage())
+            );
         }
 
         return $resultRedirect->setPath($returnUrl);

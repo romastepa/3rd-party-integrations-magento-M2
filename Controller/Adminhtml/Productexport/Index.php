@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Controller\Adminhtml\Productexport;
@@ -11,9 +11,6 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 
-/**
- * Class Index
- */
 class Index extends Action
 {
     /**
@@ -23,6 +20,7 @@ class Index extends Action
 
     /**
      * Index constructor.
+     *
      * @param Context $context
      * @param PageFactory $resultPageFactory
      */
@@ -36,6 +34,7 @@ class Index extends Action
 
     /**
      * Index action
+     *
      * @return \Magento\Backend\Model\View\Result\Page
      */
     public function execute()

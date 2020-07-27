@@ -1,32 +1,31 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Subscriberexport;
 
+use Emarsys\Emarsys\Block\Adminhtml\Export\Form as ExportForm;
 use Magento\Backend\Block\Widget\Context;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 
-/**
- * Class Form
- */
-class Form extends \Emarsys\Emarsys\Block\Adminhtml\Export\Form
+class Form extends ExportForm
 {
     /**
      * Form constructor.
-     * @param EmarsysHelper $emarsysHelper
+     *
      * @param Context $context
      * @param array $data
+     * @param EmarsysHelper $emarsysHelper
      */
     public function __construct(
-        EmarsysHelper $emarsysHelper,
         Context $context,
-        array $data = []
+        array $data = [],
+        EmarsysHelper $emarsysHelper
     ) {
-        parent::__construct($emarsysHelper, $context, $data);
+        parent::__construct($context, $data, $emarsysHelper);
         $this->setId('subscriberExportForm');
     }
 }

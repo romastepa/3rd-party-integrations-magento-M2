@@ -1,8 +1,8 @@
 <?php
 /**
- * @category   Emarsys
- * @package    Emarsys_Emarsys
- * @copyright  Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
+ * @category  Emarsys
+ * @package   Emarsys_Emarsys
+ * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
 namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
@@ -10,15 +10,11 @@ namespace Emarsys\Emarsys\Block\Adminhtml\Mapping\Event\Renderer;
 use Magento\Framework\DataObject;
 use Magento\Backend\Model\Session;
 use Magento\Backend\Helper\Data as BackendHelper;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\UrlInterface;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ResourceModel\Emarsysevents\CollectionFactory as EmarsysEventsCollectionFactory;
 use Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRenderer;
 
-/**
- * Class EmarsysEvent
- */
 class EmarsysEvent extends AbstractRenderer
 {
     /**
@@ -36,12 +32,6 @@ class EmarsysEvent extends AbstractRenderer
      */
     protected $backendHelper;
 
-
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $_storeManager;
-
     /**
      * @var EmarsysHelper
      */
@@ -54,9 +44,9 @@ class EmarsysEvent extends AbstractRenderer
 
     /**
      * EmarsysEvent constructor.
+     *
      * @param Session $session
      * @param BackendHelper $backendHelper
-     * @param StoreManagerInterface $storeManager
      * @param UrlInterface $urlInterface
      * @param EmarsysHelper $emarsysHelper
      * @param EmarsysEventsCollectionFactory $EmarsyseventCollection
@@ -64,14 +54,12 @@ class EmarsysEvent extends AbstractRenderer
     public function __construct(
         Session $session,
         BackendHelper $backendHelper,
-        StoreManagerInterface $storeManager,
         UrlInterface $urlInterface,
         EmarsysHelper $emarsysHelper,
         EmarsysEventsCollectionFactory $EmarsyseventCollection
     ) {
         $this->session = $session;
         $this->backendHelper = $backendHelper;
-        $this->_storeManager = $storeManager;
         $this->emarsysEventCollection = $EmarsyseventCollection;
         $this->emarsysHelper = $emarsysHelper;
         $this->_urlInterface = $urlInterface;
@@ -93,7 +81,7 @@ class EmarsysEvent extends AbstractRenderer
             "*/*/placeholderjson",
             [
                 'mapping_id' => $row->getId(),
-                'store_id' => $storeId
+                'store_id' => $storeId,
             ]
         );
         $emarsysEvents = $this->emarsysEventCollection->create()->addFieldToFilter('store_id', ['eq' => $storeId]);
@@ -101,14 +89,15 @@ class EmarsysEvent extends AbstractRenderer
         $buttonClass = '';
 
         if ($this->emarsysHelper->isReadonlyMagentoEventId($row->getId())) {
-            $readOnly = ' disabled = disabled';
+            $readOnly .= ' disabled = disabled';
             $buttonClass = ' disabled';
         }
 
-        $html = '<select class="admin__control-select mapping-select" ' . $readOnly .
-            ' name="directions"  style="width:200px;" onchange="changeEmarsysValue(\'' . $url .
-            '\',this.value, \'' . $row->getId() . '\', \'' . $row->getId() . '\')";>
-			<option value="0">Please Select</option>';
+        $html = '<select class="admin__control-select mapping-select" ' . $readOnly
+            . ' name="directions"  style="width:200px;"'
+            . ' onchange="changeEmarsysValue('
+            . '\'' . $url . '\', this.value, \'' . $row->getId() . '\', \'' . $row->getId() . '\');">'
+            . '<option value="0">Please Select</option>';
 
         foreach ($emarsysEvents as $emarsysEvent) {
             $selected = ($row->getData('emarsys_event_id') == $emarsysEvent->getId())
@@ -120,13 +109,11 @@ class EmarsysEvent extends AbstractRenderer
         }
 
         $html .= '</select>';
-        $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button ' .
-            $buttonClass . '" name="json" id="json"  onclick="openMyPopup(\'' . $placeholderJsonRequestUrl .
-            '\');" >JSON Request</button>';
-        if (empty($buttonClass)) {
-            $html .= '&nbsp;&nbsp;<a class="scalable task form-button" name="placeholders" id="placeholders"  href="'
-                . $placeHolderUrl . '">Placeholders</button>';
-        }
+        $html .= '&nbsp;&nbsp;&nbsp;<button ' . $buttonClass . ' type="button" class="scalable task form-button '
+            . $buttonClass . '" name="json" id="json"'
+            . ' onclick = "openMyPopup(\'' . $placeholderJsonRequestUrl . '\');" >JSON Request</button >';
+        $html .= ' &nbsp;&nbsp;<a class="scalable task form-button" name="placeholders"'
+            . ' id ="placeholders"  href="' . $placeHolderUrl . '">Placeholders</a>';
 
         return $html;
     }
