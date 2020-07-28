@@ -284,7 +284,7 @@ class Emarsysproductexport extends AbstractModel
         $emptyArray = array_fill(0, $columnCount, "");
 
         $collection = $this->getCollection();
-        $collection->setPageSize(100)
+        $collection->setPageSize(self::BATCH_SIZE)
             ->setCurPage($currentPageNumber);
 
         $lastPageNumber = $collection->getLastPageNumber();
@@ -300,7 +300,14 @@ class Emarsysproductexport extends AbstractModel
                 $productId = $product->getId();
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
                 foreach ($productData as $param) {
-                    $item = $this->serializer->unserialize($param);
+                    try {
+                        $item = $this->serializer->unserialize($param);
+                    } catch (\Exception $e) {
+                        $this->_logger->critical($e->getMessage());
+                        $this->_logger->critical($product->getParams());
+                        $this->_logger->critical($param);
+                        throw new \Exception($e->getMessage());
+                    }
 
                     if (!isset($data[$productId])) {
                         $data[$productId] = array_fill(0, count($this->_mapHeader), "");
