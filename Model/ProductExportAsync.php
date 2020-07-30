@@ -146,37 +146,37 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     {
         echo "Running \n";
 
-//        $this->parentPID = getmypid();
-//        if (function_exists('pcntl_async_signals')) {
-//            pcntl_async_signals(true);
-//        } else {
-//            declare(ticks=1);
-//        }
-//        pcntl_signal(SIGCHLD, [$this, "childSignalHandler"]);
-//
-//        $this->productAsync->truncateExportTable();
-//        $queueModel = $this->queueRepository->getById(0);
-//        $this->queueRepository->truncate($queueModel);
-//        $modelData = $this->dataRepository->getById(0);
-//        $this->dataRepository->truncate($modelData);
-//
-//        $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
-//        if ($maxProcesses) {
-//            $this->maxProcesses = $maxProcesses;
-//        }
-//
-//        $this->logsArray['job_code'] = 'product';
-//        $this->logsArray['status'] = 'started';
-//        $this->logsArray['messages'] = __('Bulk product export started');
-//        $this->logsArray['created_at'] = date('Y-m-d H:i:s');
-//        $this->logsArray['auto_log'] = 'Complete';
-//        $logsArray['run_mode'] = $mode;
-//        $this->logsArray['executed_at'] = date('Y-m-d H:i:s');
-//        $this->logsArray['store_id'] = 0;
-//        $logId = $this->logsHelper->manualLogs($this->logsArray, 1);
-//        $this->logsArray['id'] = $logId;
-//        $this->logsArray['log_action'] = 'sync';
-//        $this->logsArray['action'] = 'synced to emarsys';
+        $this->parentPID = getmypid();
+        if (function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(true);
+        } else {
+            declare(ticks=1);
+        }
+        pcntl_signal(SIGCHLD, [$this, "childSignalHandler"]);
+
+        $this->productAsync->truncateExportTable();
+        $queueModel = $this->queueRepository->getById(0);
+        $this->queueRepository->truncate($queueModel);
+        $modelData = $this->dataRepository->getById(0);
+        $this->dataRepository->truncate($modelData);
+
+        $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
+        if ($maxProcesses) {
+            $this->maxProcesses = $maxProcesses;
+        }
+
+        $this->logsArray['job_code'] = 'product';
+        $this->logsArray['status'] = 'started';
+        $this->logsArray['messages'] = __('Bulk product export started');
+        $this->logsArray['created_at'] = date('Y-m-d H:i:s');
+        $this->logsArray['auto_log'] = 'Complete';
+        $logsArray['run_mode'] = $mode;
+        $this->logsArray['executed_at'] = date('Y-m-d H:i:s');
+        $this->logsArray['store_id'] = 0;
+        $logId = $this->logsHelper->manualLogs($this->logsArray, 1);
+        $this->logsArray['id'] = $logId;
+        $this->logsArray['log_action'] = 'sync';
+        $this->logsArray['action'] = 'synced to emarsys';
 
         $allStores = $this->storeManager->getStores();
         ksort($allStores);
@@ -188,60 +188,60 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             $this->setCredentials($store);
         }
 
-//        [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
-//
-//        $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
+        [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
+
+        $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
-//            echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
-//            $this->productAsync->truncateExportTable();
-//            $this->queueRepository->truncate($queueModel);
-//            $this->dataRepository->truncate($modelData);
-//
-//            for ($x = 1; $x < ($this->maxQueues + 1); $x++) {
-//                if ($x == 1) {
-//                    $from = $minId;
-//                    $to = ($minId + $page);
-//                } elseif ($x == 25) {
-//                    $from = $minId + $page * ($x - 1);
-//                    $to = $minId + $page * ($x + 1);
-//                } else {
-//                    $from = $minId + $page * ($x - 1);
-//                    $to = $minId + $page * $x;
-//                }
-//
-//                $queueModel->setData([
-//                    'id' => $x,
-//                    'from' => $from,
-//                    'to' => $to,
-//                ]);
-//
-//                $queueModel->isObjectNew(true);
-//                $this->queueRepository->save($queueModel);
-//            }
-//            $filter = $this->searchCriteriaBuilder
-//                ->addFilter('status', 'processing', 'neq')
-//                ->create();
-//
-//            $list = $this->queueRepository->getList($filter);
-//            while ($list->getTotalCount()) {
-//                $jobID = rand(0, 10000000000000);
-//                $list = $this->queueRepository->getList($filter);
-//                while (count($this->currentJobs) >= $this->maxProcesses) {
-//                    $list = $this->queueRepository->getList($filter);
-//                    $this->spinner();
-//                    echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
-//                }
-//
-//                $this->launchJob($jobID, $website, $websiteId);
-//            }
-//
-//            //Wait for child processes to finish before exiting here
-//            echo "\n ..... Waiting for current jobs to finish. ..... \n";
-//            while (count($this->currentJobs)) {
-//                $this->spinner();
-//            }
-//            $this->spinner(10);
+            echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
+            $this->productAsync->truncateExportTable();
+            $this->queueRepository->truncate($queueModel);
+            $this->dataRepository->truncate($modelData);
+
+            for ($x = 1; $x < ($this->maxQueues + 1); $x++) {
+                if ($x == 1) {
+                    $from = $minId;
+                    $to = ($minId + $page);
+                } elseif ($x == 25) {
+                    $from = $minId + $page * ($x - 1);
+                    $to = $minId + $page * ($x + 1);
+                } else {
+                    $from = $minId + $page * ($x - 1);
+                    $to = $minId + $page * $x;
+                }
+
+                $queueModel->setData([
+                    'id' => $x,
+                    'from' => $from,
+                    'to' => $to,
+                ]);
+
+                $queueModel->isObjectNew(true);
+                $this->queueRepository->save($queueModel);
+            }
+            $filter = $this->searchCriteriaBuilder
+                ->addFilter('status', 'processing', 'neq')
+                ->create();
+
+            $list = $this->queueRepository->getList($filter);
+            while ($list->getTotalCount()) {
+                $jobID = rand(0, 10000000000000);
+                $list = $this->queueRepository->getList($filter);
+                while (count($this->currentJobs) >= $this->maxProcesses) {
+                    $list = $this->queueRepository->getList($filter);
+                    $this->spinner();
+                    echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
+                }
+
+                $this->launchJob($jobID, $website, $websiteId);
+            }
+
+            //Wait for child processes to finish before exiting here
+            echo "\n ..... Waiting for current jobs to finish. ..... \n";
+            while (count($this->currentJobs)) {
+                $this->spinner();
+            }
+            $this->spinner(5);
 
             if (!empty($website)) {
                 if ($this->storeManager->getStore()->getConfig('emarsys_predict/enable/dump')) {
