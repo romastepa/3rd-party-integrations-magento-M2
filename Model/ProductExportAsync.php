@@ -234,7 +234,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                     $this->spinner();
                     echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
                 }
-
+                $this->spinner(5);
                 $this->launchJob($jobID, $website, $websiteId);
             }
 
