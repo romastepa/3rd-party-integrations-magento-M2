@@ -225,9 +225,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
             $list = $this->queueRepository->getList($filter);
             while ($list->getTotalCount()) {
+                $list = null;
                 $jobID = rand(0, 10000000000000);
                 $list = $this->queueRepository->getList($filter);
                 while (count($this->currentJobs) >= $this->maxProcesses) {
+                    $list = null;
                     $list = $this->queueRepository->getList($filter);
                     $this->spinner();
                     echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
@@ -375,6 +377,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
                 $list = $this->queueRepository->getList($filter);
                 $pages = $list->getItems();
+                $list = null;
                 $page = reset($pages);
                 if ($page) {
                     $page->setStatus('processing');
