@@ -363,6 +363,13 @@
                         <field id="emarsys_predict/enable/async">1</field>
                     </depends>
                 </field>
+                <field id="dump" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Dump tables instead of export</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="emarsys_predict/enable/async">1</field>
+                    </depends>
+                </field>
                 <field id="emarsys_setting_enable" type="hidden" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Emarsys\Emarsys\Block\System\Config\Enable</frontend_model>
                 </field>

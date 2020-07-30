@@ -18,6 +18,7 @@ use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\DeploymentConfig;
 
 class ProductExportAsync extends \Magento\Framework\DataObject
 {
@@ -65,6 +66,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     protected $serializer;
 
     /**
+     * @var $deploymentConfig
+     */
+    protected $deploymentConfig;
+
+    /**
      * ProductExportAsync constructor.
      *
      * @param ProductAsync $productAsync
@@ -78,6 +84,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
      * @param ProductExportQueueRepository $queueRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param Serializer $serializer
+     * @param DeploymentConfig $deploymentConfig
      */
     public function __construct(
         ProductAsync $productAsync,
@@ -90,7 +97,8 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         ProductExportDataRepository $dataRepository,
         ProductExportQueueRepository $queueRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder,
-        Serializer $serializer
+        Serializer $serializer,
+        DeploymentConfig $deploymentConfig
     ) {
         $this->productAsync = $productAsync;
         $this->storeManager = $storeManager;
@@ -103,6 +111,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->queueRepository = $queueRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->serializer = $serializer;
+        $this->deploymentConfig = $deploymentConfig;
     }
 
     /**
@@ -137,37 +146,37 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     {
         echo "Running \n";
 
-        $this->parentPID = getmypid();
-        if (function_exists('pcntl_async_signals')) {
-            pcntl_async_signals(true);
-        } else {
-            declare(ticks=1);
-        }
-        pcntl_signal(SIGCHLD, [$this, "childSignalHandler"]);
-
-        $this->productAsync->truncateExportTable();
-        $queueModel = $this->queueRepository->getById(0);
-        $this->queueRepository->truncate($queueModel);
-        $modelData = $this->dataRepository->getById(0);
-        $this->dataRepository->truncate($modelData);
-
-        $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
-        if ($maxProcesses) {
-            $this->maxProcesses = $maxProcesses;
-        }
-
-        $this->logsArray['job_code'] = 'product';
-        $this->logsArray['status'] = 'started';
-        $this->logsArray['messages'] = __('Bulk product export started');
-        $this->logsArray['created_at'] = date('Y-m-d H:i:s');
-        $this->logsArray['auto_log'] = 'Complete';
-        $logsArray['run_mode'] = $mode;
-        $this->logsArray['executed_at'] = date('Y-m-d H:i:s');
-        $this->logsArray['store_id'] = 0;
-        $logId = $this->logsHelper->manualLogs($this->logsArray, 1);
-        $this->logsArray['id'] = $logId;
-        $this->logsArray['log_action'] = 'sync';
-        $this->logsArray['action'] = 'synced to emarsys';
+//        $this->parentPID = getmypid();
+//        if (function_exists('pcntl_async_signals')) {
+//            pcntl_async_signals(true);
+//        } else {
+//            declare(ticks=1);
+//        }
+//        pcntl_signal(SIGCHLD, [$this, "childSignalHandler"]);
+//
+//        $this->productAsync->truncateExportTable();
+//        $queueModel = $this->queueRepository->getById(0);
+//        $this->queueRepository->truncate($queueModel);
+//        $modelData = $this->dataRepository->getById(0);
+//        $this->dataRepository->truncate($modelData);
+//
+//        $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
+//        if ($maxProcesses) {
+//            $this->maxProcesses = $maxProcesses;
+//        }
+//
+//        $this->logsArray['job_code'] = 'product';
+//        $this->logsArray['status'] = 'started';
+//        $this->logsArray['messages'] = __('Bulk product export started');
+//        $this->logsArray['created_at'] = date('Y-m-d H:i:s');
+//        $this->logsArray['auto_log'] = 'Complete';
+//        $logsArray['run_mode'] = $mode;
+//        $this->logsArray['executed_at'] = date('Y-m-d H:i:s');
+//        $this->logsArray['store_id'] = 0;
+//        $logId = $this->logsHelper->manualLogs($this->logsArray, 1);
+//        $this->logsArray['id'] = $logId;
+//        $this->logsArray['log_action'] = 'sync';
+//        $this->logsArray['action'] = 'synced to emarsys';
 
         $allStores = $this->storeManager->getStores();
         ksort($allStores);
@@ -179,100 +188,146 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             $this->setCredentials($store);
         }
 
-        [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
-
-        $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
+//        [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
+//
+//        $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
-            echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
-            $this->productAsync->truncateExportTable();
-            $this->queueRepository->truncate($queueModel);
-            $this->dataRepository->truncate($modelData);
-
-            for ($x = 1; $x < ($this->maxQueues + 1); $x++) {
-                if ($x == 1) {
-                    $from = $minId;
-                    $to = ($minId + $page);
-                } elseif ($x == 25) {
-                    $from = $minId + $page * ($x - 1);
-                    $to = $minId + $page * ($x + 1);
-                } else {
-                    $from = $minId + $page * ($x - 1);
-                    $to = $minId + $page * $x;
-                }
-
-                $queueModel->setData([
-                    'id' => $x,
-                    'from' => $from,
-                    'to' => $to,
-                ]);
-
-                $queueModel->isObjectNew(true);
-                $this->queueRepository->save($queueModel);
-            }
-            $filter = $this->searchCriteriaBuilder
-                ->addFilter('status', 'processing', 'neq')
-                ->create();
-
-            $list = $this->queueRepository->getList($filter);
-            while ($list->getTotalCount()) {
-                $jobID = rand(0, 10000000000000);
-                $list = $this->queueRepository->getList($filter);
-                while (count($this->currentJobs) >= $this->maxProcesses) {
-                    $list = $this->queueRepository->getList($filter);
-                    $this->spinner();
-                    echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
-                }
-
-                $this->launchJob($jobID, $website, $websiteId);
-            }
-
-            //Wait for child processes to finish before exiting here
-            echo "\n ..... Waiting for current jobs to finish. ..... \n";
-            while (count($this->currentJobs)) {
-                $this->spinner();
-            }
-            $this->spinner(10);
+//            echo "\n ..... WebsiteId: " . $websiteId . " .....\n\n";
+//            $this->productAsync->truncateExportTable();
+//            $this->queueRepository->truncate($queueModel);
+//            $this->dataRepository->truncate($modelData);
+//
+//            for ($x = 1; $x < ($this->maxQueues + 1); $x++) {
+//                if ($x == 1) {
+//                    $from = $minId;
+//                    $to = ($minId + $page);
+//                } elseif ($x == 25) {
+//                    $from = $minId + $page * ($x - 1);
+//                    $to = $minId + $page * ($x + 1);
+//                } else {
+//                    $from = $minId + $page * ($x - 1);
+//                    $to = $minId + $page * $x;
+//                }
+//
+//                $queueModel->setData([
+//                    'id' => $x,
+//                    'from' => $from,
+//                    'to' => $to,
+//                ]);
+//
+//                $queueModel->isObjectNew(true);
+//                $this->queueRepository->save($queueModel);
+//            }
+//            $filter = $this->searchCriteriaBuilder
+//                ->addFilter('status', 'processing', 'neq')
+//                ->create();
+//
+//            $list = $this->queueRepository->getList($filter);
+//            while ($list->getTotalCount()) {
+//                $jobID = rand(0, 10000000000000);
+//                $list = $this->queueRepository->getList($filter);
+//                while (count($this->currentJobs) >= $this->maxProcesses) {
+//                    $list = $this->queueRepository->getList($filter);
+//                    $this->spinner();
+//                    echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
+//                }
+//
+//                $this->launchJob($jobID, $website, $websiteId);
+//            }
+//
+//            //Wait for child processes to finish before exiting here
+//            echo "\n ..... Waiting for current jobs to finish. ..... \n";
+//            while (count($this->currentJobs)) {
+//                $this->spinner();
+//            }
+//            $this->spinner(10);
 
             if (!empty($website)) {
-                $this->logsArray['emarsys_info'] = __('Starting data uploading');
-                $this->logsArray['description'] = __('Starting data uploading');
-                $this->logsArray['message_type'] = 'Success';
-                $this->logsHelper->manualLogs($this->logsArray);
-                echo "\n" . $this->logsArray['description'] . "\n";
-
-                $modelData = $this->dataRepository->getById($websiteId);
-                [$this->_mapHeader, $this->_processedStores] = $this->serializer->unserialize($modelData->getExportData());
-
-                $csvFilePath = $this->productExportModel->saveToCsv(
-                    $websiteId,
-                    $this->_mapHeader,
-                    $this->_processedStores,
-                    $this->logsArray
-                );
-
-                $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
-                $gzFilePath = $fileDirectory . '/' . 'products_' . $websiteId . '.gz';
-
-                //Export CSV to API
-                $string = file_get_contents($csvFilePath);
-                $gz = gzopen($gzFilePath, 'w9');
-                gzwrite($gz, $string);
-                gzclose($gz);
-
-                $store = reset($this->_credentials[$websiteId]);
-
-                $uploaded = $this->moveFile($store['store'], $csvFilePath, $gzFilePath);
-                if ($uploaded) {
-                    $this->logsArray['emarsys_info'] = __('Data for was uploaded');
-                    $this->logsArray['description'] = __('Data for was uploaded');
+                if ($this->storeManager->getStore()->getConfig('emarsys_predict/enable/dump')) {
+                    $this->logsArray['emarsys_info'] = __('Starting data uploading');
+                    $this->logsArray['description'] = __('Starting data uploading');
                     $this->logsArray['message_type'] = 'Success';
+                    $this->logsHelper->manualLogs($this->logsArray);
+                    echo "\n" . $this->logsArray['description'] . "\n";
+
+                    if (function_exists('exec')) {
+                        $productExportTable = $this->productExportModel->getResourceCollection()->getMainTable();
+                        $productExportDataTable = $modelData->getResourceCollection()->getMainTable();
+
+                        $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
+                        $filePath = $fileDirectory . '/product_1.sql.gz';
+                        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY . '/' . $websiteId, $filePath);
+
+                        $mysqldump = 'mysqldump --single-transaction --quick'
+                            . " -h'" . $this->deploymentConfig->get('db/connection/default/host') . "'"
+                            . " -u'" . $this->deploymentConfig->get('db/connection/default/username') . "'";
+
+                        if ($this->deploymentConfig->get('db/connection/default/password')) {
+                            $mysqldump .= " -p'" . $this->deploymentConfig->get('db/connection/default/password') . "'";
+                        }
+                        $mysqldump .= " '" . $this->deploymentConfig->get('db/connection/default/dbname') . "'"
+                            . " " . $productExportTable . " " . $productExportDataTable
+                            . "| LANG=C LC_CTYPE=C LC_ALL=C sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | gzip -c  > '" . $filePath . "'";
+                        exec($mysqldump);
+
+                        $this->logsArray['emarsys_info'] = __('SQL dump ready');
+                        $this->logsArray['description'] = __('SQL dump ready: %1', $url);
+                        $this->logsArray['message_type'] = 'Success';
+                        $logsArray['status'] = 'success';
+                    } else {
+                        $this->logsArray['emarsys_info'] = __('Exec function not exists');
+                        $this->logsArray['description'] = __('Exec function not exists');
+                        $this->logsArray['message_type'] = 'Error';
+                        $logsArray['status'] = 'error';
+                    }
                 } else {
-                    $this->logsArray['emarsys_info'] = __('Error during data uploading');
-                    $this->logsArray['description'] = __('Error during data uploading');
-                    $this->logsArray['message_type'] = 'Error';
+                    $this->logsArray['emarsys_info'] = __('Starting data uploading');
+                    $this->logsArray['description'] = __('Starting data uploading');
+                    $this->logsArray['message_type'] = 'Success';
+                    $this->logsHelper->manualLogs($this->logsArray);
+                    echo "\n" . $this->logsArray['description'] . "\n";
+
+                    $modelData = $this->dataRepository->getById($websiteId);
+                    [
+                        $this->_mapHeader,
+                        $this->_processedStores
+                    ] = $this->serializer->unserialize($modelData->getExportData());
+
+                    $csvFilePath = $this->productExportModel->saveToCsv(
+                        $websiteId,
+                        $this->_mapHeader,
+                        $this->_processedStores,
+                        $this->logsArray
+                    );
+
+                    $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
+                    $gzFilePath = $fileDirectory . '/' . 'products_' . $websiteId . '.gz';
+
+                    //Export CSV to API
+                    $string = file_get_contents($csvFilePath);
+                    $gz = gzopen($gzFilePath, 'w9');
+                    gzwrite($gz, $string);
+                    gzclose($gz);
+
+                    $store = reset($this->_credentials[$websiteId]);
+
+                    $uploaded = $this->moveFile($store['store'], $csvFilePath, $gzFilePath);
+                    if ($uploaded) {
+                        $this->logsArray['emarsys_info'] = __('Data was uploaded');
+                        $this->logsArray['description'] = __('Data was uploaded');
+                        $this->logsArray['message_type'] = 'Success';
+                        $logsArray['status'] = 'success';
+                    } else {
+                        $this->logsArray['emarsys_info'] = __('Error during data uploading');
+                        $this->logsArray['description'] = __('Error during data uploading');
+                        $this->logsArray['message_type'] = 'Error';
+                        $this->logsArray['message_type'] = 'Error';
+                    }
                 }
+                echo "\n" . $this->logsArray['description'] . "\n";
                 $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
+                $logsArray['messages'] = __('Product export completed');
                 $this->logsHelper->manualLogs($this->logsArray);
             }
         }
