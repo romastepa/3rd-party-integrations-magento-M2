@@ -66,7 +66,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     protected $serializer;
 
     /**
-     * @var $deploymentConfig
+     * @var DeploymentConfig
      */
     protected $deploymentConfig;
 
@@ -170,7 +170,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->logsArray['messages'] = __('Bulk product export started');
         $this->logsArray['created_at'] = date('Y-m-d H:i:s');
         $this->logsArray['auto_log'] = 'Complete';
-        $logsArray['run_mode'] = $mode;
+        $this->logsArray['run_mode'] = $mode;
         $this->logsArray['executed_at'] = date('Y-m-d H:i:s');
         $this->logsArray['store_id'] = 0;
         $logId = $this->logsHelper->manualLogs($this->logsArray, 1);
@@ -276,12 +276,12 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['emarsys_info'] = __('SQL dump ready');
                         $this->logsArray['description'] = __('SQL dump ready: %1', $url);
                         $this->logsArray['message_type'] = 'Success';
-                        $logsArray['status'] = 'success';
+                        $this->logsArray['status'] = 'success';
                     } else {
                         $this->logsArray['emarsys_info'] = __('Exec function not exists');
                         $this->logsArray['description'] = __('Exec function not exists');
                         $this->logsArray['message_type'] = 'Error';
-                        $logsArray['status'] = 'error';
+                        $this->logsArray['status'] = 'error';
                     }
                 } else {
                     $this->logsArray['emarsys_info'] = __('Starting data uploading');
@@ -319,7 +319,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['emarsys_info'] = __('Data was uploaded');
                         $this->logsArray['description'] = __('Data was uploaded');
                         $this->logsArray['message_type'] = 'Success';
-                        $logsArray['status'] = 'success';
+                        $this->logsArray['status'] = 'success';
                     } else {
                         $this->logsArray['emarsys_info'] = __('Error during data uploading');
                         $this->logsArray['description'] = __('Error during data uploading');
@@ -329,7 +329,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 }
                 echo "\n" . $this->logsArray['description'] . "\n";
                 $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
-                $logsArray['messages'] = __('Product export completed');
+                $this->logsArray['messages'] = __('Product export completed');
                 $this->logsHelper->manualLogs($this->logsArray);
             }
         }
