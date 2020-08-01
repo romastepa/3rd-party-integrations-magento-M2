@@ -241,7 +241,7 @@ class Emarsysproductexport extends AbstractModel
     /**
      * Save CSV for Website
      *
-     * @param int $websiteId
+     * @param string $websiteId
      * @param array $header
      * @param array $processedStores
      * @param array $logsArray
