@@ -5,7 +5,7 @@
  * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
-namespace Emarsys\Emarsys\Model\ResourceModel\Process;
+namespace Emarsys\Emarsys\Model\ResourceModel\Queue;
 
 /**
  * Class Collection
@@ -15,8 +15,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            \Emarsys\Emarsys\Model\Process::class,
-            \Emarsys\Emarsys\Model\ResourceModel\Process::class
+            \Emarsys\Emarsys\Model\Queue::class,
+            \Emarsys\Emarsys\Model\ResourceModel\Queue::class
         );
     }
 }
