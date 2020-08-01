@@ -109,6 +109,11 @@
                 <log_report>0</log_report>
             </log_setting>
         </logs>
+        <process>
+            <dump>
+                <enable>1</enable>
+            </dump>
+        </process>
         <about_emarsys>
             <emarsys_release>
                 <release_url>https://github.com/romastepa/3rd-party-integrations-magento-M2/releases/</release_url>

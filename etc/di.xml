@@ -28,6 +28,7 @@
                 <item name="emarsysOrderExport" xsi:type="object">Emarsys\Emarsys\Console\Command\EmarsysOrderExport</item>
                 <item name="emarsysCustomerExport" xsi:type="object">Emarsys\Emarsys\Console\Command\EmarsysCustomerExport</item>
                 <item name="EmarsysAsyncExport" xsi:type="object">Emarsys\Emarsys\Console\Command\EmarsysAsyncExport</item>
+                <item name="Process" xsi:type="object">Emarsys\Emarsys\Console\Command\Process</item>
             </argument>
         </arguments>
     </type>
@@ -57,4 +58,10 @@
     <preference for="Emarsys\Emarsys\Api\CountryRepositoryInterface" type="Emarsys\Emarsys\Model\CountryRepository"/>
     <preference for="Emarsys\Emarsys\Api\Data\CountryInterface" type="Emarsys\Emarsys\Model\CountryRepository"/>
     <preference for="Emarsys\Emarsys\Api\Data\CountrySearchResultInterface" type="Emarsys\Emarsys\Model\CountrySearchResult"/>
+
+    <type name="Emarsys\Emarsys\Model\ResourceModel\Process">
+        <arguments>
+            <argument name="connectionName" xsi:type="string">sho_setup</argument>
+        </arguments>
+    </type>
 </config>
