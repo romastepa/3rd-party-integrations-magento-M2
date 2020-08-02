@@ -40,6 +40,9 @@ class Process extends Command
     protected $_delimiter = ',';
     protected $_enclosure = '"';
 
+    protected $currencyCodeTo = [];
+    protected $rate = [];
+
     /**
      * @var State
      */
@@ -175,11 +178,13 @@ class Process extends Command
             exec(
                 'gunzip < product_1.sql.gz |'
                 . ' mysql'
-                . ' -h' . $this->deploymentConfig->get('db/connection/default/host')
-                . ' -u' . $this->deploymentConfig->get('db/connection/default/username')
-                . ' -p' . $this->deploymentConfig->get('db/connection/default/password')
-                . ' ' . $this->deploymentConfig->get('db/connection/default/dbname')
+                . ' -h' . $this->deploymentConfig->get('db/connection/sho/host')
+                . ' -u' . $this->deploymentConfig->get('db/connection/sho/username')
+                . ' -p' . $this->deploymentConfig->get('db/connection/sho/password')
+                . ' ' . $this->deploymentConfig->get('db/connection/sho/dbname')
             );
+
+            unlink('product_1.sql.gz');
             [
                 $this->_mapHeader,
                 $this->_processedStores
@@ -293,7 +298,6 @@ class Process extends Command
                 $collection->clear();
             }
             foreach ($collection as $product) {
-                $collection->getSelect()->query()->closeCursor();
                 $data = [];
                 $productId = $product->getId();
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
@@ -340,13 +344,9 @@ class Process extends Command
                         $this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
                         || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
                     )) {
-                    $currencyCodeTo = $this->storeManager
-                        ->getStore($item['store_id'])
-                        ->getBaseCurrency()
-                        ->getCode();
+                    $currencyCodeTo = $this->getCurrencyCodeTo($item['store_id']);
                     if ($item['currency_code'] != $currencyCodeTo) {
-                        $rate = $this->currencyFactory->create()->load($item['currency_code'])
-                            ->getAnyRate($currencyCodeTo);
+                        $rate = $this->getRate($item['currency_code'], $currencyCodeTo);
                         $value = number_format(
                             $value * $rate,
                             2,
@@ -358,5 +358,27 @@ class Process extends Command
                 $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
             }
         }
+    }
+
+    public function getCurrencyCodeTo($storeId)
+    {
+        if (!isset($this->currencyCodeTo[$storeId])) {
+            $this->currencyCodeTo[$storeId] = $this->storeManager
+                ->getStore($storeId)
+                ->getBaseCurrency()
+                ->getCode();
+        }
+
+        return $this->currencyCodeTo[$storeId];
+    }
+
+    public function getRate($currencyCode, $currencyCodeTo)
+    {
+        if (!isset($this->rate[$currencyCode][$currencyCodeTo])) {
+            $this->rate[$currencyCode][$currencyCodeTo] = $this->currencyFactory->create()->load($currencyCode)
+                ->getAnyRate($currencyCodeTo);
+        }
+
+        return $this->rate[$currencyCode][$currencyCodeTo];
     }
 }
