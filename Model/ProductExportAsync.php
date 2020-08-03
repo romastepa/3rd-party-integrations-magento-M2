@@ -436,6 +436,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     /**
      * @param \Magento\Store\Model\Store $store
      * @param string $csvFilePath
+     * @param string $gzFilePath
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\LocalizedException
