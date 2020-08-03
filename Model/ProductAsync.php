@@ -394,12 +394,8 @@ class ProductAsync extends AbstractModel
             if ($this->_errorCount) {
                 $logsArray['status'] = 'error';
                 $logsArray['messages'] = __('Product export have an error. Please check.');
-            } else {
-                $logsArray['status'] = 'success';
-                $logsArray['messages'] = __('Product export completed');
             }
             $this->logsHelper->manualLogs($logsArray);
-            $result = true;
         } catch (\Exception $e) {
             $logsArray['messages'] = __('consolidatedCatalogExport Exception');
             $logsArray['status'] = 'error';

@@ -35,6 +35,9 @@ class Emarsysproductexport extends AbstractModel
     protected $_delimiter = ',';
     protected $_enclosure = '"';
 
+    protected $currencyCodeTo = [];
+    protected $rate = [];
+
     /**
      * @var ProductCollectionFactory
      */
@@ -241,7 +244,7 @@ class Emarsysproductexport extends AbstractModel
     /**
      * Save CSV for Website
      *
-     * @param int $websiteId
+     * @param string $websiteId
      * @param array $header
      * @param array $processedStores
      * @param array $logsArray
@@ -295,19 +298,11 @@ class Emarsysproductexport extends AbstractModel
                 $collection->clear();
             }
             foreach ($collection as $product) {
-                $collection->getSelect()->query()->closeCursor();
                 $data = [];
                 $productId = $product->getId();
                 $productData = explode(self::EMARSYS_DELIMITER, $product->getParams());
                 foreach ($productData as $param) {
-                    try {
-                        $item = $this->serializer->unserialize($param);
-                    } catch (\Exception $e) {
-                        $this->_logger->critical($e->getMessage());
-                        $this->_logger->critical($product->getParams());
-                        $this->_logger->critical($param);
-                        throw new \Exception($e->getMessage());
-                    }
+                    $item = $this->serializer->unserialize($param);
 
                     if (!isset($data[$productId])) {
                         $data[$productId] = array_fill(0, count($this->_mapHeader), "");
@@ -349,13 +344,9 @@ class Emarsysproductexport extends AbstractModel
                         $this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
                         || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
                     )) {
-                    $currencyCodeTo = $this->storeManager
-                        ->getStore($item['store_id'])
-                        ->getBaseCurrency()
-                        ->getCode();
+                    $currencyCodeTo = $this->getCurrencyCodeTo($item['store_id']);
                     if ($item['currency_code'] != $currencyCodeTo) {
-                        $rate = $this->currencyFactory->create()->load($item['currency_code'])
-                            ->getAnyRate($currencyCodeTo);
+                        $rate = $this->getRate($item['currency_code'], $currencyCodeTo);
                         $value = number_format(
                             $value * $rate,
                             2,
@@ -393,5 +384,27 @@ class Emarsysproductexport extends AbstractModel
         $minId = $collection->getResource()->getConnection()->fetchOne($select);
 
         return [$size, $maxId, $minId];
+    }
+
+    public function getCurrencyCodeTo($storeId)
+    {
+        if (!isset($this->currencyCodeTo[$storeId])) {
+            $this->currencyCodeTo[$storeId] = $this->storeManager
+                ->getStore($storeId)
+                ->getBaseCurrency()
+                ->getCode();
+        }
+
+        return $this->currencyCodeTo[$storeId];
+    }
+
+    public function getRate($currencyCode, $currencyCodeTo)
+    {
+        if (!isset($this->rate[$currencyCode][$currencyCodeTo])) {
+            $this->rate[$currencyCode][$currencyCodeTo] = $this->currencyFactory->create()->load($currencyCode)
+                ->getAnyRate($currencyCodeTo);
+        }
+
+        return $this->rate[$currencyCode][$currencyCodeTo];
     }
 }

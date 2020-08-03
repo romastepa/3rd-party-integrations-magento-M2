@@ -18,6 +18,7 @@ use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\DeploymentConfig;
 
 class ProductExportAsync extends \Magento\Framework\DataObject
 {
@@ -65,6 +66,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     protected $serializer;
 
     /**
+     * @var DeploymentConfig
+     */
+    protected $deploymentConfig;
+
+    /**
      * ProductExportAsync constructor.
      *
      * @param ProductAsync $productAsync
@@ -78,6 +84,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
      * @param ProductExportQueueRepository $queueRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param Serializer $serializer
+     * @param DeploymentConfig $deploymentConfig
      */
     public function __construct(
         ProductAsync $productAsync,
@@ -90,7 +97,8 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         ProductExportDataRepository $dataRepository,
         ProductExportQueueRepository $queueRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder,
-        Serializer $serializer
+        Serializer $serializer,
+        DeploymentConfig $deploymentConfig
     ) {
         $this->productAsync = $productAsync;
         $this->storeManager = $storeManager;
@@ -103,6 +111,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->queueRepository = $queueRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->serializer = $serializer;
+        $this->deploymentConfig = $deploymentConfig;
     }
 
     /**
@@ -161,7 +170,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->logsArray['messages'] = __('Bulk product export started');
         $this->logsArray['created_at'] = date('Y-m-d H:i:s');
         $this->logsArray['auto_log'] = 'Complete';
-        $logsArray['run_mode'] = $mode;
+        $this->logsArray['run_mode'] = $mode;
         $this->logsArray['executed_at'] = date('Y-m-d H:i:s');
         $this->logsArray['store_id'] = 0;
         $logId = $this->logsHelper->manualLogs($this->logsArray, 1);
@@ -216,14 +225,16 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
             $list = $this->queueRepository->getList($filter);
             while ($list->getTotalCount()) {
+                $list = null;
                 $jobID = rand(0, 10000000000000);
                 $list = $this->queueRepository->getList($filter);
                 while (count($this->currentJobs) >= $this->maxProcesses) {
+                    $list = null;
                     $list = $this->queueRepository->getList($filter);
                     $this->spinner();
                     echo "\r                          Maximum children allowed, waiting => " . $list->getTotalCount() . "  ";
                 }
-
+                $this->spinner(5);
                 $this->launchJob($jobID, $website, $websiteId);
             }
 
@@ -232,47 +243,93 @@ class ProductExportAsync extends \Magento\Framework\DataObject
             while (count($this->currentJobs)) {
                 $this->spinner();
             }
-            $this->spinner(10);
+            $this->spinner(5);
 
             if (!empty($website)) {
-                $this->logsArray['emarsys_info'] = __('Starting data uploading');
-                $this->logsArray['description'] = __('Starting data uploading');
-                $this->logsArray['message_type'] = 'Success';
-                $this->logsHelper->manualLogs($this->logsArray);
-                echo "\n" . $this->logsArray['description'] . "\n";
-
-                $modelData = $this->dataRepository->getById($websiteId);
-                [$this->_mapHeader, $this->_processedStores] = $this->serializer->unserialize($modelData->getExportData());
-
-                $csvFilePath = $this->productExportModel->saveToCsv(
-                    $websiteId,
-                    $this->_mapHeader,
-                    $this->_processedStores,
-                    $this->logsArray
-                );
-
-                $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
-                $gzFilePath = $fileDirectory . '/' . 'products_' . $websiteId . '.gz';
-
-                //Export CSV to API
-                $string = file_get_contents($csvFilePath);
-                $gz = gzopen($gzFilePath, 'w9');
-                gzwrite($gz, $string);
-                gzclose($gz);
-
-                $store = reset($this->_credentials[$websiteId]);
-
-                $uploaded = $this->moveFile($store['store'], $csvFilePath, $gzFilePath);
-                if ($uploaded) {
-                    $this->logsArray['emarsys_info'] = __('Data for was uploaded');
-                    $this->logsArray['description'] = __('Data for was uploaded');
+                if ($this->storeManager->getStore()->getConfig('emarsys_predict/enable/dump')) {
+                    $this->logsArray['emarsys_info'] = __('Starting data uploading');
+                    $this->logsArray['description'] = __('Starting data uploading');
                     $this->logsArray['message_type'] = 'Success';
+                    $this->logsHelper->manualLogs($this->logsArray);
+                    echo "\n" . $this->logsArray['description'] . "\n";
+
+                    if (function_exists('exec')) {
+                        $productExportTable = $this->productExportModel->getResourceCollection()->getMainTable();
+                        $productExportDataTable = $modelData->getResourceCollection()->getMainTable();
+
+                        $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
+                        $filePath = $fileDirectory . '/product_1.sql.gz';
+                        $url = $this->emarsysHelper->getEmarsysMediaUrlPath(ProductModel::ENTITY . '/' . $websiteId, $filePath);
+
+                        $mysqldump = 'mysqldump --single-transaction --quick'
+                            . " -h'" . $this->deploymentConfig->get('db/connection/default/host') . "'"
+                            . " -u'" . $this->deploymentConfig->get('db/connection/default/username') . "'";
+
+                        if ($this->deploymentConfig->get('db/connection/default/password')) {
+                            $mysqldump .= " -p'" . $this->deploymentConfig->get('db/connection/default/password') . "'";
+                        }
+                        $mysqldump .= " '" . $this->deploymentConfig->get('db/connection/default/dbname') . "'"
+                            . " " . $productExportTable . " " . $productExportDataTable
+                            . "| LANG=C LC_CTYPE=C LC_ALL=C sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | gzip -c  > '" . $filePath . "'";
+                        exec($mysqldump);
+
+                        $this->logsArray['emarsys_info'] = __('SQL dump ready');
+                        $this->logsArray['description'] = __('SQL dump ready: %1', $url);
+                        $this->logsArray['message_type'] = 'Success';
+                        $this->logsArray['status'] = 'success';
+                    } else {
+                        $this->logsArray['emarsys_info'] = __('Exec function not exists');
+                        $this->logsArray['description'] = __('Exec function not exists');
+                        $this->logsArray['message_type'] = 'Error';
+                        $this->logsArray['status'] = 'error';
+                    }
                 } else {
-                    $this->logsArray['emarsys_info'] = __('Error during data uploading');
-                    $this->logsArray['description'] = __('Error during data uploading');
-                    $this->logsArray['message_type'] = 'Error';
+                    $this->logsArray['emarsys_info'] = __('Starting data uploading');
+                    $this->logsArray['description'] = __('Starting data uploading');
+                    $this->logsArray['message_type'] = 'Success';
+                    $this->logsHelper->manualLogs($this->logsArray);
+                    echo "\n" . $this->logsArray['description'] . "\n";
+
+                    $modelData = $this->dataRepository->getById($websiteId);
+                    [
+                        $this->_mapHeader,
+                        $this->_processedStores
+                    ] = $this->serializer->unserialize($modelData->getExportData());
+
+                    $csvFilePath = $this->productExportModel->saveToCsv(
+                        $websiteId,
+                        $this->_mapHeader,
+                        $this->_processedStores,
+                        $this->logsArray
+                    );
+
+                    $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/' . $websiteId);
+                    $gzFilePath = $fileDirectory . '/' . 'products_' . $websiteId . '.gz';
+
+                    //Export CSV to API
+                    $string = file_get_contents($csvFilePath);
+                    $gz = gzopen($gzFilePath, 'w9');
+                    gzwrite($gz, $string);
+                    gzclose($gz);
+
+                    $store = reset($this->_credentials[$websiteId]);
+
+                    $uploaded = $this->moveFile($store['store'], $csvFilePath, $gzFilePath);
+                    if ($uploaded) {
+                        $this->logsArray['emarsys_info'] = __('Data was uploaded');
+                        $this->logsArray['description'] = __('Data was uploaded');
+                        $this->logsArray['message_type'] = 'Success';
+                        $this->logsArray['status'] = 'success';
+                    } else {
+                        $this->logsArray['emarsys_info'] = __('Error during data uploading');
+                        $this->logsArray['description'] = __('Error during data uploading');
+                        $this->logsArray['message_type'] = 'Error';
+                        $this->logsArray['message_type'] = 'Error';
+                    }
                 }
+                echo "\n" . $this->logsArray['description'] . "\n";
                 $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
+                $this->logsArray['messages'] = __('Product export completed');
                 $this->logsHelper->manualLogs($this->logsArray);
             }
         }
@@ -320,6 +377,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
                 $list = $this->queueRepository->getList($filter);
                 $pages = $list->getItems();
+                $list = null;
                 $page = reset($pages);
                 if ($page) {
                     $page->setStatus('processing');
@@ -378,6 +436,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
     /**
      * @param \Magento\Store\Model\Store $store
      * @param string $csvFilePath
+     * @param string $gzFilePath
      * @return bool
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\LocalizedException
