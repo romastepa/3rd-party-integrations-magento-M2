@@ -125,7 +125,7 @@ class Success extends Template
             if ($uniqueIdentifier == "product_id") {
                 $sku = $item->getProductId();
             } else {
-                $sku = 'g/' . $item->getSku();
+                $sku = $item->getSku();
             }
             $items[] = [
                 'item' => addslashes($sku),

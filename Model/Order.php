@@ -934,7 +934,7 @@ class Order extends AbstractModel
                     //set customer
                     $values[] = $this->emailValidation($customerEmail);
                     //set product sku/id
-                    $values[] = 'g/' . trim($item->getSku());
+                    $values[] = trim($item->getSku());
 
                     $rowTotal = 0;
                     $qty = 0;
@@ -1027,7 +1027,7 @@ class Order extends AbstractModel
                     //set customer
                     $values[] = $this->emailValidation($customerEmail);
                     //set product sku/id
-                    $values[] = 'g/' . trim($item->getSku());
+                    $values[] = trim($item->getSku());
 
                     $rowTotal = 0;
                     $qty = (int)$item->getQty();
