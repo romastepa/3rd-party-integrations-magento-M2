@@ -321,6 +321,11 @@ class Emarsysproductexport extends AbstractModel
                 }
 
                 $this->file->filePutCsv($fh, $data[$productId], $this->_delimiter, $this->_enclosure);
+
+                if (isset($item['is_simple_parent']) && $item['is_simple_parent']) {
+                    $data[$productId][0] = $item['is_simple_parent'];
+                    $this->file->filePutCsv($fh, $data[$productId], $this->_delimiter, $this->_enclosure);
+                }
             }
 
             $currentPageNumber++;

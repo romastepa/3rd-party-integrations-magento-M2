@@ -158,6 +158,11 @@ class Product extends AbstractModel
     protected $typeGrouped;
 
     /**
+     * @var 0|string
+     */
+    protected $isSimpleParent = false;
+
+    /**
      * Product constructor.
      *
      * @param MessageManagerInterface $messageManager
@@ -383,23 +388,31 @@ class Product extends AbstractModel
                             $catIds = $product->getCategoryIds();
                             $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                             $product->setStoreId($storeId);
+                            $params = [
+                                'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
+                                'is_simple_parent' => 0,
+                                'store' => $store['store']->getCode(),
+                                'store_id' => $store['store']->getId(),
+                                'data' => $this->_getProductData(
+                                    $magentoAttributeNames[$storeId],
+                                    $product,
+                                    $categoryNames,
+                                    $store['store'],
+                                    $collection,
+                                    $logsArray
+                                ),
+                                'header' => $header,
+                                'currency_code' => $currencyStoreCode,
+                            ];
+
+                            if ($this->isSimpleParent) {
+                                $params['is_simple_parent'] = $this->isSimpleParent;
+                                $this->isSimpleParent = 0;
+                            }
+
                             $products[$product->getId()] = [
                                 'entity_id' => $product->getId(),
-                                'params' => $this->serializer->serialize([
-                                    'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
-                                    'store' => $store['store']->getCode(),
-                                    'store_id' => $store['store']->getId(),
-                                    'data' => $this->_getProductData(
-                                        $magentoAttributeNames[$storeId],
-                                        $product,
-                                        $categoryNames,
-                                        $store['store'],
-                                        $collection,
-                                        $logsArray
-                                    ),
-                                    'header' => $header,
-                                    'currency_code' => $currencyStoreCode,
-                                ]),
+                                'params' => $this->serializer->serialize($params),
                             ];
                         }
 
@@ -870,6 +883,9 @@ class Product extends AbstractModel
                                 $attributeData[] = $attributeOption;
                             }
                         } else {
+                            if ($productObject->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                                $this->isSimpleParent = $attributeOption;
+                            }
                             $attributeData[] = 'g/' . $attributeOption;
                             $attributeData[] = $attributeOption;
                         }
