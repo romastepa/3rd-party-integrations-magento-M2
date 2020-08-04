@@ -7,6 +7,7 @@
 
 namespace Emarsys\Emarsys\Cron;
 
+use Emarsys\Emarsys\Helper\Cron as CronHelper;
 use Emarsys\Emarsys\Model\Product as EmarsysProductModel;
 use Emarsys\Emarsys\Model\Logs;
 use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
@@ -18,6 +19,11 @@ use Emarsys\Emarsys\Helper\Data;
  */
 class ProductSync
 {
+    /**
+     * @var CronHelper
+     */
+    protected $cronHelper;
+
     /**
      * @var EmarsysProductModel
      */
@@ -41,17 +47,20 @@ class ProductSync
     /**
      * ProductSync constructor.
      *
+     * @param CronHelper $cronHelper
      * @param EmarsysProductModel $emarsysProductModel
      * @param Logs $emarsysLogs
      * @param ProductExportAsync $productAsync
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
+        CronHelper $cronHelper,
         EmarsysProductModel $emarsysProductModel,
         Logs $emarsysLogs,
         ProductExportAsync $productAsync,
         StoreManagerInterface $storeManager
     ) {
+        $this->cronHelper = $cronHelper;
         $this->emarsysProductModel = $emarsysProductModel;
         $this->emarsysLogs = $emarsysLogs;
         $this->productAsync = $productAsync;
@@ -62,6 +71,12 @@ class ProductSync
     {
         try {
             set_time_limit(0);
+            $currentCronInfo = $this->cronHelper->getCurrentCronInformation('emarsys_product_sync');
+
+            if (!$currentCronInfo) {
+                return;
+            }
+
             $async = false;
             foreach ($this->storeManager->getStores(true) as $store) {
                 $async = $store->getConfig('emarsys_predict/enable/async');

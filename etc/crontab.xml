@@ -37,5 +37,8 @@
         <job name="emarsys_subscriber_bulk_export_api" instance="Emarsys\Emarsys\Cron\SubscriberBulkExportApi" method="execute" />
         <job name="emarsys_catalog_bulk_export" instance="Emarsys\Emarsys\Cron\ProductBulkExport" method="execute" />
         <job name="emarsys_smartinsight_bulk_export" instance="Emarsys\Emarsys\Cron\SmartInsightBulkExport" method="execute" />
+        <job name="emarsys_dump_process" instance="Emarsys\Emarsys\Cron\Process" method="execute">
+            <config_path>emarsys_dump_process/schedule/cron_expr</config_path>
+        </job>
     </group>
 </config>

@@ -5,19 +5,18 @@
  * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 
-namespace Emarsys\Emarsys\Console\Command;
+namespace Emarsys\Emarsys\Cron;
 
+use Emarsys\Emarsys\Helper\Cron as CronHelper;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ApiExport;
 use Emarsys\Emarsys\Model\Emarsysproductexport as ProductExportModel;
+use Emarsys\Emarsys\Model\Logs;
 use Exception;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\State;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Emarsys\Emarsys\Model\Product;
 use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
 use Magento\Store\Model\StoreManagerInterface;
@@ -27,9 +26,9 @@ use Magento\Framework\Filesystem\Driver\File;
 use Magento\Directory\Model\CurrencyFactory;
 
 /**
- * Command for deployment of Sample Data
+ * Class Dump Process on our side instead of client's
  */
-class Process extends Command
+class Process
 {
     const EMARSYS_DELIMITER = '{EMARSYS}';
     const BATCH_SIZE = 500;
@@ -104,7 +103,17 @@ class Process extends Command
     protected $file;
 
     /**
-     * EmarsysProductExport constructor.
+     * @var Logs
+     */
+    protected $emarsysLogs;
+
+    /**
+     * @var CronHelper
+     */
+    protected $cronHelper;
+
+    /**
+     * Process constructor.
      *
      * @param State $state
      * @param Product $product
@@ -118,6 +127,8 @@ class Process extends Command
      * @param ProcessModel $process
      * @param CurrencyFactory $currencyFactory
      * @param File $file
+     * @param Logs $emarsysLogs
+     * @param CronHelper $cronHelper
      */
     public function __construct(
         State $state,
@@ -131,7 +142,9 @@ class Process extends Command
         Serializer $serializer,
         ProcessModel $process,
         CurrencyFactory $currencyFactory,
-        File $file
+        File $file,
+        Logs $emarsysLogs,
+        CronHelper $cronHelper
     ) {
         $this->state = $state;
         $this->product = $product;
@@ -145,38 +158,19 @@ class Process extends Command
         $this->process = $process;
         $this->currencyFactory = $currencyFactory;
         $this->file = $file;
-        parent::__construct();
+        $this->emarsysLogs = $emarsysLogs;
+        $this->cronHelper = $cronHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure()
+    public function execute()
     {
-        $this->setName('emarsys:dump:process')
-            ->setDescription('Product dump process');
-        parent::configure();
-    }
-
-    public function cron()
-    {
-
-    }
-
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $this->state->setAreaCode(Area::AREA_GLOBAL);
-        $output->writeln('');
-        $output->writeln('<info>Starting dump process</info>');
-        $output->writeln('');
-        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
-
         try {
             set_time_limit(0);
+            $currentCronInfo = $this->cronHelper->getCurrentCronInformation('emarsys_dump_process');
+
+            if (!$currentCronInfo) {
+                return;
+            }
 
             $store = $this->storeManager->getStore();
 
@@ -211,20 +205,25 @@ class Process extends Command
             gzclose($gz);
 
             $uploaded = $this->moveFile($store, $gzFilePath);
-
             if ($uploaded) {
-                $output->writeln('U P L O A D E D');
+
             } else {
-                $output->writeln('F A L S E');
+                $this->emarsysLogs->addErrorLog(
+                    'DumpProcess',
+                    $e->getMessage(),
+                    0,
+                    'Process::execute()'
+                );
             }
         } catch (Exception $e) {
-            $output->writeln($e->getMessage());
+            $this->emarsysLogs->addErrorLog(
+                'DumpProcess',
+                $e->getMessage(),
+                0,
+                'Process::execute()'
+            );
         }
-
-        $output->writeln('<info>' . date('Y-m-d H:i:s') . '</info>');
-        $output->writeln('');
-        $output->writeln('<info>Dump process complete</info>');
-        $output->writeln('');
+        return true;
     }
 
     /**
