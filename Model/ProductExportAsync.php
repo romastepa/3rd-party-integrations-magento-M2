@@ -283,6 +283,10 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['message_type'] = 'Error';
                         $this->logsArray['status'] = 'error';
                     }
+                    echo "\n" . $this->logsArray['description'] . "\n";
+                    $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
+                    $this->logsArray['messages'] = __('Product export completed');
+                    $this->logsHelper->manualLogs($this->logsArray);
                 } else {
                     $this->logsArray['emarsys_info'] = __('Starting data uploading');
                     $this->logsArray['description'] = __('Starting data uploading');
@@ -326,11 +330,11 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['message_type'] = 'Error';
                         $this->logsArray['message_type'] = 'Error';
                     }
+                    echo "\n" . $this->logsArray['description'] . "\n";
+                    $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
+                    $this->logsArray['messages'] = __('Product export completed');
+                    $this->logsHelper->manualLogs($this->logsArray);
                 }
-                echo "\n" . $this->logsArray['description'] . "\n";
-                $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
-                $this->logsArray['messages'] = __('Product export completed');
-                $this->logsHelper->manualLogs($this->logsArray);
             }
         }
     }
