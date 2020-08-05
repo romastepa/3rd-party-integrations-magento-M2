@@ -149,10 +149,5 @@
                 <cron_expr>29 */1 * * *</cron_expr>
             </schedule>
         </emarsys_clean_cron_details>
-        <emarsys_dump_process>
-            <schedule>
-                <cron_expr>3 */5 * * *</cron_expr>
-            </schedule>
-        </emarsys_dump_process>
     </default>
 </config>
