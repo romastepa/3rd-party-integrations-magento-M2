@@ -168,15 +168,14 @@ class Process
             set_time_limit(0);
             $currentCronInfo = $this->cronHelper->getCurrentCronInformation('emarsys_dump_process');
 
-            if (!$currentCronInfo) {
-                return;
+            if ($currentCronInfo) {
+                return 'emarsys_dump_process already in process';
             }
 
             $store = $this->storeManager->getStore();
+            $name = basename($store->getConfig('process/dump/url'));
 
             exec('wget ' . $store->getConfig('process/dump/url'));
-
-            $name = basename($store->getConfig('process/dump/url'));
             exec(
                 'gunzip < ' . $name . ' |'
                 . ' mysql'
@@ -190,7 +189,7 @@ class Process
 
             [
                 $this->_mapHeader,
-                $this->_processedStores
+                $this->_processedStores,
             ] = $this->serializer->unserialize($this->process->getExportData());
 
             $csvFilePath = $this->saveToCsv('sho');
@@ -205,16 +204,8 @@ class Process
             gzclose($gz);
 
             $uploaded = $this->moveFile($store, $gzFilePath);
-            if ($uploaded) {
 
-            } else {
-                $this->emarsysLogs->addErrorLog(
-                    'DumpProcess',
-                    $e->getMessage(),
-                    0,
-                    'Process::execute()'
-                );
-            }
+            return $uploaded;
         } catch (Exception $e) {
             $this->emarsysLogs->addErrorLog(
                 'DumpProcess',

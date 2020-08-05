@@ -73,7 +73,7 @@ class ProductSync
             set_time_limit(0);
             $currentCronInfo = $this->cronHelper->getCurrentCronInformation('emarsys_product_sync');
 
-            if (!$currentCronInfo) {
+            if ($currentCronInfo) {
                 return;
             }
 

@@ -58,31 +58,33 @@ class SmartInsightBulkExport
             );
 
             if ($currentCronInfo) {
-                $data = \Zend_Json::decode($currentCronInfo->getParams());
+                return;
+            }
 
-                $storeId = isset($data['storeId']) ? $data['storeId'] : 0;
-                $fromDate = isset($data['fromDate']) ? $data['fromDate'] : null;
-                $toDate = isset($data['toDate']) ? $data['toDate'] : null;
-                if (!$storeId) {
-                    throw new \Exception('store_id not specify');
-                }
+            $data = \Zend_Json::decode($currentCronInfo->getParams());
 
-                /** @var \Magento\Store\Model\Store $store */
-                $store = $this->storeManager->getStore($storeId);
-                if (!$store || !$store->getId()) {
-                    throw new \Exception('store_id not specify');
-                }
+            $storeId = isset($data['storeId']) ? $data['storeId'] : 0;
+            $fromDate = isset($data['fromDate']) ? $data['fromDate'] : null;
+            $toDate = isset($data['toDate']) ? $data['toDate'] : null;
+            if (!$storeId) {
+                throw new \Exception('store_id not specify');
+            }
 
-                $stores = $store->getWebsite()->getStores();
+            /** @var \Magento\Store\Model\Store $store */
+            $store = $this->storeManager->getStore($storeId);
+            if (!$store || !$store->getId()) {
+                throw new \Exception('store_id not specify');
+            }
 
-                foreach ($stores as $storeId => $store) {
-                    $this->emarsysOrderModel->syncOrders(
-                        $storeId,
-                        \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL,
-                        $fromDate,
-                        $toDate
-                    );
-                }
+            $stores = $store->getWebsite()->getStores();
+
+            foreach ($stores as $storeId => $store) {
+                $this->emarsysOrderModel->syncOrders(
+                    $storeId,
+                    \Emarsys\Emarsys\Helper\Data::ENTITY_EXPORT_MODE_MANUAL,
+                    $fromDate,
+                    $toDate
+                );
             }
         } catch (\Exception $e) {
             $this->emarsysLogs->addErrorLog(
