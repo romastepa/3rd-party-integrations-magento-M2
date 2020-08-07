@@ -248,6 +248,11 @@ class Process extends Command
         $apiUrl = $this->apiExport->getApiUrl(ProductModel::ENTITY);
 
         $apiExportResult = $this->apiExport->apiExport($apiUrl, $gzFilePath);
+
+        echo "\n";
+        var_dump($apiExportResult);
+        echo "\n";
+
         if ($apiExportResult['result'] == 1) {
             return true;
         }

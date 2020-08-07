@@ -21,7 +21,7 @@ class Process extends \Magento\Framework\Model\AbstractModel
     public function getExportData()
     {
         $table = $this->getResource()->getTable('emarsys_product_export_data');
-        $select = $this->getResource()->getConnection()
+        $select = $this->getResource()->getConnection('sho')
             ->select()
             ->from($table, 'export_data');
 
