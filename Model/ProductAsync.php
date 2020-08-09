@@ -35,6 +35,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as TypeGrouped;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Directory\Model\CurrencyFactory;
 
 class ProductAsync extends AbstractModel
 {
@@ -128,6 +129,11 @@ class ProductAsync extends AbstractModel
      */
     protected $appEmulation;
 
+    /**
+     * @var CurrencyFactory
+     */
+    protected $currencyFactory;
+
     protected $_errorCount = false;
     protected $_websites = [];
     protected $_attributeCache = [];
@@ -183,6 +189,7 @@ class ProductAsync extends AbstractModel
      * @param TypeConfigurable $typeConfigurable
      * @param TypeBundle $typeBundle
      * @param TypeGrouped $typeGrouped
+     * @param CurrencyFactory $currencyFactory
      * @param Context $context
      * @param Registry $registry
      * @param AbstractResource|null $resource
@@ -211,6 +218,7 @@ class ProductAsync extends AbstractModel
         TypeConfigurable $typeConfigurable,
         TypeBundle $typeBundle,
         TypeGrouped $typeGrouped,
+        CurrencyFactory $currencyFactory,
         Context $context,
         Registry $registry,
         AbstractResource $resource = null,
@@ -238,6 +246,7 @@ class ProductAsync extends AbstractModel
         $this->typeConfigurable = $typeConfigurable;
         $this->typeBundle = $typeBundle;
         $this->typeGrouped = $typeGrouped;
+        $this->currencyFactory = $currencyFactory;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -286,9 +295,10 @@ class ProductAsync extends AbstractModel
                 }
             }
 
-            $defaultStoreID = false;
+            $defaultStoreID = $defaultCurrencyCode = false;
             $this->_mapHeader = ['item', 'group_id'];
             $this->_processedStores = [];
+            $currencyStoreRate = 1;
             foreach ($website as $storeId => $store) {
                 $this->appEmulation->startEnvironmentEmulation(
                     $storeId,
@@ -298,6 +308,12 @@ class ProductAsync extends AbstractModel
                 $currencyStoreCode = $store['store']->getDefaultCurrencyCode();
                 if (!$defaultStoreID) {
                     $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
+                    $defaultCurrencyCode = $store['store']->getWebsite()->getDefaultStore()->getDefaultCurrencyCode();
+                }
+                if ($defaultCurrencyCode != $currencyStoreCode) {
+                    $currencyStoreRate = $this->currencyFactory->create()
+                        ->load($defaultCurrencyCode)
+                        ->getAnyRate($currencyStoreCode);
                 }
 
                 $excludedCategories = $store['store']->getConfig(EmarsysHelper::XPATH_PREDICT_EXCLUDED_CATEGORIES);
@@ -379,6 +395,7 @@ class ProductAsync extends AbstractModel
                             ),
                             'header' => $header,
                             'currency_code' => $currencyStoreCode,
+                            'currency_rate' => $currencyStoreRate,
                         ];
 
                         if ($this->isSimpleParent) {
@@ -532,7 +549,7 @@ class ProductAsync extends AbstractModel
      * @return array
      * @throws \Exception
      */
-    protected function _getProductData(
+    public function _getProductData(
         $magentoAttributeNames,
         $productObject,
         $categoryNames,
@@ -557,34 +574,11 @@ class ProductAsync extends AbstractModel
                     case 'sku':
                         if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
                             $attributeData[] = $attributeOption;
-                            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
-                            $this->_productTypeInstance = $this->typeConfigurable;
-                            if (empty($parentProducts)) {
-                                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
-                                $this->_productTypeInstance = $this->typeBundle;
-                                if (empty($parentProducts)) {
-                                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
-                                    $this->_productTypeInstance = $this->typeGrouped;
-                                }
-                            }
-                            if (!empty($parentProducts)) {
-                                $parentId = current($parentProducts);
-                                $parentProduct = $collection->getItemById($parentId);
-                                if (!$parentProduct) {
-                                    if (!isset($this->_parentProducts[$parentId])) {
-                                        $this->productModel->setTypeInstance($this->_productTypeInstance);
-                                        $this->_parentProducts[$parentId] = $this->productModel->load($parentId);
-                                        $parentProduct = $this->_parentProducts[$parentId];
-                                    } else {
-                                        $parentProduct = $this->_parentProducts[$parentId];
-                                    }
-                                }
-                                if ($parentProduct) {
-                                    $parentProduct->setStoreId($store->getId());
-                                    $attributeData[] = $parentProduct->getSku();
-                                }
+                            $parentProduct = $this->getParentProduct($productObject, $collection, $store);
+                            if ($parentProduct['sku']) {
+                                $attributeData[] = $parentProduct['sku'];
                             } else {
-                                $attributeData[] = $attributeOption;
+                                $attributeData[] = '';
                             }
                         } else {
                             if ($productObject->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
@@ -637,38 +631,9 @@ class ProductAsync extends AbstractModel
                         }
                         $url = $store->getBaseUrl() . $url;
                         if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
-                            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
-                            $this->_productTypeInstance = $this->typeConfigurable;
-                            if (empty($parentProducts)) {
-                                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
-                                $this->_productTypeInstance = $this->typeBundle;
-                                if (empty($parentProducts)) {
-                                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
-                                    $this->_productTypeInstance = $this->typeGrouped;
-                                }
-                            }
-                            if (!empty($parentProducts)) {
-                                $parentId = current($parentProducts);
-                                $parentProduct = $collection->getItemById($parentId);
-                                if (!$parentProduct) {
-                                    if (!isset($this->_parentProducts[$parentId])) {
-                                        $this->productModel->setTypeInstance($this->_productTypeInstance);
-                                        $this->_parentProducts[$parentId] = $this->productModel->load($parentId);
-                                        $parentProduct = $this->_parentProducts[$parentId];
-                                    } else {
-                                        $parentProduct = $this->_parentProducts[$parentId];
-                                    }
-                                }
-                                if ($parentProduct) {
-                                    $parentProduct->setStoreId($store->getId());
-                                    $url = $parentProduct->getUrlKey();
-                                    if (empty($url) || stristr($url, ' ')) {
-                                        $url = 'catalog/product/view/id/' . $parentProduct->getId();
-                                    } else {
-                                        $url = $url . '.html';
-                                    }
-                                    $url = $store->getBaseUrl() . $url;
-                                }
+                            $parentProduct = $this->getParentProduct($productObject, $collection, $store);
+                            if ($parentProduct['url']) {
+                                $url = $parentProduct['url'];
                             }
                         }
                         $attributeData[] = $url;
@@ -705,7 +670,7 @@ class ProductAsync extends AbstractModel
      * @return AbstractAttribute
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    protected function getEavAttribute($attributeCode)
+    public function getEavAttribute($attributeCode)
     {
         if (!isset($this->_attributeCache[$attributeCode])) {
             $this->_attributeCache[$attributeCode] = $this->eavConfig->getAttribute(
@@ -733,5 +698,58 @@ class ProductAsync extends AbstractModel
     public function getSizeAndMaxAndMinId()
     {
         return $this->productExportModel->getSizeAndMaxAndMinId();
+    }
+
+    /**
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @return array
+     */
+    public function getParentProduct($productObject, $collection, $store)
+    {
+        $sku = false;
+        $url = false;
+        $parentProduct = null;
+
+        $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+        $this->_productTypeInstance = $this->typeConfigurable;
+        if (empty($parentProducts)) {
+            $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+            $this->_productTypeInstance = $this->typeBundle;
+            if (empty($parentProducts)) {
+                $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                $this->_productTypeInstance = $this->typeGrouped;
+            }
+        }
+
+        $parentId = current($parentProducts);
+        if ($parentId) {
+            if (!isset($this->_parentProducts[$store->getId()][$parentId])) {
+                $parentProduct = $collection->getItemById($parentId);
+                if ($parentProduct == null) {
+                    $this->productModel->setTypeInstance($this->_productTypeInstance);
+                    $parentProduct = $this->productModel->load($parentId);
+                }
+            } else {
+                return $this->_parentProducts[$store->getId()][$parentId];
+            }
+        }
+
+        if ($parentProduct !== null) {
+            $parentProduct->setStoreId($store->getId());
+            $url = $parentProduct->getUrlKey();
+            $sku = $parentProduct->getSku();
+            if (empty($url) || stristr($url, ' ')) {
+                $url = 'catalog/product/view/id/' . $parentProduct->getId();
+            } else {
+                $url = $url . '.html';
+            }
+            $url = $store->getBaseUrl() . $url;
+        }
+
+        $this->_parentProducts[$store->getId()][$parentId] = ['sku' => $sku, 'url' => $url];
+
+        return $this->_parentProducts[$store->getId()][$parentId];
     }
 }

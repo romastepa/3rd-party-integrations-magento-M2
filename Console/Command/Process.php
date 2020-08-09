@@ -299,7 +299,7 @@ class Process extends Command
         $columnCount = count($this->_mapHeader);
         $emptyArray = array_fill(0, $columnCount, "");
 
-        $collection = $this->process->getCollection();
+        $collection = $this->process->getResourceCollection();
         $collection->setPageSize(self::BATCH_SIZE)
             ->setCurPage($currentPageNumber);
 

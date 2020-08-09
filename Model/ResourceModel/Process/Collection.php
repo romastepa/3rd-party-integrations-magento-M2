@@ -18,9 +18,6 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
             \Emarsys\Emarsys\Model\Process::class,
             \Emarsys\Emarsys\Model\ResourceModel\Process::class
         );
-
-        $sho = $this->getResource()->getConnection('sho');
-        $this->setConnection($sho);
     }
 }
 

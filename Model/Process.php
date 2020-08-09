@@ -9,6 +9,8 @@ namespace Emarsys\Emarsys\Model;
 
 class Process extends \Magento\Framework\Model\AbstractModel
 {
+    protected $_collectionName = 'sho';
+
     /**
      * constructor
      */
@@ -25,6 +27,6 @@ class Process extends \Magento\Framework\Model\AbstractModel
             ->select()
             ->from($table, 'export_data');
 
-        return $this->getResource()->getConnection()->fetchOne($select);
+        return $this->getResource()->getConnection('sho')->fetchOne($select);
     }
 }

@@ -161,6 +161,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->dataRepository->truncate($modelData);
 
         $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
+        $maxProducts = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/max_products');
         if ($maxProcesses) {
             $this->maxProcesses = $maxProcesses;
         }
@@ -190,6 +191,15 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
         [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
 
+        $maxQueues = 0;
+        if ($maxProducts) {
+            $maxQueues = (int)ceil($size/$maxProducts);
+        }
+
+        if ($maxQueues > 1) {
+            $this->maxQueues = $maxQueues;
+        }
+
         $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
@@ -202,7 +212,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 if ($x == 1) {
                     $from = $minId;
                     $to = ($minId + $page);
-                } elseif ($x == 25) {
+                } elseif ($x == $this->maxQueues) {
                     $from = $minId + $page * ($x - 1);
                     $to = $minId + $page * ($x + 1);
                 } else {
