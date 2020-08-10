@@ -25,7 +25,7 @@
             <async>
                 <enable>0</enable>
                 <frequency>2</frequency>
-                <cron_expr>*/2 * * * *</cron_expr>
+                <cron_expr></cron_expr>
             </async>
             <country>
                 <cron_expr>37 1 * * *</cron_expr>
