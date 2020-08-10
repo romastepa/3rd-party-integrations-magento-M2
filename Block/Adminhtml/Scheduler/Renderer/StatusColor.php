@@ -20,9 +20,6 @@ class StatusColor extends AbstractRenderer
     {
         $value = $row->getData($this->getColumn()->getIndex());
         switch (strtolower($value)) {
-            case 'success':
-                $color = 'green';
-                break;
             case 'error':
                 $color = 'red';
                 break;

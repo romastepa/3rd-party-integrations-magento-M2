@@ -62,7 +62,7 @@ class SubscriberBulkExportApi
                 EmarsysCronHelper::CRON_JOB_SUBSCRIBERS_BULK_EXPORT_API
             );
 
-            if ($currentCronInfo) {
+            if (!$currentCronInfo) {
                 return;
             }
 

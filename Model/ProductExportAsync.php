@@ -261,6 +261,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                     $this->logsArray['description'] = __('Starting data uploading');
                     $this->logsArray['message_type'] = 'Success';
                     $this->logsHelper->manualLogs($this->logsArray);
+                    $this->logsArray['id'] = $logId;
                     echo "\n" . $this->logsArray['description'] . "\n";
 
                     if (function_exists('exec')) {
@@ -293,15 +294,12 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['message_type'] = 'Error';
                         $this->logsArray['status'] = 'error';
                     }
-                    echo "\n" . $this->logsArray['description'] . "\n";
-                    $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
-                    $this->logsArray['messages'] = __('Product export completed');
-                    $this->logsHelper->manualLogs($this->logsArray);
                 } else {
                     $this->logsArray['emarsys_info'] = __('Starting data uploading');
                     $this->logsArray['description'] = __('Starting data uploading');
                     $this->logsArray['message_type'] = 'Success';
                     $this->logsHelper->manualLogs($this->logsArray);
+                    $this->logsArray['id'] = $logId;
                     echo "\n" . $this->logsArray['description'] . "\n";
 
                     $modelData = $this->dataRepository->getById($websiteId);
@@ -338,13 +336,13 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['emarsys_info'] = __('Error during data uploading');
                         $this->logsArray['description'] = __('Error during data uploading');
                         $this->logsArray['message_type'] = 'Error';
-                        $this->logsArray['message_type'] = 'Error';
+                        $this->logsArray['status'] = 'error';
                     }
-                    echo "\n" . $this->logsArray['description'] . "\n";
-                    $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
-                    $this->logsArray['messages'] = __('Product export completed');
-                    $this->logsHelper->manualLogs($this->logsArray);
                 }
+                echo "\n" . $this->logsArray['description'] . "\n";
+                $this->logsArray['finished_at'] = date('Y-m-d H:i:s');
+                $this->logsArray['messages'] = __('Product export completed');
+                $this->logsHelper->manualLogs($this->logsArray);
             }
         }
     }

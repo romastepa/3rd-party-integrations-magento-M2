@@ -52,7 +52,7 @@ class CustomerBulkExportApi
                 EmarsysCronHelper::CRON_JOB_CUSTOMER_BULK_EXPORT_API
             );
 
-            if ($currentCronInfo) {
+            if (!$currentCronInfo) {
                 return;
             }
 
