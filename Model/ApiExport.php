@@ -167,7 +167,6 @@ class ApiExport extends ZendClient
                 'ApiExport::apiExport()'
             );
         }
-        echo '.';
 
         return $result;
     }
@@ -205,7 +204,7 @@ class ApiExport extends ZendClient
             }
         } catch (\Exception $e) {
             $this->emarsysHelper->addErrorLog(
-                'API Test Connection',
+                'API Test Connection. ' . $e->getMessage(),
                 'API Test Connection Failed. | ' . $e->getMessage(),
                 $this->storeManagerInterface->getStore()->getId(),
                 'ApiExport::_request()'

@@ -57,7 +57,7 @@ class SmartInsightBulkExport
                 \Emarsys\Emarsys\Helper\Cron::CRON_JOB_SI_BULK_EXPORT
             );
 
-            if ($currentCronInfo) {
+            if (!$currentCronInfo) {
                 return;
             }
 

@@ -69,8 +69,9 @@ class ProductBulkExport
         try {
             set_time_limit(0);
             $currentCronInfo = $this->cronHelper->getCurrentCronInformation(CronHelper::CRON_JOB_CATALOG_BULK_EXPORT);
+            $emarsysProductSyncCronInfo = $this->cronHelper->getCurrentCronInformation('emarsys_product_sync');
 
-            if ($currentCronInfo) {
+            if (!$currentCronInfo && !$emarsysProductSyncCronInfo) {
                 return;
             }
 
