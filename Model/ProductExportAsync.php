@@ -161,6 +161,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
         $this->dataRepository->truncate($modelData);
 
         $maxProcesses = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/process');
+        $maxProducts = $this->storeManager->getStore()->getConfig('emarsys_predict/enable/max_products');
         if ($maxProcesses) {
             $this->maxProcesses = $maxProcesses;
         }
@@ -190,6 +191,15 @@ class ProductExportAsync extends \Magento\Framework\DataObject
 
         [$size, $maxId, $minId] = $this->productAsync->getSizeAndMaxAndMinId();
 
+        $maxQueues = 0;
+        if ($maxProducts) {
+            $maxQueues = (int)ceil($size/$maxProducts);
+        }
+
+        if ($maxQueues > 1) {
+            $this->maxQueues = $maxQueues;
+        }
+
         $page = (int)ceil(($maxId - $minId)/$this->maxQueues);
 
         foreach ($this->getCredentials() as $websiteId => $website) {
@@ -202,7 +212,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                 if ($x == 1) {
                     $from = $minId;
                     $to = ($minId + $page);
-                } elseif ($x == 25) {
+                } elseif ($x == $this->maxQueues) {
                     $from = $minId + $page * ($x - 1);
                     $to = $minId + $page * ($x + 1);
                 } else {
@@ -251,6 +261,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                     $this->logsArray['description'] = __('Starting data uploading');
                     $this->logsArray['message_type'] = 'Success';
                     $this->logsHelper->manualLogs($this->logsArray);
+                    $this->logsArray['id'] = $logId;
                     echo "\n" . $this->logsArray['description'] . "\n";
 
                     if (function_exists('exec')) {
@@ -288,6 +299,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                     $this->logsArray['description'] = __('Starting data uploading');
                     $this->logsArray['message_type'] = 'Success';
                     $this->logsHelper->manualLogs($this->logsArray);
+                    $this->logsArray['id'] = $logId;
                     echo "\n" . $this->logsArray['description'] . "\n";
 
                     $modelData = $this->dataRepository->getById($websiteId);
@@ -324,7 +336,7 @@ class ProductExportAsync extends \Magento\Framework\DataObject
                         $this->logsArray['emarsys_info'] = __('Error during data uploading');
                         $this->logsArray['description'] = __('Error during data uploading');
                         $this->logsArray['message_type'] = 'Error';
-                        $this->logsArray['message_type'] = 'Error';
+                        $this->logsArray['status'] = 'error';
                     }
                 }
                 echo "\n" . $this->logsArray['description'] . "\n";

@@ -208,7 +208,7 @@ class Grid extends Extended
                     'missed' => 'missed',
                     'running' => 'running',
                     'notice' => 'notice',
-                    'started' => 'Started',
+                    'started' => 'started',
                 ],
             ]
         );
