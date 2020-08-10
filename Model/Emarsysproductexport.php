@@ -349,16 +349,21 @@ class Emarsysproductexport extends AbstractModel
                         $this->_mapHeader[$map[$key]] == 'price_' . $item['currency_code']
                         || $this->_mapHeader[$map[$key]] == 'msrp_' . $item['currency_code']
                     )) {
-                    $currencyCodeTo = $this->getCurrencyCodeTo($item['store_id']);
-                    if ($item['currency_code'] != $currencyCodeTo) {
-                        $rate = $this->getRate($item['currency_code'], $currencyCodeTo);
-                        $value = number_format(
-                            $value * $rate,
-                            2,
-                            '.',
-                            ''
-                        );
+                    $rate = 1;
+                    if (isset($item['currency_rate'])) {
+                        $rate = $item['currency_rate'];
+                    } else {
+                        $currencyCodeTo = $this->getCurrencyCodeTo($item['store_id']);
+                        if ($item['currency_code'] != $currencyCodeTo) {
+                            $rate = $this->getRate($item['currency_code'], $currencyCodeTo);
+                        }
                     }
+                    $value = number_format(
+                        $value * $rate,
+                        2,
+                        '.',
+                        ''
+                    );
                 }
                 $data[$productId][$map[$key]] = str_replace(["\n", "\r"], "", $value);
             }

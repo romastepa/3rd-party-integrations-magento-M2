@@ -6,12 +6,13 @@
  * @copyright Copyright (c) 2020 Emarsys. (http://www.emarsys.net/)
  */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-1column"
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceContainer name="content">
-            <container name="emarsys.wrapper" htmlTag="div" htmlClass="emarsys-wrapper" after="-" >
-                <block class="Emarsys\Emarsys\Block\JavascriptTracking" template="Emarsys_Emarsys::emarsys/webextend.phtml" name="webextend" after="-" />
+            <container name="emarsys.wrapper" htmlTag="div" htmlClass="emarsys-wrapper" after="-">
+                <block class="Emarsys\Emarsys\Block\JavascriptTracking"
+                       template="Emarsys_Emarsys::emarsys/webextend.phtml" name="webextend" after="-"/>
             </container>
         </referenceContainer>
     </body>
