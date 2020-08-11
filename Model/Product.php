@@ -877,7 +877,7 @@ class Product extends AbstractModel
                     }
                 }
 
-                if (in_array($attributeCode, $this->attributeMap)) {
+                if (key_exists($attributeCode, $this->attributeMap)) {
                     $name = $this->attributeMap[$attributeCode];
                     $this->$name($attributeOption, $productObject, $collection, $store, $attributeData);
                 } elseif (is_array($attributeOption)) {
