@@ -20,6 +20,7 @@ use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as TypeConfigurable;
+use Magento\Directory\Model\CurrencyFactory;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -35,7 +36,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as TypeGrouped;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Directory\Model\CurrencyFactory;
 
 class Product extends AbstractModel
 {
@@ -146,10 +146,6 @@ class Product extends AbstractModel
     protected $_productTypeInstance = null;
 
     /**
-     * @var State
-     */
-    protected $state;
-    /**
      * @var TypeConfigurable
      */
     protected $typeConfigurable;
@@ -166,6 +162,17 @@ class Product extends AbstractModel
      * @var 0|string
      */
     protected $isSimpleParent = 0;
+
+    public $attributeMap = [
+        'sku' => 'getSku',
+        'quantity_and_stock_status' => 'getQuantityAndStockStatus',
+        'category_ids' => 'getCategoryIds',
+        'image' => 'getImage',
+        'url_key' => 'getUrlKey',
+        'price' => 'getPrice',
+    ];
+
+    public $categoryNames;
 
     /**
      * Product constructor.
@@ -329,6 +336,9 @@ class Product extends AbstractModel
                         Area::AREA_FRONTEND,
                         true
                     );
+
+                    $this->attributeMap = $this->addAttributeProcessMethods($store['store']);
+
                     $currencyStoreCode = $store['store']->getDefaultCurrencyCode();
                     if (!$defaultStoreID) {
                         $defaultStoreID = $store['store']->getWebsite()->getDefaultStore()->getId();
@@ -401,7 +411,7 @@ class Product extends AbstractModel
                         $products = [];
                         foreach ($collection as $product) {
                             $catIds = $product->getCategoryIds();
-                            $categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
+                            $this->categoryNames = $this->getCategoryNames($catIds, $storeId, $excludedCategories);
                             $product->setStoreId($storeId);
                             $params = [
                                 'default_store' => ($storeId == $defaultStoreID) ? $storeId : 0,
@@ -411,7 +421,6 @@ class Product extends AbstractModel
                                 'data' => $this->_getProductData(
                                     $magentoAttributeNames[$storeId],
                                     $product,
-                                    $categoryNames,
                                     $store['store'],
                                     $collection,
                                     $logsArray
@@ -436,6 +445,7 @@ class Product extends AbstractModel
                             $this->productExportResourceModel->saveBulkProducts($products);
                         }
                         $currentPageNumber++;
+                        $collection->clear();
                     }
                     $logsArray['emarsys_info'] = __('Data for store %1 prepared', $storeId);
                     $logsArray['description'] = __('Data for store %1 prepared', $storeId);
@@ -837,7 +847,6 @@ class Product extends AbstractModel
     /**
      * @param  $magentoAttributeNames
      * @param \Magento\Catalog\Model\Product $productObject
-     * @param  $categoryNames
      * @param \Magento\Store\Model\Store $store
      * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
      * @param array $logsArray
@@ -847,7 +856,6 @@ class Product extends AbstractModel
     public function _getProductData(
         $magentoAttributeNames,
         $productObject,
-        $categoryNames,
         $store,
         $collection,
         $logsArray
@@ -865,80 +873,17 @@ class Product extends AbstractModel
                         $attributeOption = $productObject->getAttributeText($attributeCode);
                     }
                 }
-                switch ($attributeCode) {
-                    case 'sku':
-                        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
-                            $attributeData[] = $attributeOption;
-                            $parentProduct = $this->getParentProduct($productObject, $collection, $store);
-                            if ($parentProduct['sku']) {
-                                $attributeData[] = $parentProduct['sku'];
-                            } else {
-                                $attributeData[] = '';
-                            }
-                        } else {
-                            if ($productObject->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
-                                $this->isSimpleParent = $attributeOption;
-                            }
-                            $attributeData[] = 'g/' . $attributeOption;
-                            $attributeData[] = $attributeOption;
-                        }
-                        break;
-                    case 'quantity_and_stock_status':
-                        $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
-                            ? ($productObject->getStatus() == Status::STATUS_ENABLED)
-                            : true;
-                        $inStock = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK) == 1)
-                            ? $productObject->isAvailable()
-                            : true;
-                        $visibility =
-                            ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY) == 1)
-                                ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
-                                : true;
 
-                        if ($status && $inStock && $visibility) {
-                            $attributeData[] = 'TRUE';
-                        } else {
-                            $attributeData[] = 'FALSE';
-                        }
-                        break;
-                    case 'category_ids':
-                        $attributeData[] = implode('|', $categoryNames);
-                        break;
-                    case is_array($attributeOption):
-                        $attributeData[] = implode(',', $attributeOption);
-                        break;
-                    case 'image':
-                        /**
-                         * @var \Magento\Catalog\Helper\Image $helper
-                         */
-                        $url = $this->imageHelper
-                            ->init($productObject, 'product_base_image')
-                            ->setImageFile($attributeOption)
-                            ->getUrl();
-                        $attributeData[] = $url;
-                        break;
-                    case 'url_key':
-                        $url = $productObject->getProductUrl();
-                        $parentProduct = $this->getParentProduct($productObject, $collection, $store);
-                        if ($parentProduct['url']) {
-                            $url = $parentProduct['url'];
-                        }
-                        $attributeData[] = $url;
-                        break;
-                    case 'price':
-                        $price = $productObject->getMinimalPrice();
-                        if ($price <= 0.0001) {
-                            $price = $attributeOption;
-                        }
-                        $attributeData[] = number_format($price, 2, '.', '');
-                        break;
-                    default:
-                        if ($attributeOption instanceof \Magento\Framework\Phrase) {
-                            $attributeOption = $attributeOption->getText();
-                        }
-                        $attributeData[] = $attributeOption;
-                        break;
-
+                if (key_exists($attributeCode, $this->attributeMap)) {
+                    $name = $this->attributeMap[$attributeCode];
+                    $this->$name($attributeOption, $productObject, $collection, $store, $attributeData);
+                } elseif (is_array($attributeOption)) {
+                    $attributeData[] = implode(',', $attributeOption);
+                } else {
+                    if ($attributeOption instanceof \Magento\Framework\Phrase) {
+                        $attributeOption = $attributeOption->getText();
+                    }
+                    $attributeData[] = $attributeOption;
                 }
             } catch (\Exception $e) {
                 $attributeData[] = '';
@@ -950,6 +895,195 @@ class Product extends AbstractModel
         }
 
         return $attributeData;
+    }
+
+    /**
+     * @param mixed $attributeOption
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @param array $attributeData
+     */
+    public function getSku($attributeOption, $productObject, $collection, $store, &$attributeData)
+    {
+        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
+            $attributeData[] = $attributeOption;
+            $parentProduct = $this->getParentProduct($productObject, $collection, $store);
+            if ($parentProduct['sku']) {
+                $attributeData[] = $parentProduct['sku'];
+            } else {
+                $attributeData[] = '';
+            }
+        } else {
+            if ($productObject->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                $this->isSimpleParent = $attributeOption;
+            }
+            $attributeData[] = 'g/' . $attributeOption;
+            $attributeData[] = $attributeOption;
+        }
+    }
+
+    /**
+     * @param mixed $attributeOption
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @param array $attributeData
+     */
+    public function getQuantityAndStockStatus($attributeOption, $productObject, $collection, $store, &$attributeData)
+    {
+        $status = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_STATUS) == 1)
+            ? ($productObject->getStatus() == Status::STATUS_ENABLED)
+            : true;
+        $inStock = ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_IN_STOCK) == 1)
+            ? $productObject->isAvailable()
+            : true;
+        $visibility =
+            ($store->getConfig(EmarsysHelper::XPATH_PREDICT_AVAILABILITY_VISIBILITY) == 1)
+                ? ($productObject->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE)
+                : true;
+
+        if ($status && $inStock && $visibility) {
+            $attributeData[] = 'TRUE';
+        } else {
+            $attributeData[] = 'FALSE';
+        }
+    }
+
+    /**
+     * @param mixed $attributeOption
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @param array $attributeData
+     */
+    public function getCategoryIds($attributeOption, $productObject, $collection, $store, &$attributeData)
+    {
+        $attributeData[] = implode('|', $this->categoryNames);
+    }
+
+    /**
+     * @param mixed $attributeOption
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @param array $attributeData
+     */
+    public function getImage($attributeOption, $productObject, $collection, $store, &$attributeData)
+    {
+        /**
+         * @var \Magento\Catalog\Helper\Image $helper
+         */
+        $url = $this->imageHelper
+            ->init($productObject, 'product_base_image')
+            ->setImageFile($attributeOption)
+            ->getUrl();
+
+        $parentProduct = $this->getParentProduct($productObject, $collection, $store);
+        if (empty($attributeOption) && $parentProduct['image']) {
+            $url = $parentProduct['image'];
+        }
+
+        $attributeData[] = $url;
+    }
+
+    /**
+     * @param mixed $attributeOption
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @param array $attributeData
+     */
+    public function getUrlKey($attributeOption, $productObject, $collection, $store, &$attributeData)
+    {
+        $url = $productObject->getProductUrl();
+        $parentProduct = $this->getParentProduct($productObject, $collection, $store);
+        if ($parentProduct['url']) {
+            $url = $parentProduct['url'];
+        }
+        $attributeData[] = $url;
+    }
+
+    /**
+     * @param mixed $attributeOption
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @param array $attributeData
+     */
+    public function getPrice($attributeOption, $productObject, $collection, $store, &$attributeData)
+    {
+        $price = $productObject->getMinimalPrice();
+        if ($price <= 0.0001) {
+            $price = $attributeOption;
+        }
+        $attributeData[] = number_format($price, 2, '.', '');
+    }
+
+    /**
+     * @param \Magento\Catalog\Model\Product $productObject
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
+     * @param \Magento\Store\Model\Store $store
+     * @return array
+     */
+    public function getParentProduct($productObject, $collection, $store)
+    {
+        $sku = false;
+        $url = false;
+        $image = false;
+        $parentProduct = null;
+
+        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE
+            && $productObject->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
+        ) {
+            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+            $this->_productTypeInstance = $this->typeConfigurable;
+            if (empty($parentProducts)) {
+                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+                $this->_productTypeInstance = $this->typeBundle;
+                if (empty($parentProducts)) {
+                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                    $this->_productTypeInstance = $this->typeGrouped;
+                }
+            }
+
+            $parentId = current($parentProducts);
+            if ($parentId) {
+                if (!isset($this->_parentProducts[$store->getId()][$parentId])) {
+                    $parentProduct = $collection->getItemById($parentId);
+                    if ($parentProduct == null) {
+                        $this->productModel->setTypeInstance($this->_productTypeInstance);
+                        $parentProduct = $this->productModel->load($parentId);
+                    }
+                } else {
+                    return $this->_parentProducts[$store->getId()][$parentId];
+                }
+            }
+        }
+
+        if ($parentProduct !== null) {
+            $parentProduct->setStoreId($store->getId());
+            $sku = $parentProduct->getSku();
+            $url = $parentProduct->getProductUrl();
+
+            $image = $this->imageHelper
+                ->init($parentProduct, 'product_base_image')
+                ->setImageFile($parentProduct->getImage())
+                ->getUrl();
+            $this->_parentProducts[$store->getId()][$parentId] = ['sku' => $sku, 'url' => $url, 'image' => $image];
+        }
+
+        return ['sku' => $sku, 'url' => $url, 'image' => $image];
+    }
+
+    /**
+     * Add additional logic for attributes
+     * @param \Magento\Store\Model\Store $store
+     * @return array
+     */
+    public function addAttributeProcessMethods($store)
+    {
+        return $this->attributeMap;
     }
 
     /**
@@ -985,51 +1119,5 @@ class Product extends AbstractModel
     public function getSizeAndMaxAndMinId()
     {
         return $this->productExportModel->getSizeAndMaxAndMinId();
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Product $productObject
-     * @param \Magento\Catalog\Model\ResourceModel\Product\Collection $collection
-     * @param \Magento\Store\Model\Store $store
-     * @return array
-     */
-    public function getParentProduct($productObject, $collection, $store)
-    {
-        $sku = false;
-        $url = false;
-        $parentProduct = null;
-
-        $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
-        $this->_productTypeInstance = $this->typeConfigurable;
-        if (empty($parentProducts)) {
-            $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
-            $this->_productTypeInstance = $this->typeBundle;
-            if (empty($parentProducts)) {
-                $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
-                $this->_productTypeInstance = $this->typeGrouped;
-            }
-        }
-
-        $parentId = current($parentProducts);
-        if ($parentId) {
-            if (!isset($this->_parentProducts[$store->getId()][$parentId])) {
-                $parentProduct = $collection->getItemById($parentId);
-                if ($parentProduct == null) {
-                    $this->productModel->setTypeInstance($this->_productTypeInstance);
-                    $parentProduct = $this->productModel->load($parentId);
-                }
-            } else {
-                return $this->_parentProducts[$store->getId()][$parentId];
-            }
-        }
-
-        if ($parentProduct !== null) {
-            $parentProduct->setStoreId($store->getId());
-            $url = $parentProduct->getProductUrl();
-        }
-
-        $this->_parentProducts[$store->getId()][$parentId] = ['sku' => $sku, 'url' => $url];
-
-        return $this->_parentProducts[$store->getId()][$parentId];
     }
 }
