@@ -428,6 +428,7 @@ class ProductAsync extends AbstractModel
                         $this->productExportResourceModel->saveBulkProducts($products);
                     }
                     $currentPageNumber++;
+                    $collection->clear();
                 }
                 $logsArray['emarsys_info'] = __('%1 - Data for store %2 prepared', $pid, $storeId);
                 $logsArray['description'] = __(

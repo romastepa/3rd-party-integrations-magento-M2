@@ -445,6 +445,7 @@ class Product extends AbstractModel
                             $this->productExportResourceModel->saveBulkProducts($products);
                         }
                         $currentPageNumber++;
+                        $collection->clear();
                     }
                     $logsArray['emarsys_info'] = __('Data for store %1 prepared', $storeId);
                     $logsArray['description'] = __('Data for store %1 prepared', $storeId);
