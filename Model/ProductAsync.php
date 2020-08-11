@@ -144,10 +144,6 @@ class ProductAsync extends AbstractModel
     protected $_productTypeInstance = null;
 
     /**
-     * @var State
-     */
-    protected $state;
-    /**
      * @var TypeConfigurable
      */
     protected $typeConfigurable;
@@ -696,6 +692,12 @@ class ProductAsync extends AbstractModel
             ->init($productObject, 'product_base_image')
             ->setImageFile($attributeOption)
             ->getUrl();
+
+        $parentProduct = $this->getParentProduct($productObject, $collection, $store);
+        if (empty($attributeOption) && $parentProduct['image']) {
+            $url = $parentProduct['image'];
+        }
+
         $attributeData[] = $url;
     }
 
@@ -750,29 +752,34 @@ class ProductAsync extends AbstractModel
     {
         $sku = false;
         $url = false;
+        $image = false;
         $parentProduct = null;
 
-        $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
-        $this->_productTypeInstance = $this->typeConfigurable;
-        if (empty($parentProducts)) {
-            $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
-            $this->_productTypeInstance = $this->typeBundle;
+        if ($productObject->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE
+            && $productObject->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
+        ) {
+            $parentProducts = $this->typeConfigurable->getParentIdsByChild($productObject->getId());
+            $this->_productTypeInstance = $this->typeConfigurable;
             if (empty($parentProducts)) {
-                $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
-                $this->_productTypeInstance = $this->typeGrouped;
-            }
-        }
-
-        $parentId = current($parentProducts);
-        if ($parentId) {
-            if (!isset($this->_parentProducts[$store->getId()][$parentId])) {
-                $parentProduct = $collection->getItemById($parentId);
-                if ($parentProduct == null) {
-                    $this->productModel->setTypeInstance($this->_productTypeInstance);
-                    $parentProduct = $this->productModel->load($parentId);
+                $parentProducts = $this->typeBundle->getParentIdsByChild($productObject->getId());
+                $this->_productTypeInstance = $this->typeBundle;
+                if (empty($parentProducts)) {
+                    $parentProducts = $this->typeGrouped->getParentIdsByChild($productObject->getId());
+                    $this->_productTypeInstance = $this->typeGrouped;
                 }
-            } else {
-                return $this->_parentProducts[$store->getId()][$parentId];
+            }
+
+            $parentId = current($parentProducts);
+            if ($parentId) {
+                if (!isset($this->_parentProducts[$store->getId()][$parentId])) {
+                    $parentProduct = $collection->getItemById($parentId);
+                    if ($parentProduct == null) {
+                        $this->productModel->setTypeInstance($this->_productTypeInstance);
+                        $parentProduct = $this->productModel->load($parentId);
+                    }
+                } else {
+                    return $this->_parentProducts[$store->getId()][$parentId];
+                }
             }
         }
 
@@ -786,11 +793,16 @@ class ProductAsync extends AbstractModel
                 $url = $url . '.html';
             }
             $url = $store->getBaseUrl() . $url;
+
+            $image = $this->imageHelper
+                ->init($parentProduct, 'product_base_image')
+                ->setImageFile($parentProduct->getImage())
+                ->getUrl();
+
+            $this->_parentProducts[$store->getId()][$parentId] = ['sku' => $sku, 'url' => $url, 'image' => $image];
         }
 
-        $this->_parentProducts[$store->getId()][$parentId] = ['sku' => $sku, 'url' => $url];
-
-        return $this->_parentProducts[$store->getId()][$parentId];
+        return ['sku' => $sku, 'url' => $url, 'image' => $image];
     }
 
     /**
