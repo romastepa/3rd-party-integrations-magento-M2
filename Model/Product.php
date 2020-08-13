@@ -977,7 +977,7 @@ class Product extends AbstractModel
             ->getUrl();
 
         $parentProduct = $this->getParentProduct($productObject, $collection, $store);
-        if (empty($attributeOption) && $parentProduct['image']) {
+        if ((empty($attributeOption) || stristr($url, 'placeholder')) && $parentProduct['image']) {
             $url = $parentProduct['image'];
         }
 
