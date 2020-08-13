@@ -284,8 +284,6 @@ class ProductAsync extends AbstractModel
     ) {
         set_time_limit(0);
 
-        $result = false;
-
         try {
             $this->_errorCount = false;
 
@@ -345,7 +343,6 @@ class ProductAsync extends AbstractModel
                     $currentPageNumber,
                     $magentoAttributeNames[$storeId],
                     $includeBundle,
-                    $excludedCategories,
                     $page
                 );
 
@@ -375,7 +372,6 @@ class ProductAsync extends AbstractModel
                             $currentPageNumber,
                             $magentoAttributeNames[$storeId],
                             $includeBundle,
-                            $excludedCategories,
                             $page
                         );
                     }
