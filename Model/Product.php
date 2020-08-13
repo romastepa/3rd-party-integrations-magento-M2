@@ -271,7 +271,6 @@ class Product extends AbstractModel
     /**
      * @param string $mode
      * @param null $includeBundle
-     * @param null $excludedCategories
      * @return bool
      * @throws \Exception
      */
@@ -368,8 +367,7 @@ class Product extends AbstractModel
                         $storeId,
                         $currentPageNumber,
                         $magentoAttributeNames[$storeId],
-                        $includeBundle,
-                        $excludedCategories
+                        $includeBundle
                     );
 
                     $lastPageNumber = $collection->getLastPageNumber();
@@ -398,8 +396,7 @@ class Product extends AbstractModel
                                 $storeId,
                                 $currentPageNumber,
                                 $magentoAttributeNames[$storeId],
-                                $includeBundle,
-                                $excludedCategories
+                                $includeBundle
                             );
                             $collection->addUrlRewrite();
                         }

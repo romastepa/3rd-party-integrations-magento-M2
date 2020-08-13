@@ -145,7 +145,6 @@ class Emarsysproductexport extends AbstractModel
         $currentPageNumber,
         $attributes,
         $includeBundle = null,
-        $excludedCategories = [],
         $page = null
     ) {
         try {
@@ -176,10 +175,6 @@ class Emarsysproductexport extends AbstractModel
                     'type_id',
                     ['neq' => \Magento\Catalog\Model\Product\Type::TYPE_BUNDLE]
                 );
-            }
-
-            if (!empty($excludedCategories)) {
-                $collection->addCategoriesFilter(['nin' => $excludedCategories]);
             }
 
             $connection = $collection->getSelect()->getConnection();
