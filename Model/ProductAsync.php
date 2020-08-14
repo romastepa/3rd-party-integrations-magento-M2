@@ -581,8 +581,17 @@ class ProductAsync extends AbstractModel
         $logsArray
     ) {
         $attributeData = $parentProducts = [];
+        $magentoAttributeNames[] = 'recommendation_availability';
         foreach ($magentoAttributeNames as $attributeCode) {
             try {
+                $this->eventManager->dispatch('process_attribute_option_before', [
+                    'product_export' => $this,
+                    'product_object' => $productObject,
+                    'collection' => $collection,
+                    'store' => $store,
+                    'attribute_code' => $attributeCode
+                ]);
+
                 $attributeOption = $productObject->getData($attributeCode);
                 if (!is_array($attributeOption)) {
                     $attribute = $this->getEavAttribute($attributeCode);
@@ -594,22 +603,11 @@ class ProductAsync extends AbstractModel
                     }
                 }
 
-                $this->eventManager->dispatch('process_attribute_option_before', [
-                    'product_export' => $this,
-                    'attribute_option' => $attributeOption,
-                    'product_object' => $productObject,
-                    'collection' => $collection,
-                    'store' => $store,
-                    'attribute_code' => $attributeCode
-                ]);
-
                 if (key_exists($attributeCode, $this->attributeMap) && method_exists($this, $this->attributeMap[$attributeCode])) {
                     $name = $this->attributeMap[$attributeCode];
                     $this->$name($attributeOption, $productObject, $collection, $store, $attributeData);
                 } elseif (is_array($attributeOption)) {
                     $attributeData[] = implode(',', $attributeOption);
-                } elseif ($this->getData($attributeCode)) {
-                    $attributeData[] = $this->getData($attributeCode);
                 } else {
                     if ($attributeOption instanceof \Magento\Framework\Phrase) {
                         $attributeOption = $attributeOption->getText();
