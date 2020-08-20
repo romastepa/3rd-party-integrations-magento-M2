@@ -22,14 +22,14 @@ use Emarsys\Emarsys\Model\Product;
 use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
-use Emarsys\Emarsys\Model\Process as ProcessModel;
+use Emarsys\Emarsys\Model\ProcessPro as ProcessModel;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Directory\Model\CurrencyFactory;
 
 /**
  * Command for deployment of Sample Data
  */
-class Process extends Command
+class ProcessPro extends Command
 {
     const EMARSYS_DELIMITER = '{EMARSYS}';
     const BATCH_SIZE = 500;
@@ -153,8 +153,8 @@ class Process extends Command
      */
     protected function configure()
     {
-        $this->setName('emarsys:dump:process')
-            ->setDescription('Product dump process');
+        $this->setName('emarsys:dump:prod')
+            ->setDescription('Product dump process Prod');
         parent::configure();
     }
 
@@ -180,16 +180,16 @@ class Process extends Command
 
             $store = $this->storeManager->getStore();
 
-            exec('wget ' . $store->getConfig('process/dump/url'));
+            exec('wget ' . $store->getConfig('process/dump_pro/url'));
 
-            $name = basename($store->getConfig('process/dump/url'));
+            $name = basename($store->getConfig('process/dump_pro/url'));
             exec(
                 'gunzip < ' . $name . ' |'
                 . ' mysql'
-                . ' -h' . $this->deploymentConfig->get('db/connection/sho/host')
-                . ' -u' . $this->deploymentConfig->get('db/connection/sho/username')
-                . ' -p' . $this->deploymentConfig->get('db/connection/sho/password')
-                . ' ' . $this->deploymentConfig->get('db/connection/sho/dbname')
+                . ' -h' . $this->deploymentConfig->get('db/connection/sho_pro/host')
+                . ' -u' . $this->deploymentConfig->get('db/connection/sho_pro/username')
+                . ' -p' . $this->deploymentConfig->get('db/connection/sho_pro/password')
+                . ' ' . $this->deploymentConfig->get('db/connection/sho_pro/dbname')
             );
 
             unlink($name);
@@ -199,10 +199,10 @@ class Process extends Command
                 $this->_processedStores
             ] = $this->serializer->unserialize($this->process->getExportData());
 
-            $csvFilePath = $this->saveToCsv('sho');
+            $csvFilePath = $this->saveToCsv('sho_pro');
 
-            $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/sho');
-            $gzFilePath = $fileDirectory . '/' . 'products_sho.gz';
+            $fileDirectory = $this->emarsysHelper->getEmarsysMediaDirectoryPath(ProductModel::ENTITY . '/sho_pro');
+            $gzFilePath = $fileDirectory . '/' . 'products_sho_pro.gz';
 
             //Export CSV to API
             $string = file_get_contents($csvFilePath);
@@ -238,8 +238,8 @@ class Process extends Command
     public function moveFile($store, $gzFilePath)
     {
         //get token from admin configuration
-        $merchantId = $store->getConfig('process/dump/merchant_id');
-        $token = $store->getConfig('process/dump/bearer_token');
+        $merchantId = $store->getConfig('process/dump_pro/merchant_id');
+        $token = $store->getConfig('process/dump_pro/bearer_token');
 
         //Assign API Credentials
         $this->apiExport->assignApiCredentials($merchantId, $token, true);

@@ -621,7 +621,35 @@
                 </depends>
             </group>
             <group id="dump" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>Process Dump</label>
+                <label>Process Dump Stage</label>
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="url" translate="label comment" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>url</label>
+                </field>
+                <field id="merchant_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Merchant Id</label>
+                </field>
+                <field id="bearer_token" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Bearer Token</label>
+                </field>
+                <field id="db_user" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DB User</label>
+                </field>
+                <field id="db_password" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DB Password</label>
+                </field>
+                <field id="db_name" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DB name</label>
+                </field>
+                <depends>
+                    <field id="*/*/emarsys_setting_enable">1</field>
+                </depends>
+            </group>
+            <group id="dump_pro" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Process Dump Prod</label>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

@@ -114,6 +114,9 @@
             <dump>
                 <enable>1</enable>
             </dump>
+            <dump_pro>
+                <enable>1</enable>
+            </dump_pro>
         </process>
         <about_emarsys>
             <emarsys_release>

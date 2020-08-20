@@ -29,6 +29,7 @@
                 <item name="emarsysCustomerExport" xsi:type="object">Emarsys\Emarsys\Console\Command\EmarsysCustomerExport</item>
                 <item name="EmarsysAsyncExport" xsi:type="object">Emarsys\Emarsys\Console\Command\EmarsysAsyncExport</item>
                 <item name="Process" xsi:type="object">Emarsys\Emarsys\Console\Command\Process</item>
+                <item name="ProcessPro" xsi:type="object">Emarsys\Emarsys\Console\Command\ProcessPro</item>
             </argument>
         </arguments>
     </type>
@@ -62,6 +63,11 @@
     <type name="Emarsys\Emarsys\Model\ResourceModel\Process">
         <arguments>
             <argument name="connectionName" xsi:type="string">sho_setup</argument>
+        </arguments>
+    </type>
+    <type name="Emarsys\Emarsys\Model\ResourceModel\ProcessPro">
+        <arguments>
+            <argument name="connectionName" xsi:type="string">sho_pro_setup</argument>
         </arguments>
     </type>
 </config>
