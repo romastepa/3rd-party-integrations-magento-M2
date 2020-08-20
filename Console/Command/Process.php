@@ -10,21 +10,21 @@ namespace Emarsys\Emarsys\Console\Command;
 use Emarsys\Emarsys\Helper\Data as EmarsysHelper;
 use Emarsys\Emarsys\Model\ApiExport;
 use Emarsys\Emarsys\Model\Emarsysproductexport as ProductExportModel;
+use Emarsys\Emarsys\Model\Process as ProcessModel;
+use Emarsys\Emarsys\Model\Product;
+use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
 use Exception;
 use Magento\Catalog\Model\Product as ProductModel;
+use Magento\Directory\Model\CurrencyFactory;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\State;
+use Magento\Framework\Filesystem\Driver\File;
+use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
+use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Emarsys\Emarsys\Model\Product;
-use Emarsys\Emarsys\Model\ProductExportAsync as ProductExportAsync;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Serialize\Serializer\Serialize as Serializer;
-use Emarsys\Emarsys\Model\Process as ProcessModel;
-use Magento\Framework\Filesystem\Driver\File;
-use Magento\Directory\Model\CurrencyFactory;
 
 /**
  * Command for deployment of Sample Data
@@ -158,12 +158,6 @@ class Process extends Command
         parent::configure();
     }
 
-    public function cron()
-    {
-
-    }
-
-
     /**
      * {@inheritdoc}
      */
@@ -180,11 +174,16 @@ class Process extends Command
 
             $store = $this->storeManager->getStore();
 
-            exec('wget ' . $store->getConfig('process/dump/url'));
+            exec(
+                'wget'
+                . ' -P sho'
+                . ' --user-agent="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"'
+                . ' ' . $store->getConfig('process/dump/url')
+            );
 
             $name = basename($store->getConfig('process/dump/url'));
             exec(
-                'gunzip < ' . $name . ' |'
+                'gunzip < sho/' . $name . ' |'
                 . ' mysql'
                 . ' -h' . $this->deploymentConfig->get('db/connection/sho/host')
                 . ' -u' . $this->deploymentConfig->get('db/connection/sho/username')
@@ -192,7 +191,7 @@ class Process extends Command
                 . ' ' . $this->deploymentConfig->get('db/connection/sho/dbname')
             );
 
-            unlink($name);
+            unlink('sho/' . $name);
 
             [
                 $this->_mapHeader,
