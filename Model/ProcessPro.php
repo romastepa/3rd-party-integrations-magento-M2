@@ -23,10 +23,10 @@ class ProcessPro extends \Magento\Framework\Model\AbstractModel
     public function getExportData()
     {
         $table = $this->getResource()->getTable('emarsys_product_export_data');
-        $select = $this->getResource()->getConnection($this->_collectionName)
+        $select = $this->getResource()->getConnection('sho_pro')
             ->select()
             ->from($table, 'export_data');
 
-        return $this->getResource()->getConnection($this->_collectionName)->fetchOne($select);
+        return $this->getResource()->getConnection('sho_pro')->fetchOne($select);
     }
 }
