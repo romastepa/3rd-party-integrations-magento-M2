@@ -726,7 +726,7 @@ class ProductAsync extends AbstractModel
     public function getUrlKey($attributeOption, $productObject, $collection, $store, &$attributeData)
     {
         $url = $productObject->getUrlKey();
-        if (empty($url) || stristr($url, ' ')) {
+        if (empty($url) || stristr($url, ' ') || stristr($url, '\'')) {
             $url = 'catalog/product/view/id/' . $productObject->getId();
         } else {
             $url = $url . '.html';
