@@ -233,7 +233,7 @@ class JavascriptTracking extends Template
              * @var Category $category
              */
             foreach ($categoryCollection as $categoryItem) {
-                $categoryList[] = addcslashes($categoryItem->getName(), "'");
+                $categoryList[] = $categoryItem->getName();
             }
 
             return [

@@ -54,7 +54,7 @@ class Emarsysproductexport extends AbstractModel
     protected $scopeConfig;
 
     /**
-     * @var Logger
+     * @var \Psr\Log\LoggerInterface
      */
     protected $logger;
 

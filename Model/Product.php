@@ -25,6 +25,7 @@ use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Framework\File\Csv;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Model\AbstractModel;
@@ -98,6 +99,11 @@ class Product extends AbstractModel
      * @var EmarsysHelper
      */
     protected $emarsysHelper;
+
+    /**
+     * @var EventManager
+     */
+    protected $eventManager;
 
     /**
      * @var Csv
@@ -189,6 +195,7 @@ class Product extends AbstractModel
      * @param StoreManagerInterface $storeManager
      * @param EavConfig $eavConfig
      * @param EmarsysHelper $emarsysHelper
+     * @param EventManager $eventManager
      * @param Csv $csvWriter
      * @param Serializer $serializer
      * @param DirectoryList $directoryList
@@ -218,6 +225,7 @@ class Product extends AbstractModel
         StoreManagerInterface $storeManager,
         EavConfig $eavConfig,
         EmarsysHelper $emarsysHelper,
+        EventManager $eventManager,
         Csv $csvWriter,
         Serializer $serializer,
         DirectoryList $directoryList,
@@ -246,6 +254,7 @@ class Product extends AbstractModel
         $this->storeManager = $storeManager;
         $this->eavConfig = $eavConfig;
         $this->emarsysHelper = $emarsysHelper;
+        $this->eventManager = $eventManager;
         $this->csvWriter = $csvWriter;
         $this->serializer = $serializer;
         $this->directoryList = $directoryList;
@@ -860,6 +869,14 @@ class Product extends AbstractModel
         $attributeData = $parentProducts = [];
         foreach ($magentoAttributeNames as $attributeCode) {
             try {
+                $this->eventManager->dispatch('process_attribute_option_before', [
+                    'product_export' => $this,
+                    'product_object' => $productObject,
+                    'collection' => $collection,
+                    'store' => $store,
+                    'attribute_code' => $attributeCode
+                ]);
+
                 $attributeOption = $productObject->getData($attributeCode);
                 if (!is_array($attributeOption)) {
                     $attribute = $this->getEavAttribute($attributeCode);
@@ -871,7 +888,7 @@ class Product extends AbstractModel
                     }
                 }
 
-                if (key_exists($attributeCode, $this->attributeMap)) {
+                if (key_exists($attributeCode, $this->attributeMap) && method_exists($this, $this->attributeMap[$attributeCode])) {
                     $name = $this->attributeMap[$attributeCode];
                     $this->$name($attributeOption, $productObject, $collection, $store, $attributeData);
                 } elseif (is_array($attributeOption)) {
@@ -977,7 +994,7 @@ class Product extends AbstractModel
             ->getUrl();
 
         $parentProduct = $this->getParentProduct($productObject, $collection, $store);
-        if (empty($attributeOption) && $parentProduct['image']) {
+        if ((empty($attributeOption) || stristr($url, 'placeholder')) && $parentProduct['image']) {
             $url = $parentProduct['image'];
         }
 
