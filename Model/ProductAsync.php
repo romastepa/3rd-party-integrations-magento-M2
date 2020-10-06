@@ -802,7 +802,7 @@ class ProductAsync extends AbstractModel
             $parentProduct->setStoreId($store->getId());
             $url = $parentProduct->getUrlKey();
             $sku = $parentProduct->getSku();
-            if (empty($url) || stristr($url, ' ')) {
+            if (empty($url) || stristr($url, ' ') || stristr($url, '\'') || stristr($url, '"') || stristr($url, ',')) {
                 $url = 'catalog/product/view/id/' . $parentProduct->getId();
             } else {
                 $url = $url . '.html';
