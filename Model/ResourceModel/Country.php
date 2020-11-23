@@ -26,6 +26,8 @@ class Country extends AbstractDb
      */
     protected $_useIsObjectNew = true;
 
+    protected $_isPkAutoIncrement = false;
+
     /**
      * Define main table
      *

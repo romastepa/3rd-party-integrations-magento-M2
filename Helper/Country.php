@@ -138,7 +138,7 @@ class Country extends AbstractHelper
 
         $store = $this->storeManager->getStore($storeId);
         $filter = $this->searchCriteriaBuilder
-            ->addFilter('website_id', $store->getWebsiteId())
+            ->addFilter('website_id', 0)
             ->create();
         $list = $this->countryRepository->getList($filter);
         if (!$list->getTotalCount()) {
@@ -156,7 +156,7 @@ class Country extends AbstractHelper
                         $item['magento_id'] = $this->_overrides[$item['choice']];
                     }
                     $model = $this->countryRepository->getById($item['id']);
-                    $item['website_id'] = $store->getWebsiteId();
+                    $item['website_id'] = 0;
                     $model->setData($item);
                     $model->isObjectNew(true);
                     $this->countryRepository->save($model);
